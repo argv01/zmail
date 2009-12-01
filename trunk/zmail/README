@@ -1,9 +1,9 @@
 Wed Oct  7 22:22:13 PST 2009
 
-INTRODUCTION: This directory contains the open source version of
-Z-Mail, plus the original MUSH source code from which Z-Mail was
-derived. I was the original author of both programs,
-though not the sole contributor. More about that in the HISTORY section below.
+INTRODUCTION: This project contains the open source version of
+Z-Mail, plus the original MUSH source code from which Z-Mail was derived.
+I, Dan Heller,  was the original author of both programs, though not
+the sole contributor. More about that in the HISTORY section below.
 
 Z-Mail is an email client--that is, a program a person uses to read
 email. It was, in fact, the first  available email client based entirely
@@ -20,29 +20,15 @@ alive in the public record; to create a form of historical document and
 to provide first-hand glimpse into the source code of a bygone era. If
 someone wants to use it, be my guest.
 
-There are several trees of the program in this archive,
-and they contain source code only--no binaries. The "lite" version
-(ozmaillite) is the source  any GUI code. That is, it's tty-only. Other
-than that tree, the other source trees are very similar, with the
-differences being minor changes introduced by individuals for reasons I
-am not privy to. Since I wasn't the one who did those revisions, nor do
-I even know who did them, I can't really say what those differences are.
-
-One thing I've learned: the "latest" version is not necessarily more
-stable than earlier versions. That may be the case for some parts,
-but I recall instances where old code "did the right thing" under some
-circumstances than newer code.
-
-Note that none of this is probably that hard to figure out for someone
-who truly wants to take a hack at it. Just start with the latest build,
-and if something doesn't work, backtrack.
-
 Until recently, I have built and used zmail successfully on various
 systems ever since the early 1990s without having to examine the source
 code. But when I migrated from a redhat linux to a debian system this
 year, zmail suddenly failed to build anymore, and I found myself unable
 (and uninterested) in dealing with it anymore. So, I punted and resigned
 to using gmail.
+
+In 2009, I and Akkana Peck revived the code and got it working again
+and made it public on Google Code.
 
 HISTORY: In 1985, I started a software project that involved, among
 other things, creating an internet-based email client that had multiple
