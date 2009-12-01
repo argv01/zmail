@@ -1,0 +1,521 @@
+Installing and Configuring zyncd
+Version 0.79dev (ALPHA) 
+Copyright 1993-1994 Z-Code Software Corp.
+
+About Zync and zyncd
+    Zync is a superset of the POP3 protocol. Any POP3 client,
+    including Z-Mail for Windows and Macintosh, can use the Zync
+    server for POP3 maildrop service, but only clients using the Zync
+    protocol can use the enhanced Zync features services described
+    below.  You do not have to install Zync in order to use Z-Mail.
+ 
+IMPORTANT: The zyncd server is currently in alpha testing.  Do not use
+it to access mailboxes you cannot afford to lose!  Please report all
+Zync and zyncd bugs to support@z-code.com.
+
+Zync services
+
+The Zync server provides the following services to clients:
+
+* Mail spool synchronization.  When you update your mail spool
+    ("Mailbox") in a client Z-Mail, the client will tell the Zync
+    server what flags to set on the messages in your UNIX mail spool.
+    For example, if you delete message 6 on your Mac or PC, message 6
+    will be deleted from your UNIX mail spool when you update the
+    folder.  This feature is not supported in current Macintosh and
+    Windows Z- Mail clients.
+
+* Realname service.  The Zync server will supply the `real name'
+    of the user to the Z-Mail client.  For example, if a user's id is
+    `bobg', the Zync server will find the corresponding name (`Bob
+    Glickstein') in the UNIX /etc/passwd file and pass the name to the
+    Z-Mail client.  The client then places the name into the realname
+    Z-Script variable, and makes that variable read-only.
+
+* Centralized storage of user preferences.  The Zync server can
+    store a user's Z-Mail configuration on the Zync server machine, so
+    that the user can retrieve their preferences from any client
+    Z-Mail machine.  The preferences files stored by this service are
+    analogous to UNIX ~/.zmailrc files.
+
+* Configuration file downloading.  The Zync server can supply
+    configuration files such as system.zmailrc and attach.types to
+    Z-Mail clients, allowing centralized administration of client
+    Z-Mail configuration.  Client Z-Mail programs can use any or none
+    of these services, depending upon how they are configured.
+
+New features in this release
+
+Release 0.79dev of zyncd includes the following new features and bug fixes:
+
+    * When Z-Mail clients set their pop_options variable to include
+    preserve, POP mail is kept on the server, and only messages that
+    have not yet been downloaded are delivered to the client.  This
+    feature is supported in version 3015alpha and later of Z-Mail for
+    Macintosh, and will be supported in version 3.2.1 and later of
+    Z-Mail for Windows.
+
+    * ".zmailrc" is no longer added to the filenames of uploaded
+    preferences files, to better accomodate UNIXes that have a
+    14-character filename length limit.  If you have existing
+    preferences files, you should remove .zmailrc from their names to
+    make them compatible with version .79dev.
+
+Installing zyncd
+
+    You should have experience installing UNIX network services before
+    you attempt to install the zyncd server; see your UNIX System
+    Administration documentation for details. While the installation
+    process is not difficult, there is potential for causing damage to
+    files your system needs to operate its network services.  You will
+    need root (superuser) privileges to install zyncd, which runs as
+    root.
+
+Installation summary:
+
+* Obtain the tar file and extract the files from it.
+
+* Edit UNIX system files and the zync.config configuration file.
+
+* Send a HUP signal to the inetd daemon to start the Zync service.
+
+* (Optional) Edit the shell scripts zmremote and zmvers to support the
+mail synchronization service.
+
+* (Optional) Edit Z-Mail configuration files that will be supplied to
+clients as part of the configuration file downloading service.
+
+    These instructions detail the process of installing zyncd on a
+    Silicon Graphics computer running IRIX.  The installation process
+    will be similar on other UNIX variants; see your System
+    Administration documentation for details.
+
+1. Get the latest zyncd distribution via anonymous ftp from the
+    ftp.z-code.ncd.com ftp server.  The zyncd software on
+    ftp.z-code.ncd.com is not publicly accessible; contact
+    support@z-code.com for the path to the latest version.
+
+2.  When installed, zyncd and its associated support files reside
+    in a single directory.  The default location is
+    /usr/local/etc/Zync, but you may install the Zync software package
+    anywhere you wish.  If you choose a directory other than
+    /usr/local/etc/Zync, you must also edit the zync.config file; see
+    the section Configuring zyncd below for details.  Move to the
+    directory in which you would like to install the Zync directory.
+    If you are installing in the default location, issue the command
+
+	cd /usr/local/etc
+
+3. Extract the contents of the tar file you've obtained from
+    ftp.z-code.ncd.com with the command:
+
+	zcat zd0.79dev.sgi.tar.Z | tar xvf -
+
+    The exact filename you supply to the zcat command may be
+    different.  This command will create a new directory within the
+    current directory called Zync, which will contain zyncd and its
+    associated support files.
+
+4. Using any text editor, add the following line to the file
+    /etc/services:
+
+	zync	15232/tcp
+
+5. Add the following line at the end of the file
+    /usr/etc/inetd.conf:
+
+	zync  stream  tcp  nowait  root  /usr/local/etc/Zync/zyncd  zyncd
+
+    If there is already a line similar to the one shown above
+    in the file, delete or edit it.
+
+    If you installed the Zync software in some place other than
+    /usr/local/etc/Zync, you will have to modify part of this line to
+    point to the zyncd binary, and to tell zyncd where to look for its
+    configuration file.  If, for example, you installed the Zync
+    software in the directory /opt/extern/Zync, you would need to use
+    the following line instead of the one above:
+
+	zync  stream  tcp  nowait  root  /opt/extern/Zync/zyncd zyncd -c 
+             /opt/extern/Zync/zync.config  
+
+6. Since Zync is a functional superset of POP3, you may choose to
+    use zyncd for both Zync and POP3 services.  To do this,
+    comment-out (by inserting a # character at the beginning of the
+    line) any already existing line in /usr/etc/inetd.conf that begins
+    with pop-3, and add the following line:
+
+	pop-3  stream  tcp  nowait  root  /usr/local/etc/Zync/zyncd
+
+    If you installed the Zync software in some place other than
+    /usr/local/etc/Zync, you will have to modify part of this new line
+    as detailed in step 5 above.
+
+7. In the directory in which you installed the Zync software, edit
+    the configuration file zync.config as appropriate for your
+    installation.  See the section Configuring zyncd for details.
+
+8. Find the process-id of the inetd daemon on the system with the
+    command
+
+	ps -e | grep inetd
+
+    The number in the second column of the output of the above
+    command is the process-id of inetd.
+
+9. Send a HUP signal to the inetd daemon with the command:
+
+	kill -HUP process-id
+
+    This will cause the inetd daemon to re-read its
+    configuration file /usr/etc/inetd.conf.  The zyncd server is now
+    installed.  You should follow the instructions in Testing zyncd,
+    below, to ensure that the server is working properly.
+
+NOTE:  Once step 9 is complete, network requests that arrive on
+    this machine destined for the `zync' services (port 15232) , and
+    (optionally) 'pop-3' services (port 110) will be sent to the zyncd
+    program.
+
+Configuring zyncd
+
+    Configure the zyncd daemon by modifying the file zync.config in
+    the directory in which you installed the Zync software
+    (/usr/local/etc/Zync by default.)  Each line in this file contains
+    one configuration item.  You may specify a different configuration
+    file on the zyncd command line with the -c option:
+
+        zyncd -c configuration-file
+
+    In the zyncd configuration file, a # character and all text
+    following it on a line are considered a comment and are ignored by
+    zyncd. Here is the sample zync.config file shipped with zyncd
+    version 0.75a:
+
+# Zync 0.75a sample configuration file 'zync.config'
+#
+# See 'Installing and configuring zyncd' for complete installation
+# details.
+# 
+#
+# The TRACE directive specifies where zyncd should log errors and
+# debugging messages (if any.)  If a trace file is not specified, any
+# error or debugging messages that are generated will be reported via
+# the syslog() facility.
+trace /usr/tmp/zyncd-trace
+# 
+# The DEBUG directive specifies which debugging and warning messages
+# should be reported by zyncd.  Zyncd will always report serious
+# errors, regardless of the value of this directive.  By default,
+# zyncd will also generate warnings for situations which are not
+# fatal, but probably require attention.  See 'Installing and
+# configuring zyncd' for more information on possible values of this
+# directive.
+debug ERRORS WARNINGS
+#
+# The SCRIPTS directive tells zyncd where to find the shell scripts it
+# needs to find the local UNIX Z-Mail's version, and to start Z-Mail
+# for mail synchronization.
+scripts /usr/local/etc/Zync/scripts
+#
+# The SPOOL directive tells zyncd where the mail spool directory is.
+spool /usr/spool/mail
+#
+# The PREFS directive tells zyncd where to store and retrieve users'
+# preferences files for the remote preferences service.
+prefs /usr/local/etc/Zync/prefs
+#
+# The LIBRARY directive tells zyncd the directory where the
+# configuration files it will offer to clients as part of the
+# configuration file downloading service reside.
+library /usr/local/etc/Zync/download-lib
+#
+# The LIBRARY-STRUCTURE directive tells zyncd the organizational 
+# hierarchy of the download library.  This would not normally need to
+# be changed.
+library-structure PRODUCT PLATFORM VERSION
+#
+# The TIMEOUT directive tells zyncd how many seconds to wait when
+# expecting input before giving up and closing the connection to the 
+# client.  A value of zero (0) means never time out.
+timeout 60
+
+    The following zync.config configuration directives (and equivalent
+    zyncd command-line options) are supported:
+
+TRACE trace-file
+-t trace-file
+
+    Any error or warning messages, or debugging output generated while
+    the server is running, will be sent to the trace-file.  If TRACE
+    is not specified, any such output is reported via the syslogd
+    facility.  WARNING: the trace-file will grow until it fills the
+    filesystem; use TRACE for testing purposes only.
+
+DEBUG debug keys...
+-d debug-keys... 
+
+    The DEBUG directive specifies which debugging and warning
+    messages should be reported by zyncd.  Zyncd will always report
+    serious errors, regardless of the value of this directive.  By
+    default, zyncd will also generate warnings for situations which
+    are not fatal, but probably require attention.
+
+    debug-keys is a whitespace separated list of keywords
+    which specify what types of error and debugging output should be
+    reported.  Valid keywords are:
+
+	ERRORS - Report only serious (fatal) errors.
+
+	WARNINGS - Report non-fatal warnings, as well as fatal errors.
+	This is the default behavior.
+
+	COMMANDS - Generate a trace of all commands issued to the
+	server and replies issued by the server, as well as reporting
+	warnings and errors.
+
+	VERBOSE - Like COMMANDS, except includes the text of messages
+	and files downloaded to the client.
+
+	CONNECTION - Generate debugging output concerning the
+	establishment of a connection between the server and client,
+	as well as reporting warnings and errors.
+
+	CONFIG - Generate debugging output concerning the zync.config
+	file, as well as reporting warnings and errors.
+
+	MAILDROP - Generate debugging output concerning operations on
+	the user's maildrop, as well as reporting warnings and errors.
+
+	LIBRARY - Generate debugging output concerning the download
+	library, as well as reporting warnings and errors.
+
+	EXEC - Generate debugging output about sub-processes launched
+	by zyncd as well as reporting warnings and errors.
+
+        ALL - Generate all of the above debugging output.
+
+SCRIPTS scripts-directory
+-s scripts-directory
+
+    UNIX shell scripts that zyncd executes as part of the mail
+    synchronization service are stored in the scripts-directory.  You
+    will need to edit parts of these scripts before they'll work
+    properly at your site (see Configuring the mail synchronization
+    service below for instructions.)  The default scripts- directory
+    is /usr/local/etc/Zync/bin; you may need to supply a different
+    value for this directive if you installed the Zync software in
+    some place other than the default.
+
+SPOOL mail-spool-directory
+-m mail-spool-directory
+
+    This directive tells zyncd where the mail is delivered
+    (the mail-spool-directory) on the UNIX system to support POP3
+    maildrop service.  On IRIX systems, this should be set to
+    /usr/mail.
+
+LIBRARY library-directory
+-l library-directory
+
+    When the client asks the zyncd server to download configuration
+    files that are out-of-date, the server looks under
+    library-directory to find the files to download.  Only files
+    appropriate to the type of client and newer than any corresponding
+    file on the client will be downloaded.  The default
+    library-directory is /usr/local/etc/Zync/lib; you may need to
+    supply a different value for this directive if you installed the
+    Zync software in some place other than the default location.  See
+    Using the configuration file downloading feature for more details.
+
+LIBRARY-STRUCTURE client-attribute-keys...
+-o client-attribute-keys...
+
+    This directive informs zyncd of the configuration of the
+    directory hierarchy under the library directory.  It will probably
+    never be necessary to specify a different value for this
+    directive, but its default value may change in subsequent releases
+    of the Zync software.  The current default value of this directive
+    is PRODUCT PLATFORM VERSION.
+
+PREFS preferences-directory
+-p preferences-directory
+
+    This directive tells zyncd where to store and retrieve users'
+    preferences files for the remote preferences service.  When a user
+    presses the `Save' button in the `Options' dialog of a Z-Mail Zync
+    client, their configuration is stored in a file in
+    preferences-directory if they have chosen to use this feature. The
+    file name is the same as their userid. The default
+    preferences-directory is /usr/local/etc/Zync/prefs; you may need
+    to supply a different value for this directive if you installed
+    the Zync software in some location other than the default.
+
+TIMEOUT idle-time
+-t idle-time
+
+    This directive specifies how many seconds zyncd should wait for
+    new input from a client before it closes the client connection,
+    releases the user's mail spool, and exits.  This ensures that the
+    lock on a user's mail spool is released if the client hangs or
+    crashes.  The default value is 60 seconds; a value of 0 will
+    prevent timeouts.
+
+Using the configuration file downloading feature
+
+    The LIBRARY directive in the zync.config file specifies the
+    directory in which zyncd looks for the configuration files it
+    downloads to clients.  Within this directory are subdirectories
+    for each product which uses Zync (currently only zmail).  Within
+    each product directory are directories for platforms on which the
+    product runs (e.g. Macintosh and PC).  The platform directories
+    may contain subdirectories for different versions of the platform.
+
+    Each level of the library directory hierarchy contains a file
+    named .give, which lists the files and subdirectories at that
+    level which are included in the library.  To be included in the
+    library, files and subdirectories must be listed in the .give file
+    of the directory containing them.  The .give file is a text file
+    with a single file or directory name per line.
+
+    When a client connects to zyncd to download configuration files,
+    it gives zyncd its type, the platform it is running on, and its
+    version number.  zyncd uses this information to find the
+    appropriate "home" directory within the library for that client.
+    The client can then download all files in its "home" directory, as
+    well as library files in its parent library directories.
+
+    Since the configuration files are also stored on the clients
+    themselves, zyncd will only download them to the client if they
+    are missing from the client or if they have been changed on the
+    server by the system administrator.  zyncd determines whether its
+    version of a particular file is newer than the version on the
+    client by comparing the client-rev and sequence numbers of the
+    files.  The client-rev and sequence number are stored on the first
+    line of each file in a special format.  Files with higher client
+    revisions and sequence numbers are newer than files with lower
+    client revisions and sequence numbers. The client revision takes
+    precedence over the sequence number, and is optional.  For example
+    the file attach.types on the server might have a sequence number
+    of 10
+
+        # -%- File-id:attach.types; Client-rev:3.0; Seq-num:10 -%-
+
+    while a client might have a sequence number of 5:
+
+        # -%- File-id:attach.types; Client-rev:3.0; Seq-num:5 -%-
+
+
+    In this example, the version on the server is newer, and zyncd
+    will automatically replace attach.types on the client with
+    attach.types from the server.
+
+    To propagate a modified file on the zyncd server to all clients,
+    increment the sequence number in that file by 1.  The file will
+    then automatically be downloaded to all clients contacting the
+    server.
+
+    For a file to be correctly downloaded, it must reside in the
+    appropriate library directory and be listed in that directory's
+    .give file.
+
+NOTE:  The sequence numbers of library files provided for each
+    client are reset to 1 with each client release.  However, library
+    files from newer releases are always considered newer than library
+    files of previous releases, so you should install the new library
+    files and set their sequence numbers to one greater than those of
+    your existing library files.
+
+Configuring the mail synchronization service
+
+    The mail synchronization service is not supported in current
+    Z-Mail clients.
+
+Testing zyncd
+
+    To test the zyncd server, telnet to the server at port 15232; for
+    example:  telnet hostname 15232 where hostname is the machine on
+    which zyncd is running.  If it is properly configured, the zyncd
+    server will respond:
+
+        +OK Welcome to Z-Mail Zync server  v.79dev
+
+    If there is no service available at port 15232, you will see the
+    message
+
+        telnet: Unable to connect to remote host: Connection refused
+
+    Recheck your entries in /etc/services and /usr/etc/inetd.conf and
+    make sure you entered the correct port number.  If those entries
+    are correct, send another HUP signal to the inetd daemon.
+
+    If you see the message
+
+	+OK Warning: non-critical errors occurred starting this
+	server.  Please ask a system administrator to check the Zync
+	log for details.  You may continue your session, but some
+	services may be unavailable.
+
+    the zyncd server is starting, but is encountering errors in the
+    file zync.config.  Check to see if one of the directories or files
+    specified in the zync.config file is missing or damaged.
+
+NOTE: If you are installing Zync on a system other than an SGI
+    system running IRIX, the exact wording of error messages and
+    warnings may be slightly different.
+
+    Type the quit command to terminate a zyncd session.
+
+Uninstalling zyncd
+
+    To uninstall the zyncd server, perform the following steps:
+
+1.  Delete the line in the file /usr/etc/inetd.conf that starts
+    with zync.  It will look something like
+
+	zync  stream  tcp  nowait  root  /usr/local/etc/Zync/zyncd  zyncd
+
+2. If you chose to use zyncd to provide both Zync and POP3
+    services, you may have commented-out an existing pop-3 line in
+    /usr/etc/inetd.conf and added a new pop-3 line during the
+    installation process.  If so, delete the pop-3 line you added, and
+    remove the leading # character you added to any pop-3 lines during
+    installation.
+
+3. In the file /etc/services delete the line which reads
+
+	zync	15232/tcp
+
+4. Find the process-id of the inetd daemon on the system with the
+    command
+
+	ps -e | grep inetd
+
+    The number in the second column of the output from the above
+    command is the process-id of inetd.
+
+5. Send a HUP signal to the inetd daemon with the command:
+
+	kill -HUP process-id
+
+NOTE:  Once step 5 is complete, network requests that arrive on
+    this machine destined for the `pop-3' service (port 110) will be
+    sent to whatever program is specified in inetd.conf for the pop-3
+    service.
+
+6. You may delete the Zync software, if you wish, with the
+    following command (type this command carefully; you are root and
+    could accidentally delete more than you want!)
+
+	rm -r /usr/local/etc/Zync
+
+    If you installed the Zync software some directory other than
+    /usr/local/etc/Zync, enter that directory in place of
+    /usr/local/etc/Zync.
+
+Configuring Z-Mail clients
+
+    Once you have installed and tested zyncd, you must configure
+    Macintosh Z-Mail or Windows Z-Mail to take advantage of Zync
+    features.  See your Z-Mail release notes for detailed information
+    about configuring Z-Mail clients.

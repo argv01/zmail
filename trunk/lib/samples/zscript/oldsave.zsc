@@ -1,0 +1,32 @@
+# Sample Z-Script functions: old_saveit
+
+# This is the "saveit" function from Version 2.0.5 of Z-Mail, enhanced
+# to use the new "ask -f" function, which adds a file Search button to
+# the dialog.  This has been replaced in Version 2.1 for consistency
+# with the new behavior of the Save Messages item in the File menu.
+#
+function old_saveit() {
+    set mymsgs
+    shift -m | set mymsgs
+    if X$mymsgs == X
+        msg_list . | set mymsgs
+    endif
+    if ! $?_filename
+        if ! $?mbox
+            set mbox = ~/mbox
+        endif
+        set _filename = "$mbox"
+        set _choices = "$_filename"
+    endif
+    if is_gui
+        ask -f _filename "Save: $mymsgs\nFilename:" $_choices
+    else
+        ask -f _filename "Save ${mymsgs} to:" $_choices
+    endif
+    if $status == 0
+        if " $_choices " !~ "* $_filename *"
+            set _choices = "$_filename $_choices"
+        endif
+        save $mymsgs $_filename
+    endif
+}

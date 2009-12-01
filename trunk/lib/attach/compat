@@ -1,0 +1,58 @@
+#
+#	for viewing messages from Z-Mail 2.1 and earlier
+#
+
+# Entry for plain files, using variables for the editor.  This entry
+# is tuned for the X11 GUI, and should differ for character modes.
+ALIAS	Text	text/plain
+
+# You can send folders as attachments.  To view, detach to a file and
+# then open it.  You may want to use "merge" instead if you want the
+# contents of the folder to be listed with the existing folder.
+TYPE	application/x-zm-Folder	":view_fldr '%s'"	":copy '%s'"	\
+	"Z-Mail folder"
+BITMAP	application/x-zm-Folder	bitmaps/folders.xbm
+ALIAS	Folder	application/x-zm-Folder
+
+ALIAS	Binary	application/octet-stream
+
+#
+#	Various extended encodings
+#
+# Note: Use of these encodings for message sending is not recommended as it 
+# will hinder interoperability with other MIME mailers.
+
+# x-compress64 - An extended encoding which does compression and uses
+# MIME base64 encoding.  Data encoded in this fashion is more likely
+# to make it through various gateways than uuencoded data.
+
+#CODE	x-compress64	"|compress| mimencode -b |"	\
+	"| mimencode -b -u | uncompress |"	"Any Large File"
+
+# Default encodings from Z-Mail 2.1 and earlier, and appropriate
+# corresponding MIME encoding definitions.
+
+# MIME type
+# CODE	x-uucompress	"uucompress '%s' |"	"|uudepipe|uncompress|"
+# Old Z-mail type
+CODE	uucompress	"uucompress '%s' |"	"|uudepipe|uncompress|"
+
+#CODE	x-compress	"|compress|btoa|"	"|atob|uncompress|"	\
+	"Any Large File"
+#CODE	x-btoa	"|btoa|"		"|atob|"
+CODE	compress	"|compress|btoa|"	"|atob|uncompress|"	\
+	"Any Large File"
+CODE	btoa	"|btoa|"		"|atob|"
+
+# Standard uuencode format.  Because uudecode does not support piped
+# output, we replace uuencode and uudecode with shell scripts.  These
+# scripts or the entries here that use them may require tweaking if
+# your operating system will not execute them automatically via
+# /bin/sh.
+#CODE	x-uuencode	"uuenpipe '%s' |"	"|uudepipe|"	"UUCP encoding"
+CODE	uuencode	"uuenpipe '%s' |"	"|uudepipe|"	"UUCP encoding"
+
+# Encrypted messages.  The zcrypt function requires either the UNIX "crypt"
+# command or an alternate encrypter specified by the CRYPT environment var.
+#CODE	x-encrypt	"|zcrypt -e|"	"|zcrypt -u|"	"Encryption"
+CODE	encrypt	"|zcrypt -e|"	"|zcrypt -u|"	"Encryption"

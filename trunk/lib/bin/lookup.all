@@ -1,0 +1,100 @@
+:
+#
+# E-Mail address directory lookup script to read the sendmail aliases file,
+# password file, and user's .addresses file.  (Format of .addresses file
+# is one address per line -- no comments or extra information.)
+#
+if [ $# -ne 2 ]
+then
+    echo "`basename $0`: Expected 2 args, got $#"
+    exit 3					# Incorrect arguments
+fi
+matches=${TMPDIR-/tmp}/almatch$$
+domainname=`(domainname) 2>/dev/null`
+if test -n "$domainname" -a "$domainname" != "(none)"
+then
+    domainname="-d $domainname"
+else
+    hostname=`( hostname || uname -n || uuname -l ) 2>/dev/null`
+    case "$hostname" in
+    *.*) domainname="-d $hostname";;
+    *) domainname="";;
+    esac
+fi
+touch $matches
+
+# make SP = space + tab
+SP=`echo x | tr x '\011'``echo x | tr x '\040'`
+
+# extract address part if this doesn't look like it's already a regex
+# this won't work absolutely 100% but it should get it right on
+# non-perverse cases
+addressonly=$2
+if echo "$addressonly" | grep -v '[]\*]' >/dev/null
+then
+    # the following sed expressions do this, in order:
+    # - assume that anything in double quotes is a comment and drop it
+    # - pull out the address from any remaining comments
+    # - squeeze adjacent whitespace, strip leading/trailing whitespace
+    # - drop anything that looks like a relay/host name; in particular
+    #   user@host, host!user@relay, user%host@relay, host1!host2!...!user
+    addressonly=`echo " $addressonly " \
+        | sed -e 's/\([^!]\)"[^"]*"\([^@]\)/\1\2/g' \
+              -e 's/([^)]*)//g' -e 's/^.*<\([^>]*\)>.*$/\1/' \
+              -e "s/[$SP][$SP]*/ /g" -e "s/^[$SP]//" -e "s/[$SP]$//" \
+              -e 's/@.*$//' -e 's/%.*$//' -e 's/^.*!\([^!]*\)$/\1/'`
+
+    # if we somehow nuked the entire string, fall back on the original
+    # string, stripping one level of quoting if it exists
+    test -z "$addressonly" && addressonly=`echo "$2" \
+        | sed -e 's/^"\(.*\)"$/\1/'`
+fi
+
+# Read user's .addresses file
+if [ -z "$ADDRESSES" ]
+then
+    ADDRESSES=$HOME/.addresses
+fi
+# Nice to do this, but it doesn't work.
+#egrep "$2" $ADDRESSES | awk '{ print $1 }' >> $matches 2>/dev/null
+(egrep -i -e "$addressonly" $ADDRESSES || \
+    fgrep -i -e "$addressonly" $ADDRESSES) >> $matches 2>/dev/null
+# see how many matches we made
+getaliases="(ypcat $domainname aliases || cat /usr/lib/aliases || cat /etc/aliases) 2>/dev/null"
+eval "$getaliases" | sed 's/#.*//' | egrep -i \^"[^:]*$addressonly[^:]*": | \
+    sed "s/\([^:$SP]*\)[$SP]*:[$SP]*\(.*\)/\1 \2/" | uniq -1 | \
+    sed "s/\([^$SP]*\) \(.*\)/\1, forwarding address to \2/" >> $matches
+    #sed "s/[$SP]*:[$SP]*"'\(.*\)/ (\1)/' >> $matches
+#
+# determine how to read the password file, then read it.
+getpasswd="(ypcat $domainname passwd || cat /etc/passwd) 2>/dev/null"
+eval "$getpasswd" | cut -d: -f1,5 | egrep -i -e "$addressonly" | \
+    sed -e 's/^\([^:]*\):\([^,]*\)\(.*\)$/\1 (\2), \2\3/' \
+	-e 's/\\,/,/g' \
+	-e 's/,,*$//g' \
+	-e 's/,,*[ 	]*/, /g' >> $matches
+#
+sort -u -o $matches $matches 2>/dev/null
+count=`wc -l < $matches`
+#
+EXIT=1						# Execution failure
+if [ $count -eq 0 ]
+then
+    echo "$2"
+    EXIT=4					# No matches found
+elif [ $count -gt $1 ] && [ $1 -gt 0 ]
+then
+    echo "Matched $count names (max $1)"
+    echo "Use a more specific pattern please."
+    EXIT=2					# Too many matches
+else
+    cat $matches
+    if [ $count -eq 1 ]
+    then
+	EXIT=5					# Exactly one match
+    else
+	EXIT=0					# At least one match
+    fi
+fi
+rm -f $matches
+exit $EXIT

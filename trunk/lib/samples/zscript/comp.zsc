@@ -1,0 +1,67 @@
+#
+# File Completion for Z-Mail Lite
+#
+# Binds the TAB key in command and file input fields to complete file
+# names, relative to the current working directory $cwd (unless the
+# file name supplied so far begins with a slash (/) character).
+#
+# The command "file-complete fieldname" will enable file completion in
+# other text fields as identified by "fieldname", but use with caution
+# as TAB is normally used to move among fields in each window.
+#
+# Known bugs:
+#  Files with spaces in their names cannot be completed except *before*
+#  the first space has been typed.
+#  Files with single quotes (') in their names will break prompting on
+#  ambiguous completions.
+#
+if is_lite
+
+function get-word() {
+    set __item = "$1"
+    textedit set-item "$1"
+    textedit get-selection word
+    if X"$word" == X
+	# Could set "word" to a list of command names here,
+	# to get the effect of zscript command completion.
+	# Just be sure to end with space-double-backslash.
+	#
+    	#set word = 'open close source page ls \\'
+	#
+    	set word = '\\'	# Force empty "foreach" in get-file
+    endif
+}
+function hold-file () {
+    # echo -n "$1 "
+    arith __nth += 1
+    set __file$__nth = "$1" __ask = "$__ask "'"$'"__file$__nth"'"'
+}
+cmd init-files "set __ask __nth = 0"
+cmd get-file "init-files; foreach f ("'$'"word*) 'hold-file "'"$f"'"'"
+function use-file() {
+    if $__nth > 0
+	# echo
+	if $__nth != 1
+	    eval "ask -i __file1 '$word:t not unique -- pick one:' $__ask"
+	endif
+	if $status == 0
+	    textedit cut-selection
+	    if "$__item" =~ *command-field
+		if -e "$__file1"/..
+		    set __file1 += /
+		else
+		    set __file1 += ' '
+		endif
+	    endif
+	    textedit insert "$__file1"
+	endif
+    endif
+}
+
+cmd file-complete 'bindkey -d "Complete file name" \!* \<tab> do-sequence "%* text-start-selecting%* text-backward-word%* text-stop-selecting%main zscript get-word "\!*" ; get-file ; use-file%* text-forward-word%* text-deselect"'
+
+file-complete command-field
+file-complete ask-command-field
+file-complete ask-filename-field
+
+endif	# is_lite

@@ -1,0 +1,74 @@
+#
+# Make the Motif GUI behave very much like Z-Mail Lite
+#
+
+if ! is_gui
+    return
+endif
+
+unmenu -b LiteMessageFkeys *
+unmenu -b LiteComposeFkeys *
+unmenu -b LiteMainFkeys *
+
+menu -B LiteMessageFkeys
+menu -label '2/Next' -accelerator 'F2' next
+menu -label '3/Prev' -accelerator 'F3' previous
+menu -label '4/Delete' -accelerator 'F4' delete
+menu -label '5/Save' -accelerator 'F5' 'dialog save'
+menu -label '6/Attach' -accelerator 'F6' 'dialog attachments'
+menu -label '7/Reply' -accelerator 'F7' 'reply'
+menu -n -label '8/Main' -accelerator 'F8' 'dialog -close ; dialog zmail'
+
+menu -B LiteComposeFkeys
+menu -label '2/Inclde' -accelerator 'F2' 'compcmd include-message'
+menu -n -label '3/Edit' -accelerator 'F3' 'compcmd edit'
+menu -n -label '4/Cancel' -accelerator 'F4' 'compcmd cancel'
+menu -n -label '5/Save' -accelerator 'F5' 'zmenu_save_to_file'
+menu -n -label '6/Attach' -accelerator 'F6' 'dialog attachfile'
+menu -n -label '7/Send' -accelerator 'F7' 'compcmd send'
+menu -n -label '8/Main' -accelerator 'F8' 'dialog zmail'
+
+menu -B LiteMainFkeys
+menu -label '2/Read' -accelerator 'F2' 'zbutton_read'
+menu -n -label '3/Compos' -accelerator 'F3' 'mail'
+menu -label '4/Delete' -accelerator 'F4' 'delete'
+menu -label '5/Save' -accelerator 'F5' 'dialog save'
+menu -n -label '6/Update' -accelerator 'F6' update
+menu -label '7/Reply' -accelerator 'F7' 'replysender'
+menu -n -label '8/Quit' -accelerator 'F8' 'quit'
+menu -label '9/Resend' -accelerator 'F9' 'resend'
+menu -label '11/Print' -accelerator 'F11' 'dialog printer'
+menu -n -label '12/Sort' -accelerator 'F12' 'dialog sort'
+
+menu -W message
+menu -name Lite -label " " -menu LiteMessageFkeys
+menu -W compose
+menu -name Lite -label " " -menu LiteComposeFkeys
+menu -W main						# Must be last!
+menu -name Lite -label " " -menu LiteMainFkeys
+
+function Lite_appearance() {
+    if $?__Lite_layout
+        set __saved_main_panes = "$main_panes"
+        set __saved_msg_panes = "$message_panes"
+        set __saved_comp_panes = "$compose_panes"
+	set __saved_main_sb_fmt = "$main_status_bar_fmt"
+	set __saved_msg_sb_fmt = "$msg_status_bar_fmt"
+	set __saved_comp_sb_fmt = "$comp_status_bar_fmt"
+	set main_panes = status,messages,output,status_bar
+        set message_panes += status_bar
+        set compose_panes += status_bar
+	set main_status_bar_fmt = 'w1,c,f1/Help%.;w1,c,f2/Read%.;w1,c,f3/Compos%.;w1,c,f4/Delete%.;w1,c,f%.;w1,c,f5/Save%.;w1,c,f6/Update%.;w1,c,f7/Reply%.;w1,c,f8/Quit'
+	set msg_status_bar_fmt = 'w1,c,f1/Help%.;w1,c,f2/Next%.;w1,c,f3/Prev%.;w1,c,f4/Delete%.;w1,c,f%.;w1,c,f5/Save%.;w1,c,f6/Attach%.;w1,c,f7/Reply%.;w1,c,f8/Main'
+	set comp_status_bar_fmt = 'w1,c,f1/Help%.;w1,c,f2/Inclde%.;w1,c,f3/Edit%.;w1,c,f4/Cancel%.;w1,c,f%.;w1,c,f5/Save%.;w1,c,f6/Attach%.;w1,c,f7/Send%.;w1,c,f8/Main'
+    else
+        set main_panes = "$__saved_main_panes"
+        set message_panes = "$__saved_msg_panes"
+        set compose_panes = "$__saved_comp_panes"
+	set main_status_bar_fmt = "$__saved_main_sb_fmt"
+	set msg_status_bar_fmt = "$__saved_msg_sb_fmt"
+	set comp_status_bar_fmt = "$__saved_comp_sb_fmt"
+    endif
+}
+menu -no-msgs -menulist MainLayoutMenu -separator -name __sep
+menu -no-msgs -menulist MainLayoutMenu -value '$?__Lite_layout' -name Lite Lite_appearance

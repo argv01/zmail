@@ -1,0 +1,15 @@
+# Sound attachments for the sparc.
+# PATH	/usr/demo/SOUND
+
+# MIME audio type
+TYPE	audio/basic	"showaudio '%s' &"	"record -t 15 '%s' &"	"sound"
+
+# Older Z-Mail audio type, for viewing messages from Z-Mail 2.1 and earlier
+TYPE	sound	"play '%s' &"	None	"sound"
+BITMAP	sound	bitmaps/sound.xbm
+
+# MailTool audio type.  This uses a variant of the compress,uuencode encoding.
+TYPE	audio-file	"audiotool '%s' &"	"audiotool '%s'"	\
+	"Mail Tool audio"
+BITMAP	audio-file	bitmaps/sound.xbm
+CODE	"adpcm-compress, uuencode"	"|uuenpipe|"	"|uudepipe|"

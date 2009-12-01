@@ -1,0 +1,9 @@
+# Video attachments for the dec.
+
+# MIME type
+TYPE	video/mpeg	None	None	"Video"
+
+# Older Z-Mail type, for viewing messages from Z-Mail 2.1 and earlier
+TYPE	video-clip	"dxvideoplayer -clip '%s'"	None	"Video"
+BITMAP	video-clip	bitmaps/movie.xbm
+

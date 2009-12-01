@@ -1,0 +1,1895 @@
+@@# system.menus
+# Copyright 1995 NCD Software.  All rights reserved.
+@@# this file is preprocessed by ifdef.sh.
+
+@@ifdef NOT_NOW
+function zmenu_send_and_close () {
+    compcmd send
+    if $status == 0
+        dialog -close
+    endif
+}
+@@endif NOT_NOW
+#
+# =============================================================================
+#  The following functions implement a return read receipt. A file containing
+#  the text of the return receipt message receipt.zmailrc must exist in your
+#  $ZMLIB directory. Feel free to change receipt.zmailrc and its location
+#  but do not forget to change its location in the function below if you do.
+# =============================================================================
+function zm_confirm_read() {
+set acks = "$[%?status?]"
+set is_unread_mail = 0
+# See if the message is unread.
+if "X$acks" =~ *!*
+  set is_unread_mail = 1
+endif
+if "X$acks" =~ *N*
+  set is_unread_mail = 1
+endif
+if "X$acks" =~ *U*
+  set is_unread_mail = 1
+endif
+# If it is unread see if the message contains a return read receipt request.
+if $is_unread_mail > 0
+  set read_receipt_requested = 0
+# Other mailers may have a different way of asking for a receipt so put
+# other checks here if necessary.
+  set acks = "$[%?X-Chameleon-Return-To?]"
+  if "X$acks:1" !~ "X"
+    set read_receipt_requested = 1
+  endif
+# If the message contains a return read receipt request then send one.
+  if $read_receipt_requested > 0
+    reply -subject "Confirm Read: $[%s]" -send -file $ZMLIB/receipt.zmailrc
+    flags -r
+  endif
+endif
+}
+
+interpose -operation display zm_confirm_read
+
+# =============================================================================
+
+# =============================================================================
+
+@@ifndef VUI
+filter -n pinup_tagit 'pinup' -i -h X-Chameleon-TagIt Tag
+filter -n pinup_phone_tag 'pinup' -i -h X-Chameleon-PhoneTag Tag
+@@endif VUI
+ignore X-Chameleon*
+
+# =============================================================================
+
+function zm_compose_tag_it() {
+    mail
+    set compose_state += tag_it
+}
+
+function zm_compose_phone_tag() {
+    mail
+    set compose_state += phone_tag
+}
+
+function zmenu_last_arg() {
+    eval set __l_arg = '$'$#
+} 
+
+function zmenu_match_sender_charset () {
+    compcmd get-header References
+    if $?header_value
+        zmenu_last_arg $header_value
+        pick +1 -h Message-ID $__l_arg
+        if "x$output" == "x"
+            echo -d "Couldn't find message $__l_arg"
+  	    return
+        endif
+        set __cs = ""
+        detach -info param-charset __cs 
+        if "x$__cs" == "x"
+            compcmd charset "$incoming_charset"
+        else
+            compcmd charset "$__cs"
+        endif
+    else
+	echo -d "This composition is not in response to an existing message"
+    endif
+}
+
+function zmenu_override_in_charset () {
+    set __saved_incoming_charset = "$incoming_charset"
+    set incoming_charset = "$1"
+    set __override_charset_label = "$1"
+    if '?$display_headers:(all)'
+        Print
+    else
+	print
+    endif
+    set incoming_charset = "$__saved_incoming_charset"
+    unset __saved_incoming_charset __override_charset_label
+}
+
+function zmenu_insert_file () {
+    ask -f __file "Double click on a directory in the list below to open it.  Select$(\n)the file you want to include in your message.  Then click on [Ok]."
+    if $status == 0
+	if $1 == replace
+	    textedit set-item compose-body
+	    textedit delete-all
+	endif
+	compcmd insert-file "$__file"
+        unset __file
+    endif
+}
+
+set __save_file=''
+function zmenu_save_to_file () {
+    if "x$__save_file" != "x"
+        ask -f __save_file -d "$__save_file" "Double click on a directory in the list below to open the one in$(\n)which you want to write the file. Enter the desired name in the$(\n)"'"'"File"'"'" field, and click on [Ok]."
+    else
+	ask -f __save_file "Double click on a directory in the list below to open the one in$(\n)which you want to write the file. Enter the desired name in the$(\n)"'"'"File"'"'" field, and click on [Ok]."
+    endif
+    if $status == 0
+        compcmd save-to-file "$__save_file"
+	if $status == 0
+	    echo 'Saved to "'"$__save_file"'".'
+	endif
+    endif
+}
+
+set __draft_file=''
+function zmenu_save_draft () {
+    if "x$__draft_file" != "x"
+        ask -f __draft_file -d "$__draft_file" "Draft file to write:"
+    else
+	ask -f __draft_file "Draft file to write:"
+    endif
+    if $status == 0
+        compcmd save-draft "$__draft_file"
+	if $status == 0
+	    echo "Saved draft to "$__draft_file"."
+	endif
+    endif
+}
+
+function zmenu_next_ref_subj () {
+    msg_list . | set __msgno
+    set __subj="$[%S]"
+    if "x$__subj" == "x"
+        error "Message $__msgno has no subject."
+	unset __msgno __subj
+	return
+    endif
+    search +2 -1 -r .-$ -s -n -e "$__subj"$
+    if "x$output" == "x"
+        error 'No next message about "'"$__subj"'".'
+    else
+	if "$output" == "$__msgno"
+	    error 'No next message about "'"$__subj"'".'
+	    unset __msgno __subj
+	else
+	    msg_list - $output | display
+	endif
+    endif
+    # unset __msgno __subj
+}
+
+function zmenu_prev_ref_subj () {
+    msg_list . | set __msgno
+    set __subj="$[%S]"
+    if "x$__subj" == "x"
+        error "Message $__msgno has no subject."
+	unset __msgno __subj
+	return
+    endif
+    search -2 +1 -r ^-. -s -n -e "$__subj"$
+    if "x$output" == "x"
+        error 'No previous message about "'"$__subj"'".'
+    else
+	if $output == $__msgno
+	    error 'No previous message about "'"$__subj"'".'
+	else
+	    msg_list - $output | display
+	endif
+    endif
+    # unset __msgno __subj
+}
+
+function zmenu_all_ref_subj () {
+    msg_list . | set __msgno
+    if "x$[%S]" == "x"
+        error "Message $__msgno has no subject."
+	unset __msgno
+	return
+    endif
+    unset __msgno
+    search -s -n -e "$[%S]"$
+}
+
+function zmenu_next_ref_auth () {
+    msg_list . | set __msgno
+    set __auth="$[%a]"
+    search +2 -1 -r .-$ -n -f "$__auth"
+    if $output == $__msgno
+        error 'No next message from "'"$__auth"'".'
+    else
+	msg_list - $output | display
+    endif
+    # unset __msgno __auth
+}
+
+function zmenu_prev_ref_auth () {
+    msg_list . | set __msgno
+    set __auth="$[%a]"
+    search -2 +1 -r ^-. -n -f "$__auth"
+    if $output == $__msgno
+        error 'No previous message from "'"$__auth"'".'
+    else
+	msg_list - $output | display
+    endif
+    # unset __msgno __auth
+}
+
+function zmenu_all_ref_auth () {
+    search -n -f "$[%a]"
+}
+
+function zmenu_next_ref_msgid () {
+    msg_list . | set __msgno
+    set __mid="$[%i]"
+    if "x$__mid" == "x"
+        error "Message $__msgno has no Message-Id."
+	unset __msgno __mid
+	return
+    endif
+    search +1 -r .-$ -h references,in-reply-to -n -e "$__mid"
+    if "x$output" == x
+        error "No next message that references this message."
+    else
+	msg_list - $output | display
+    endif
+    # unset __msgno __mid
+}
+
+function zmenu_prev_ref_msgid () {
+    if "x$[%?references?]" == x
+        error "No previous message that references this message."
+	return
+    endif
+    set __msgidlist=
+    foreach i ($[%?references?]) 'set __msgidlist += $i"\|"'
+    set __msgidlist += NONEXISTENT
+    search -1 -r ^-. -h message-id "$__msgidlist"
+    if "x$output" == x
+        error "No previous message that references this message."
+    else
+	msg_list - $output | display
+    endif
+}
+
+function zmenu_all_ref_msgid () {
+    msg_list . | set __msgno
+    set __mid="$[%i]"
+    if "x$__mid" == "x"
+        error "Message $__msgno has no Message-Id."
+	unset __msgno __mid
+	return
+    endif
+    unset __msgno __mid
+    search -n -h references,in-reply-to -e "$[%i]"
+    msg_list . $output
+}
+
+function zmenu_all_ref_mark () {
+    msg_list `:m`
+}
+
+function zmenu_next_ref_mark () {
+    msg_list .-$ {.} | :m
+    if "x$output" == x
+	error "No next message that is marked."
+    else
+	search +1 -r $output | display
+    endif
+}
+
+function zmenu_prev_ref_mark () {
+    msg_list ^-. {.} | :m
+    if "x$output" == x
+	error "No previous message that is marked."
+    else
+	search -1 -r $output | display
+    endif
+}
+
+function zmenu_next_ref_priority () {
+    if "x$[%?priority?]" == "x"
+	msg_list . | set __msgno
+	error "Message $__msgno has no priority."
+	unset __msgno
+	return
+    endif
+    set __pri="$[%?priority?]"
+    search -r .-$ {.} -p $__pri +1
+    if "x$output" == x
+	error "No next message with priority $__pri."
+    else
+	display $output
+    endif
+}
+
+function zmenu_prev_ref_priority () {
+    if "x$[%?priority?]" == "x"
+	msg_list . | set __msgno
+	error "Message $__msgno has no priority."
+	unset __msgno
+	return
+    endif
+    set __pri="$[%?priority?]"
+    search -r ^-. {.} -p $__pri -1
+    if "x$output" == x
+	error "No previous message with priority $__pri."
+    else
+	display $output
+    endif
+}
+
+function zmenu_all_ref_priority () {
+    if "x$[%?priority?]" == "x"
+	msg_list . | set __msgno
+	error "Message $__msgno has no priority."
+	unset __msgno
+	return
+    endif
+    search -p $[%?priority?]
+}
+
+function zmenu_msg_pri_other () {
+    ask -input __pri "Message priority to use (A-E or predefined word):"
+    if $status == 0
+	mark -"$__pri"
+    endif
+}
+
+function zmenu_comp_pri_other () {
+    ask -input __pri "Message priority to use (A-E or predefined word):"
+    if $status == 0
+	set compose_state += pri_"$__pri"
+    endif
+}
+
+function zmenu_charset () {
+    ask -input __cs "Character Set Name:"
+    if $status == 0 
+	if "x$__cs" == "x"
+	    error -p "No character set entered."
+	else
+	    compcmd charset "$__cs"
+        endif
+    endif
+}
+
+function zmenu_comp_body_textedit () {
+    textedit set-item compose-body
+    textedit $*
+}
+
+function zmenu_comp_body_textcopy () {
+    textedit set-item compose-body
+    textedit get-selection-position __start __end
+    if $__start == $__end
+	if ! $?compose_state:(edit_headers)
+	    error -p "No text is selected."
+	else
+	    zmenu_comp_header_textcopy $*
+	endif
+    else
+	textedit $*
+    endif
+}
+
+function zmenu_comp_body_paste () {
+    textedit set-item compose-body
+@@if LITE
+    textedit paste
+@@else !LITE
+    textedit paste-replace
+@@endif !LITE
+}
+
+function zmenu_comp_header_textcopy () {
+    textedit set-item compose-header
+    textedit get-selection-position __start __end
+    if $__start == $__end
+	error -p "No text is selected."
+    else
+	textedit $*
+    endif
+}
+
+function zmenu_msg_body_textedit () {
+    textedit set-item message-body
+    textedit $*
+}
+
+function zmenu_msg_body_textcopy () {
+    textedit set-item message-body
+    textedit get-selection-position __start __end
+    if $__start == $__end
+	zmenu_msg_header_textcopy $*
+    else
+	textedit $*
+    endif
+}
+
+function zmenu_msg_header_textcopy () {
+    textedit set-item message-header
+    textedit get-selection-position __start __end
+    if $__start == $__end
+	error -p "No text is selected."
+    else
+	textedit $*
+    endif
+}
+
+set __pipe_cmd=''
+function zmenu_comp_pipe () {
+    textedit set-item compose-body
+    textedit get-selection-position __start __end
+    if "x$__pipe_cmd" != "x"
+    	ask -i __pipe_cmd -d "$__pipe_cmd" "Pipe to shell command:"
+    else
+    	ask -i __pipe_cmd "Pipe to shell command:"
+    endif
+    if $status == 0
+        textedit set-item compose-body
+	#if $__start == $__end
+	#    textedit select-all
+	#else
+	textedit set-selection-position $__start $__end
+	#endif
+	textedit pipe "$__pipe_cmd"
+    endif
+}
+
+function zmenu_comp_indent () {
+    set __pfx=''
+    textedit set-item compose-body
+    textedit get-selection-position __indentstart __indentend
+    if $?indent_str != 0
+	if "$indent_str" =~ "*%*"
+	    eval -h set __pfx="'$indent_str'"
+	else
+	    set __pfx="$indent_str"
+	endif
+    endif
+    if "x$__pfx" == "x"
+        ask -i __pfx "Indent with:"
+    else
+        ask -i __pfx -d "$__pfx" "Indent with:"
+    endif
+    if $status == 0
+	textedit set-selection-position $__indentstart $__indentend
+	textedit indent "$__pfx"
+        unset __pfx
+    endif
+}
+
+function zmenu_comp_cancel () {
+  if $?compose_state:(active) == 0
+    dialog -close
+  else
+    compcmd cancel
+  endif
+}
+
+function zmenu_comp_done () {
+    if $?compose_state:(active) == 0
+	dialog -close
+	return
+    endif
+    ask -m -d "Send Letter" -i __action "Please select an action:" "Continue Editing" "Discard Letter" "Send Letter"
+    if $status == 0
+	if "x$__action" == "x""Send Letter"
+	    compcmd send
+	endif
+	if "x$__action" == "x""Discard Letter"
+	    compcmd quit
+	endif
+	# Used "Done".  If not autodismiss, close window anyway.
+	if $?autodismiss
+	    # Check for either set to nothing, or set to "compose"
+	    # Have to do this so we don't close the wrong dialog!
+	    if $?autodismiss:(compose)
+		return 0
+	    endif
+	    if X"$autodismiss" == X
+		return 0
+	    endif
+	endif
+	if $?compose_state:(active) == 0
+	    dialog -close
+	endif
+    endif
+}
+
+function zmenu_set_tmpdir() {
+    unset __tmpdir
+    if $?tmpdir
+	if "x$tmpdir" != x
+	    set __tmpdir = "$tmpdir"
+	    return
+	endif
+    endif
+    set __tmpdir = /tmp
+}
+
+function zmenu_comp_print () {
+    zmenu_set_tmpdir
+    ## To print both message and headers:
+    # if $compose_state:(edit_headers)
+    #    textedit set-item compose-header
+    #    textedit save-to-file $__tmpdir/zmsg$$	# Write headers
+    #    compcmd save-to-file $__tmpdir/zmsg$$	# Append body
+    # else
+    compcmd write-to-file $__tmpdir/zmsg$$		# Write body
+    # endif
+    ##
+    if $status != 0
+	return
+    endif
+    lpr $__tmpdir/zmsg$$
+    remove -f $__tmpdir/zmsg$$
+}
+
+function zmenu_toolbar_include() {
+    if !$compose_state:(active)
+	error "No active composition in this window."
+	return
+    endif
+    ask -m -i __userChoice "Include:" "Message" "File"
+    if $status != 0
+        return -1
+    endif 
+    if "$__userChoice" == "File"
+        ask -f __userChoice2 "Include what file?"
+        if $status != 0
+            return -1
+        endif
+        compcmd insert-file "$__userChoice2"
+    else
+        compcmd include-message
+    endif
+}
+
+function zmenu_toolbar_send() {
+    if $?compose_state:(active)
+	compcmd send
+    else
+	error "No active composition in this window."
+    endif
+}
+
+function zbutton_read () {
+    msg_list | set __msg_list
+    if "x$__msg_list" !~ "x*[-,]*"
+	type
+    else
+	error "To list a group of messages to be viewed in$(\n)sequence, select the menu item "'"View Selected Only"'"$(\n)in the View menu.  Select the menu item "'"View All"'" to$(\n)return the message list to normal."
+    endif
+}
+
+@@ifndef VUI
+function zbutton_reuse () {
+    zmenu_set_tmpdir
+    textedit set-item compose-body
+    textedit save-to-file $__tmpdir/zmsg$$
+    if $status != 0
+        return
+    endif
+    textedit set-item subject-header-field
+    textedit get-text __subj
+    # if the above operation did not succeed, Edit Headers must be set
+    if $status == 0
+        if "x$__subj" == "x"
+            mail -edit_hdrs! -file $__tmpdir/zmsg$$
+        else
+            mail -edit_hdrs! -subject "$__subj" -file $__tmpdir/zmsg$$
+        endif
+    else
+        mail -edit_hdrs -draft $__tmpdir/zmsg$$
+    endif   
+    remove -f $__tmpdir/zmsg$$
+}
+@@endif VUI
+
+function zmenu_edit_signature () {
+@@ifndef MSDOS
+    set __sigstrname = ~/.sigstring
+    set __sigfilename = ~/.signature
+@@else MSDOS
+    set __sigstrname = ~/sigstrng.txt
+    set __sigfilename = ~/signatur.txt
+@@endif MSDOS
+    if $?autosign
+@@ifndef MSDOS
+	if "X$autosign" =~ 'X\\*'
+@@else MSDOS
+	if "X$autosign" =~ 'X=\*'
+@@endif MSDOS
+	    sh echo "$autosign" > $__sigstrname
+	    set autosign = $__sigstrname
+	else
+@@ifndef MSDOS
+	    if "X$autosign" =~ 'X\[*\]'
+@@else MSDOS
+	    if "X$autosign" =~ 'X=[*=]'
+@@endif MSDOS
+		sh echo "$autosign" > $__sigstrname
+		set autosign = $__sigstrname
+	    endif
+	endif
+    endif
+    if ! $?autosign
+	set autosign = $__sigfilename
+    endif
+    if X"$autosign" == X
+	set __sigfile = $__sigfilename
+    else
+	set __sigfile = "$autosign"
+    endif
+    if ! -e $__sigfile
+	if $?realname
+	    sh echo "$realname" > "$__sigfile"
+	else
+	    sh echo > "$__sigfile"
+	endif
+    endif
+    page -e "$__sigfile"
+    unset __sigfile __sigstrname __sigfilename
+}
+
+function zmenu_view_only_selected () {
+    msg_list | set __mlist
+    flags +H *{$__mlist}
+    unset __mlist
+    msg_list .
+}
+
+function zmenu_unhide_all () {
+    if $?selected
+	set __sel = "$selected"
+    else
+	set __sel = .
+    endif
+    flags -H *
+    unset hidden
+    msg_list $__sel
+}
+
+function zmenu_paste_indented () {
+    set __pfx=''
+    if $?indent_str != 0
+	if "$indent_str" =~ "*%*"
+	    eval -h set __pfx="'$indent_str'"
+	else
+	    set __pfx="$indent_str"
+	endif
+    endif
+    if "x$__pfx" == "x"
+        ask -i __pfx "Indent with:"
+    else
+        ask -i __pfx -d "$__pfx" "Indent with:"
+    endif
+    if $status == 0
+        textedit set-item compose-body
+	textedit get-cursor-position __indentstart
+	textedit paste
+        textedit get-cursor-position __indentend
+	if x$__indentstart == x$__indentend
+	    error -p "The clipboard is empty.\nCut or copy text before pasting."
+	else
+	    textedit set-selection-position $__indentstart $__indentend
+	    textedit indent "$__pfx"
+	endif
+    endif
+    unset __pfx
+}
+
+function zmenu_paste_fill () {
+    textedit set-item compose-body
+    textedit get-cursor-position __indentstart
+    textedit paste
+    textedit get-cursor-position __indentend
+    if x$__indentstart == x$__indentend
+	error -p "The clipboard is empty.\nCut or copy text before pasting."
+    else
+	textedit set-selection-position $__indentstart $__indentend
+	textedit fill
+    endif
+}
+
+function zmenu_remove_folder () {
+    ask -f __file -d +/ "Select the mail folder you want to remove from the list below.$(\n)Then click on [Remove]."
+    if $status == 0
+	rmfolder "$__file"
+        unset __file
+    endif
+}
+
+function zmenu_merge_folder () {
+    ask -f __file -d +/ "Folder to merge:"
+    if $status == 0
+	merge "$__file"
+        unset __file
+    endif
+}
+
+function zmenu_sort_by () {
+    sort $*
+    if $?main_state:(folder_has_messages)
+	redraw .
+    endif
+}
+
+function zmenu_full_headers () {
+    if ! $?display_headers
+	set display_headers = unignored
+    endif
+    display
+}
+
+@@if MEDIAMAIL
+function capture_name() {
+    zmenu_set_tmpdir
+    set "$1" = "$__tmpdir/mail-capture-$$-$__media_counter"
+    arith __media_counter = "$__media_counter" + 1
+}
+
+function capture_create() {
+    sh "rm -f $1"
+    sh "capture -fixedMode -$2 -nofork -fixedFile $1"
+}
+
+function capture_attach() {
+    if -e "$1"
+	compcmd attach-file "$1" "$2"
+    endif
+}
+
+function capture_tiff() {
+    if -e "$1"
+	capture_name   __tiff_file
+	sh "imgcopy -ftiff $1 $__tiff_file"
+	sh "rm -f $1 &"
+	capture_attach "$__tiff_file" image/tiff
+    endif
+}
+
+function capture_video() {
+    capture_name    __capture_file
+    capture_create "$__capture_file" video
+    capture_attach "$__capture_file" video/x-sgi-movie
+}
+
+
+function capture_still() {
+    capture_name     __capture_file
+    capture_create "$__capture_file" still
+    capture_tiff   "$__capture_file"
+}
+
+function capture_audio() {
+    sh apanel -nodisplay -source mic &
+    capture_name     __capture_file
+    capture_create "$__capture_file" audio
+
+    if -e "$__capture_file"
+	capture_name __mulaw_file
+	sh "sfconvert $__capture_file $__mulaw_file -quiet -outputraw channels 1 rate 8000 mulaw > /dev/null"
+	sh "rm -f $__capture_file &"
+	capture_attach "$__mulaw_file" audio/basic
+    endif
+}
+
+function capture_screen() {
+    capture_name     __capture_file
+    capture_create "$__capture_file" snapshot
+    capture_tiff   "$__capture_file"
+}
+
+function exit_hook() {
+    zmenu_set_tmpdir
+    sh "rm -f $tmpdir/mail-capture-$$-* &"
+}
+
+set __media_counter=0
+@@endif MEDIAMAIL
+
+function zmenu_init_drafts() {
+    if $?__drafts_file
+	return 0
+    endif
+    if $?dead
+	if "$dead" !~ "|*"
+	    set __draft_file = "$dead"
+	else
+	    set __draft_file = ~/dead.letter
+	endif
+    else
+	set __draft_file = ~/dead.letter
+    endif
+}
+
+function zmenu_open_drafts() {
+    zmenu_init_drafts
+    set __draft_question = "Select draft folder:"
+    if "x$__draft_file" != x
+	ask -f __draft_file -d "$__draft_file" "$__draft_question"
+    else
+	ask -f __draft_file "$__draft_question"
+    endif
+    if $status == 0
+	open $__draft_file
+    endif
+}
+
+function zmenu_follow_url() {
+    textedit set-item $1
+    unset __url
+    textedit get-selection __url
+    if $?__url
+	follow_url "$__url"
+    else
+	error "No URL is selected."
+    endif
+    return $status
+}
+
+@@ifdef ZPOP_SYNC
+function zmenu_qs_check_out() {
+    folder %
+    if $status == 0
+	if $?verify:(update)
+	    set __upflag
+	    set verify -= update
+	else
+	    if $?__upflag
+		unset __upflag
+	    endif
+	endif
+	set __sort_count = $(%t)
+	zpop_sync -spools "Quick Check Out"
+	if $?__upflag
+	    set verify += update
+	    unset __upflag
+	endif
+	if $(%t) == 0
+	    return 0
+	endif
+	if $(%t) == $__sort_count
+	    return 0
+	endif
+	if $?sort
+	    sort $sort
+	else
+	    sort -d
+	endif
+    else
+	return -1
+    endif
+}
+
+function zmenu_qs_check_in() {
+    set __min_afterlife = 3
+    if ! $?afterlife
+	error -p "Cannot perform Quick Check In because\nthe afterlife variable is unset.\n Set afterlife = $__min_afterlife or higher.  Aborting..."
+	return $status
+    endif
+
+    if $afterlife < $__min_afterlife
+	error -p "Error:  Cannot perform Quick Check In because\nthe value of the afterlife variable is too low (afterlife = $afterlife).\nSet afterlife = $__min_afterlife or higher.  Aborting..."
+	return $status
+    endif
+
+    folder %
+    if $status == 0
+	if $?verify:(update)
+	    set __upflag
+	    set verify -= update
+	else
+	    if $?__upflag
+		unset __upflag
+	    endif
+	endif
+	zpop_sync -spools "Quick Check In"
+	if $?__upflag
+	    set verify += update
+	    unset __upflag
+	endif
+    else
+	return -1
+    endif
+}
+
+function zmenu_quick_check_mail () {
+    if "$openfolders" !~ "#0*"
+	if "$mailbox_name" == "%n"
+	    set __mailbox_name = "System mailbox ($user)"
+	else
+	    set __mailbox_name = "$mailbox_name"
+	endif
+	ask "$__mailbox_name is not open.  Open it now?"
+	if $status == 0
+	    open %
+	endif
+	if $status < 0
+	    return
+	endif
+    endif
+    zpop_sync -s "Quick Check Mail"
+}
+
+function zmenu_sync_folders () {
+    if ! $?openfolders
+	error "Cannot synchronize, no folders are open."
+    endif
+    if X$openfolders:2 == X
+	error "Cannot synchronize, only one folder is open."
+	return
+    endif
+    if X$openfolders:3 != X
+	error -p "More than two folders are open.\nRun zpop_sync manually."
+	return
+    endif
+    zpop_sync -folders $openfolders "Default Scenario"
+}
+@@endif ZPOP_SYNC
+
+@@ifndef ZMAIL_BASIC
+# default button list names
+button -W main -b MainActions
+button -W compose -b ComposeActions
+button -W message -b MessageActions
+menu -W main -b MainMenu
+menu -W compose -b ComposeMenu
+menu -W message -b MessageMenu
+menu -popup main-summaries -b MainSummariesPopupMenu
+menu -popup compose-body -b ComposeBodyPopupMenu
+
+# main window buttons
+button -W main
+@@endif ZMAIL_BASIC
+button -label 'Read' -name Read zbutton_read
+button -label 'Delete' -name Delete delete
+button -label 'Undelete' -name Undelete undelete
+button -label 'Save' -name Save dialog Save
+button -label 'Print' -name Print 'lpr'
+button -label 'Compose' -n -name Compose mail
+button -label 'Reply' -name Reply replysender
+button -label 'Forward' -name Forward 'mail -f'
+button -label 'Update' -n -name Update update
+
+@@ifdef ZMAIL_BASIC
+#--START OF PRO-ONLY MENU CODE
+@@endif ZMAIL_BASIC
+
+# compose window buttons
+button -W compose
+button -label 'Send' -name Send -sensitivity '$?compose_state:(active)' 'compcmd send'
+button -label 'Include' -name Include -sensitivity '$?compose_state:(active) && $?main_state:(folder_has_messages) && !$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' 'compcmd include-message'
+@@if !VUI && !MEDIAMAIL
+button -label 'Attachments' -name Attachments -sensitivity '$?compose_state:(active) && !$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' dialog Attachments
+@@endif !VUI && !MEDIAMAIL
+#button -name Aliases 'dialog CompAliases'
+#button New mail
+#button -name Reuse -sensitivity '!$?compose_state:(active) && !$?autoclear' zbutton_reuse
+button -label 'Cancel' -name Cancel zmenu_comp_cancel
+#button Help 'help -i Compose Window'
+
+@@if MEDIAMAIL
+# compose toolbar buttons
+button -B ComposeToolbar
+button -name File   -sensitivity '$?compose_state:(active)' dialog attachments
+button -name Audio  -sensitivity '$?compose_state:(active)' capture_audio
+button -name Still  -sensitivity '$?compose_state:(active)' capture_still
+button -name Video  -sensitivity '$?compose_state:(active)' capture_video
+#button -name Window -sensitivity '$?compose_state:(active)' capture_window
+button -name Screen -sensitivity '$?compose_state:(active)' capture_screen
+@@endif MEDIAMAIL
+
+# message window buttons
+button -W message
+button -label 'Next' -sensitivity '$?message_state:(is_next)' -name Next next
+button -label 'Prev' -sensitivity '$?message_state:(is_prev)' -name Prev previous
+button -label 'Delete' -name Delete delete
+button -label 'Save' -name Save dialog Save
+@@ifdef MEDIAMAIL
+button -name Print lpr
+@@endif MEDIAMAIL
+button -label 'Reply' -name Reply reply
+button -label 'ReplyAll' -name ReplyAll replyall
+@@ifdef MEDIAMAIL
+button -name Forward 'mail -f'
+@@endif MEDIAMAIL
+button -label 'Close' -name Close dialog -close
+
+@@ifndef VUI
+# toolbox items
+button -B ToolboxItems
+button -label 'Aliases' -name Aliases -icon alias_icon dialog Aliases
+@@ifdef DSERV
+button -label 'Browser' -name Browser -icon addrbook_icon dialog Browser
+@@endif DSERV
+button -label 'Compose' -name Compose -icon compose_icon mail
+button -label 'Envelope' -name Envelope -icon envelope_icon dialog Envelope
+button -label 'Headers' -name Headers -icon headers_icon dialog Headers
+button -label 'Templates' -name Templates -icon templates_icon dialog Templates
+button -label 'Dates' -name Dates -icon dates_icon dialog Dates
+button -label 'Search' -name Search -icon search_icon dialog Search
+@@ifdef SORT_DIALOG
+button -label 'Sort' -name Sort -icon sort_icon dialog Sort
+@@endif SORT_DIALOG
+button -label 'Variables' -name Variables -icon variables_icon dialog Variables
+button -label 'Printer' -name Printer -icon printer_icon dialog Printer
+button -label 'Help' -name Help -icon help_icon dialog Help
+@@ifdef MENUS_DIALOG
+button -label 'Buttons' -name Buttons -icon buttons_icon dialog Buttons
+button -label 'Menus' -name Menus -icon menus_icon dialog menus
+@@endif MENUS_DIALOG
+@@ifdef PAINTER
+button -label 'Colors' -name Colors -icon paint_icon dialog Colors
+@@endif PAINTER
+@@ifdef FILTERS_DIALOG
+button -label 'Filters' -name Filters -icon filters_icon dialog Filters
+@@endif FILTERS_DIALOG
+@@ifdef FONTS_DIALOG
+button -label 'Fonts' -name Fonts -icon fonts_icon dialog Fonts
+@@endif FONTS_DIALOG
+@@ifdef FUNC_DIALOG
+button -label 'Functions' -name Functions -icon functions_icon dialog Functions
+@@endif FUNC_DIALOG
+@@ifdef FOLDER_DIALOGS
+button -label 'Folders' -name Folders -icon folders_icon dialog Folders
+@@endif FOLDER_DIALOGS
+@@ifdef FOLDER_DIALOGS
+button -label 'Opened' -name Opened -icon open_fldrs_icon dialog Opened
+@@endif FOLDER_DIALOGS
+@@endif VUI
+
+button -W main
+
+menu -W main
+menu -name folder -menu MainFolderMenu -M F -label 'Folder'
+menu -name message -menu MainMessageMenu -M M -label 'Message'
+menu -name view -menu MainViewMenu -M V -label 'View'
+menu -name find -menu MainFindMenu -M i -label 'Find'
+menu -name sort -menu MainSortMenu -M S -label 'Sort'
+menu -name compose -menu MainComposeMenu -M C -label 'Compose'
+menu -name options -menu MainOptionsMenu -M O -label 'Options'
+menu -name layout -menu MainLayoutMenu -M L -label 'Layout'
+menu -name help -menu MainHelpMenu -M H -help-menu -label 'Help'
+
+@@ifdef ZPOP_SYNC
+menu -B SyncMenu
+menu -no-msgs -name qs_checkout -label 'Quick Check Out ...' -sensitivity '$?use_pop && $?pop_options:(use_sync)' -mnemonic O "zmenu_qs_check_out"
+menu -no-msgs -name qs_checkin  -label 'Quick Check In ...'  -sensitivity '$?use_pop && $?pop_options:(use_sync)' -mnemonic I "zmenu_qs_check_in"
+menu -no-msgs -name qs_checkmail  -label 'Check New Mail ...'  -sensitivity '$?use_pop && $?pop_options:(use_sync)' -mnemonic M "zmenu_quick_check_mail"
+menu -separator -name smsep
+menu -no-msgs -name qs_folders  -label 'Folders ...' -mnemonic F "zmenu_sync_folders"
+@@endif ZPOP_SYNC
+
+menu -B MainFolderMenu
+menu -n -name mfm_new_folder -mnemonic N -label 'New ...' 'dialog NewFolder'
+menu -n -name mfm_open_folder -mnemonic O -accelerator 'Ctrl+O' -label 'Open ...' dialog AddFolder
+menu -n -name mfm_rename_folder -mnemonic R -label 'Rename ...' dialog RenameFolder
+menu -n -name mfm_remove_folder -mnemonic m -label 'Remove ...' zmenu_remove_folder
+#menu -n -name mfm_merge_folder  -mnemonic M -label 'Merge ...' zmenu_merge_folder
+menu -n -name mfm_update -mnemonic U -accelerator 'Shift+Ctrl+U' -label 'Update' update
+@@ifdef ZPOP_SYNC
+menu -n -name mfm_sync_spools -menu SyncMenu -mnemonic z -sensitivity '$?use_pop && $?mailhost' -label 'Synchronize'
+@@endif ZPOP_SYNC
+menu -n -name mfm_close_fldr -mnemonic C -accelerator 'Shift+Ctrl+W' -label 'Close Folder' close
+@@ifdef FOLDER_DIALOGS
+menu -n -name mfm_active -mnemonic O -label 'Opened Folders ...' dialog Opened
+@@endif FOLDER_DIALOGS
+menu -separator -name fmsep
+@@ifdef NOT_NOW
+menu -n -name mfm_iconify -mnemonic I -accelerator 'Ctrl+I' -label 'Iconify' dialog -iconic
+@@endif NOT_NOW
+menu -n -name mfm_quit -mnemonic Q -accelerator 'Ctrl+Q' -label 'Quit' quit
+
+menu -B MainMessageMenu
+menu -name mm_read -mnemonic R -label 'Read ...' 'display'
+menu -name mm_save -mnemonic S -accelerator 'Ctrl+S' -label 'Save ...' dialog Save
+menu -name mm_delete -mnemonic D -accelerator 'Ctrl+D' -label 'Delete' delete
+menu -name mm_undelete -mnemonic U -label 'Undelete' undelete
+menu -name mm_print -mnemonic P -accelerator 'Ctrl+P' -label 'Print ...' 'dialog Printer'
+@@ifndef VUI
+menu -name mm_pinup -mnemonic n -label 'Pin-Up ...' 'pinup'
+@@endif VUI
+menu -separator -name __sep0
+menu -name mm_priority -mnemonic z -menu PriorityMenu -label 'Set Priority'
+menu -name mm_mark -mnemonic M -label 'Mark' mark
+menu -name mm_unmark -mnemonic k -label 'Unmark' unmark
+menu -name mm_preserve -mnemonic e -label 'Preserve' preserve
+menu -name mm_unpreserve -mnemonic v -label 'Unpreserve' unpreserve
+menu -separator -name _sep1
+menu -n -name mm_select_all   -mnemonic A -accelerator 'Ctrl+Slash' -label 'Select All' 'msg_list *'
+
+menu -B PriorityMenu
+menu -name emp_low -mnemonic L -label 'Low' 'mark -Low'
+menu -name emp_urgent -mnemonic M -label 'Medium' 'mark -Medium'
+menu -name emp_high -mnemonic H -label 'High' 'mark -High'
+menu -name emp_none -mnemonic N -label 'Normal' 'mark -'
+menu -name _sep1 -separator
+menu -name emp_other -mnemonic O -label 'Other ...' zmenu_msg_pri_other
+
+menu -B MainViewMenu
+menu -name vm_view_all -n -mnemonic V -label 'View All' zmenu_unhide_all
+menu -name vm_view_sel_only -n -mnemonic O -label 'View Selected Only' zmenu_view_only_selected
+menu -name vm_hide_sel -mnemonic H -label 'Hide Selected' hide
+menu -separator -name _sep0
+menu -name vm_hide_old -n -value '$?hidden:(old)' -label 'View New Only'
+menu -name vm_hide_del -n -value '$?hidden:(deleted)' -label 'Hide Deleted'
+
+menu -B MainFindMenu
+menu -name mfim_all_references -menu FindAllRefMenu -mnemonic A -label 'All References By'
+menu -name mfim_next_reference -menu FindNextRefMenu -mnemonic N -label 'Next Reference By'
+menu -name mfim_prev_reference -menu FindPrevRefMenu -mnemonic P -label 'Previous Reference By'
+menu -separator -name _sep1
+menu -n -name mfim_pattern -mnemonic S -label 'Pattern Search ...' dialog Search
+menu -n -name mfim_date -mnemonic D -label 'Date Search ...' dialog Dates
+
+menu -B FindNextRefMenu
+menu -name nrm_same_subject -mnemonic S -label 'Subject' zmenu_next_ref_subj
+menu -name nrm_same_author -mnemonic A -label 'Author' zmenu_next_ref_auth
+menu -name nrm_same_msgid -mnemonic I -label 'Message ID' zmenu_next_ref_msgid
+menu -name nrm_same_priority -mnemonic P -label 'Priority' zmenu_next_ref_priority
+menu -name nrm_same_mark -mnemonic M -label 'Mark' zmenu_next_ref_mark
+
+menu -B FindPrevRefMenu
+menu -name prm_same_subject -mnemonic S -label 'Subject' zmenu_prev_ref_subj
+menu -name prm_same_author -mnemonic A -label 'Author' zmenu_prev_ref_auth
+menu -name prm_same_msgid -mnemonic I -label 'Message ID' zmenu_prev_ref_msgid
+menu -name prm_same_priority -mnemonic P -label 'Priority' zmenu_prev_ref_priority
+menu -name prm_same_mark -mnemonic M -label 'Mark' zmenu_prev_ref_mark
+
+menu -B FindAllRefMenu
+menu -name arm_same_subject -mnemonic S -label 'Subject' zmenu_all_ref_subj
+menu -name arm_same_author -mnemonic A -label 'Author' zmenu_all_ref_auth
+menu -name arm_same_msgid -mnemonic I -label 'Message ID' zmenu_all_ref_msgid
+menu -name arm_same_priority -mnemonic P -label 'Priority' zmenu_all_ref_priority
+menu -name arm_same_mark -mnemonic M -label 'Mark' zmenu_all_ref_mark
+
+menu -B MainSortMenu
+@@ifdef ZMCOT
+menu -n -name sm_author_date -label 'By Author and Date' 'zmenu_sort_by -d -a'
+@@endif ZMCOT
+menu -n -name sm_date -mnemonic D -label 'By Date' 'zmenu_sort_by d'
+menu -n -name sm_subject -mnemonic S -label 'By Subject' 'zmenu_sort_by s'
+menu -n -name sm_author -mnemonic A -label 'By Author' 'zmenu_sort_by a'
+menu -n -name sm_length -mnemonic L -label 'By Message Length' 'zmenu_sort_by l'
+menu -n -name sm_priority -mnemonic P -label 'By Priority/Mark' 'zmenu_sort_by p'
+menu -n -name sm_status -mnemonic t -label 'By Status' 'zmenu_sort_by S'
+@@ifdef SORT_DIALOG
+menu -separator -name _sep1
+menu -n -name sm_custom -mnemonic C -label 'Custom Sort ...' 'dialog Sort'
+@@endif SORT_DIALOG
+
+menu -B MainComposeMenu
+menu -n -name mcm_compose -mnemonic N -accelerator 'Ctrl+N' -label 'Compose New ...' mail
+menu -n -name mcm_compose_tagit -mnemonic T -accelerator 'Ctrl+A' -label 'Compose Tag-It ...' zm_compose_tag_it
+menu -n -name mcm_compose_phonetag -mnemonic P -accelerator 'Ctrl+H' -label 'Compose Phone Tag ...' zm_compose_phone_tag
+menu -name mcm_drafts -mnemonic D -menu DraftsMenu -label 'Drafts'
+menu -separator -name _sep0
+menu -name mcm_reply -mnemonic R -sensitivity '$?main_state:(folder_has_messages)' -menu ReplyMenu -label 'Reply'
+menu -name mcm_forward -mnemonic F -menu ForwardMenu -label 'Forward'
+menu -separator -name _sep1
+@@ifdef DSERV
+menu -n -name mcm_browser -mnemonic A -sensitivity '$?address_book' -label 'Address Browser ...' 'dialog Browser'
+@@endif DSERV
+menu -n -name mcm_templates -mnemonic T -label 'Templates ...' 'dialog Templates'
+
+menu -B ReplyMenu
+menu -name rpm_replysender -mnemonic S -accelerator 'Ctrl+R' -label 'Sender Only ...' replysender
+menu -name rpm_replyall  -mnemonic A -accelerator 'Shift+Ctrl+R' -label 'All Recipients ...' replyall
+menu -separator -name _sep0
+menu -name rpm_sender_inc -mnemonic I -label 'Sender (Include Msg.) ...' 'replysender -i'
+menu -name rpm_all_inc -mnemonic l -label 'All (Include Msg.) ...' 'replyall -i'
+@@if IRIX53 && !VUI 
+menu -separator -name _sep1
+menu -name rpm_sender_inperson -mnemonic v -sensitivity '$?__InPerson' -label 'Sender via InPerson ...' zmenu_reply_inperson
+@@endif IRIX53 && !VUI 
+
+menu -B ForwardMenu
+menu -name fwdm_resend -mnemonic R -label 'Resend ...' 'mail -send -forward'
+menu -name fwdm_forward -mnemonic E -label 'Edited ...' 'mail -f'
+menu -name fwdm_forward_attach -mnemonic A -label 'As Attachment(s) ...' 'mail -M'
+
+menu -B DraftsMenu
+menu -n -name dm_drafts -label 'View Drafts' zmenu_open_drafts
+menu -name dm_send_draft -sensitivity '$?main_state:(folder_has_messages)' -label 'Send Draft ...' "mail -q"
+menu -name dm_resume_draft -sensitivity '$?main_state:(folder_has_messages)' -label 'Resume Draft ...' "mail -q!"
+
+menu -B MainOptionsMenu
+menu -n -name mom_aliases -mnemonic A -label 'Aliases ...' 'dialog Aliases'
+menu -n -name mom_sig -mnemonic g -label 'Signature ...' zmenu_edit_signature
+menu -n -name mom_headers -mnemonic H -label 'Headers ...' 'dialog Headers'
+menu -n -name mom_envelope -mnemonic E -label 'Envelope ...' 'dialog Envelope'
+menu -separator -name _sep0
+@@ifndef VUI
+@@ifdef SCRIPT
+menu -n -name mom_buttons -mnemonic B -label 'Buttons ...' 'dialog Buttons'
+@@endif SCRIPT
+@@ifdef MENUS_DIALOG
+menu -n -name mom_buttons -mnemonic B -label 'Buttons ...' 'dialog Buttons'
+menu -n -name mom_menus -mnemonic M -label 'Menus ...' 'dialog Menus'
+@@endif MENUS_DIALOG
+@@ifdef PAINTER
+menu -n -name mom_colors -mnemonic C -label 'Colors ...' 'dialog Colors'
+@@endif PAINTER
+@@ifdef FILTERS_DIALOG
+menu -n -name mom_filters -mnemonic i -label 'Filters ...' 'dialog Filters'
+@@endif FILTERS_DIALOG
+@@ifdef FONTS_DIALOG
+menu -n -name mom_fonts -mnemonic F -label 'Fonts ...' 'dialog Fonts'
+@@endif FONTS_DIALOG
+@@ifdef FUNC_DIALOG
+menu -n -name mom_functions -mnemonic u -label 'Functions ...' 'dialog Functions'
+@@endif FUNC_DIALOG
+menu -n -name mom_toolbox -mnemonic T -accelerator 'Ctrl+T' -label 'Toolbox ...' 'dialog Toolbox'
+@@endif VUI
+menu -separator -name _sep1
+menu -n -name mom_variables -mnemonic V -accelerator 'Ctrl+B' -label 'Variables ...' 'dialog Variables'
+menu -n -name mom_setup -mnemonic p -menu SetupMenu -label 'Setup'
+menu -n -name mom_save_state -mnemonic S -label 'Save Configuration ...' 'saveopts -g'
+
+menu -B SetupMenu
+menu -n -name setup_ldap -mnemonic L -label 'LDAP ...' 'dialog Variables -C 6 '
+menu -n -name setup_pop  -mnemonic P -label 'POP ...'  'dialog Variables -C 7 '
+menu -n -name setup_imap -mnemonic I -label 'IMAP ...' 'dialog Variables -C 8 '
+menu -n -name setup_user -mnemonic U -label 'User Preferences ...' 'dialog Variables -C 9 '
+
+menu -B MainLayoutMenu
+@@ifndef VUI
+@@if !ZMAIL_BASIC
+menu -n -name win_toolbar -value '$?main_panes:(toolbar)' -mnemonic T -label 'Tool Bar' zmenu_load_main_toolbar
+@@else ZMAIL_BASIC
+menu -n -name win_toolbar -value '$?main_panes:(toolbar)' -mnemonic T -label 'Tool Bar'
+@@endif ZMAIL_BASIC
+menu -n -name win_title -value '$?main_panes:(status)' -mnemonic F -label 'Folder Status'
+@@endif VUI
+menu -n -name win_control -value '$?main_panes:(folder)' -mnemonic P -label 'Folder Panel'
+@@ifdef VUI
+menu -n -name win_title -value '$?main_panes:(status)' -mnemonic F -label 'Folder Status'
+@@endif VUI
+#menu -n -name win_msg_field -value '$?message_field:(main)' -label 'Message Field'
+menu -n -name win_list -value '$?main_panes:(messages)' -mnemonic S -label 'Message Summaries'
+@@if !VUI
+menu -n -name win_panel -value '$?main_panes:(buttons)' -mnemonic B -label 'Button Panel'
+@@endif !VUI 
+menu -n -name win_output -value '$?main_panes:(output)' -mnemonic O -label 'Output Area'
+@@ifndef ZMAIL_BASIC
+menu -n -name win_command -value '$?main_panes:(command)' -mnemonic L -label 'Command Line'
+@@endif ZMAIL_BASIC
+@@ifdef VUI
+menu -n -name win_panel -value '$?main_panes:(buttons)' -mnemonic B -label 'Button Panel'
+@@else !VUI
+menu -n -name win_status -value '$?main_panes:(status_bar)' -mnemonic t -label 'Status Bar'
+@@endif !VUI
+
+menu -B MainHelpMenu
+@@ifndef VUI
+menu -n -name mhm_context -accelerator 'Shift+F1' -mnemonic C -label 'Click for Help' help -c
+@@endif VUI
+menu -n -name mhm_general -mnemonic O -label 'Overview' help -i General
+menu -separator -name _sep0
+@@ifdef VUI
+menu -n -name mhm_menus -label 'About the Main Screen' help -i "Main Screen"
+menu -n -name mhm_compose -label 'Composing a Message' help -i "Compose Screen"
+@@else VUI
+@@ifdef MEDIAMAIL
+menu -n -name mhm_menus -label 'About the MediaMail Window' help -i "Main Window"
+menu -n -name mhm_compose -label 'Composing Messages' help -i "Compose Window"
+@@else !MEDIAMAIL
+menu -n -name mhm_menus -label 'About the Main Window' help -i "Main Window"
+menu -n -name mhm_compose -label 'Composing a Message' help -i "Compose Window"
+@@endif !MEDIAMAIL
+@@endif VUI
+menu -n -name mhm_read -label 'Reading Messages' help -i 'Reading Messages'
+menu -n -name mhm_print -label 'Printing Messages' help -i 'Printing Messages'
+menu -n -name mhm_reply -label 'Replying to a Message' help -i 'Replying to a Message'
+@@ifdef MEDIAMAIL
+menu -n -name mhm_fwd -label 'Forwarding a Message' help -i 'Forwarding a Message'
+@@endif MEDIAMAIL
+@@ifdef MEDIAMAIL
+menu -n -name mhm_folder -label 'Using Folders' help -i 'Folders'
+@@else !MEDIAMAIL
+menu -n -name mhm_saving -label 'Saving a Message to a Folder' help -i 'Saving Messages'
+menu -n -name mhm_updating -label 'Updating a Folder' help -i Updating
+menu -n -name mhm_opening -label 'Opening a Folder' help -i 'Opening Folders'
+@@ifdef VUI
+menu -n -name mhm_switching -label 'Moving Among Folders' help -i 'Moving Among Folders'
+@@endif VUI
+@@ifndef VUI
+menu -n -name mhm_indexing -label 'Changing among Open Folders' help -i 'Folder Popup'
+@@endif VUI
+@@endif MEDIAMAIL
+menu -separator -name _sep1
+@@ifndef VUI
+@@if FUNCTIONS_HELP && !ZMAIL_BASIC
+menu -n -name mhm_functions -mnemonic F -label 'Functions Index' dialog functionsHelp
+@@ifdef VUI
+menu -n -name mhm_index -mnemonic G -label 'General Index' help -t -i 'Main Screen'
+@@else VUI
+menu -n -name mhm_index -mnemonic G -label 'General Index' help -t -i 'Main Window'
+@@endif VUI
+@@else !FUNCTIONS_HELP || ZMAIL_BASIC
+@@ifdef VUI
+menu -n -name mhm_index -mnemonic I -label 'Index' help -t -i 'Main Screen'
+@@else VUI
+menu -n -name mhm_index -mnemonic I -label 'Index' help -t -i 'Main Window'
+@@endif VUI
+@@endif !FUNCTIONS_HELP || ZMAIL_BASIC
+@@else VUI
+@@ifdef VUI
+menu -n -name mhm_index -mnemonic I -label 'Index' help -t -i 'Main Screen'
+@@else VUI
+menu -n -name mhm_index -mnemonic I -label 'Index' help -t -i 'Main Window'
+@@endif VUI
+@@endif !VUI
+menu -separator -name _sep2
+menu -n -name mhm_product -mnemonic P -label 'Product Info' help -i 'About This Program'
+
+# Compose Window
+
+menu -W compose
+menu -name message -mnemonic M -menu ComposeMessageMenu -label 'Message'
+menu -name edit -sensitivity '$?compose_state:(active)' -mnemonic E -menu ComposeEditMenu -label 'Edit'
+menu -name include -sensitivity '$?compose_state:(active)' -mnemonic I -menu ComposeIncludeMenu -label 'Include'
+@@ifdef MEDIAMAIL
+menu -name attach -menu ComposeAttachMenu -mnemonic t -label 'Attach'
+@@endif MEDIAMAIL
+menu -name address -sensitivity '$?compose_state:(active)' -mnemonic A -menu ComposeAddressesMenu -label 'Address'
+menu -name options -sensitivity '$?compose_state:(active)' -mnemonic O -menu ComposeOptionsMenu -label 'Options'
+menu -name layout -menu ComposeLayoutMenu -M L -label 'Layout'
+menu -name help -mnemonic H -menu ComposeHelpMenu -help-menu -label 'Help'
+
+menu -B ComposeMessageMenu
+menu -n -name mm_compose -mnemonic N -accelerator 'Shift+Ctrl+N' -label 'Compose New ...' mail
+@@ifndef VUI
+menu -name mm_reuse -sensitivity '!$?compose_state:(active)' -mnemonic R -label 'Reuse' zbutton_reuse
+@@endif VUI
+menu -n -name mm_templates -sensitivity '!$?compose_state:(active)' -mnemonic T -label 'Templates ...' 'dialog Templates'
+menu -separator -name _sep0
+menu -n -name mm_send -sensitivity '$?compose_state:(active)' -mnemonic S -accelerator 'Shift+Ctrl+S' -label 'Send' compcmd send
+@@ifdef NOT_NOW
+menu -name mm_send_n_close -sensitivity '$?compose_state:(active)' -mnemonic e -accelerator 'Shift+Ctrl+D' -label 'Send, Close Window' zmenu_send_and_close
+@@endif
+menu -n -name mm_save -sensitivity '$?compose_state:(active)' -mnemonic W -accelerator 'Ctrl+S' -label 'Write to File ...' zmenu_save_to_file
+menu -n -name mm_draft -sensitivity '$?compose_state:(active)' -label 'Save as Draft ...' zmenu_save_draft
+menu -n -name mm_print -sensitivity '$?compose_state:(active)' -mnemonic P -accelerator 'Shift+Ctrl+P' -label 'Print ...' zmenu_comp_print
+menu -separator -name _sep1
+@@ifdef VUI
+menu -name mmm_attachments -sensitivity '$?compose_state:(active) && !$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -mnemonic A -menu AttachmentsMenu -label 'Attachments'
+@@else !VUI
+@@if !MEDIAMAIL
+menu -name mmm_attachments -sensitivity '$?compose_state:(active) && !$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -mnemonic A -accelerator 'Shift+Ctrl+A' -label 'Attachments ...' dialog Attachments
+menu -separator -name _sep2
+@@endif !MEDIAMAIL
+@@endif !VUI
+menu -n -name com_charset -mnemonic C -label 'Character Set' -menu ComposeCharsetMenu
+menu -n -name mm_cancel -accelerator 'Ctrl+W' -label 'Cancel' zmenu_comp_cancel
+@@ifdef NOT_NOW
+menu -n -name mm_iconify -mnemonic I -accelerator 'Ctrl+I' -label 'Iconify' dialog -iconic
+menu -n -name mm_done -accelerator 'Ctrl+W' -mnemonic D -label 'Done' 'zmenu_comp_done'
+@@endif NOT_NOW
+
+menu -B ComposeCharsetMenu
+#does not work yet
+#menu -n -name com_cs_sender -mnemonic m -label "Match Sender's" -sensitivity 'compcmd get-header References; $?header_value' zmenu_match_sender_charset
+menu -n -name com_cs_sender -mnemonic m -label "Match Sender's" zmenu_match_sender_charset
+menu -n -name com_ascii -mnemonic A -label 'us-ascii' compcmd charset us-ascii
+menu -n -name com_iso_8859_1 -mnemonic 1 -label 'iso-8859-1' compcmd charset iso-8859-1
+menu -n -name com_iso_8859_2 -mnemonic 2 -label 'iso-8859-2' compcmd charset iso-8859-2
+#menu -n -name com_iso_8859_5 -mnemonic 5 -label 'iso-8859-5' compcmd charset iso-8859-5
+menu -n -name com_x_macintosh -mnemonic a -label 'x-macintosh' compcmd charset x-macintosh 
+#menu -n -name com_iso_646_gb -mnemonic g -label 'iso-646-gb' compcmd charset iso-646-gb 
+#menu -n -name com_iso_646_no -mnemonic n -label 'iso-646-no' compcmd charset iso-646-no 
+#menu -n -name com_iso_646_yu -mnemonic y -label 'iso-646-yu' compcmd charset iso-646-yu 
+menu -n -name com_x_iso_646_se1 -mnemonic s -label 'x-iso-646-se1' compcmd charset x-iso-646-se1 
+#menu -n -name com_x_iso_646_se2 -mnemonic v -label 'x-iso-646-se2' compcmd charset x-iso-646-se2 
+#menu -n -name com_x_ibm_437 -mnemonic p -label 'x-ibm-437' compcmd charset x-ibm-437 
+#menu -n -name com_x_ibm_850 -mnemonic i -label 'x-ibm-850' compcmd charset x-ibm-850
+@@ifdef VUI
+menu -n -name com_cs_more -mnemonic I -label 'More Information ...' dialog Charset
+@@endif VUI
+menu -n -name com_cs_other -mnemonic o -label 'Other ...' zmenu_charset
+
+@@ifdef VUI
+menu -B AttachmentsMenu
+menu -n -name att_file -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)'  -mnemonic F -label 'Attach File ...' dialog AttachFile
+menu -n -name att_new -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -mnemonic N -label 'Attach New ...'  dialog AttachNew
+menu -n -name att_list -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -mnemonic L -label 'List Attachments ...' dialog Attach
+@@endif VUI
+
+menu -B ComposeEditMenu
+menu -n -name em_cut -mnemonic C -accelerator 'Ctrl+X' -label 'Cut' zmenu_comp_body_textcopy cut-selection
+menu -n -name em_copy -mnemonic o -accelerator 'Ctrl+C' -label 'Copy' zmenu_comp_body_textcopy copy-selection
+menu -n -name em_paste -mnemonic P -accelerator 'Ctrl+V' -label 'Paste' zmenu_comp_body_paste
+menu -name em_paste_sp -mnemonic S -menu ComposePasteSpecialMenu -label 'Paste Special' 
+menu -n -name em_delete -mnemonic D -label 'Delete' zmenu_comp_body_textcopy clear-selection
+menu -name em_format -mnemonic F -menu ComposeEditFormatMenu -label 'Format'
+menu -separator -name _sep0
+menu -n -name em_select_all -mnemonic A -accelerator 'Ctrl+Slash' -label 'Select All' zmenu_comp_body_textedit select-all
+menu -separator -name _sep1
+menu -n -name em_search -accelerator 'Shift+Ctrl+L' -mnemonic R -label 'Search/Replace/Spell ...' dialog SearchReplace
+@@ifdef NOT_NOW
+menu -name em_spell -mnemonic I -label 'Interactive Spell ...' compcmd spell
+@@endif NOT_NOW
+menu -separator -name _sep2
+menu -n -name em_editor -mnemonic E -accelerator 'Shift+Ctrl+E' -label 'Editor ...' compcmd edit
+
+menu -B ComposePasteSpecialMenu
+menu -n -name psm_indent -mnemonic I -label 'Indent' zmenu_paste_indented
+menu -n -name psm_fill -mnemonic F -label 'Fill' zmenu_paste_fill
+
+menu -B ComposeEditFormatMenu
+menu -n -name em_fill -mnemonic F -label 'Fill' zmenu_comp_body_textedit fill
+menu -n -name em_indent -mnemonic I -label 'Indent' zmenu_comp_indent
+menu -n -name em_unindent -mnemonic U -label 'Unindent' zmenu_comp_body_textedit unindent
+menu -n -name em_process -mnemonic P -label 'Pipe through Command ...' zmenu_comp_pipe
+
+menu -B ComposeOptionsMenu
+@@ifdef DSERV
+menu -n -name com_directory -value '$?compose_state:(directory_check)' -sensitivity '$?address_book || $?compose_state:(directory_check)' -mnemonic d -label 'Address Book'
+@@endif DSERV
+menu -n -name com_autosign -value '$?compose_state:(autosign)' -mnemonic A -label 'Autosign'
+menu -n -name com_autoformat -value '$?compose_state:(autoformat)' -mnemonic f -label 'Autoformat'
+@@ifndef ZMAIL_BASIC
+menu -n -name com_edit-headers -value '$?compose_state:(edit_headers)' -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -mnemonic E -label 'Edit Headers'
+@@endif ZMAIL_BASIC
+menu -name hdrs_priority -mnemonic P -menu ComposePriorityMenu -label 'Set Priority'
+@@ifdef DSERV
+menu -n -name com_sendcheck -value '$?compose_state:(sendtime_check)' -sensitivity '$?address_book' -mnemonic C -label 'Send-Time Check'
+#menu -name com_sort_addrs -value '$?compose_state:(sort_addresses)' -mnemonic S -label 'Sort Addresses'
+@@endif DSERV
+menu -n -name com_return-receipt -value '$?compose_state:(return_receipt)' -mnemonic R -label 'Return-Receipt'
+menu -n -name com_record-msg -value '$?compose_state:(record_msg)' -mnemonic t -label 'Record to File'
+menu -n -name com_phone-tag -value '$?compose_state:(phone_tag)' -mnemonic h -sensitivity '!$?compose_state:(tag_it)' -label 'Phone-Tag'
+menu -n -name com_tag-it -value '$?compose_state:(tag_it)' -mnemonic g -sensitivity '!$?compose_state:(phone_tag)' -label 'Tag-It'
+menu -n -name com_read-receipt -value '$?compose_state:(read_receipt)' -mnemonic i -label 'Read-Receipt'
+menu -separator -name _sep0
+menu -name com_options -mnemonic O -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -label 'Options ...' dialog CompOptions
+
+menu -B ComposeIncludeMenu
+menu -name im_messages -sensitivity '$?main_state:(folder_has_messages) && !$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -mnemonic M -label 'Message(s)' -menu ComposeIncludeMessageMenu
+menu -name im_files -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -mnemonic F -label 'File' -menu ComposeIncludeFileMenu
+
+menu -B ComposeIncludeMessageMenu
+menu -name imm_selected -mnemonic I -label 'Indented' compcmd include-message
+menu -name imm_forward -mnemonic N -label 'Nonindented' compcmd forward-unindented
+menu -name imm_forward_attach -mnemonic A -label 'As Attachment(s)' compcmd forward-attached
+
+menu -B ComposeIncludeFileMenu
+menu -n -name ifm_indented -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -mnemonic I -label 'Insert ...' zmenu_insert_file insert
+menu -n -name ifm_indentedr -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -mnemonic R -label 'Replace ...' zmenu_insert_file replace
+
+menu -B ComposeAddressesMenu
+menu -n -name hdrs_aliases -mnemonic A -label 'Aliases ...' dialog CompAliases
+@@ifdef DSERV
+menu -n -name hdrs_browse -mnemonic r -sensitivity '$?address_book' -label 'Browse ...' dialog Browser
+menu -n -name hdrs_check -mnemonic h -sensitivity '$?address_book' -label 'Check ...' compcmd address-check
+@@endif DSERV
+@@ifndef ZMAIL_BASIC
+menu -n -name hdrs_dynamic -mnemonic D -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -label 'Dynamic ...' dialog DynamicHdrs
+@@endif ZMAIL_BASIC
+menu -separator -name _sep0
+menu -n -name hdrs_to -mnemonic T -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -label 'To' compcmd to
+menu -n -name hdrs_subject -mnemonic S -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -label 'Subject' compcmd subject
+menu -n -name hdrs_cc -mnemonic C -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -label 'Cc' compcmd cc
+menu -n -name hdrs_bcc -mnemonic B -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -label 'Bcc' compcmd bcc
+
+menu -B ComposePriorityMenu
+menu -n -name emp_low -value '$?compose_state:(pri_Low)' -mnemonic L -label 'Low'
+menu -n -name emp_urgent -value '$?compose_state:(pri_Medium)' -mnemonic M -label 'Medium'
+menu -n -name emp_high -value '$?compose_state:(pri_High)' -mnemonic H -label 'High'
+menu -n -name emp_none -value '$?compose_state:(pri_none)' -mnemonic N -label 'Normal'
+menu -n -name _sep1 -separator
+menu -n -name emp_other -mnemonic O -label 'Other ...' zmenu_comp_pri_other
+
+menu -B ComposeLayoutMenu
+@@if !VUI && !MEDIAMAIL
+@@ifdef ZMAIL_BASIC
+menu -name lm_toolbar -n -value '$?compose_panes:(toolbar)' -sensitivity '($?compose_state:(active) || $?compose_panes:(toolbar)) && !$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -mnemonic T -label 'Tool Bar'
+@@else !ZMAIL_BASIC
+menu -name lm_toolbar -n -value '$?compose_panes:(toolbar)' -sensitivity '($?compose_state:(active) || $?compose_panes:(toolbar)) && !$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -mnemonic T -label 'Tool Bar' zmenu_load_compose_toolbar
+@@endif !ZMAIL_BASIC
+@@endif !VUI && !MEDIAMAIL
+menu -name lm_folder -n -value '$?compose_panes:(folder)' -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -mnemonic F -label 'Folder Panel'
+@@ifdef MESSAGE_FIELD
+menu -n -value '$?message_field:(compose)' -label 'Message Field'
+@@endif MESSAGE_FIELD
+@@ifdef MEDIAMAIL
+menu -name lm_tool -n -value '$?compose_panes:(toolbar)' -sensitivity '($?compose_state:(active) || $?compose_panes:(toolbar)) && !$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -mnemonic T -label 'Tool Bar'
+@@endif MEDIAMAIL
+@@ifndef ZMAIL_BASIC
+menu -name lm_hdrs -n -value '!$?compose_state:(edit_headers)' -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -mnemonic H -label 'Message Headers'
+@@endif !ZMAIL_BASIC
+@@ifndef VUI
+@@ifdef OZ_DATABASE
+menu -name lm_attachments -n -mnemonic A -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -value '$?compose_panes:(attachments)' -label 'Attachment Panel'
+@@else !OZ_DATABASE
+menu -name lm_attachments -n -mnemonic A -value '$?compose_panes:(attachments)' -label 'Attachment Panel' -sensitivity '$?compose_state:(attachments) && !$?compose_state:(phone_tag) && !$?compose_state:(tag_it)'
+@@endif !OZ_DATABASE
+menu -name lm_body -n -value '$?compose_panes:(body)' -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -mnemonic B -label 'Message Body'
+@@endif VUI
+menu -name lm_actions -n -value '$?compose_panes:(action_area)' -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -mnemonic u -label 'Button Panel'
+@@ifndef VUI
+menu -name lm_status -n -value '$?compose_panes:(status_bar)' -sensitivity '!$?compose_state:(phone_tag) && !$?compose_state:(tag_it)' -mnemonic t -label 'Status Bar'
+@@endif VUI
+
+@@ifdef MEDIAMAIL
+menu -B ComposeAttachMenu
+menu -name cam_file   -sensitivity '$?compose_state:(active)' -mnemonic F -label 'File ...' dialog Attachments
+menu -name cam_audio  -sensitivity '$?compose_state:(active)' -mnemonic A -label 'Audio ...' capture_audio
+menu -name cam_still  -sensitivity '$?compose_state:(active)' -mnemonic V -label 'Video Photo ...' capture_still
+menu -name cam_video  -sensitivity '$?compose_state:(active)' -mnemonic M -label 'Video Movie ...' capture_video
+#menu -name cam_screen -sensitivity '$?compose_state:(active)' -mnemonic S -label 'Window Snap ...' capture_window
+menu -name cam_screen -sensitivity '$?compose_state:(active)' -mnemonic S -label 'Screen Snap ...' capture_screen
+@@endif MEDIAMAIL
+
+menu -B ComposeHelpMenu
+@@ifndef VUI
+menu -name chm_context -accelerator 'Shift+F1' -mnemonic C -label 'Click For Help' help -c
+@@endif VUI
+menu -separator -name _sep0
+@@ifdef VUI
+menu -n -name chm_about -label 'About the Compose Screen' help -i 'Compose Screen'
+@@else VUI
+@@ifdef MEDIAMAIL
+menu -n -name chm_about -label 'About the Compose Message Window' help -i 'Compose Window'
+@@else !MEDIAMAIL
+menu -n -name chm_about -label 'About the Compose Window' help -i 'Compose Window'
+@@endif !MEDIAMAIL
+@@endif VUI
+@@ifdef MEDIAMAIL
+menu -n -name chm_addressing -label 'Entering Addresses' help -i 'Addressing'
+menu -n -name chm_alias -label 'Sending to Aliases' help -i 'Using Aliases'
+@@else !MEDIAMAIL
+menu -n -name chm_addressing -label 'Addressing the Message' help -i 'Addressing'
+menu -n -name chm_alias -label 'Using Aliases' help -i 'Using Aliases'
+@@endif !MEDIAMAIL
+menu -n -name chm_add_attach -label 'Sending Attachments' help -i 'Sending Attachments'
+menu -n -name chm_include -label 'Including Messages and Files' help -i 'Including'
+menu -n -name chm_send -label 'Sending a Message' help -i 'Sending a message'
+menu -n -name chm_options -label 'Setting Compose Options' help -i 'Compose Options'
+menu -separator -name _sep1
+@@ifdef VUI
+menu -n -name chm_index -mnemonic I -label 'Index' help -t -i 'Compose Screen'
+@@else VUI
+menu -n -name chm_index -mnemonic I -label 'Index' help -t -i 'Compose Window'
+@@endif VUI
+
+# Read Window
+
+menu -W message
+menu -name message -mnemonic M -menu MessageMessageMenu -label 'Message'
+menu -name edit -mnemonic E -menu MessageEditMenu -label 'Edit'
+menu -name find -mnemonic F -menu MessageFindMenu -label 'Find'
+menu -name compose -mnemonic C -menu MessageComposeMenu -label 'Compose'
+menu -name reply -mnemonic R -menu ReplyMenu -label 'Reply'
+menu -name forward -mnemonic o -menu ForwardMenu -label 'Forward'
+menu -name layout -menu MessageLayoutMenu -M L -label 'Layout'
+menu -name help -mnemonic H -menu MessageHelpMenu -help-menu -label 'Help'
+
+menu -B MessageComposeMenu
+menu -n -name cm_compose -mnemonic N -accelerator 'Ctrl+N' -label 'Compose New ...' mail
+menu -n -name cm_templates -mnemonic T -label 'Templates ...' 'dialog Templates'
+
+menu -B MessageMessageMenu
+menu -name mmm_save_message -mnemonic S -accelerator 'Ctrl+S' -label 'Save ...' dialog Save
+menu -name mmm_delete -mnemonic D -accelerator 'Ctrl+D' -label 'Delete' delete
+menu -name mmm_undelete -mnemonic U -label 'Undelete' undelete
+menu -name mmm_print -mnemonic P -accelerator 'Ctrl+P' -label 'Print ...' 'dialog Printer'
+@@ifndef VUI
+menu -name mmm_pinup -mnemonic n -label 'Pin-Up ...' 'pinup'
+@@endif VUI
+menu -separator -name _sep0
+menu -name mmm_priority -mnemonic z -menu PriorityMenu -label 'Set Priority'
+menu -name mmm_mark -mnemonic M -label 'Mark' mark
+menu -name mmm_unmark -mnemonic k -label 'Unmark' unmark
+menu -name mmm_preserve -mnemonic e -label 'Preserve' preserve
+menu -name mmm_unpreserve -mnemonic v -label 'Unpreserve' unpreserve
+menu -separator -name _sep1
+menu -n -name mmm_charset -mnemonic C -label 'Character Set' -menu MessageCharsetMenu
+@@ifdef VUI
+menu -name mmm_attachments -mnemonic A -label 'Attachments ...' -sensitivity '!$?message_state:(phone_tag) && !$?message_state:(tag_it)' dialog Attach
+@@else !VUI
+menu -name mmm_attachments -mnemonic A -label 'Attachments ...' -sensitivity '$?message_state:(attachments) && !$?message_state:(phone_tag) && !$?message_state:(tag_it)' -accelerator 'Ctrl+A' dialog Attachments
+@@endif !VUI
+menu -separator -name _sep2
+@@ifdef NOT_NOW
+menu -n -name mmm_iconify -mnemonic I -accelerator 'Ctrl+I' -label 'Iconify' dialog -iconic
+@@endif NOT_NOW
+menu -n -name mmm_done -mnemonic o -accelerator 'Ctrl+W' -label 'Close' dialog -close
+
+menu -B MessageCharsetMenu
+menu -n -name mmm_ascii -mnemonic A -label 'us-ascii' 'zmenu_override_in_charset "us-ascii"'
+menu -n -name mmm_iso_8859_1 -mnemonic 1 -label 'iso-8859-1' 'zmenu_override_in_charset "iso-8859-1"'
+menu -n -name mmm_iso_8859_2 -mnemonic 2 -label 'iso-8859-2' 'zmenu_override_in_charset "iso-8859-2"'
+menu -n -name mmm_iso_8859_5 -mnemonic 5 -label 'iso-8859-5' 'zmenu_override_in_charset "iso-8859-5"'
+menu -n -name mmm_x_macintosh -mnemonic m -label 'x-macintosh' 'zmenu_override_in_charset "x-macintosh"'
+menu -n -name mmm_iso_646_gb -mnemonic g -label 'iso-646-gb' 'zmenu_override_in_charset "iso-646-gb"'
+menu -n -name mmm_iso_646_no -mnemonic n -label 'iso-646-no' 'zmenu_override_in_charset "iso-646-no"'
+menu -n -name mmm_iso_646_yu -mnemonic y -label 'iso-646-yu' 'zmenu_override_in_charset "iso-646-yu"'
+menu -n -name mmm_x_iso_646_se1 -mnemonic s -label 'x-iso-646-se1' 'zmenu_override_in_charset "x-iso-646-se1"'
+menu -n -name mmm_x_iso_646_se2 -mnemonic v -label 'x-iso-646-se2' 'zmenu_override_in_charset "x-iso-646-se2"'
+menu -n -name mmm_x_ibm_437 -mnemonic p -label 'x-ibm-437' 'zmenu_override_in_charset "x-ibm-437"'
+menu -n -name mmm_x_ibm_850 -mnemonic i -label 'x-ibm-850' 'zmenu_override_in_charset "x-ibm-850"'
+@@ifdef VUI
+menu -n -name mmm_cs_more -mnemonic M -label 'More Information ...' dialog Charset
+@@endif VUI
+
+menu -B MessageEditMenu
+menu -n -name em_copy -mnemonic o -accelerator 'Ctrl+C' -label 'Copy' zmenu_msg_body_textcopy copy-selection
+menu -n -name em_select_all -mnemonic A -accelerator 'Ctrl+Slash' -label 'Select All' zmenu_msg_body_textedit select-all
+menu -separator -name _sep1
+menu -n -name em_edit -mnemonic E -label 'Edit ...' -sensitivity '!$?message_state:(plain_text) && $?main_state:(folder_writable)' edit
+menu -separator -name _sep2
+menu -n -name em_next_page -label 'Next Page' zmenu_msg_body_textedit next-page
+menu -n -name em_prev_page -label 'Previous Page' zmenu_msg_body_textedit previous-page
+menu -n -accelerator 'Up' -name em_scroll_up -label 'Scroll Up' zmenu_msg_body_textedit scroll-down
+menu -n -accelerator 'Down' -name em_scroll_down -label 'Scroll Down' zmenu_msg_body_textedit scroll-up
+menu -n -accelerator 'Home' -name em_scroll_home -label 'Start of Text' zmenu_msg_body_textedit beginning
+menu -n -accelerator 'End' -name em_scroll_end -label 'End of Text' zmenu_msg_body_textedit end
+
+menu -B MessageFindMenu
+menu -name fm_next -sensitivity '$?message_state:(is_next)' -mnemonic N -accelerator 'Shift+Ctrl+N' -label 'Read Next' next
+menu -name fm_prev -sensitivity '$?message_state:(is_prev)' -mnemonic P -accelerator 'Shift+Ctrl+P' -label 'Read Previous' previous
+menu -separator -name _sep0
+menu -name fm_next_reference -menu FindNextRefMenu -mnemonic R -label 'Next Reference By'
+menu -name fm_prev_reference -menu FindPrevRefMenu -mnemonic v -label 'Previous Reference By'
+menu -separator -name _sep1
+menu -n -name fm_search -mnemonic S -label 'Search ...' dialog SearchReplace
+
+menu -B MessageHelpMenu
+@@ifndef VUI
+menu -name msghm_context -accelerator 'Shift+F1' -mnemonic C -label 'Click For Help' help -c
+@@endif VUI
+menu -separator -name _sep0
+@@ifdef VUI
+menu -n -name msghm_about -label 'About the Message Screen' help -i 'Message Display Screen'
+@@else VUI
+menu -n -name msghm_about -label 'About the Message Window' help -i 'Message Display Window'
+@@endif VUI
+menu -n -name msghm_displaying  -label 'Displaying Attachments' help -i 'Receiving Attachments'
+menu -n -name msghm_replying -label 'Replying to a Message' help -i 'Replying to a Message'
+@@ifdef MEDIAMAIL
+menu -n -name msghm_fwd -label 'Forwarding a Message' help -i 'Forwarding a Message'
+@@endif MEDIAMAIL
+menu -n -name msghm_print -label 'Printing Messages' help -i 'Printing Messages'
+menu -n -name msghm_saving -label 'Saving Messages' help -i 'Saving Messages'
+menu -separator -name _sep1
+@@ifdef VUI
+menu -n -name msghm_index -mnemonic I -label 'Index' help -t -i 'Message Display Screen'
+@@else VUI
+menu -n -name msghm_index -mnemonic I -label 'Index' help -t -i 'Message Display Window'
+@@endif VUI
+
+menu -B MessageLayoutMenu
+@@if !VUI && !ZMAIL_BASIC
+menu -name lm_toolbar -n -value '$?message_panes:(toolbar)'  -mnemonic T -label 'Tool Bar' zmenu_load_message_toolbar
+@@endif !VUI && !ZMAIL_BASIC
+@@if ZMAIL_BASIC
+menu -name lm_toolbar -n -value '$?message_panes:(toolbar)' -mnemonic T -label 'Tool Bar'
+@@endif ZMAIL_BASIC
+menu -name lm_folder -n -value '$?message_panes:(folder)' -mnemonic F -label 'Folder Panel'
+menu -name lm_header -n -value '$?message_panes:(headers)' -mnemonic H -label 'Message Headers'
+@@ifndef VUI
+menu -name lm_attachments -n -sensitivity '$?message_state:(attachments) && $?message_panes:(headers) && !$?message_state:(phone_tag) && !$?message_state:(tag_it)' -mnemonic A -value '$?message_panes:(attachments)' -label 'Attachment Panel'
+@@endif VUI
+menu -name lm_body -n -value '$?message_panes:(body)' -mnemonic M -label 'Message Body'
+menu -name lm_actions -n -value '$?message_panes:(action_area)' -mnemonic B -label 'Button Panel'
+@@if !VUI
+menu -name lm_status -n -value '$?message_panes:(status_bar)' -mnemonic t -label 'Status Bar'
+@@endif !VUI
+menu -separator -name _sep0
+menu -name lm_full_headers -mnemonic u -label 'Full Headers' -value '$?display_headers:(all)' -sensitivity '!$?message_state:(pinup)' zmenu_full_headers
+@@ifdef VUI
+menu -name lm_wrap_long_lines -n -mnemonic w -label 'Wrap Long Lines' -value '$?autoformat:(message)'
+@@endif !VUI
+
+menu -popup-context main-summaries
+menu -name msp_read -label 'Read' 'type'
+menu -name msp_delete -label 'Delete' 'delete'
+menu -name msp_undelete -label 'Undelete' 'undelete'
+menu -name msp_save -label 'Save' dialog Save
+menu -name msp_hide -label 'Hide Summary' 'flags +H'
+menu -name msp_pri -menu PriorityMenu -label 'Priorities'
+menu -name msp_lpr -label 'Print' 'lpr'
+menu -name msp_select_all -n -label 'Select All' 'msg_list *'
+
+menu -popup-context read-message-body
+menu -n -name mpm_copy -label 'Copy Selected Text' zmenu_msg_body_textcopy copy-selection
+menu -n -name mpm_select_all -label 'Select All Text' zmenu_msg_body_textedit select-all
+menu -separator -name _sep0
+menu -name mpm_save_message -label 'Save Message ...' dialog Save
+menu -name mpm_delete -label 'Delete Message' delete
+menu -name mpm_print -label 'Print Message ...' 'dialog Printer'
+menu -name mpm_reply -menu ReplyMenu -label 'Reply to Message'
+menu -name mpm_forward -menu ForwardMenu -label 'Forward Message'
+menu -separator -name _sep1
+menu -label 'Follow Selected URL' -name mbp_browser -sensitivity '$?browser' 'zmenu_follow_url message-body'
+menu -label 'Set Web Browser to Netscape' -name mbp_netscape 'set browser = "$ZMLIB/bin/tell-netscape openURL"'
+menu -label 'Set Web Browser to Mosaic' -name mbp_mosaic 'set browser = "$ZMLIB/bin/tell-mosaic goto"'
+
+menu -popup-context compose-body
+menu -label 'Send' -name cbp_send -sensitivity '$?compose_state:(active)' 'compcmd send'
+menu -label 'Include' -name cbp_include -sensitivity '$?compose_state:(active) && $?main_state:(folder_has_messages)' 'compcmd include-message'
+menu -name cbp_pri -menu ComposePriorityMenu -label 'Priorities'
+@@if !VUI && !MEDIAMAIL
+menu -label 'Attachments' -name cbp_attach -sensitivity '$?compose_state:(active)' dialog Attachments
+@@endif !VUI && !MEDIAMAIL
+menu -separator -name _sep0
+menu -label 'Cancel' -name cbp_cancel zmenu_comp_cancel
+
+@@if !MEDIAMAIL
+# Toolbar items.
+# Motif buttons with icons come up zero sized when insensitive, so for the
+# time being we must omit sensitivity expressions from some of these buttons.
+
+@@if !ZMAIL_BASIC
+function zmenu_load_main_toolbar () {
+    if $?main_toolbar_loaded
+	return
+    else
+	if ! $?main_panes:(toolbar)
+	    return
+	endif
+    endif
+
+@@ifdef SMALL_FONTS
+    set __icons = $ZMLIB/bitmaps/toolbar/24x24
+@@else
+    set __icons = $ZMLIB/bitmaps/toolbar
+@@endif /* SMALL_FONTS */
+@@endif !ZMAIL_BASIC
+
+# main window toolbar items
+button -B MainToolbar
+button -n -name Open -label 'Open' -icon $__icons/open.xbm dialog AddFolder
+button -name Save -label 'Save' -icon $__icons/save.xbm dialog Save
+button -name Read -label 'Read' -icon $__icons/read.xbm zbutton_read
+button -name Delete -label 'Delete' -icon $__icons/delete.xbm delete
+button -name Undelete -label 'Undelete' -icon $__icons/undelete.xbm undelete
+button -name Print -label 'Print' -icon $__icons/printer.xbm dialog Printer
+button -n -name Create -label 'Create New' -icon $__icons/compose.xbm mail
+#button -name Reply -label 'Reply' -sensitivity '$?main_state:(folder_has_messages)' -icon $__icons/reply.xbm reply
+button -name Reply -label 'Reply' -icon $__icons/reply.xbm reply
+#button -name ReplyAll -label 'Reply All' -sensitivity '$?main_state:(folder_has_messages)' -icon $__icons/replyall.xbm replyall
+button -name ReplyAll -label 'Reply All' -icon $__icons/replyall.xbm replyall
+button -name Address -label 'Address' -icon $__icons/addrbook.xbm 'dialog Browser'
+button -name Update -n -label 'Update' -icon $__icons/update.xbm update
+
+@@if !ZMAIL_BASIC
+button -W main
+
+    set main_toolbar_loaded
+    unset __icons
+}
+
+function zmenu_toolbar_prev () {
+    # if $?message_state:(is_prev)$?message_state:(pinup) == 10
+    if $?message_state:(pinup) == 0
+	previous
+    else
+	error "No previous from Pinup"
+    endif
+}
+function zmenu_toolbar_next () {
+    # if $?message_state:(is_next)$?message_state:(pinup) == 10
+    if $?message_state:(pinup) == 0
+	next
+    else
+	error "No next from Pinup"
+    endif
+}
+
+function zmenu_load_message_toolbar () {
+    if $?message_toolbar_loaded
+	return
+    else
+	if ! $?message_panes:(toolbar)
+	    return
+	endif
+    endif
+
+@@ifdef SMALL_FONTS
+    set __icons = $ZMLIB/bitmaps/toolbar/24x24
+@@else
+    set __icons = $ZMLIB/bitmaps/toolbar
+@@endif /* SMALL_FONTS */
+@@endif !ZMAIL_BASIC
+
+# message window toolbar items
+button -B MessageToolbar
+button -name Close -n -label 'Close' -icon $__icons/close.xbm dialog -close
+button -name Save -n -label 'Save' -icon $__icons/save.xbm dialog Save
+button -name Print -n -label 'Print' -icon $__icons/printer.xbm dialog Printer
+button -name Create -n -label 'Create New' -icon $__icons/compose.xbm mail
+button -name Reply -n -label 'Reply' -icon $__icons/reply.xbm reply
+button -n -name All -label 'Reply All' -icon $__icons/replyall.xbm replyall
+button -name Forward -n -label 'Forward' -icon $__icons/fwd.xbm mail -f
+button -name Attach -n -label 'Attach' -icon $__icons/attach.xbm dialog Attachments
+button -name Previous -n -label 'Previous' -icon $__icons/prev.xbm zmenu_toolbar_prev
+button -name Next -n -label 'Next' -icon $__icons/next.xbm zmenu_toolbar_next
+button -name Delete -n -label 'Delete' -icon $__icons/delete.xbm delete
+
+@@if !ZMAIL_BASIC
+button -W main
+
+    set message_toolbar_loaded
+    unset __icons
+}
+
+function zmenu_load_compose_toolbar () {
+    if $?compose_toolbar_loaded
+	return
+    else
+	if ! $?compose_panes:(toolbar)
+	    return
+	endif
+    endif
+
+@@ifdef SMALL_FONTS
+    set __icons = $ZMLIB/bitmaps/toolbar/24x24
+@@else
+    set __icons = $ZMLIB/bitmaps/toolbar
+@@endif /* SMALL_FONTS */
+@@endif !ZMAIL_BASIC
+
+# compose window toolbar items
+button -B ComposeToolbar
+button -name Close -n -label 'Close' -focus-condition '!$?compose_state:(active)' -icon $__icons/close.xbm 'zmenu_comp_done'
+button -name Cancel -n -label 'Cancel' -icon $__icons/cancel.xbm compcmd cancel
+button -name Cut -n -label 'Cut' -icon $__icons/cut.xbm zmenu_comp_body_textcopy cut-selection
+button -name Copy -n -label 'Copy' -icon $__icons/copy.xbm zmenu_comp_body_textcopy copy-selection
+button -name Paste -n -label 'Paste' -icon $__icons/paste.xbm zmenu_comp_body_textedit paste
+button -name Search -n -label 'Search' -icon $__icons/search.xbm dialog SearchReplace
+button -name Aliases -n -label 'Aliases' -icon $__icons/alias.xbm dialog CompAliases
+@@ifdef DSERV
+button -name Address -n -label 'Address' -icon $__icons/addrbook.xbm dialog Browser
+@@endif DSERV
+#button -n -sensitivity '$?main_state:(folder_has_messages)' -label 'Include' -icon $__icons/include.xbm zmenu_toolbar_include
+button -name Include -n -label 'Include' -icon $__icons/include.xbm zmenu_toolbar_include
+button -name Attach -n -label 'Attach' -icon $__icons/attach.xbm dialog Attachments
+button -name Send -n -label 'Send' -icon $__icons/send.xbm zmenu_toolbar_send
+
+@@if !ZMAIL_BASIC
+button -W main
+
+    set compose_toolbar_loaded
+    unset __icons
+}
+
+# In case one of the toolbar defaults has been changed, try loading.
+zmenu_load_main_toolbar
+zmenu_load_message_toolbar
+zmenu_load_compose_toolbar
+@@endif !ZMAIL_BASIC
+
+@@endif !MEDIAMAIL
+
+menu -W main
+button -W main
+
+@@ifdef ZMAIL_BASIC
+#--END OF PRO-ONLY MENU CODE
+
+@@ifdef SMALL_FONTS
+set __icons = $ZMLIB/bitmaps/toolbar/24x24
+@@else
+set __icons = $ZMLIB/bitmaps/toolbar
+@@endif /* SMALL_FONTS */
+@@endif ZMAIL_BASIC

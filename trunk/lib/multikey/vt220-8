@@ -1,0 +1,41 @@
+# vt220-8
+# Copyright 1993-94 Z-Code Software, a Division of NCD.
+#
+# This file is a collection of multikey commands that tell Z-Mail Lite
+# what bytes the various keys on a TO-300 terminal (emulating a
+# vt220 in 8-bit mode) generate.
+#
+# Note that these multikey bindings are tuned for a terminal directly
+# connected to a SVR4 system.  For other applications, you may need to
+# remove the leading \e (Escape) from each of the following multikey
+# definitions. For example, change:
+#   multikey \e\e17~ \<function1>
+# to
+#   multikey \e17~ \<function1>
+
+# keysequence -> name bindings for a vt220-8's standard keys.
+multikey \e\e17~ \<function1>
+multikey \e\e18~ \<function2>
+multikey \e\e19~ \<function3>
+multikey \e\e20~ \<function4>
+multikey \e\e21~ \<function5>
+multikey \e\e23~ \<function6>
+multikey \e\e24~ \<function7>
+multikey \e\e25~ \<function8>
+multikey \e\e26~ \<function9>
+multikey \e\e28~ \<function10>
+multikey \e\e29~ \<function11>
+multikey \e\e31~ \<function12>
+
+multikey \e\e3~  \<pageup>
+multikey \e\e6~  \<pagedown>
+multikey \e\eA   \<up>
+multikey \e\eB   \<down>
+multikey \e\eD   \<left>
+multikey \e\eC   \<right>
+multikey \e\eZ   \<s-tab>
+multikey \e\e4~  \<delete>
+multikey \e\e5~  \<end>
+multikey \e\e2~  \<home>
+multikey \e\e32~ \<scrolllock>
+

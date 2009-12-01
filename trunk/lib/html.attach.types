@@ -1,0 +1,520 @@
+# This version of attach.types displays HTML inline when used with special
+# versions of m_msg.c and m_msg.h stored in html.m_msg.c and html.m_msg.h
+# and the gnu HTML widget. To make the change take effect the real changes
+# have to be made in attach.types.src so that they show up in attach.types
+# after the build.
+#
+# attach.types
+#
+# This file configures how Z-Mail handles e-mail attachments of
+# various types.
+#
+# The format of the attachment types description file is as follows:
+#
+# PATH    directory1:directory2:...
+#
+# TYPE type_key	"viewer program"	"editor program"	"comment"
+# CODE code_key	"encoding program"	"decoding program"	"comment"
+# ENCODE	type_key	code_key
+# BITMAP	type_key	pathname
+# ALIAS		alias_name	type_key
+# INLINE	type1_key type2_key type3_key ...
+#
+# Entries may be continued on more than one line by using a backslash.
+# Comments are placed at the end of a line or on a line with a "#" in
+# column one.
+#
+# The PATH entry is exported into the environment before running any
+# of the programs specified for TYPE or CODE entries.  If more than
+# one PATH entry appears, the directories in later entries are appended
+# to those already given.  If no PATH entry appears, the user's PATH
+# environment is used, with /usr/lib/Zmail/bin prepended.
+# 
+# Type keys and code keys which are to be used for creation of attachments
+# must conform to the MIME standard.  Otherwise, they are only
+# used only for interpretation of incoming attachments.  
+# At the time of this writing, the MIME specification is an Internet draft.  
+# To summarize the MIME naming conventions, keys are strings, and their 
+# interpretation is not case-sensitive.  Keys should not 
+# include spaces, tabs, controls, or any of the following characters:   
+#		()<>@,;:\"[]?=
+# Other non-alphabetic characters are OK. The type name
+# is of the form "type/subtype".  Types and subtypes should not contain 
+# the character: '/'.  In general, the top-level type is used
+# to declare the general type of data, while the subtype specifies a
+# specific format for the data.  A new type or subtype must be prefixed
+# with the string: "x-".  Generally, it is better to define a new subtype 
+# of a pre-defined top-level type rather than create a new top-level type
+# This increases the likelihood of another MIME
+# mailer treating the data appropriately. In contrast to type keys,
+# creation of extended code keys is strongly discouraged, as it seems
+# likely to hinder interoperability with little potential benefit.
+#
+# Programs are UNIX /bin/sh commands or (for TYPE only) Z-Mail internal 
+# commands.  They should therefore be enclosed in quotes to protect spaces, 
+# pipe symbols, etc.
+#
+# Note that encoding programs MUST produce 7-bit ASCII as output, or the
+# Mail Transport Agent may not properly process the message.
+#
+# If a TYPE viewer or editor begins with a ":" character, it is treated
+# as a Z-Mail command and is executed in the current Z-Mail session.
+# Otherwise, all programs are executed in external /bin/sh processes.
+# If a program string begins with a "|" character, then it will be fed
+# its data on the standard input.  If it ends with a "|" character,
+# then it produces data on standard output.
+#
+# If it contains one %s (printf string-format) anywhere, then a file
+# name is inserted at that point for processing of that file.  If a
+# program string includes a %t character, then the content-type is
+# inserted at that point.  If it contains an expression of the form
+# %{name}, than the value of the content parameter of that name is
+# inserted at that point.  Any such expressions should be surrounded
+# by single quotes.  On UNIX systems, this prevents expansion by the
+# UNIX shell.
+#
+# CODE programs must have either both a leading and a trailing "|", or
+# a %s and one "|", or only a "%s" (in which case it is assumed the
+# file is modified in place); they may not have all three.
+#
+# TYPE editors and viewers should never have a trailing "|", and those
+# that have neither a leading "|" nor a "%s" will simply be executed,
+# and can find their input files themselves.  Editors and viewers may
+# have a trailing "&" character to indicate that Z-Mail should not wait
+# for the program to execute, but should instead run it in the background.
+# This is useful only for GUI-oriented programs, or those that do not
+# actually produce any screen output (postprocessors).  The variable
+# "attach_types" can be used to supply different attachment type files
+# depending on the mode in which the program is started.
+#
+# The ENCODE pairs are used for sending only, and specify that files of
+# the given type_key should automatically be encoded using the code_key.
+#
+# The type_key is placed (or found) in the "Content-Type:" header.
+# The code_key is placed (or found) in the "Content-Transfer-Encoding:" header.
+# The type_key from an older version of Z-Mail is found in the 
+#	"X-Zm-Data-Type:" header.
+# The code_key from an older version of Z-Mail is found in the 
+#	"X-Zm-Encoding-Algorithm:" header.
+#
+# BITMAP directives specify a file containing bitmap data for the icon
+# to be displayed when an attachment of the corresponding type is found.
+# If a relative path is specified, it is taken to be relative to the
+# /usr/lib/Zmail directory, NOT relative to the current directory.
+# BITMAP directives are used only in GUI mode.
+#
+# ALIAS directives specify that messages labeled as type
+# alias_name should be treated as type type_key.  This is useful for
+# understanding messages from older versions of Z-Mail and from other 
+# mail programs, where different names are used for the same types.
+# Alias names are strings, and their interpretation is NOT 
+# case-sensitive.  They should not include spaces or tabs, 
+# but other non-alphabetic characters are OK.
+#
+# The INLINE directive lists types that Z-Mail should attempt to display
+# (or edit) in-line in the message display window (or compose window).
+# This presently applies only to types that can reasonably be represented
+# as text.  Type alias names may also appear in the INLINE directive; if
+# the true name of an aliased type is inlined, then all aliases for it
+# are also; but inlining an alias name does not automatically inline the
+# corresponding true type.  More than one INLINE directive may appear.
+#
+# If a PATH is specified here, it will override the user's PATH environment
+# and restrict attachment programs to the listed directories.  You should
+# do this only if you are concerned about security, because most users will
+# be confused if programs in their PATH become unavailable.
+#
+# PATH	/usr/lib/Zmail/bin:/bin:/usr/bin:/usr/ucb:/usr/bsd
+# PATH	/usr/local/bin:/usr/bin/X11
+
+# MIME definitions
+
+CODE	base64	"| mimencode -b |"	"| mimencode -b -u |"
+CODE	quoted-printable	"| mimencode -q |"	"| mimencode -q -u |"
+
+ENCODE  text/x-zm-Folder		base64
+ENCODE	image/gif			base64
+ENCODE	image/jpeg			base64
+ENCODE	image/tiff			base64
+ENCODE	audio/basic			base64
+ENCODE	video/mpeg			base64
+ENCODE  video/quicktime			base64
+ENCODE	application/octet-stream	base64
+ENCODE	application/pdf			base64
+ENCODE	application/postscript		base64
+ENCODE	text/plain			None
+ENCODE	text/tab-separated-values	quoted-printable
+ENCODE	message/rfc822		 	None
+ENCODE	message/news		 	None
+ENCODE	message/partial		 	None
+ENCODE	message/delivery-status	 	None
+ENCODE  application/applefile		base64
+ENCODE	application/x-annotator		base64
+ENCODE	application/x-inventor		base64
+
+#The rest of this stuff will ultimately be placed in the mailcap file
+
+BITMAP	application/octet-stream	bitmaps/binary.xbm
+BITMAP	application/pdf			bitmaps/book.xbm
+BITMAP	application/postscript		bitmaps/book.xbm
+BITMAP	image/jpeg			bitmaps/bitmap.xbm
+BITMAP	image/gif			bitmaps/bitmap.xbm
+BITMAP	image/tiff			bitmaps/bitmap.xbm
+
+BITMAP	image/x-xwd			bitmaps/bitmap.xbm
+BITMAP	audio/basic			bitmaps/sound.xbm
+BITMAP	video/mpeg			bitmaps/movie.xbm
+BITMAP	text/plain			bitmaps/page.xbm
+BITMAP	text/richtext			bitmaps/page.xbm
+BITMAP	text/enriched			bitmaps/page.xbm
+BITMAP	text/tab-separated-values	bitmaps/page.xbm
+BITMAP	text/x-html			bitmaps/book.xbm
+BITMAP	message/rfc822			bitmaps/pager.xbm
+BITMAP	message/news			bitmaps/pager.xbm
+BITMAP	message/delivery-status		bitmaps/page.xbm
+
+BITMAP	multipart/alternative		bitmaps/attach.xbm
+BITMAP	multipart/mixed			bitmaps/attach.xbm
+BITMAP	multipart/parallel		bitmaps/attach.xbm
+BITMAP	multipart/signed		bitmaps/pager.xbm
+BITMAP	multipart/digest		bitmaps/pager.xbm
+BITMAP	message/partial			bitmaps/pager.xbm
+
+BITMAP  application/applefile		bitmaps/binary.xbm
+
+# Entry for plain files, using variables for the editor.  This entry
+# is tuned for the X11 GUI, and should differ for character modes.
+TYPE	text/plain	":page -c '%{charset}' '%s'"	":page_edit '%s'"	"Text"
+
+TYPE	application/octet-stream	None	None	"Data"
+
+TYPE	text/richtext	\
+	"|metamail -P -d -q -x -m zmail -b -c text/richtext 2>&1 &" \
+	None	"Rich Text"
+
+TYPE	text/enriched	\
+	"|metamail -P -d -q -x -m zmail -b -c text/enriched 2>&1 &" \
+	None	"Rich Text"
+
+TYPE	text/tab-separated-values	\
+	":page -c '%{charset}' '%s'"	\
+	":page_edit '%s'"		\
+	"Tab-Separated Values"
+INLINE text/tab-separated-values
+
+TYPE	text/x-html	\
+	":sh $zmlib/bin/xwrap $zmlib/bin/tell-mosaic goto file://localhost'%s' &" \
+	None	"Hypertext"
+INLINE	text/x-html
+
+# Netscape 1.1 and later
+#
+#TYPE	text/x-html	\
+#	":sh $zmlib/bin/xwrap $zmlib/bin/tell-netscape openFile '%s' &" \
+# 	None	"Hypertext"
+
+ALIAS	text/html	text/x-html
+
+
+TYPE	message/external-body	\
+	":view_external '%s' %{access-type} %{name} %{site} %{directory} %{mode} %{server}"	\
+	None	"External Part"
+INLINE	message/external-body
+
+TYPE		message/partial	\
+	":window_sh $zmlib/bin/metamail -P -q -m zmail -b -c '%t\; id=%{id}\; number=%{number}\; total=%{total}' '%s' -d 2>&1 &"	\
+	None	"Partial Message"
+
+#TYPE	multipart/alternative	\
+#	":set __name=%s ; detach -explode -name $__name:t" \
+#	None	"Alternate Parts"
+
+TYPE	multipart/alternative	\
+	":window_sh $zmlib/bin/metamail -P -q -m zmail -b -c '%t\; boundary=%{boundary}' '%s' -d 2>&1 &" \
+	None	"Alternate Parts"
+
+#TYPE	multipart/mixed	\
+#	":set __name=%s ; detach -explode -name $__name:t"	\
+#	None	"Mixed Parts"
+
+TYPE	multipart/mixed	\
+	":window_sh $zmlib/bin/metamail -P -q -m zmail -b -c '%t\; boundary=%{boundary}' '%s' -d 2>&1 &"	\
+	None	"Mixed Parts"
+
+TYPE	multipart/signed	\
+	":window_sh $zmlib/bin/metamail -P -q -m zmail -b -c '%t\; boundary=%{boundary}' '%s' -d 2>&1 &"	\
+	None	"Digital Signature"
+INLINE	multipart/signed
+
+TYPE	multipart/parallel	\
+	":window_sh $zmlib/bin/metamail -P -q -m zmail -b -c '%t\; boundary=%{boundary}' '%s' -d 2>&1 &"	\
+	None	"Parallel Parts"
+
+TYPE	multipart/digest	\
+	":window_sh $zmlib/bin/metamail -P -q -m zmail -b -c '%t\; boundary=%{boundary}' '%s' -d 2>&1 &"	\
+	None	"Mail Digest"
+INLINE	multipart/digest
+
+TYPE	message/rfc822	":view_msg '%s'"	None	"Message"
+INLINE	message/rfc822
+
+TYPE	message/news	":view_msg '%s'"	None	"News Article"
+INLINE	message/news
+
+TYPE	message/delivery-status	":page -c '%{charset}' '%s'"	":page_edit '%s'"	"Delivery Status"
+
+#
+# BinHex - used for Mac files that have a resource fork and
+#          are not explictly mapped via MACTYPE to a MIME type.
+#
+TYPE	application/mac-binhex40	"| hexbin |"	None	"Macintosh File"
+CODE	x-binhex	None		"| hexbin |"
+ENCODE	application/mac-binhex40	x-binhex
+BITMAP	application/mac-binhex40	bitmaps/binary.xbm
+
+# MIME image types
+
+# xloadimage doesn't understand tiff or bmp
+TYPE	image/jpeg	"xwrap xloadimage '%s' &"	None	"JPEG Image"
+TYPE	image/tiff	"xwrap xv '%s' &"	None	"TIFF Image"
+TYPE	image/x-winbmp	"xwrap xv '%s' &"	None	"Windows BMP Image"
+
+TYPE	image/gif	"xwrap xloadimage -quiet '%s' &"	\
+	"xwrap xwd -frame|quietly xwdtopnm|quietly ppmtogif > '%s'"	\
+	"Gif Image"
+
+# Extended MIME image types
+
+TYPE	image/x-xwd	"xwrap zxwud -in '%s' &"	\
+			"xwrap zxwd -out %s"	"X-Window"
+#TYPE	image/x-xwd	"xwrap xloadimage -quiet '%s' &"	\
+			"xwrap xwd -frame > '%s'"	"X-Window"
+#TYPE	image/x-xwd	"quietly xwdtopnm '%s' | xwrap xv - &"	\
+			"xwrap xwd -frame > '%s'"	"X-Window"
+
+# Entry for fax documents using the Z-Fax software from Z-Code.
+
+# Mime fax type
+TYPE	application/X-Zm-Fax	"xwrap zfax '%s' &"	None	"Z-Fax"
+BITMAP	application/X-Zm-Fax	bitmaps/fax.xbm
+
+# Older Z-Mail fax type, for viewing messages from Z-Mail 2.1 and earlier
+ALIAS	fax	application/X-Zm-Fax
+
+# video attachments -- most machines can't handle this.
+
+# MIME video
+#TYPE	video/mpeg	None	None	"MPEG Video"
+TYPE	video/mpeg	"xwrap mpeg_play -quiet '%s' 2>&1 > /dev/null &" \
+			None	"MPEG Video"
+TYPE	video/quicktime	"xwrap xanim '%s' 2>/dev/null &" \
+			None	"QuickTime Video"
+
+# MailTool encodings, sort of ... note that output file cannot be specified
+# with standard uudecode, so this is not a particularly safe encoding.
+# Entered twice because Sun's comma-separated list is order-independent.
+#CODE uuencode,compress	"|compress|uuenpipe|"	"|uudepipe|uncompress|"	
+#CODE compress,uuencode	"|compress|uuenpipe|"	"|uudepipe|uncompress|"
+# And twice more because Sun sometimes puts spaces in (sigh).
+#CODE "uuencode, compress"	"|compress|uuenpipe|"	"|uudepipe|uncompress|"
+#CODE "compress, uuencode"	"|compress|uuenpipe|"	"|uudepipe|uncompress|"
+
+# MailTool "default" type
+ALIAS	default	text/plain
+
+# PATH	/usr/openwin/bin
+#TYPE	"application/postscript"	"pageview '%s' &"	None	\
+#	"Postscript"
+# MailTool "postscript-file" type
+ALIAS	postscript-file	application/postscript
+
+
+# Types which don't seem to be plain text but usually are
+# Should test parameter format=text in application/pgp
+TYPE	application/pgp		":page '%s'"		None	"PGP Text"
+INLINE	application/pgp
+ALIAS	application/X-pgp-message application/pgp
+ALIAS	text/x-pgp application/pgp
+
+
+
+#
+#	for viewing messages from Z-Mail 2.1 and earlier
+#
+
+# Entry for plain files, using variables for the editor.  This entry
+# is tuned for the X11 GUI, and should differ for character modes.
+ALIAS	Text		text/plain
+ALIAS	X-Zm-Text	text/plain
+
+# You can send folders as attachments.  To view, detach to a file and
+# then open it.  You may want to use "merge" instead if you want the
+# contents of the folder to be listed with the existing folder.
+TYPE	text/x-zm-Folder	":view_fldr '%s'"	":copy '%s'"	\
+	"Mail Folder"
+BITMAP	text/x-zm-Folder	bitmaps/folders.xbm
+ALIAS   application/x-zm-Folder  text/x-zm-Folder
+ALIAS	Folder	text/x-zm-Folder
+
+ALIAS	Binary	application/octet-stream
+
+#
+#	Various extended encodings
+#
+# Note: Use of these encodings for message sending is not recommended as it 
+# will hinder interoperability with other MIME mailers.
+
+# x-compress64 - An extended encoding which does compression and uses
+# MIME base64 encoding.  Data encoded in this fashion is more likely
+# to make it through various gateways than uuencoded data.
+
+#CODE	x-compress64	"|compress| mimencode -b |"	\
+	"| mimencode -b -u | uncompress |"	"Any Large File"
+
+# Default encodings from Z-Mail 2.1 and earlier, and appropriate
+# corresponding MIME encoding definitions.
+
+# MIME type
+# CODE	x-uucompress	"uucompress '%s' |"	"|uudepipe|uncompress|"
+# Old Z-mail type
+CODE	uucompress	"uucompress '%s' |"	"|uudepipe|uncompress|"
+
+#CODE	x-compress	"|compress|btoa|"	"|atob|uncompress|"	\
+	"Any Large File"
+#CODE	x-btoa	"|btoa|"		"|atob|"
+CODE	compress	"|compress|btoa|"	"|atob|uncompress|"	\
+	"Any Large File"
+CODE	btoa	"|btoa|"		"|atob|"
+
+# Standard uuencode format.  Because uudecode does not support piped
+# output, we replace uuencode and uudecode with shell scripts.  These
+# scripts or the entries here that use them may require tweaking if
+# your operating system will not execute them automatically via /bin/sh.
+# Note that uuencode is not a standard MIME encoding, so we disable it
+# as an outgoing encoding by default.  Uncomment the x-uuencode line
+# below if you need to send uuencoded data.
+#CODE	x-uuencode	"uuenpipe '%s' |"	"|uudepipe|"	"UUCP encoding"
+CODE	uuencode	"uuenpipe '%s' |"	"|uudepipe|"	"UUCP encoding"
+
+# Encrypted messages.  The zcrypt function requires either the UNIX "crypt"
+# command or an alternate encrypter specified by the CRYPT environment var.
+#CODE	x-encrypt	"|zcrypt -e|"	"|zcrypt -u|"	"Encryption"
+CODE	encrypt	"|zcrypt -e|"	"|zcrypt -u|"	"Encryption"
+
+#
+#	Extended MIME types for various applications, and definitions
+#	for viewing messages from Z-Mail 2.1 and earlier
+#
+
+# image/pbm is a newly registered MIME type
+
+TYPE	image/pbm	"xwrap xloadimage '%s' &"	None	"PBM Bitmap"
+BITMAP	image/pbm	bitmaps/bitmap.xbm
+# type name which might be used by other MIME implentations
+ALIAS	image/x-pbm	image/pbm
+
+# X and OpenLook types.  These may require modifying the PATH.
+# PATH	/usr/bin/X11:/usr/openwin/bin
+TYPE	image/x-xbm	"xwrap bitmap '%s' &"	\
+			"xwrap bitmap '%s' &"	"X11 Bitmap"
+TYPE	image/x-xpm1	"xwrap olpixmap '%s' &"	None	"OL Pixmap"
+ALIAS	bitmap		image/x-xbm
+ALIAS	image/x-bitmap	image/x-xbm
+ALIAS	image/x-xbitmap	image/x-xbm
+ALIAS	xpm1		image/x-xpm1
+ALIAS	xwd		image/x-xwd
+ALIAS	gif		image/gif
+
+# Supply icons for these types.  This first line is a bit mind-boggling,
+BITMAP	image/x-xbm	bitmaps/bitmap.xbm
+BITMAP	image/x-xpm1	bitmaps/bitmap.xbm
+
+# type name which might be used by other MIME implentations
+ALIAS	image/xwd	image/x-xwd
+
+# Island Graphics products.  These first three types invoke the Island
+# tools directly.  These will work anywhere that has the Island tools.
+# If you are using PATH directives, you may need to add the local path.
+# PATH	/usr/local/Island/bin
+TYPE	application/x-Island-Write	"xwrap IslandWrite '%s' &"	\
+	"xwrap IslandWrite '%s' &"	"IslandWrite"
+TYPE	application/x-Island-Draw	"xwrap IslandDraw '%s' &"	\
+	"xwrap IslandDraw '%s' &"	"IslandDraw"
+TYPE	application/x-Island-Paint	"xwrap IslandPaint '%s' &"	\
+	"xwrap IslandPaint '%s' &"	"IslandPaint"
+ALIAS	Island-Write	application/x-Island-Write
+ALIAS	Island-Draw	application/x-Island-Draw
+ALIAS	Island-Paint	application/x-Island-Paint
+# type names which might be used by other MIME implentations
+ALIAS	application/Island-Write	application/x-Island-Write
+ALIAS	application/Island-Draw		application/x-Island-Draw
+ALIAS	application/Island-Paint	application/x-Island-Paint
+
+# These two types use the a special Z-Code utility to contact a running
+# copy of the Island software and pass it a picture to display.  This
+# works only with recent versions of Island software and only when the
+# island_rq program is present in /usr/lib/Zmail/bin.
+#TYPE	application/x-Island-Draw	"xwrap island_rq -draw '%s' &"	\
+	"xwrap island_rq -draw '%s'"	IslandDraw	"IslandDraw"
+#TYPE	application/x-Island-Paint	"xwrap island_rq -paint '%s' &"	\
+	"xwrap island_rq -paint '%s'"	IslandPaint	"IslandPaint"
+
+# The Island bitmaps.
+BITMAP	application/x-Island-Write	bitmaps/islwrite.xbm
+BITMAP	application/x-Island-Draw	bitmaps/isldraw.xbm
+BITMAP	application/x-Island-Paint	bitmaps/islpaint.xbm
+
+# FrameMaker.  If you are using PATH directives, you may need to add the
+# local path to frame here.
+# PATH	/usr/frame/bin
+TYPE	application/x-FrameMaker	"xwrap maker -f '%s' &"	\
+	"xwrap maker -f '%s'"		"FrameMaker"
+# "fmclient" is a derivative of the "docclient" example included with Frame
+#TYPE	application/x-FrameMaker	"xwrap viewer -f '%s' &"	\
+	"xwrap fmclient -f '%s'"	"FrameMaker"
+BITMAP	application/x-FrameMaker	bitmaps/frame.xbm
+# type names which might be used by other MIME implentations
+ALIAS	FrameMaker			application/x-FrameMaker
+ALIAS	application/FrameMaker		application/x-FrameMaker
+# MailTool type
+ALIAS	framemaker-document		application/x-FrameMaker
+
+# The Wingz spreadsheet.
+TYPE	application/x-Wingz	"xwrap Wingz '%s' &"	\
+				"xwrap Wingz '%s' &"	"Wingz"
+# The following alternate definition was contributed by SGI
+#TYPE	application/x-Wingz	'if [ -z "`ps -ef|grep -v grep|grep Wingz`" ]; then Wingz '%s' & else xconfirm -t "Please open the detached document from" -t "within the running Wingz program." -noframe > /dev/null; fi'	 None "Wingz"
+
+BITMAP	application/x-Wingz	bitmaps/wingz.xbm
+ALIAS	Wingz			application/x-Wingz
+# type name which might be used by other MIME implentations
+ALIAS	application/Wingz	application/x-Wingz
+
+# Entry for directory tree shipments, using the common "tarmail" format.
+# In this example, the "viewer" is a post-processing operation; the files
+# are not displayed, they are extracted into a local directory tree.
+TYPE	TarMail	"|atob|uncompress|tar xvf -"	None	"Tar Archive"
+
+# Postscript is a recognized type, but there is no universally available
+# postscript viewer, and one is not provided with Z-Mail.
+#
+# If you have an interactive Postscript interpreter, you should be aware
+# that PostScript is an interpretive language that can execute operating
+# system commands.  Appropriate security precautions should be taken
+# whenever using any interpreted scripting language.
+#
+# Postscript is a trademark of Adobe Systems Incorporated which is
+# registered in certain jurisdictions.
+
+# MIME type
+TYPE	application/postscript	None	None	"Postscript"
+
+# old Z-Mail type
+ALIAS	Postscript	application/postscript
+
+# Adobe Acrobat Portable Document Format
+TYPE	application/pdf			\
+	"xwrap acroread '%s' &"		\
+	None				\
+	"Portable Document Format"
+

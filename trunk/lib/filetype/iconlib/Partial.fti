@@ -1,0 +1,125 @@
+
+# partial, version 1
+# (three sheets paper, bottom half gray)
+#	Icon Shadow
+		color(shadowcolor);
+		bgnpolygon();
+			vertex(38.83, 0.22);
+			vertex(22.00, 9.12);
+			vertex(60.55, 28.78);
+			vertex(77.82, 20.20);
+		endpolygon();
+
+#	Paper Sheet 1
+		color(iconcolor);
+		bgnoutlinepolygon();
+			vertex(22.00, 19.87);
+			vertex(21.95, 79.90);
+			vertex(60.01, 98.93);
+			vertex(60.01, 39.20);
+		endoutlinepolygon(outlinecolor);
+
+#	Third Sheet of Paper -- Closed
+		color(-255);
+		bgnoutlinepolygon();
+			vertex(22.00, 19.87);
+			vertex(21.98, 45.11);
+			vertex(59.68, 72.73);
+			vertex(59.72, 38.65);
+		endoutlinepolygon(shadowcolor);
+
+#	Paper Sheet 2
+		color(iconcolor);
+		bgnoutlinepolygon();
+			vertex(30.69, 15.53);
+			vertex(30.71, 75.82);
+			vertex(68.78, 94.86);
+			vertex(68.70, 34.97);
+		endoutlinepolygon(outlinecolor);
+
+#	Third Sheet of Paper -- Closed
+		color(-255);
+		bgnoutlinepolygon();
+			vertex(30.69, 15.53);
+			vertex(30.67, 40.77);
+			vertex(68.37, 68.39);
+			vertex(68.41, 34.31);
+		endoutlinepolygon(shadowcolor);
+
+#	Third Sheet of Paper -- Closed
+		color(iconcolor);
+		bgnoutlinepolygon();
+			vertex(39.59, 11.51);
+			vertex(39.59, 71.02);
+			vertex(77.26, 89.86);
+			vertex(77.31, 30.29);
+		endoutlinepolygon(outlinecolor);
+
+#	Lines On Closed Sheet of Paper
+		color(-68);
+		bgnline();
+			vertex(46.81, 67.35);
+			vertex(71.09, 79.71);
+		endline();
+
+#	Path_1
+		color(outlinecolor);
+		bgnline();
+			vertex(46.81, 60.08);
+			vertex(71.52, 72.11);
+		endline();
+
+#	Path_2
+		bgnline();
+			vertex(46.81, 53.02);
+			vertex(64.14, 61.47);
+		endline();
+
+#	Path_3
+		bgnline();
+			vertex(46.81, 45.53);
+			vertex(67.61, 55.93);
+		endline();
+
+#	Path_4
+		color(-17);
+		bgnline();
+			vertex(46.81, 38.68);
+			vertex(58.21, 44.38);
+		endline();
+
+#	Path_5
+		color(outlinecolor);
+		bgnline();
+			vertex(46.81, 31.41);
+			vertex(70.91, 43.46);
+		endline();
+
+#	Path_6
+		bgnline();
+			vertex(46.81, 24.35);
+			vertex(66.30, 34.10);
+		endline();
+
+#	Path_4
+		color(-17);
+		bgnline();
+			vertex(46.80, 37.20);
+			vertex(58.30, 42.95);
+		endline();
+
+#	Lines On Closed Sheet of Paper
+		color(-68);
+		bgnline();
+			vertex(47.00, 66.00);
+			vertex(71.28, 78.36);
+		endline();
+
+#	Third Sheet of Paper -- Closed
+		color(-255);
+		bgnoutlinepolygon();
+			vertex(39.59, 11.51);
+			vertex(39.57, 36.75);
+			vertex(77.27, 64.37);
+			vertex(77.31, 30.29);
+		endoutlinepolygon(shadowcolor);

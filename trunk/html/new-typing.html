@@ -1,0 +1,252 @@
+<HTML>
+<HEAD>
+<TITLE>MIME Type Resolution</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>MIME Type Resolution</H1>
+<ADDRESS>srwebster</ADDRESS>
+<P>
+<pre>
+Greg, Tony, and I have come up with the following scheme that Z-Mail
+will use on all platforms to (hopefully) allow maximum flexibility and
+(apparent) intelligence in handling the typing of MIME parts.
+
+The tools we can use
+--------------------
+
+On the Mac: Every file on the Mac has a "type" and a "creator."
+    For example, a Microsoft Word file has type "WDBN" and creator
+    "MSWD" (notated as 'WDBN/MSWD').  The Word application itself is
+    'APPL/MSWD'.
+
+    The creator tag of a file uniquely identifies the application that
+    can edit that file.  When an application creates a file, it
+    assigns to it a type corresponding to the kind of data it
+    contains.
+
+    For example, Word might create a file that contains some formatted
+    text that only Word can understand, so it assigns 'WDBN/MSWD' to
+    the file. It might also create a file that contains just plain
+    text, and assign 'TEXT/MSWD' to the file.  Any program that
+    understands files of type 'TEXT' can open the file.
+
+    We always use autotyping for Mac files when they're attached to a
+    message.
+
+On Windows:  The three-letter extension of an 8.3 filename is used
+    to type the file (e.g., '.jpg' indicates a JPEG-format file).
+    When an application is installed on Windows, it registers itself
+    as the (not 'an') editor of all files with certain .3 extensions.
+    It's likely that the user does not have their type-registration
+    database up-to-date, like if they just copied an app onto their
+    disk instead of installing it.
+
+    We always use autotyping for Windows files when they're attached
+    to a message (according to Tony).
+
+
+On UNIX: There is no tagging mechanism for identifying the type of a
+    UNIX file.  The user must tell Z-Mail what type a file is.
+
+      NOTE: This might change in the future if Ben's API for UNIX
+      platform-provided typing mechanisms (e.g., SGI's 'wstype',
+      'file', etc.) is designed & implemented. If such a mechanism
+      was available, then an additional directive UNIX2MIME might make
+      sense.  The local type determination rules for a particular UNIX-type
+      would reside in either an expanded TYPE directive, or a new
+      UNIXTYPE directive.
+
+    We never (except for MediaMail) use autotyping for UNIX files when
+    they're attached to a message.
+
+The attach.types directives
+---------------------------
+
+We propose that five new directives are added to attach.types:
+
+TYPEMAP <MIME-type> <Mac type/creator> <Windows-.3-extension> <UNIX-type>
+examples:
+TYPEMAP    image/gif   GIFf/QGIF .GIF "GIF image"
+TYPEMAP    application/x-excel-sheet TEXT/XCEL .XLS "Excel spreadsheet"
+TYPEMAP    application/x-excel-chart TEXT/XCEL .XLC "Excel chart"
+TYPEMAP    application/x-bolomap "Bolo/MAP " "" ""
+
+This directive maps incoming MIME types to Mac and Windows and UNIX
+types, and maps Mac and Windows types to each other (where the apps
+are cross-platform document-compatible, such as Word or Excel).
+
+Note that a UNIX-type is defined by the user in the attach.types file
+with a TYPE directive.  The current ALIAS mechanism could be
+supplanted by the TYPEMAP mechanism if it is deemed superior to
+display the UNIX-type rather than MIME-type in the UNIX UI.
+
+MAC2MIME   <Mac type/creator>  MIME-type
+examples:
+MAC2MIME  TEXT/XCEL application/x-excel
+MAC2MIME  WDBN/MSWD application/mac-binhex40
+
+This directive maps an outgoing Mac type to a MIME type.  There's a
+special case:
+
+MAC2MIME   <Mac type>/*  MIME-type
+
+where the '*' means 'any creator'. (There's no app out there that'll
+have a creator of '*', we trust.)  This special case allows common
+types, like 'TEXT' or 'GIFf', to be mapped (regardless of creator) en
+masse to MIME types, like 'text/plain' or 'image/gif'.
+
+DOS2MIME   .3-extension  MIME-type
+
+This directive maps an outgoing DOS/Windows type to a MIME-type.
+(Here, we assume that .3-extensions will map to the same MIME-type
+under both DOS & Windows.)
+
+DOSLAUNCH  .3-extension DOS-app-name
+
+This directive tells Z-Mail what DOS app to launch for editing/display
+of a particular .3-extension.
+
+WINLAUNCH  .3-extension Windows-app-name
+
+This directive tells Z-Mail what Windows app to launch for editing/display
+of a particular .3-extension in case the user didn't keep their
+registration database up-to-date.
+
+Heuristics
+----------
+
+There are a number of places the Z-Mail can look for information
+regarding the type of a MIME bodypart (some of these are probably new
+to you):
+
+	MIME type
+	Content-type 'name' parameter's .3-extension
+	Content-type 'x-realname' parameter's .3-extension
+	Content-type 'x-mac-type' & 'x-mac-creator' parameters
+	Filename embedded in the bodypart
+	Mac type/creator embedded in the bodypart
+
+Since a particular bodypart may be of an ambiguous or unusable type
+(e.g., application/mac-binhex40 or application/x-localapp), Z-Mail can
+refer to the other information available when typing the file.  We
+suggest that Z-Mail use the following priority of fallback information
+where present:
+
+1. Embedded Mac type/creator
+2. Embedded filename's .3-extension
+3. Content-type 'x-mac-type' & 'x-mac-creator' parameters
+4. Content-type 'x-realname' parameter's .3-extension
+5. Content-type 'name' parameter's .3-extension
+
+Note that we're assuming MIME types are always the most correct.  This
+may be a bad assumption, since users can screw up, but, hey.  There
+are a few special cases to handle in regard to the above list:
+
+  * Where the MIME type and any of the above information conflict
+    with each other (that is, the typing information found in any of
+    the 6 possible places is contradicted by information in a TYPEMAP
+    directive), the user should we presented with a warning when they
+    attempt to detach/display the part.  In some cases, the user will
+    have to mke a judgement of what type the part should be trated as
+    in the case of a conflict.
+
+  * Where the filename ('name' or 'x-realname' or embedded)
+    conflicts with the TYPEMAP type/creator->.3-extension mapping, and
+    if we're running under Windows, then forcibly change the
+    .3-extension of the file when it's written out to the .3-extension
+    specified in the TYPEMAP.
+
+  * Where there's no type/creator information available (it's a UNIX
+    or Windows file, for example), then if you're forced to rely on
+    the .3-extension for typing and one or more of the .3-extensions
+    available conflict with each other, follow the priority listed
+    above & warn the user.  Forcibly change the .3-extension of the
+    file if necessary.
+
+Some details
+------------
+
+What 'embedded' means:
+    encoding schemes such as BinHex, AppleSingle, and AppleDouble are
+    capable of encoding the real name and Mac type/creator of a Mac
+    (or other) file along with the file's data.  This information is
+    generally absolutely reliable, since these encodings do their work
+    without user intervention.
+
+
+What are 'x-mac-type', 'x-mac-creator', and 'x-realname'?
+    Encoding schemes such as 'uuencode' do not losslessly preserve the
+    filename and totally lose the type/creator, so this information
+    must be stuck in the Content-type header as nonstandard fields.
+    Eudora uses 'x-mac-type' and 'x-mac-creator'.  I made up
+    'x-realname', the functionality of which we need until the Content
+    Disposition RFC is stabilized; that RFC purportedly will specify a
+    mechanism for losslessly transmitting a filename.
+
+What about Content-disposition?
+    Hey, you're pretty sharp.  Well, the MIME draft (RFC1521) says this
+    about the 'name' field of Content-type:
+
+      Note that, as specified here, the tokens that describe
+      external-body data, such as file names and mail server commands,
+      are required to be in the US-ASCII character set.  If this
+      proves problematic in practice, a new mechanism may be required
+      as a future extension to MIME, either as newly defined
+      access-types for message/external-body or by some other
+      mechanism.
+
+      [...]
+
+      RFC 1341 also defined the use of a "NAME" parameter which gave a
+      suggested file name to be used if the data were to be written to
+      a file.  This has been deprecated in anticipation of a separate
+      Content-Disposition header field, to be defined in a subsequent
+      RFC.
+
+    By the way, here's a snippet of a Eudora 2.0.1-generated message:
+
+      Content-Type: image/gif; name="=brain.gif"
+       ; x-mac-type="47494666"; x-mac-creator="51476966"
+      Content-Disposition: attachment; filename="=brain.gif"
+      Content-Transfer-Encoding: base64
+
+    Z-Code needs more collective knowledge about Content-Disposition.
+
+What goes in the 'name' parameter of Content-type?
+    A safe, maybe 8.3, version of the real filename should be
+    placed in the 'name' parameter of Content-type.  This is at
+    Carlyn's suggestion, who warns that there are dumb mailers out
+    there that'll die of they're given a filename that their
+    filesystem can't hold.
+
+Who's going to write this stuff?
+    As soon as people think that all the above is what we should do,
+    in some form, then Greg and Tony are going to start using it
+    immediately in their work.  We need these mechanisms for MIME file
+    transport as soon as we can write them (there are hungry clients
+    to feed).
+
+And another thing
+-----------------
+
+We should consider (backwards-compatibly, of course) changing these
+attach.types directives' names to make the Z-Mail seem less
+UNIX-centric and lessen user confusion:
+
+    PATH -> UNIXPATH (and add DOSPATH & WINPATH?)
+    TYPE -> UNIXTYPE
+    CODE -> UNIXCODER
+    BITMAP -> UNIXICON (and add MACICON, WINICON if sensible?))
+
+keep DEFAULT; it's probably OK.
+
+That's it
+---------
+
+I'm certain I've forgotten something; please let me know what it is.
+
+thanks,
+-steve
+</pre>
+</BODY>
+</HTML>

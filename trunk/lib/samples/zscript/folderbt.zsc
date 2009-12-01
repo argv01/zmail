@@ -1,0 +1,72 @@
+# Sample Z-Script functions: folder_to_button, walk_tree, folder_buttons, prompt_folder_buttons
+#                    button: Folder Buttons...
+
+function folder_to_button() {
+#%
+#       folder_to_button foldername
+#
+# Convert a folder name into a button that opens that folder
+#%
+    if $# == 0
+	error "usage: $0 foldername"
+	return -1
+    endif
+    if ! -F $1
+	echo "$1 is not a folder"
+	return 0			# Don't break loops
+    endif
+    if ! $?suffix
+	set suffix = _
+    endif
+    set base = $1:t
+    if "$base" =~ *[0-9.]*
+	set suffix = "${suffix}x"
+	set cmdname = folder$suffix
+    else
+	set cmdname = $base
+    endif
+    cmd $cmdname "open $1"
+    button -n "$base" $cmdname
+}
+
+function walk_tree() {
+    if $# < 2
+	return 0
+    endif
+    set next = $1
+    shift
+    if -e $next/.
+	foreach f ($next/*) 'walk_tree $f $*'
+	return 0
+    else
+	$* $next
+    endif
+    unset next
+}
+
+function folder_buttons() {
+#%
+#       folder_buttons 
+#
+#  Create a button on the main window for each file in the folder directory.
+#%
+    if $# == 0
+	if ! $?folder
+	    return -1
+	endif
+	set - $folder
+    endif
+    set recursive
+    walk_tree $1 folder_to_button
+    unset recursive
+}
+
+function prompt_folder_buttons() {
+    ask \
+"Create a button on the main window for\neach file in your folder directory?"
+    if $status == 0
+	folder_buttons
+	unbutton "Folder Buttons ..."
+    endif
+}
+button -n "Folder Buttons..." prompt_folder_buttons

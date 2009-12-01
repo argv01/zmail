@@ -1,0 +1,94 @@
+# Sample Z-Script functions: searchit, find-all
+#                    button: Find It
+
+function searchit() {
+#%
+#   searchit [-c command] [-r] folder [pick-options] pattern
+#
+# Open the indicated folder (read-only if -r) and search it.  If the
+# pattern is found, leave the folder open.  Otherwise close it.  If
+# a command is specified, apply it to all the matching messages.
+#%
+    if $1 == -c
+	set _command="$2"
+	shift 2
+    else
+	set _command=msg_list
+    endif
+    if $1 == -r
+	set _open="open -r"
+	shift
+    else
+	set _open=open
+    endif
+    if $?savefolder
+	if $1 != $savefolder
+	    $_open -N $1
+	else
+	    folder -N $1
+	endif
+	if $status == -1
+	    return 0
+	endif
+    else
+	$_open $1
+    endif
+    shift
+    if $# == 0
+	error ${0}: No pattern specified.
+	return -1
+    endif
+    pick $* | $_command
+    if $status == -1
+	return -1
+    endif
+    if X$output == X
+	close -N
+    endif
+    unset _open _command
+    return 0
+}
+
+function find-all() {
+#%
+#   find-all [pick-options] pattern
+#
+# Search every file in $folder for the pattern.  Open all the folders
+# for which there is a match.  Mark all the matching messages in the
+# newly opened folders.  If there are matches in the current folder,
+# show the message summaries of (or select in GUI mode) the matches.
+#%
+    if $# == 0
+	error ${0}: No pattern specified.
+	return -1
+    endif
+    set savefolder=$thisfolder
+    ask 'WARNING:\n\
+This function updates and closes all folders that\n\
+do not contain messages matching the search pattern.\n\
+Proceed anyway?'
+    if $status != 0
+	return 0
+    endif
+    foreach _f (+*) 'searchit -c mark -r $_f $*'
+    if $status != 0
+	unset savefolder _f
+	return -1
+    else
+	unset savefolder _f
+    endif
+    if is_gui
+	# "folder -l" pops up Folders dialog in GUI mode, so we don't do it
+	:m | unmark				# Select 'em and unmark 'em
+    else
+	echo
+	echo Found matching messages in:
+	folder -l
+	echo
+	:m | unmark | from
+	if is_fullscreen
+	    echo				# Leave an extra blank line
+	endif
+    endif
+}
+button -n "Find It" find-all

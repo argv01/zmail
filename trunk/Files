@@ -1,0 +1,1477 @@
+# zmail file list
+# $RCSfile: Files,v $
+# $Revision: 1.138 $
+# $Date: 2005/04/27 08:46:10 $
+# $Author: syd $
+
+@@if DOS
+HEADERS:
+dos/include/dirent.h
+dos/include/msdos.h
+dos/include/pwd.h
+dos/include/stubs.h
+
+SOURCES:
+dos/dirent.c
+dos/fsfix.c
+dos/getchar.c
+dos/popen.c
+dos/pwd.c
+dos/stubs.c
+
+SOURCES:
+dos/util/make.ini
+dos/util/makefile
+@@endif DOS
+
+@@if APOLO
+SOURCES:
+custom/apollo_file.c
+custom/apollo_pad.c
+@@endif APOLO
+
+@@ifdef USE_FAM
+SOURCES:
+shell/fam.c
+
+HEADERS:
+include/zm_fam.h
+@@endif USE_FAM
+
+@@if GUI
+UTILITIES:
+lib/zmail.menus
+
+@@if MOTIF
+HEADERS:
+gui/zeditres.h
+include/gui_def.h
+include/gui_mac.h
+include/zmframe.h
+xt/WinWid.h
+xt/WinWidP.h
+
+SOURCES:
+gui/critical.c
+gui/gui_cmds.c
+gui/pass_buck.c
+xt/WinWid.c
+xt/destroy.c
+xt/xt_util.c
+
+@@if XT_R4_INCLUDES
+SOURCES:
+xt/TMstate.c
+@@endif XT_R4_INCLUDES
+
+HEADERS:
+bitmaps/alias.xbm
+bitmaps/attach.xbm
+bitmaps/bang0.xbm
+bitmaps/bang1.xbm
+bitmaps/buttons.xbm
+bitmaps/ck_empty.xbm
+bitmaps/ck_mark.xbm
+bitmaps/comp.xbm
+bitmaps/droptarg.xbm
+bitmaps/envelope.xbm
+bitmaps/filters.xbm
+bitmaps/folder.xbm
+bitmaps/folders.xbm
+bitmaps/functions.xbm
+bitmaps/headers.xbm
+bitmaps/help.xbm
+bitmaps/license.xbm
+bitmaps/lpr.xbm
+bitmaps/menus.xbm
+bitmaps/options.xbm
+bitmaps/pager.xbm
+bitmaps/pagerd.xbm
+bitmaps/pickdate.xbm
+bitmaps/pickpat.xbm
+bitmaps/quest.xbm
+bitmaps/readmsg.xbm
+bitmaps/repl.xbm
+bitmaps/save.xbm
+bitmaps/sort.xbm
+bitmaps/srch.xbm
+bitmaps/templ.xbm
+bitmaps/toolbox.xbm
+bitmaps/zm_empty.xbm
+bitmaps/zm_full.xbm
+bitmaps/zm_logo.xbm
+@@if FONTS_DIALOG
+bitmaps/fonts.xbm
+@@endif FONTS_DIALOG
+@@if PAINTER
+bitmaps/paint.xbm
+@@endif PAINTER
+
+HEADERS:
+include/Xlibint.h
+include/actionform.h
+include/ks_names.h
+include/ks_tables.h
+include/xlibint.h
+include/zm_motif.h
+motif/fallback.h
+motif/fonts_gc.h
+motif/xm/sanew.h
+motif/xm/sanewp.h
+
+@@if IXI_DRAG_N_DROP
+HEADERS:
+motif/ixi/dropin.h
+
+SOURCES:
+motif/ixi/dropin.c
+@@endif IXI_DRAG_N_DROP
+
+@@if OZ_DATABASE
+HEADERS:
+motif/attach/AttachPanel.h
+motif/attach/ComposePanel.h
+motif/attach/MessagePanel.h
+motif/attach/SorterPart.h
+
+LIBSOURCES:
+motif/attach/AttachPanel.cc
+motif/attach/ComposePanel.cc
+motif/attach/MessagePanel.cc
+motif/attach/SorterPart.cc
+motif/attach/oz.cc
+
+LIBRARIES:
+motif/attach/libPanel.a
+
+@@else !OZ_DATABASE
+SOURCES:
+motif/attach/buttons.c
+@@endif !OZ_DATABASE
+
+HEADERS:
+motif/server/client.h
+motif/server/common.h
+motif/server/server.h
+motif/server/xlib.h
+
+SOURCES:
+motif/server/server.c
+
+LIBSOURCES:
+motif/server/client.c
+motif/server/common.c
+
+LIBRARIES:
+motif/server/libXZmail.a
+
+HEADERS:
+motif/dialogs.h
+motif/dismiss.h
+motif/drag-drop.h
+motif/dynaPrompt.h
+motif/finder.h
+motif/layout.h
+motif/m_comp.h
+motif/addressArea/addressArea.h
+motif/addressArea/entry.h
+motif/addressArea/geometry.h
+motif/addressArea/listing.h
+motif/addressArea/private.h
+motif/addressArea/subject.h
+motif/addressArea/synchronize.h
+motif/addressArea/traverse.h
+motif/addressArea/walktag.h
+motif/attach/area.h
+
+LIBSOURCES:
+motif/addressArea/entry.c
+motif/addressArea/geometry.c
+motif/addressArea/lifetime.c
+motif/addressArea/listing.c
+motif/addressArea/raw.c
+motif/addressArea/subject.c
+motif/addressArea/synchronize.c
+motif/addressArea/traverse.c
+motif/addressArea/walktag.c
+
+LIBRARIES:
+motif/addressArea/libAddress.a
+
+SOURCES:
+motif/attach/area.c
+motif/addFolder.c
+motif/charsets.c
+motif/dismiss.c
+@@if ( XmVERSION > 1 ) || ( XmREVISION > 1 )
+motif/drag-drop.c
+@@endif Motif 1.2 or later
+motif/dynaPrompt.c
+motif/fonts_gc.c
+motif/gui_api.c
+motif/layout.c
+motif/m_actions.c
+motif/m_alias.c
+motif/m_api.c
+motif/m_buttons.c
+motif/m_comp.c
+motif/m_comp2.c
+motif/m_dserv.c
+motif/m_edit.c
+motif/m_edtext.c
+motif/m_fileio.c
+motif/m_filter.c
+motif/m_finder.c
+motif/m_fldrs.c
+motif/m_func.c
+motif/m_hdrs.c
+motif/m_help.c
+motif/m_ignore.c
+motif/m_intr.c
+motif/m_licens.c
+motif/m_menud.c
+motif/m_menus.c
+motif/m_misc.c
+motif/m_msg.c
+motif/m_paging.c
+motif/m_pkdate.c
+motif/m_pkpat.c
+motif/m_prompt.c
+motif/m_save.c
+motif/m_search.c
+motif/m_sort.c
+motif/m_summar.c
+motif/m_syncd.c
+motif/m_tkdlg.c
+motif/m_tbox.c
+motif/m_templ.c
+motif/m_tool.c
+motif/m_vars.c
+motif/m_zcal.c
+motif/newFolder.c
+motif/renameFolder.c
+motif/statbar.c
+motif/textedit.c
+motif/toolbar.c
+motif/xm/actionform.c
+motif/xm/sanew.c
+motif/xm/xstrkeys.c
+motif/zm_frame.c
+
+SOURCES:
+@@if FONTS_DIALOG
+motif/m_fonts.c
+@@endif FONTS_DIALOG
+motif/m_paint.c
+
+HEADERS:
+motif/print.h
+
+SOURCES:
+motif/print.c
+@@if HAVE_IMPRESSARIO
+motif/impressario.cc
+@@else !HAVE_IMPRESSARIO
+motif/m_lpr.c
+@@endif !HAVE_IMPRESSARIO
+
+@@if SELECT_POS_LIST
+SOURCES:
+motif/xm/list.c
+@@endif SELECT_POS_LIST
+
+@@endif MOTIF
+
+@@if LITE
+@@if ZMCOT
+UTILITIES:
+zmlite/cotlookup
+@@endif ZMCOT
+
+HEADERS:
+zmlite/addrbook.h
+zmlite/aliasf.h
+zmlite/attchlst.h
+zmlite/attchtyp.h
+zmlite/charsetf.h
+zmlite/choose1.h
+zmlite/compopt.h
+zmlite/composef.h
+zmlite/dialog.h
+zmlite/dsearch.h
+zmlite/dynhdrs.h
+zmlite/envf.h
+zmlite/facepop.h
+zmlite/filelist.h
+zmlite/hdrsf.h
+zmlite/helpd.h
+zmlite/helpindx.h
+zmlite/mainf.h
+zmlite/msgf.h
+zmlite/multikey.h
+zmlite/notifier.h
+zmlite/pagerd.h
+zmlite/printd.h
+zmlite/psearch.h
+zmlite/smalias.h
+zmlite/sortd.h
+zmlite/taskmtr.h
+zmlite/tmpld.h
+zmlite/tsearch.h
+zmlite/varf.h
+zmlite/xface.h
+zmlite/xfacedat.h
+@@if ZMCOT
+zmlite/zmcot.h
+@@endif ZMCOT
+zmlite/zmlapp.h
+zmlite/zmlite.h
+zmlite/zmlutil.h
+
+LIBSOURCES:
+zmlite/addrbook.c
+zmlite/aliasf.c
+zmlite/attchlst.c
+zmlite/attchtyp.c
+zmlite/charsetf.c
+zmlite/choose1.c
+zmlite/compopt.c
+zmlite/composef.c
+zmlite/dialog.c
+zmlite/dsearch.c
+zmlite/dynhdrs.c
+zmlite/envf.c
+zmlite/facepop.c
+zmlite/filelist.c
+zmlite/hdrsf.c
+zmlite/helpd.c
+zmlite/helpindx.c
+zmlite/mainf.c
+zmlite/msgf.c
+zmlite/multikey.c
+zmlite/notifier.c
+zmlite/pagerd.c
+zmlite/printd.c
+zmlite/psearch.c
+zmlite/smalias.c
+zmlite/sortd.c
+zmlite/syncd.c
+zmlite/taskmtr.c
+zmlite/tmpld.c
+zmlite/tsearch.c
+zmlite/varf.c
+zmlite/xface.c
+@@if ZMCOT
+zmlite/zmcot.c
+@@endif ZMCOT
+zmlite/zmlapp.c
+zmlite/zmlite.c
+zmlite/zmlutil.c
+@@endif LITE
+
+@@if WINDOWS
+SOURCES:
+wingui/acctable.cpp
+wingui/actionar.cpp
+wingui/address.cpp
+wingui/aliases.cpp
+wingui/attacha.cpp
+wingui/attachd.cpp
+wingui/attachu.cpp
+wingui/attachi.cpp
+wingui/attachfr.cpp
+wingui/bitmap.cpp
+wingui/browser.cpp
+wingui/btpanel.cpp
+wingui/button.cpp
+wingui/catable.cpp
+wingui/choose1.cpp
+wingui/chalias.cpp
+wingui/cmdline.cpp
+wingui/combobox.cpp
+wingui/compopts.cpp
+wingui/compose.cpp
+wingui/confirm.cpp
+wingui/convbuf.cpp
+wingui/custsort.cpp
+wingui/datesrch.cpp
+wingui/edit.cpp
+wingui/envelope.cpp
+wingui/faceicon.cpp
+wingui/filefndr.cpp
+wingui/filters.cpp
+wingui/fldrdata.cpp
+wingui/fldrlabl.cpp
+wingui/fldrlist.cpp
+wingui/fldrsel.cpp
+wingui/frame.cpp
+wingui/framedb.cpp
+wingui/framemgr.cpp
+wingui/framewnd.cpp
+wingui/funcs.cpp
+wingui/gdidb.cpp
+wingui/groupbox.cpp
+wingui/guiapi.cpp
+wingui/guiclass.cpp
+wingui/headersd.cpp
+wingui/labeltxt.cpp
+wingui/listbox.cpp
+wingui/login.cpp
+wingui/mainwin.cpp
+wingui/manager.cpp
+wingui/menus.cpp
+wingui/msgfield.cpp
+wingui/msglabel.cpp
+wingui/msgwin.cpp
+wingui/newarriv.cpp
+wingui/newfldr.cpp
+wingui/openfldr.cpp
+wingui/output.cpp
+wingui/pagerd.cpp
+wingui/pagerfr.cpp
+wingui/palette.cpp
+wingui/panedw.cpp
+wingui/patsrch.cpp
+wingui/printerd.cpp
+wingui/renfldr.cpp
+wingui/resdata.cpp
+wingui/rowcol.cpp
+wingui/sash.cpp
+wingui/savemsg.cpp
+wingui/scrolwin.cpp
+wingui/setbox.cpp
+wingui/slider.cpp
+wingui/srchrep.cpp
+wingui/statbar.cpp
+wingui/static.cpp
+wingui/summries.cpp
+wingui/taskm.cpp
+wingui/template.cpp
+wingui/toggrp.cpp
+wingui/toolbar.cpp
+wingui/toolbox.cpp
+wingui/transtab.cpp
+wingui/winitem.cpp
+wingui/varsd.cpp
+wingui/zmapp.cpp
+@@endif WINDOWS
+@@endif GUI
+
+UTILITIES:
+lib/attach.types
+lib/variables
+lib/command.hlp
+lib/system.$(ZRC)
+
+HEADERS:
+general/general.h
+general/regexpr.h
+general/ztimer.h
+custom/sendmail.h
+
+SOURCES:
+custom/gethostid.c
+custom/sock.c
+custom/sockunix.c
+custom/sendmail.c
+general/dputil.c
+general/dppopen.c
+general/regexpr.c
+general/strcase.c
+general/ztimer.c
+
+HEADERS:
+config/config.h
+config/defaults.h
+config/features.h
+
+HEADERS:
+include/bfuncs.h
+include/zcalloc.h
+include/zcbits.h
+include/zccmac.h
+include/zcerr.h
+include/zcfctl.h
+include/zcjmp.h
+include/zclimits.h
+include/zcsig.h
+include/zcsock.h
+include/zcstr.h
+include/zctime.h
+include/zctype.h
+include/zcunix.h
+maxsig.h
+osconfig.h
+signames.h
+sigarray.h
+
+HEADERS:
+include/c_bind.h
+include/callback.h
+include/catalog.h
+include/charsets.h
+include/error.h
+include/fsfix.h
+include/getpath.h
+include/hooks.h
+include/maxfiles.h
+include/zm_ask.h
+include/zmail.h
+include/zmflag.h
+include/zmintr.h
+include/zmopt.h
+include/zmprint.h
+include/zmstring.h
+include/zmtty.h
+
+HEADERS:
+include/zfolder.h
+include/zmcomp.h
+msgs/attach.h
+msgs/dirserv.h
+msgs/extsumm.h
+msgs/fldr_api.h
+msgs/mcache.h
+msgs/mime.h
+msgs/mimetype.h
+msgs/mmailext.h
+msgs/prune.h
+msgs/zpopsync.h
+
+SOURCES:
+msgs/addrs.c
+msgs/attach.c
+msgs/attchtyp.c
+msgs/cache.c
+msgs/compose.c
+msgs/copy_msg.c
+msgs/dates.c
+msgs/dirserv.c
+msgs/edmail.c
+msgs/extsumm.c
+msgs/folders.c
+msgs/foload.c
+msgs/format.c
+msgs/hdrs.c
+msgs/mail.c
+msgs/mcache.c
+msgs/mime.c
+msgs/mmailext.c
+msgs/msgs.c
+msgs/newmail.c
+msgs/pick.c
+msgs/prune.c
+msgs/sort.c
+msgs/zpopsync.c
+
+HEADERS:
+msgs/partial.h
+
+SOURCES:
+msgs/partial.c
+
+HEADERS:
+msgs/encode/base64.h
+msgs/encode/bytes.h
+msgs/encode/mimehead.h
+msgs/encode/qp.h
+msgs/encode/uu.h
+
+SOURCES:
+msgs/filtfunc.c
+msgs/encode/mimehead.c
+
+LIBSOURCES:
+msgs/encode/base64de.c
+msgs/encode/base64en.c
+msgs/encode/qpdecode.c
+msgs/encode/qpencode.c
+msgs/encode/uudecode.c
+msgs/encode/uuencode.c
+
+LIBRARIES:
+msgs/encode/libmmcode.a
+
+@@if OZ_DATABASE
+HEADERS:
+include/fileicon.h
+include/glstub.h
+general/DList.hh
+general/HashTab.hh
+msgs/autotype/MapTable.hh
+msgs/autotype/Mapping.hh
+msgs/autotype/oz.h
+
+LIBSOURCES:
+msgs/autotype/oz.cc
+msgs/autotype/MapTable.cc
+@@endif OZ_DATABASE
+
+HEADERS:
+msgs/autotype/autotype.h
+msgs/autotype/analysis.h
+msgs/autotype/extern.h
+
+LIBSOURCES:
+msgs/autotype/analysis.c
+msgs/autotype/autotype.c
+msgs/autotype/extern.c
+
+LIBRARIES:
+msgs/autotype/libautotype.a
+
+HEADERS:
+shell/au.h
+shell/buttons.h
+shell/cmdtab.h
+shell/dyncond.h
+shell/fetch.h
+shell/fmap.h
+shell/funct.h
+shell/glob.h
+shell/i18n.h
+shell/linklist.h
+shell/options.h
+shell/pager.h
+shell/quote.h
+shell/refresh.h
+shell/vars.h
+shell/version.h
+shell/zmalloc.h
+shell/zmsource.h
+
+# DOS, HC386 requires that main is first.  DO NOT MOVE main.$O!!
+
+SOURCES:
+shell/main.c
+shell/arith.c
+shell/au.c
+shell/bind.c
+shell/buttons.c
+shell/cmdtab.c
+shell/commands.c
+shell/cparse.c
+shell/curs_io.c
+shell/curses.c
+shell/cursmenu.c
+shell/dyncond.c
+shell/execute.c
+shell/expr.c
+shell/fetch.c
+shell/file.c
+shell/fmap.c
+shell/funct.c
+shell/glob.c
+shell/hostname.c
+shell/i18n.c
+shell/init.c
+shell/linklist.c
+shell/lock.c
+shell/loop.c
+shell/lpr.c
+shell/macros.c
+shell/misc.c
+shell/options.c
+shell/pager.c
+shell/quote.c
+shell/refresh.c
+shell/setopts.c
+shell/signals.c
+shell/stktrace.c
+shell/zstrings.c
+shell/vars.c
+shell/version.c
+shell/while.c
+shell/xcreat.c
+shell/zmalloc.c
+shell/zmsource.c
+shell/zprint.c
+
+@@if HAVE_IMPRESSARIO
+HEADERS:
+shell/impress.h
+
+SOURCES:
+shell/impress.cc
+@@endif HAVE_IMPRESSARIO
+
+@@if TIMER_API
+HEADERS:
+shell/critical.h
+
+SOURCES:
+shell/critical.c
+@@endif TIMER_API
+
+HEADERS:
+include/child.h
+include/popenv.h
+
+SOURCES:
+child/child.c
+child/popenv.c
+child/pov_misc.c
+
+@@if IMAP
+HEADERS:
+custom/imaplib.h
+
+SOURCES:
+custom/imaplib.c
+custom/imapmail.c
+custom/imaptree.c
+custom/cccallbacks.c
+
+@@endif IMAP
+
+@@if POP3_SUPPORT
+HEADERS:
+include/pop.h
+
+SOURCES:
+custom/poplib.c
+custom/popmail.c
+@@endif POP3_SUPPORT
+
+@@if ZYNC_CLIENT
+HEADERS:
+custom/mailserv.h
+
+SOURCES:
+custom/download.c
+custom/epoplib.c
+custom/mailserv.c
+custom/realname.c
+@@endif ZYNC_CLIENT
+
+HEADERS:
+license/client.h
+license/hosterr.h
+license/hostserv.h
+license/server.h
+
+SOURCES:
+license/hostserv.c
+license/lsnetw.c
+
+HEADERS:
+uisupp/uiact.h
+uisupp/uichoose.h
+@@if MOTIF
+uisupp/uicomp.h
+@@endif MOTIF
+uisupp/uifilter.h
+uisupp/uifldr.h
+uisupp/uifunc.h
+uisupp/uipick.h
+uisupp/uiprint.h
+uisupp/uiprefs.h
+uisupp/uisort.h
+uisupp/uisupp.h
+uisupp/uitaskm.h
+uisupp/uitempl.h
+uisupp/uivars.h
+uisupp/uivsrch.h
+uisupp/xface.h
+uisupp/xfacedat.h
+
+LIBSOURCES:
+uisupp/uiact.c
+uisupp/uifilter.c
+uisupp/uipick.c
+uisupp/uitempl.c
+uisupp/uichoose.c
+@@if MOTIF
+uisupp/uicomp.c
+@@endif MOTIF
+uisupp/uifunc.c
+uisupp/uiprint.c
+uisupp/uiprefs.c
+uisupp/uifldr.c
+uisupp/uisort.c
+uisupp/uitaskm.c
+uisupp/uivars.c
+uisupp/uivsrch.c
+uisupp/xface.c
+
+HEADERS:
+general/dlist.h
+general/dpipe.h
+general/dynstr.h
+general/glist.h
+general/hashtab.h
+general/intset.h
+general/prqueue.h
+general/sklist.h
+
+LIBSOURCES:
+general/dlist.c
+general/dpipe.c
+general/dynstr.c
+general/glist.c
+general/gptrlist.c
+general/hashtab.c
+general/htstats.c
+general/intset.c
+general/prqueue.c
+general/sklist.c
+
+HEADERS:
+general/except.h
+general/excfns.h
+
+LIBSOURCES:
+general/except.c
+general/excfns.c
+
+@@if C3
+HEADERS:
+general/c3/bin_io.h
+general/c3/lib.h
+general/c3/util.h
+general/c3/c3_string.h
+general/c3/c3_trans.h
+general/c3/euseq.h
+general/c3/fh.h
+general/c3/c3_macros.h
+general/c3/parse_util.h
+
+LIBSOURCES:
+general/c3/api_util.c
+general/c3/bin_io.c
+general/c3/lib.c
+general/c3/util.c
+general/c3/parse.lex
+general/c3/parse.yacc
+general/c3/euseq.c
+general/c3/fh.c
+general/c3/parse_util.c
+
+LIBRARIES:
+general/c3/libc3.a
+
+HEADERS:
+general/c3/dyn_c3.h
+
+SOURCES:
+general/c3/dyn_c3.c
+general/c3/c3_trans.c
+
+@@endif
+
+@@ifdef MSTORE
+
+HEADERS:
+@@ifdef C_CLIENT
+include/cc_mail.h
+include/linkage.h
+mstore/ccmsg.h
+mstore/ccfolder.h
+@@endif C_CLIENT
+mstore/bodypart.h
+mstore/ghosts.h
+mstore/mailobj.h
+mstore/message.h
+mstore/mfolder.h
+mstore/mime-api.h
+mstore/mstore.h
+mstore/v7folder.h
+mstore/v7msg.h
+mstore/v7mstore.h
+mstore/xsun-api.h
+mstore/zpopfldr.h
+mstore/zpopmsg.h
+mstore/zpopmstr.h
+
+LIBSOURCES:
+@@ifdef C_CLIENT
+mstore/ccfolder.c
+mstore/ccmsg.c
+mstore/ccmstore.c
+@@endif C_CLIENT
+mstore/ghosts.c
+mstore/mailobj.c
+mstore/message.c
+mstore/mfolder.c
+mstore/mime-api.c
+mstore/mstore.c
+mstore/v7folder.c
+mstore/v7msg.c
+mstore/v7mstore.c
+mstore/xsun-api.c
+mstore/zpopfldr.c
+mstore/zpopmsg.c
+mstore/zpopmstr.c
+
+HEADERS:
+general/strfns.h
+spoor/spoor.h
+
+SOURCES:
+general/strfns.c
+spoor/spoor.c
+
+@@else !MSTORE
+
+@@ifdef ZPOP_SYNC
+
+HEADERS:
+@@ifdef C_CLIENT
+include/cc_mail.h
+include/linkage.h
+mstore/ccfolder.h
+mstore/ccmsg.h
+@@endif C_CLIENT
+mstore/ghosts.h
+mstore/message.h
+mstore/mfolder.h
+mstore/mime-api.h
+mstore/v7folder.h
+mstore/v7msg.h
+mstore/xsun-api.h
+mstore/zpopfldr.h
+mstore/zpopmsg.h
+
+SOURCES:
+@@ifdef C_CLIENT
+mstore/ccfolder.c
+mstore/ccmsg.c
+mstore/ccmstore.c
+@@endif C_CLIENT
+mstore/ghosts.c
+mstore/message.c
+mstore/mfolder.c
+mstore/mime-api.c
+mstore/v7folder.c
+mstore/v7msg.c
+mstore/xsun-api.c
+mstore/zpopfldr.c
+mstore/zpopmsg.c
+
+HEADERS:
+include/syncfldr.h
+general/strfns.h
+spoor/spoor.h
+
+SOURCES:
+custom/syncfldr.c
+general/strfns.c
+spoor/spoor.c
+
+@@endif ZPOP_SYNC
+
+@@ifdef C_CLIENT
+LIBRARIES:
+c-client.a
+@@endif C_CLIENT
+
+@@endif MSTORE
+
+#
+# distribution tree content definitions
+#
+
+DISTRIBS:
+@@ifndef NIGHTLY_BUILD
+install/work/doinstall.sh		.
+install/work/scripts/beroot.sh		scripts
+install/work/scripts/copytree.sh	scripts
+install/work/scripts/echon.sh		scripts
+install/work/scripts/fixarch.sh		scripts
+install/work/scripts/gethostaddr.sh	scripts
+install/work/scripts/gethostid.sh	scripts
+install/work/scripts/gethostname.sh	scripts
+install/work/scripts/getversion.sh	scripts
+install/work/scripts/lsgetgr.sh		scripts
+install/work/scripts/mkdirhier.sh	scripts
+install/work/scripts/products.sh	scripts
+install/work/scripts/setmkdir.sh	scripts
+install/work/scripts/sgidmail.sh	scripts
+install/work/scripts/locale.sh	    scripts
+install/work/scripts/upcheck.sh		scripts
+install/work/scripts/xnlspath.sh	scripts
+install/work/scripts/xrescheck.sh	scripts
+install/work/scripts/xresinstall.sh	scripts
+install/work/scripts/zmarch.sh		scripts
+@@endif !NIGHTLY_BUILD
+@@ifdef C3
+lib/C3/approx-table.txta
+lib/C3/def-ascii.txta
+lib/C3/def-apple-1.txta
+lib/C3/def-iso-646-gb.txta
+lib/C3/def-iso-646-no.txta
+lib/C3/def-iso-646-yu.txta
+lib/C3/def-iso-8859-1.txta
+lib/C3/def-iso-8859-2.txta
+lib/C3/def-iso-8859-5.txta
+lib/C3/def-x-ibm-437.txta
+lib/C3/def-x-ibm-850.txta
+lib/C3/def-x-iso-646-se1.txta
+lib/C3/def-x-iso-646-se2.txta
+lib/C3/c3tables.bin
+lib/C3/c3names.txt
+@@endif C3
+lib/receipt.zmailrc
+lib/ldap.zmailrc
+lib/zmail.ignoreinhtml
+lib/Mail.zmailrc
+lib/attach.types
+lib/bindkey.hlp
+lib/bin/elmalias
+lib/bin/facetohdr
+lib/bin/lookup.ad
+lib/bin/lookup.all
+lib/bin/lookup.pw
+lib/bin/lookup.remote
+lib/bin/makeface
+lib/bin/metapara
+lib/bin/quietly
+lib/bin/splitsend
+@@if PARTIAL_SEND
+lib/bin/split_sendmail
+@@endif PARTIAL_SEND
+lib/bin/tell-mosaic
+lib/bin/tell-netscape
+lib/bin/type-by-magic
+lib/bin/type-by-suffix
+lib/bin/uucompress
+lib/bin/uudepipe
+lib/bin/uuenpipe
+lib/bin/xwrap
+lib/bin/zcrypt
+lib/bin/zxwd
+lib/bin/zxwud
+lib/chrono
+lib/command.hlp
+lib/convert.mh
+lib/digest
+lib/forms/bugs
+lib/forms/phone
+lib/keymap.hlp
+@@ifdef LOCALIZABLE 
+@@ifdef LITE
+lib/locale/C/zmail		-F lib/locale/C/zmlite
+lib/locale/C/zmail.cat		-F lib/locale/C/zmlite.cat
+@@else
+lib/locale/C/zmail
+lib/locale/C/zmail.cat
+@@endif LITE
+@@endif LOCALIZABLE
+lib/locale.zmailrc
+lib/mailx.zmailrc
+lib/mh2zm
+lib/nls/C
+lib/nls/ja_JP.jis7
+lib/nls/ja_JP.jis8
+lib/nls/ja_JP.mscode
+lib/nls/ja_JP.pjis
+lib/nls/ja_JP.ujis
+lib/nls/ko_KR.euc
+lib/nls/lt_LN.bit7
+lib/nls/lt_LN.bit8
+lib/nls/nls.alias
+lib/nls/nls.dir
+lib/nls/wr_WR.ct
+lib/nls/zh_CN.ugb
+lib/nls/zh_TW.big5
+lib/nls/local_im_tbl/lt_LN.bit7
+lib/nls/local_im_tbl/lt_LN.bit8
+@@ifndef NIGHTLY_BUILD
+lib/sample.zmailrc
+lib/samples/zscript/addhook.zsc
+lib/samples/zscript/aliases.zsc
+lib/samples/zscript/bounce.zsc
+lib/samples/zscript/chrono.zsc
+lib/samples/zscript/comp.zsc
+lib/samples/zscript/decmm.zsc
+lib/samples/zscript/dired.zsc
+lib/samples/zscript/fastuniq.zsc
+lib/samples/zscript/filter1.zsc
+lib/samples/zscript/filter2.zsc
+lib/samples/zscript/findsubj.zsc
+lib/samples/zscript/folderbt.zsc
+lib/samples/zscript/hexbin.zsc
+lib/samples/zscript/include.zsc
+lib/samples/zscript/litegui.zsc
+lib/samples/zscript/menumisc.zsc
+lib/samples/zscript/menus-2.1
+lib/samples/zscript/menus-3.2
+lib/samples/zscript/misc.zsc
+lib/samples/zscript/oldsave.zsc
+lib/samples/zscript/quicksav.zsc
+lib/samples/zscript/readrcpt.zsc
+lib/samples/zscript/reopen.zsc
+lib/samples/zscript/reply+.zsc
+lib/samples/zscript/replycc.zsc
+lib/samples/zscript/saveconf.zsc
+lib/samples/zscript/searchit.zsc
+lib/samples/zscript/strings.zsc
+lib/samples/zscript/textset.zsc
+lib/samples/zscript/to-do.zsc
+lib/samples/zscript/trashcan.zsc
+lib/samples/zscript/uniq.zsc
+lib/samples/zscript/updateas.zsc
+lib/samples/zscript/zconfig.zsc
+lib/samples/zscript/delaypop.zsc
+lib/samples/zscript/togpop.zsc
+lib/samples/zscript/ptbuttons.zsc
+lib/samples/zscript/toggleldap.zsc
+@@endif !NIGHTLY_BUILD
+lib/summary
+lib/zmail.menus
+lib/system.zmailrc
+lib/vacation
+lib/variables
+util/atob			lib/bin
+util/btoa			lib/bin
+util/compface/compface		lib/bin
+util/compface/uncompface	lib/bin
+util/fixhtml			lib/bin
+zmail
+
+@@if IRIX53 && MOTIF
+DISTRIBS:
+motif/server/libRemoteMail.so	lib/remote-control
+@@if MEDIAMAIL
+motif/server/remoteMail.h	lib/remote-control
+@@endif MEDIAMAIL
+@@endif IRIX53 && MOTIF
+
+@@if MOTIF
+DISTRIBS:
+motif/server/zmail-exec		lib/bin
+@@endif MOTIF
+
+@@if MOTIF
+DISTRIBS:
+@@if MEDIAMAIL
+lib/zmail.1				lib/man/man1
+lib/bitmaps/media/Zmail.icon		lib/wm-icons
+lib/bitmaps/media/compose_window.icon	lib/wm-icons
+lib/bitmaps/media/message_window.icon	lib/wm-icons
+lib/bitmaps/media/zmail.icon		lib/wm-icons
+lib/bitmaps/media/camera.xbm		lib/bitmaps
+lib/bitmaps/media/microphone.xbm	lib/bitmaps
+lib/bitmaps/media/paperclip.xbm		lib/bitmaps
+lib/bitmaps/media/screen.xbm		lib/bitmaps
+lib/bitmaps/media/video.xbm		lib/bitmaps
+@@else
+lib/bitmaps/toolbar/addrbook.xbm
+lib/bitmaps/toolbar/alias.xbm
+lib/bitmaps/toolbar/attach.xbm
+lib/bitmaps/toolbar/cancel.xbm
+lib/bitmaps/toolbar/close.xbm
+lib/bitmaps/toolbar/compose.xbm
+lib/bitmaps/toolbar/copy.xbm
+lib/bitmaps/toolbar/cut.xbm
+lib/bitmaps/toolbar/delete.xbm
+lib/bitmaps/toolbar/fwd.xbm
+lib/bitmaps/toolbar/include.xbm
+lib/bitmaps/toolbar/next.xbm
+lib/bitmaps/toolbar/open.xbm
+lib/bitmaps/toolbar/paste.xbm
+lib/bitmaps/toolbar/prev.xbm
+lib/bitmaps/toolbar/printer.xbm
+lib/bitmaps/toolbar/read.xbm
+lib/bitmaps/toolbar/reply.xbm
+lib/bitmaps/toolbar/replyall.xbm
+lib/bitmaps/toolbar/save.xbm
+lib/bitmaps/toolbar/search.xbm
+lib/bitmaps/toolbar/send.xbm
+lib/bitmaps/toolbar/undelete.xbm
+lib/bitmaps/toolbar/update.xbm
+lib/bitmaps/toolbar/24x24/addrbook.xbm
+lib/bitmaps/toolbar/24x24/alias.xbm
+lib/bitmaps/toolbar/24x24/attach.xbm
+lib/bitmaps/toolbar/24x24/cancel.xbm
+lib/bitmaps/toolbar/24x24/close.xbm
+lib/bitmaps/toolbar/24x24/compose.xbm
+lib/bitmaps/toolbar/24x24/copy.xbm
+lib/bitmaps/toolbar/24x24/cut.xbm
+lib/bitmaps/toolbar/24x24/delete.xbm
+lib/bitmaps/toolbar/24x24/fwd.xbm
+lib/bitmaps/toolbar/24x24/include.xbm
+lib/bitmaps/toolbar/24x24/next.xbm
+lib/bitmaps/toolbar/24x24/open.xbm
+lib/bitmaps/toolbar/24x24/paste.xbm
+lib/bitmaps/toolbar/24x24/prev.xbm
+lib/bitmaps/toolbar/24x24/printer.xbm
+lib/bitmaps/toolbar/24x24/read.xbm
+lib/bitmaps/toolbar/24x24/reply.xbm
+lib/bitmaps/toolbar/24x24/replyall.xbm
+lib/bitmaps/toolbar/24x24/save.xbm
+lib/bitmaps/toolbar/24x24/search.xbm
+lib/bitmaps/toolbar/24x24/send.xbm
+lib/bitmaps/toolbar/24x24/undelete.xbm
+lib/bitmaps/toolbar/24x24/update.xbm
+@@endif MEDIAMAIL
+
+DISTRIBS:
+lib/bitmaps/attach.xbm
+@@if OZ_DATABASE
+lib/filetype/iconlib/Multipart.fti
+lib/filetype/iconlib/Partial.fti
+lib/filetype/iconlib/RichText.fti
+lib/filetype/iconlib/mail-pouch.closed.fti
+lib/filetype/iconlib/mail-pouch.open.fti
+lib/filetype/mime.ftr
+lib/filetype/zmail.ftr
+@@else !OZ_DATABASE
+lib/bitmaps/asterix.xbm
+lib/bitmaps/audio.xbm
+lib/bitmaps/binary.xbm
+lib/bitmaps/bitmap.xbm
+lib/bitmaps/book.xbm
+lib/bitmaps/fax.xbm
+lib/bitmaps/folders.xbm
+lib/bitmaps/frame.xbm
+lib/bitmaps/image.xbm
+lib/bitmaps/inventor.xbm
+lib/bitmaps/isldraw.xbm
+lib/bitmaps/islpaint.xbm
+lib/bitmaps/islwrite.xbm
+lib/bitmaps/jot.xbm
+lib/bitmaps/movie.xbm
+lib/bitmaps/page.xbm
+lib/bitmaps/pager.xbm
+lib/bitmaps/showcase.xbm
+lib/bitmaps/sound.xbm
+lib/bitmaps/wingz.xbm
+lib/bitmaps/24x24/asterix.xbm
+lib/bitmaps/24x24/attach.xbm
+lib/bitmaps/24x24/audio.xbm
+lib/bitmaps/24x24/binary.xbm
+lib/bitmaps/24x24/bitmap.xbm
+lib/bitmaps/24x24/book.xbm
+lib/bitmaps/24x24/capture.xbm
+lib/bitmaps/24x24/cleff.xbm
+lib/bitmaps/24x24/fax.xbm
+lib/bitmaps/24x24/folders.xbm
+lib/bitmaps/24x24/frame.xbm
+lib/bitmaps/24x24/image.xbm
+lib/bitmaps/24x24/inventor.xbm
+lib/bitmaps/24x24/isldraw.xbm
+lib/bitmaps/24x24/islpaint.xbm
+lib/bitmaps/24x24/islwrite.xbm
+lib/bitmaps/24x24/jot.xbm
+lib/bitmaps/24x24/movie.xbm
+lib/bitmaps/24x24/page.xbm
+lib/bitmaps/24x24/pager.xbm
+lib/bitmaps/24x24/showcase.xbm
+lib/bitmaps/24x24/sound.xbm
+lib/bitmaps/24x24/soundedit.xbm
+lib/bitmaps/24x24/wingz.xbm
+@@endif !OZ_DATABASE
+
+UTILITIES:
+lib/Zmail
+@@if !HAVE_HELP_BROKER
+lib/motif.hlp
+@@endif !HAVE_HELP_BROKER
+
+DISTRIBS:
+@@ifndef NIGHTLY_BUILD
+install/work/scripts/zmfresh.sh		-F scripts/fresh.sh
+install/work/scripts/zminstall.sh	-F scripts/install.sh
+install/work/scripts/zmobsolete.sh	-F scripts/obsolete.sh
+install/work/scripts/zmupgrade.sh	-F scripts/upgrade.sh
+@@endif !NIGHTLY_BUILD
+lib/Zmail
+@@if HAVE_HELP_BROKER
+lib/Zmail.helpmap
+@@else !HAVE_HELP_BROKER
+lib/motif.hlp
+@@endif !HAVE_HELP_BROKER
+@@ifndef NIGHTLY_BUILD
+doc/motif/README			.
+doc/motif/Copyrights.txt		doc
+doc/motif/Relnotes.ps			doc
+doc/motif/Relnotes.txt			doc
+doc/motif/Install.ps			doc
+doc/motif/Install.txt			doc
+doc/motif/License.ps			lib
+doc/motif/License.txt			-F lib/SLA lib/License.txt
+doc/motif/License.txt			-F lib/SLA lib/License.txt
+doc/motif/zmail.1			lib/man/man1
+@@endif !NIGHTLY_BUILD
+@@endif MOTIF
+
+@@if LITE
+DISTRIBS:
+lib/lite.hlp
+lib/system.literc
+lib/multikey/vt220-8
+lib/multikey/xterm
+lib/multikey/xterms
+util/ztermkey				lib/bin
+@@ifndef NIGHTLY_BUILD
+install/work/scripts/litefresh.sh	-F scripts/fresh.sh
+install/work/scripts/liteinstall.sh	-F scripts/install.sh
+install/work/scripts/liteupgrade.sh	-F scripts/upgrade.sh
+doc/lite/README				.
+doc/lite/README.doc			doc
+doc/lite/Copyrights.txt			doc
+doc/lite/Guide.ps			doc
+doc/lite/Install.ps			doc
+doc/lite/Install.txt			doc
+doc/lite/License.ps			lib
+doc/lite/License.txt			lib
+doc/lite/Relnotes.ps			doc
+doc/lite/Relnotes.txt			doc
+doc/lite/TermConfig.ps			doc
+doc/lite/TermConfig.txt			doc
+doc/lite/card.ps			doc
+@@endif !NIGHTLY_BUILD
+
+@@if ZMCOT
+DISTRIBS:
+README.zmcot
+lib/bin/cotlookup.sh
+lib/bin/cotpurge
+lib/bin/zmcot			.
+lib/cotpurge.zm
+lib/system.zmcotrc
+zmlite/cotlookup		lib/bin
+@@endif ZMCOT
+
+@@endif LITE
+
+@@if HP300 || HP700 || MOTOR
+DISTRIBS:
+util/uudecode			lib/bin
+util/uuencode			lib/bin
+
+@@if MOTOR
+DISTRIBS:
+util/compress			lib/bin
+util/hostid			.
+util/uncompress			lib/bin
+util/zcat			lib/bin
+@@endif MOTOR
+@@endif HP300 || HP700 || MOTOR
+
+@@if IRIX4 || IRIX5 || IRIX53
+DISTRIBS:
+lib/bin/getprinters
+
+@@if IRIX5 || IRIX53
+DISTRIBS:
+lib/ZmailSpec			lib/schemes
+@@endif IRIX5 || IRIX53
+@@endif IRIX4 || IRIX5 || IRIX53
+
+@@if SUN4 && OLIT
+DISTRIBS:
+util/island_rq/island_rq	lib/bin
+util/xv_notice/xv_notice	lib/bin
+@@endif SUN4 && OLIT
+
+@@if ULTRIX
+DISTRIBS:
+shell/au			lib/bin
+@@endif ULTRIX
+
+@@if LITE
+LIBSOURCES:
+spoor/button.c
+spoor/buttonv.c
+spoor/charim.c
+spoor/charwin.c
+spoor/cmdline.c
+spoor/cursim.c
+spoor/curswin.c
+spoor/event.c
+spoor/im.c
+spoor/keymap.c
+spoor/list.c
+spoor/listv.c
+spoor/menu.c
+spoor/obsrvbl.c
+spoor/popupv.c
+spoor/splitv.c
+spoor/spoor.c
+spoor/text.c
+spoor/textview.c
+spoor/toggle.c
+spoor/view.c
+spoor/wclass.c
+spoor/widget.c
+spoor/window.c
+spoor/wrapview.c
+
+HEADERS:
+spoor/button.h
+spoor/buttonv.h
+spoor/charim.h
+spoor/charwin.h
+spoor/cmdline.h
+spoor/cursim.h
+spoor/curswin.h
+spoor/event.h
+spoor/im.h
+spoor/keymap.h
+spoor/list.h
+spoor/listv.h
+spoor/menu.h
+spoor/obsrvbl.h
+spoor/popupv.h
+spoor/splitv.h
+spoor/spoor.h
+spoor/text.h
+spoor/textview.h
+spoor/toggle.h
+spoor/view.h
+spoor/wclass.h
+spoor/widget.h
+spoor/window.h
+spoor/wrapview.h
+
+LIBRARIES:
+zmlite/liblite.a
+spoor/libspoor.a
+
+@@endif LITE
+
+@@if MOTIF
+LIBRARIES:
+uisupp/libuisupp.a
+@@endif MOTIF
+
+LIBRARIES:
+general/libdynadt.a
+general/libexcept.a
+
+MKFILES:
+Files
+osmake.mk
+config/def-unix.mk
+config/intro.mk
+config/zm-dist.mk
+config/zm-gen.mk
+config/zm-main.mk
+config/zm-unix.mk
+config/subdirs.mk
+
+MKFILES:
+@@if MOTIF
+config/zm-motif.mk
+@@endif MOTIF
+@@if LITE
+config/zm-lite.mk
+@@endif LITE
+@@if SMALL
+config/zm-small.mk
+@@endif SMALL
+@@ifdef LOCALIZABLE
+lib/locale/local.mk
+lib/locale/C/local.mk
+lib/locale/shout/local.mk
+@@endif
+
+@@if MEDIAMAIL
+DISTRIBS:
+util/reassembler/reassembler	lib/bin
+util/reassembler/check-partials	lib/bin
+util/reassembler/Errors		-F lib/reassembler-errors
+@@endif MEDIAMAIL
+

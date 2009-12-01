@@ -1,0 +1,27 @@
+#! /bin/sh
+# generate a list of printers, with the default printer at the start of
+# the list.  Outputs an appropriate "set printer" command in the specified
+# file.  Assumes the SysV printer driver, with "lpstat", is available.
+
+getlp='lpstat -v'
+parse1='s/.*device for //'
+parse2='s/:.*//'
+
+case `(arch) 2>/dev/null` in
+sun4)
+    default=`(lpstat -d) 2>&1 | awk '{ print $4 }' | sed 's/,//'`;;
+*)
+    default=`(lpstat -d) 2>/dev/null | sed 's/.*: //'`;;
+esac
+
+case $default in
+''|'no system default'*)
+    : > $1
+    ;;
+*)
+  printers=`echo $default;
+	    $getlp | sed -e "$parse1" -e "$parse2" | grep -v "^$default$"`
+
+  echo set printer=\'$printers\' > $1
+  ;;
+esac

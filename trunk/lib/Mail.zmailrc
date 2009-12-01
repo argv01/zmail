@@ -1,0 +1,69 @@
+# .zmailrc to cause Z-Mail to emulate UCB Mail
+# -- Bart Schaefer
+#
+#----------------------------------------------------------------------------
+# Shortcomings:
+#  Z-Mail does not support the "noisy phone line" flags of Mail
+#   (-i command line option or "set ignore" to ignore RUBOUT characters)
+#  Z-Mail will never remove a system mailbox (no "unset keep" equivalent)
+#  See comments below on (lack of) command prefix recognition
+#----------------------------------------------------------------------------
+#
+# Set up prompting, headers
+#
+set prompt='& '
+set mil_time date_received
+set hdr_format='%8.80a %D %M %-2N %5T  %l/%c "%.29s"'
+#
+# Set up mailing/replying miscellaneous
+#
+set indent_str = "$(\t)"	# tab
+set reply_to_hdr auto_route newline=next
+#
+# Set up command interface
+#  Note that a full emulation is difficult, because Z-Mail does not support
+#  command prefix recognition (e.g., Mail interprets "Rep" as "Reply").
+#
+# Disable history
+#
+set ignore_bang
+#
+# This stuff is fine, but really needs prefix recognition.
+#
+cmd Reply replysender
+cmd R replysender
+cmd alt alternates
+cmd chdir cd
+cmd chd cd
+cmd ch cd
+cmd c copy
+cmd file folder
+cmd fi folder
+cmd hold preserve
+cmd ho hold
+cmd reply replyall
+cmd r replyall
+cmd se set
+cmd shell sh
+cmd so source
+cmd un u
+cmd undelete u
+cmd uns unset
+cmd vi v
+cmd z+ z
+function u() {			# "u" changes current message in Mail
+    builtin u $* | msg_list -
+}
+function unread() {		# "unread" is undocumented in Mail
+    flags +U $*
+}
+function z() {			# "z" changes current message in Mail
+    builtin z $* + | from -
+}
+function z-() {
+    z $* -
+}
+#
+# You may want this file sourced.
+#
+# source /usr/lib/Mail.rc

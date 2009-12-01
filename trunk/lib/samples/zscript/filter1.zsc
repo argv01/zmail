@@ -1,0 +1,164 @@
+#!/bin/sh
+
+#
+# This script is both a loadable zscript and a /bin/sh program.  If fed to
+# /bin/sh or the equivalent, "if true" succeeds and the first section of the
+# file causes Z-Mail to run (and everything below "endif" to be ignored).
+# If loaded (sourced) by Z-Mail, the "if true" fails and everything below
+# the "endif" is executed by Z-Mail.
+#
+
+# Note that variables both within and below this block require values in
+# order for the script to execute correctly.
+
+if true
+then
+    # Make sure the environment is correct.
+    # These variables must be filled in on a per-user basis when this
+    # zscript is installed!
+    MAIL=
+    export MAIL
+    USER=
+    export USER
+    HOME=
+    export HOME
+    ZMAILRC=$0		# This works properly only if $0 is a full path.
+    export ZMAILRC
+    # ZMLIB=		# Use either this setting and then also
+    # export ZMLIB	# export it, or use the following "unset"
+    unset ZMLIB		# to let Z-Mail figure out its own library dir.
+
+    # Capture errors or debug output.
+    exec >> $HOME/filter.err 2>&1
+    DBFILE=$HOME/filter.dbg
+    export DBFILE
+
+    # Run the filters.
+    # This assumes that a single message is on standard input, as is
+    # normally the case when "sendmail" invokes .forward files.
+    exec /usr/local/bin/zmail.small -receive || exit 75
+fi
+endif
+#
+
+# Safeguards
+unset warning
+unset exit_saveopts
+
+# Initialize $TO to an address to which mail should be redirected or
+# to which notifications of mail arrival should be sent.  This may
+# appear in the $zmfilter file instead (see below).
+setenv TO ''
+
+# Initialize $zmfilter to a file containing other filters to be run;
+# usually the user's own .zmailrc, but another file may be used.
+# set zmfilter=$HOME/.zmfilter
+set zmfilter=$HOME/.zmailrc
+
+# These variables support the "notify" action, defined below.  They
+# may be changed in the $zmfilter file if desired.
+set file=/dev/null
+set subject="You have new mail at $hostname:1"
+
+###
+
+if "$version" =~ *({2,3.[012]}*)*
+
+    # Supporting commands and variables.  $propagate is a shell command to
+    # forward a message along to another address; propagate is the filter
+    # action that passes a message to $propagate.  Adjust $propagate to
+    # local mail transport conventions.
+    #
+    set propagate='tail +2 | /usr/lib/sendmail -oi "$TO"'
+
+    # Remove the pipe to delete if you prefer to keep copies of propagated
+    # mail on the local host.
+    #
+    cmd propagate 'pipe "$propagate" | delete'
+
+    set alwaysignore -= pipe	# For propagate to work right
+
+else
+
+    # After Z-Mail 3.3, the following cleaner solution should work.
+    # Remove the pipe to delete if you prefer to keep copies of propagated
+    # mail on the local host.
+    #
+    cmd propagate 'delete | mail -M "$to"'
+
+endif
+
+# A no-op filter action.
+cmd nothing "msg_list -"
+
+# This command is used in the final filter (zzz-finish) to execute any
+# actions specified by earlier filters.  It defaults to a no-op.
+#
+cmd react nothing
+
+###
+
+# The filter action to specify later actions.  This allows a filter to
+# select an action that doesn't take place until all other filters have
+# run.  This in turn permits filters to "cascade", selecting only one
+# action even when multiple filters match the same input message.
+#
+# Usage:
+#	filter name 'action something [options ...]' [filter options ...]
+# where "name" is the filter name and "something" is one of the filter
+# actions defined below, or any simple zscript command that acts on
+# a list of messages (e.g. "save filename" or "delete").
+#
+cmd action 'nothing ; cmd react \!*'
+
+# Explanation:
+# The "action" command begins with "nothing", the no-op filter action,
+# to consume the message list piped to the filter.  It then changes the
+# definition of the "react" command so that when "zzz-finish" runs, the
+# specified action is performed.
+
+###
+
+# Miscellaneous filter actions for use with the "action" command.  Note
+# that any action that works independently of the contents of the actual
+# message being filtered should begin with "nothing ; " to discard the
+# filtered input.
+#
+cmd remail propagate
+cmd notify 'nothing ; mail -subject "$subject" -send -file "$file" "$to"'
+
+###
+
+# Load other filters.  Examples:
+#
+#	filter A0 'action remail' -t z-code.com
+#	filter A1 'action notify' -t support@[-a-z.]*z-code
+#
+# Note that filters are executed in alphabetical order, so the names
+# A0 and A1 are significant.  In the examples above, messages sent
+# to "support@z-code.com" match both filters, but the first filter
+# (A0) only advises that the resolution should be "remail"; remailing
+# isn't actually performed until filter zzz-finish (below) is run.
+# The second filter (A1) thus can override the "remail" action with
+# a simple "notify".
+#
+# By mixing filters that take immediate action with filters that use
+# the "action" command, you can cascade the effects in arbitary ways.
+# To force a "react" in your own filters, before zzz-finish executes,
+# use:
+#	filter name 'react ; action nothing'
+# where "name" is chosen to appear in the correct alphabetical order
+# with respect to filters that should execute before and after the
+# action is taken.
+
+# You can of course place your filters directly in this file, instead
+# of using this "source" to get them elsewhere.
+#
+source $zmfilter
+
+# The final filter that processes actions specified by earlier filters.
+# The "echo" logs every message processed to the $HOME/filter.err file
+# specified in the /bin/sh section above.  Remove the "echo" to prevent
+# logging.  Note that this filter matches ANY message (empty pattern).
+#
+filter zzz-finish 'react ; echo -h %f - %s'

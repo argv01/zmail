@@ -1,0 +1,158 @@
+# multimedia functions for DEC OSF/1
+
+function play_basic_audio () {
+#% (fallback help text)
+#	play_basic_audio [filename]
+# Play MIME-standard basic audio file until it ends or the user
+# presses the stop button.
+#%
+  sh -m "Playing ... click `Stop' to end play." -t 0 "playfile -f$1 -b8 -s8000 -cMono -emu-law > /dev/null"
+  if $?child
+    set childPID= $child
+    sh -m "Stopping play." "kill -INT $childPID"
+    sh "kill -INT $childPID"
+  endif
+  return 0
+}
+
+function play_dec_audio () {
+#% (fallback help text)
+#	play_basic_audio [filename]
+# Play DEC audio file until it ends or the user presses the stop button.
+#%
+  sh -m "Playing ... click `Stop' to end play." -t 0 "playfile -f$1 > /dev/null"
+  if $?child
+    set childPID= $child
+    sh -m "Stopping play." "kill -INT $childPID"
+    sh "kill -INT $childPID"
+  endif
+  return 0
+}
+
+function record_audio () {
+#% (fallback help text)
+#	record_audio [filename]
+# Record MIME-standard basic audio into file until either the user presses 
+# the stop button or 5 minutes have elapsed.
+#%
+  sh -m "Recording ... click `Stop' when done." -t 0 "recordfile -f$1 -t300 -b8 -s8000 -cMono -emu-law > /dev/null"
+  if $?child
+    set childPID= $child
+    sh -m "Stopping recording." "kill -INT $childPID"
+    sh "kill -INT $childPID"
+  endif
+  return 0
+}
+
+function create_voice_attach() {
+#% (fallback help text)
+#	create_voice_attach
+# Create a temporary file and record audio into it.
+#%
+  if $?recordCount
+  	arith recordCount = $recordCount+1
+  else
+	set recordCount = 0
+  endif
+  set tmpRecordFile = $tmpdir/zua$$$recordCount.aud
+  record_audio $tmpRecordFile
+  compcmd attach-file $tmpRecordFile audio/basic
+  set junk += "$tmpRecordFile "
+}
+
+function record_video () {
+#% (fallback help text)
+#	record_video
+# Record DEC-format video into file until the user presses the stop button.
+#
+# grabbag, a video tool which also records audio, doesn't take a filename as a 
+# command-line argument
+#%
+  sh -m "Recording ... click `Stop' when done." -t 0 "captio -filename $1 > /dev/null"
+  if $?child
+    sh -m "Stopping recording." "kill -INT $child"
+  endif
+  return 0
+}
+
+function play_video () {
+#% (fallback help text)
+#	play_video [filename]
+# Play DEC-format video file until it ends or the user presses the stop button.
+# Unfortunately, capt2_out just plays a single frame
+#%
+  sh -m "Playing ... click `Stop' to end play." -t 0 "capt2_out -filename $1 > /dev/null"
+  if $?child
+    sh -m "Stopping play." "kill -INT $child"
+  endif
+  return 0
+}
+
+function create_video_attach() {
+#% (fallback help text)
+#	create_video_attach
+# Create DEC-format video and attach to the current composition
+#%
+  record_video $tmpdir/zvid$$
+  compcmd attach-file $tmpdir/zvid$$ video/x-riff
+  set junk += "$tmpdir/zvid$$ "
+}
+
+function cleanup() {
+#% (fallback help text)
+#	cleanup
+# Remove temporary files.
+#%
+  if $?junk
+    remove $junk
+    unset junk
+  endif
+  return 0
+}
+
+button -W Compose Voice create_voice_attach
+button -W Compose Video create_video_attach
+
+function speak() {
+#% (fallback help text)
+#	speak
+# If text is selected, read it aloud.  Otherwise, announce the sender of 
+# the email and read the whole message aloud.
+#%
+    textedit set-item message-body
+    textedit get-selection-position __start __end
+    set tmpSpkFile = $tmpdir/zspeak$$
+    if $__start == $__end
+	sh speak -a "This message is from $[%n].  The subject is: $[%s]."
+	write $tmpSpkFile
+    else
+	textedit text-pipe "tee $tmpdir/zspeak$$"
+    endif
+    sh -m "Speaking ... click `Stop' to end play." -t 0 "speak $tmpSpkFile > /dev/null"
+    if $?child
+	sh -m "Stopping play." "kill -INT $child"
+    endif
+    remove -f $tmpSpkFile
+    return 0
+}
+
+if is_gui
+	button -W Message "Speak" speak
+endif
+
+# This deletes the file before the composition has gone, so it's not too 
+# useful.  Even if it did work, it would cause problems when multiple 
+# compositions are going.  Sigh.
+# interpose -operation send cleanup
+
+# Not sure how to get this going on startup.  Calling the function 
+# startup_hook doesn't do much.
+function say_hello() {
+	sh speak -a "Hello.  Welcome to Z Mail!"
+}
+
+function say_bye() {
+	sh speak -a "Thank you for using Z Mail.  Goodbye!"
+}
+interpose -before quit say_bye
+

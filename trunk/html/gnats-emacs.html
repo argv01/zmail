@@ -1,0 +1,78 @@
+<HTML>
+<HEAD>
+<TITLE>Using Gnats With Emacs:  The Condensed Version</TITLE>
+</HEAD
+<BODY BGCOLOR="#FFFFFF">
+<H1>Using Gnats With Emacs:<br>The Condensed Version</H1>
+<P>
+Snag someone's .emacs file.
+<P>
+To enter commands in emacs, Meta-X to the minibuffer at the bottom of the
+window.
+<P>
+<H3>To Send a PR</H3>
+<P>
+<OL>
+<LI>Meta-X send-pr [Enter]
+<br>Emacs will prompt you for the neccessary information in the minibuffer.
+<LI>After you complete the gnats fields, fill in the "Description" and
+"How to Repeat" sections.
+<LI>Send the PR:   Ctrl-c Ctrl-c
+<br>Cancel the PR: Ctrl-x k
+</OL>
+<P>
+<H3>To View a PR</H3>
+<P>
+<OL>
+<LI>Meta-x view-pr [Enter]
+<br>Emacs will then prompt you for the PR number.
+</OL>
+<P>
+<H3>To Change the State of a PR</H3>
+<P>
+<OL>
+<LI>Meta-x edit-pr [Enter]
+<br>Emacs will prompt you for the PR number.
+<LI>Change state:      Ctrl-c Ctrl-s
+<br>Emacs will prompt you for the PR's new state
+<LI>Emacs adds a note to the log that you changed the state of the PR and
+gives you a chance to add your comments.
+<LI>Submit PR changes: Ctrl-c Ctrl-c
+<br>Cancel PR changes: Ctrl-c Ctrl-q 
+<br>(if you cancel the PR, emacs may ask you to unlock it.  Say Yes!)
+</OL>
+<P>
+<H3>To Add Comments to a PR</H3>
+<P>
+<OL>
+<LI>Meta-x edit-pr [Enter]
+<br>Emacs will prompt you for the PR number.
+<LI>Add comments:      Ctrl-c Ctrl-a
+<br>Now you're in a mail buffer.  Add comments; they'll be appended to the PR
+record but not sent to the whole bug alias (unless you Cc: them).
+<LI>Send PR comment:   Ctrl-c Ctrl-c
+<br>Cancel PR comment: Ctrl-x k
+</OL>
+<P>
+<H3>To Find a PR Number</H3>
+<P>
+<OL>
+<LI>Meta-x query-pr [Enter]
+<br>If you snagged someone's .emacs, there should be some search criteria
+in the mini buffer that looks something like this:
+<blockquote><samp>
+-q -s '^[oa]' -c win16-port<br>
+<pre>
+-q                      one line summary format
+-s '[oa]'               those whose status is "open" or "analyzed"
+-c win16-port           those whose category is "win16-port"
+</pre></samp></blockquote>
+Other useful tags include:
+<blockquote><pre>
+--text='uuencode'       find all containing the word "uuencode"
+--severity='critical'   find all 'critical' bugs
+--priority='high'       find all high-priority bugs
+</pre></blockquote>
+</OL>
+</BODY>
+</HTML>

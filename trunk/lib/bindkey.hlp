@@ -1,0 +1,1018 @@
+CUSTOMIZING Z-MAIL LITE KEYBINDINGS
+-----------------------------------
+
+In Z-Mail Lite, the action taken when a key is pressed is determined
+by that key's *binding*.  For instance, the binding for <ctrl+L> is
+`redraw', an action which erases and redraws the entire screen.
+
+The effective keybindings vary according to context.  For instance, in
+a list, pressing <space> selects an item in the list.  However, in an
+editable text area, pressing <space> inserts a blank space, just as
+you'd expect.  And in a read-only text area, <space> scrolls to the
+next page of the document.
+
+In order to permit different bindings for different contexts, each
+area that can have the input focus belongs to a *class* which
+describes all the areas that share a common behavior.  For instance,
+the message summaries in the main screen and the list of files in a
+filefinder dialog both belong to the `List' class, in which pressing
+<space> means to select an item.
+
+Most classes are *subclasses* of other classes.  For instance, `Text'
+is a subclass of `Widget', and we say `Widget' is the *superclass* of
+`Text'.  While `Text' describes behavior that is specific to how text
+works---for instance, <ctrl+A> moves to the beginning of a
+line---`Widget' describes behavior that is more general.  For
+instance, `Widget' says that <ctrl+X w> should show info on the
+current area.  Since Text is a subclass of Widget, <ctrl+X w> works in
+texts.  List is also a subclass of Widget, so <ctrl+X w> works in
+lists, too.
+
+To summarize:  a subclass behaves like its superclass, then adds more
+specific behavior.  We say a subclass *inherits* behavior from its
+superclass.
+
+
+THE BINDKEY COMMAND
+-------------------
+
+The `bindkey' command is used to create a keybinding; that is, to
+*bind* a key to an action.  The actions available depend on the
+context of the keybinding.  Here is an example.
+
+    bindkey -c Text \<ctrl+A> text-select-all
+
+This command says that in areas belonging to class `Text', the
+keystroke <ctrl+A> should perform the `text-select-all' action, which
+causes all the text to become selected.  It would not have been
+possible to write
+
+    bindkey -c List \<ctrl+A> text-select-all           # Won't work!
+
+because `text-select-all' is a `Text'-class action, not a `List'-class
+action.  (A table showing each class's available actions appears
+below.)
+
+Because `Text' is a subclass of `Widget', it *is* possible to bind
+`Widget'-class actions in `Text' contexts:
+
+    bindkey -c Text \<ctrl+I> widget-info
+
+This command says that in `Text' areas, <ctrl+I> should give info on
+the selected area, just like <ctrl+X w> does elsewhere.  The <ctrl+I>
+*binding* is specific to Text areas, though the `widget-info' *action*
+is not.
+
+Areas that can have the input focus are frequently *contained* within
+other areas (which themselves may be contained within still other
+areas).  For instance, the list of message summaries is contained
+within the main screen, which belongs to the class `Main' and can
+therefore have its own keybindings.  Here is an example.
+
+    bindkey -c Main \<ctrl+S> goto-main-summaries
+
+This means that when <ctrl+S> is pressed anywhere in the main screen,
+the focus will move to the message summaries list.  The focus must be
+in some area contained within the main screen for this to work.
+However, that area may have its own binding for <ctrl+S>.  If it does,
+then that more-specific binding will be used, and not the main
+screen's <ctrl+S> binding.
+
+If there is an unwanted keybinding in a smaller context which is
+preventing the preferred keybinding in a larger context from being
+used, you may remove it with "unbindkey".  For example, Z-Mail Lite
+includes this keybinding for the Main screen:
+
+    bindkey -c Main q zscript quit
+
+but this won't work in the message summaries list, since in that
+context, q is bound to `list-jump-to'.  Remedy the situation with:
+
+    unbindkey main-summaries q
+
+To summarize:  Keys can be bound in areas that contain other areas,
+but bindings for smaller areas are used before bindings for
+surrounding areas are checked.  We say the keystroke *propagates*
+outward, searching for an area to handle it.
+
+There is one "outermost" container in Z-Mail Lite which conceptually
+"contains" the entire screen.  It belongs to a class called
+`Zmliteapp'.
+
+All areas are ultimately contained within the `Zmliteapp' container.
+For example, the message summaries list is contained within the main
+screen, and the main screen is contained within the `Zmliteapp' area.
+If a key is pressed in the message summaries, and the message
+summaries has no binding for it, then the main screen's bindings are
+checked.  If the main screen has no binding for it, then the
+`Zmliteapp' container is checked.  This is where the binding for
+<ctrl+L> lives, for example:
+
+    bindkey -c Zmliteapp \<ctrl+L> redraw
+
+No matter where <ctrl+L> is pressed, if no area has bound it to some
+other action, the keystroke will ultimately find its way to the
+encompassing `Zmliteapp' and redraw the screen.
+
+A keybinding may be longer than a single keystroke; in fact, Z-Mail
+Lite has many two-keystroke bindings.  For instance, <ctrl+X ctrl+N>
+is an alternative way to "tab" from one field to the next.
+
+If a two-keystroke sequence is bound, it is not possible to bind the
+sequence's first key to something else without losing the
+two-keystroke sequence.  For instance, since <ctrl+X ctrl+N> means
+"tab to the next area", it is not possible to also make <ctrl+X> mean
+"exit the application" (say).  The reason is that when <ctrl+X> is
+pressed, Z-Mail Lite must be able to know whether to await more
+keypresses, or whether to execute the action for <ctrl+X>.  If you do
+re-bind a key or keysequence that is a prefix for other, longer
+sequences, those longer sequences will be deleted.
+
+Generally speaking, Z-Mail Lite only uses <ESC> and <ctrl+X> as
+prefixes for multi-keystroke bindings.
+
+Many areas in Z-Mail Lite have *names* so that they can be
+distinguished from other areas in the same class.  For instance, the
+row of buttons at the bottom of the Keybinding dialog (which appears
+when <ESC k> is pressed) belongs to the class `ActionArea'.  This is
+the same class that contains the row of buttons that appears at the
+bottom of the "Open Folder ..." dialog.  It would be wrong to try:
+
+    bindkey -c ActionArea S buttonpanel-invoke "Save"   # Wrong
+
+because that means "in all `ActionAreas', <S> should press the Save
+button"; however, most `ActionAreas' have no Save button.  It would be
+right to use:
+
+    bindkey help-aa S buttonpanel-invoke "Save"
+
+because help-aa is the name of the specific `ActionArea' that appears
+in the Keybinding dialog.  Note that when an *area's* name is used
+instead of a *class's* name, the "-c" is omitted from the `bindkey'
+command.  "-c" means "class".
+
+
+ADDITIONAL BINDKEY ARGUMENTS
+----------------------------
+
+The full syntax for the bindkey command is
+
+    bindkey [-l LABEL] [-d DOC] [-c] CLASS/NAME SEQUENCE ACTION [ARGUMENT]
+
+where CLASS/NAME is either the class in which to bind a keysequence
+(when "-c" is given) or the name of an area in which to bind a
+keysequence (when "-c" is omitted); SEQUENCE is the keysequence to
+bind; ACTION is the name of the action to bind the keysequence to; and
+ARGUMENT is optional additional information required by certain
+actions (see below).
+
+If `-l LABEL' is given, and SEQUENCE is one of \<f1> through \<f8>,
+then when this keybinding is in effect, LABEL will appear at the
+bottom of the screen in the appropriate "function key label" position.
+
+If `-d DOC' is given, then DOC, which should be a brief documentation
+string, will appear in the keybinding dialog to describe this
+keybinding.  The keybinding dialog can be seen by pressing `esc k'.
+
+
+NAMING KEYS
+-----------
+
+A key name in the SEQUENCE argument may be a single character, a
+CTRL-character or ESC-character combination, or any of the keystrokes
+listed below.
+
+Single characters are case-sensitive, so you may bind one action to
+"J" and another action in the same context to "j".  If you specify
+either the backslash (\) or caret (^) characters, you must precede
+them with a backslash, as in \\ and \^.
+
+CTRL-character combinations can be written as \<ctrl+X> or \<c-X>,
+where X is any letter or one of these symbols:
+
+    [ \ ] ^ _
+
+CTRL-characters are not case-sensitive, so CTRL+X is the same as
+CTRL+x.
+
+Other CTRL-character pairings (such as CTRL+TAB or CTRL+2) are not
+permitted.
+
+Many other characters and keys have special names and some have
+multiple synonyms:
+
+ ^X           CTRL+X (X may be any letter or [,\,],^, or _)
+ \<nul>       the NUL character (ASCII 0)
+ \t or \<tab> the TAB character (ASCII 9)
+ \n or \<newline>   
+              the NEWLINE character (ASCII 10)
+ \r or \<return>  
+              the CARRIAGE RETURN character (ASCII 13)
+ ^[ or \e or \<esc>
+              the ESCAPE character (ASCII 27)
+ ^\           ASCII 28
+ ^]           ASCII 29
+ ^^           ASCII 30
+ ^_           ASCII 31
+ \<space>     the SPACE character (ASCII 32), this can also 
+              be written as a blank space, but it must be quoted.
+ ^? or \<del> delete (ASCII 127)
+ \<down>      the down-arrow key
+ \<up>        the up-arrow key
+ \<left>      the left-arrow key
+ \<right>     the right-arrow key
+ \<insert>    the insert key
+ \<delete>    the delete key
+ \<home>      the home key
+ \<end>       the end key
+ \<pageup>    the page-up key
+ \<pagedown>  the page-down key
+ \<fN>        function key number N (e.g. \<f3>).
+ \octal-num   a three-digit byte value in octal notation (for
+	      instance, \033 for the ESCAPE character)
+
+To write multi-keystroke keysequences, simply string the key names
+together.  Example:
+
+    bindkey -c App \<ctrl+X>\<ctrl+P> focus-previous
+
+
+CLASSES
+-------
+
+Here are the Z-Mail Lite bindkey classes.  Indentation shows
+inheritance.  Each class's actions, if any, are listed under the class
+name and description.  Default keybindings in Z-Mail Lite are listed
+in square-brackets, in abbreviated notation, in the right margin.
+
+
+  *  Widget                             A superclass for all areas.
+                                        Everything is a Widget.
+
+     do-sequence                        A special action that uses extra
+                                        information to invoke *other*
+                                        actions in other areas.  Refer to
+                                        the section on `do-sequence', below.
+
+     widget-info                        Report the name and class of the
+                                        current area and its primary
+                                        container.
+
+    **  App                             A very generic class describing an
+                                        application.
+
+        focus-next                      "Tab" to next area.			[tab]
+
+        focus-previous                  "Tab" to the previous area.		[c-x c-p]
+
+      ***  Cursesapp                    A full-screen application that uses
+                                        "curses" for display.
+
+           redraw                       Erase the screen and redraw it.		[c-l]
+
+         ****  Zmliteapp                The Z-Mail Lite application, which
+                                        is a full-screen application based
+                                        on curses.
+
+               show-keys                Bring up the keybinding dialog.		[esc k]
+
+    **  Buttonpanel                     Any area that contains one or more
+                                        buttons.
+
+        buttonpanel-click               Activate the selected button.           [space]
+        buttonpanel-down                Move the cursor down.                   [c-n]
+        buttonpanel-first               Move to the first button.               [esc <]
+        buttonpanel-invoke              Invoke a button by name.
+
+        buttonpanel-jump-to             Jump to the next button whose label
+                                        begins with the letter or number
+                                        that invoked this action.
+
+        buttonpanel-last                Move to the last button.                [esc >]
+        buttonpanel-left                Move the cursor left.                   [c-b]
+        buttonpanel-next-page           Show the next pageful of buttons        [c-v]
+                                        (for scrolling Buttonpanels).
+
+        buttonpanel-previous-page       Show the previous pageful of            [esc v]
+                                        buttons.
+
+        buttonpanel-right               Move the cursor right.                  [c-f]
+        buttonpanel-scroll-down         Scroll the buttons downward (for        [esc q]
+                                        scrolling Buttonpanels).
+
+        buttonpanel-scroll-up           Scroll the buttons upward.              [esc z]
+        buttonpanel-up                  Move the cursor up.                     [c-p]
+
+      ***  ActionArea                   A Buttonpanel that appears at the
+                                        bottom of a Dialog, where the
+                                        dialog's actions are provided.
+
+      ***  Menu                         All menus.
+
+           menu-cancel                  Dismiss the current menu.
+           menu-cancel-all              Dismiss all pending menus.              [tab]
+           menu-down                    Move the cursor down.                   [c-n]
+           menu-left                    Move the cursor left.                   [c-b]
+           menu-right                   Move the cursor right.                  [c-f]
+           menu-search                  Like buttonpanel-jump-to, but if the
+                                        result is a submenu, the submenu is
+                                        opened.
+
+           menu-up                      Move the cursor up.                     [c-p]
+
+         ****  PullrightMenu            All pull-right menus.
+
+      ***  Radiogroup                   A Buttonpanel consisting solely of
+                                        toggle buttons, of which at most one
+                                        can be "on."
+
+      ***  Togglegroup                  A Buttonpanel consisting solely of
+                                        toggle buttons, of which any number
+                                        may be "on."
+
+    **  Dialog                          All full-screen or popup dialogs.
+
+        dialog-cancel                   Cancel the dialog.                      [esc esc]
+        dialog-close                    Close the dialog without canceling.
+        goto-action-area                Move the input focus to the dialog's    [esc a]
+                                        ActionArea, if it has one.
+
+        pick-action-area                Invoke a button in the dialog's
+                                        action area by name.
+
+        show-help                       Bring up a Help Index dialog.           [f1]
+        zscript                         Execute a Z-Script command.
+        zscript-prompt                  Present a Z-Script prompt.              [esc :]
+
+      ***  Popup                        All popup (i.e. non-full-screen)
+                                        dialogs.
+
+         ****  Ask                      All Popup dialogs that ask a
+                                        question.
+
+            *****  FileAsk              All Ask dialogs that ask for a
+                                        filename.
+
+               ******  AddfolderAsk     A FileAsk dialog that asks for the
+                                        name of a folder to open.
+
+               ******  NewfolderAsk     A FileAsk dialog that asks for the
+                                        name of a folder to create.
+
+               ******  RenamefolderAsk
+                                        A FileAsk dialog that asks for a
+                                        folder to rename.
+
+            *****  InputAsk             An Ask dialog that asks for a
+                                        response to be typed in.
+
+               ******  AddressAsk       An InputAsk dialog that asks for an
+                                        e-mail address to be typed in.
+
+               ******  CommandAsk       An InputAsk dialog that asks for a
+                                        Z-Script command to be typed in.
+
+            *****  ListAsk              An Ask dialog that asks the user to
+                                        select an item from a list.
+
+            *****  MsgAsk               An Ask dialog that asks the user to
+                                        select a message from a list of
+                                        message summaries.
+
+         ****  Attachlist               A Popup dialog that lists the
+                                        attachments for the current message
+                                        or composition.
+
+            *****  ComposeAttachlist    The Attachlist dialog for the
+                                        Compose screen.
+
+            *****  MessageAttachlist    The Attachlist dialog for the
+                                        Message screen.
+
+         ****  Attachtype               The Popup dialog in which the user
+                                        chooses an attachment's type and
+                                        encoding.
+
+         ****  Choosealias              The Popup dialog available in the
+                                        Compose screen from which the user
+                                        may choose aliases for addressing
+                                        the current composition.
+
+         ****  Compoptions              The Popup dialog containing the
+                                        options for the current composition.
+
+         ****  Datesearch               The Popup dialog for searching
+                                        messages by date.
+
+         ****  Dynamicheaders           The Popup dialog in which the user
+                                        sets the values of any dynamic
+                                        headers.
+
+         ****  Helpindex                The help index dialog.
+
+         ****  MenuPopup                All Popup dialogs that have their
+                                        own menubars.
+
+               cancel-menu              Return from the menubar.                [esc esc]
+               goto-menu                Jump to the menubar.                    [esc /]
+               pick-menu                Invoke a menu item by name.  See the
+                                        section on `pick-menu', below.
+
+            *****  Addrbrowse           All address browsing dialogs.
+
+               ******  ComposeAddrbrowse
+                                        The address browsing dialog that
+                                        appears in the Compose screen.
+
+            *****  Help                 The ordinary help dialog.
+
+            *****  Pager                The "text pager" dialog.
+
+         ****  Multikey                 The multikey dialog.
+
+         ****  Notifier                 All dialogs that present "Yes/No",
+                                        "Ok/Cancel", and similar options.
+
+         ****  Patternsearch            The Popup dialog for searching
+                                        messages by text pattern.
+
+         ****  Print                    The Popup dialog for printing
+                                        messages.
+
+         ****  Sort                     The custom sort dialog.
+
+         ****  Templates                The Popup dialog for selecting a
+                                        template with which to initiate a
+                                        composition.
+
+         ****  Textsearch               The Popup dialog for searching a
+                                        single body of text, and for
+                                        performing replacements and
+                                        spell-checking.
+
+            *****  TextsearchReplace    The Textsearch dialog that also
+                                        includes replacing and
+                                        spell-checking.
+
+         ****  Xface                    The Popup dialog for displaying a
+                                        crude ASCII rendering of the current
+                                        message's X-Face header, if any.
+
+      ***  Screen                       All full-screen dialogs.
+
+           goto-main                    Switch to the Main Screen.              [esc m]
+           next-screen                  Switch to the next screen.              [esc n]
+           other-screen                 Switch between two most recent          [esc o]
+                                        screens.
+
+           previous-screen              Switch to the previous screen.          [esc p]
+
+         ****  Aliases                  The aliases screen ("dialog
+                                        aliases").
+
+         ****  Envelope                 The envelope screen ("dialog
+                                        envelope").
+
+         ****  Headers                  The headers screen ("dialog
+                                        headers").
+
+         ****  MenuScreen               All Screens having a menubar.
+
+               cancel-menu              Return from the menubar.                [esc esc]
+               goto-menu                Jump to the menubar.                    [esc /]
+               pick-menu                Invoke a menu item by name.  See the
+                                        section on `pick-menu', below.
+
+            *****  Compose              The compose screen.
+
+                   goto-bcc-header      Move to the Bcc header.
+                   goto-body            Move to the message body.
+                   goto-cc-header       Move to the Cc header.
+
+                   goto-subject-header
+                                        Move to the Subject header.
+
+                   goto-to-header       Move to the To header.
+
+            *****  Main                 The main screen.
+
+                   goto-main-summaries
+                                        Move to the message summaries.
+
+                   main-zscript-prompt                                          [esc :]
+                                        Move to the Command field, or if
+                                        that's not visible, present a
+                                        Z-Script prompt.
+
+            *****  Message              The message-reading screen.
+
+                   message-next-page-or-message                                 [space]
+                                        Show the next pageful of text, or
+                                        move to the next message if at the
+                                        end of the current message.
+
+                   message-showface                                             [c-x f]
+                                        Pop up a crude ASCII rendering of
+                                        the current message's X-Face header,
+                                        if any.
+
+         ****  Vars                     The variables screen ("dialog
+                                        variables").
+
+    ** Filebox                          A container holding both the list of
+                                        files *and* the text entry area in
+                                        all file finders.
+
+        filebox-down                    With the cursor in the text entry       [c-n]
+                                        area, move the selection down in the
+                                        file list.
+
+        filebox-next-page               With the cursor in the text entry       [c-v]
+                                        area, show the next pageful in the
+                                        file list.
+
+        filebox-previous-page           With the cursor in the text entry       [esc v]
+                                        area, show the previous pageful in
+                                        the file list.
+
+        filebox-up                      With the cursor in the text entry       [c-p]
+                                        area, move the selection up in the
+                                        file list.
+
+    **  List                            All lists.
+
+        list-backward-char              Move the cursor backward one            [c-b]
+                                        character.
+
+        list-beginning-of-line          Move the cursor to the beginning of     [c-a]
+                                        the line.
+
+        list-click                      "Click" (select) the list item at       [space]
+                                        the cursor location.
+
+        list-click-line                 "Click" a list item by number.  See
+                                        example below.
+
+        list-controlclick               Behave like Motif CTRL+click; toggle    [.]
+                                        selection of the list item at the
+                                        cursor location.
+
+        list-doubleclick                Behave like Motif doubleclick;          [enter]
+                                        select and activate the list item at
+                                        the cursor location.  Executing
+                                        list-click twice, rapidly, has the
+                                        same effect.
+
+        list-down                       Move the cursor down.                   [c-n]
+        list-end-of-line                Move the cursor to the end of the       [c-e]
+                                        line.
+
+        list-first                      Move to the first list item.            [esc <]
+        list-forward-char               Move the cursor forward one             [c-f]
+                                        character.
+
+        list-jump-to                    Jump to the next list item that
+                                        begins with the letter or number
+                                        that invoked this action.
+
+        list-last                       Move to the last list item.             [esc >]
+        list-next-page                  Show the next pageful.                  [c-v]
+        list-previous-page              Show the previous pageful.              [esc v]
+        list-scroll-down                Scroll down one line.                   [c-n]
+        list-scroll-up                  Scroll up one line.                     [c-p]
+        list-shiftclick                 Behave like Motif SHIFT+click;          [>]
+                                        extend selection to cursor location.
+
+        list-up                         Move the cursor up.                     [c-p]
+
+      ***  FileList                     All lists of filenames.
+
+      ***  FolderStatusList             All lists of active folders.
+
+      ***  MessageSummaries             All lists of message summaries.
+
+    **  Taskmeter                       The taskmeter.
+
+        taskmeter-interrupt             Interrupt a task.                       [space]
+
+    **  Text                            All text areas.
+
+        text-backward-char              Move backward one character.            [c-b]
+        text-backward-word              Move backward one word.                 [esc b]
+        text-beginning                  Move to the beginning of text.          [esc <]
+        text-beginning-of-line          Move to the beginning of the line.      [c-a]
+        text-copy-selection             Copy the selected text to the           [esc w]
+                                        clipboard.
+
+        text-deselect                   Deselect the selected text.             [esc C]
+        text-end                        Move to the end of text.                [esc >]
+        text-end-of-line                Move to the end of the line.            [c-e]
+        text-forward-char               Move forward one character.             [c-f]
+        text-forward-word               Move forward one word.                  [esc f]
+        text-next-line                  Move to the next line.                  [c-n]
+        text-next-page                  Show the next pageful of text.          [c-v]
+        text-previous-line              Move to the previous line.              [c-p]
+        text-previous-page              Show the previous pageful of text.      [esc v]
+        text-resume-selecting           Resume selecting text.                  [esc r]
+        text-scroll-down                Scroll down one line.                   [esc q]
+        text-scroll-up                  Scroll up one line.                     [esc z]
+        text-select-all                 Select all text.
+        text-start-selecting            Start selecting text.                   [esc s]
+        text-stop-selecting             Stop selecting text.                    [esc e]
+        text-toggle-wrap                Toggle wrapping of long lines.          [W]
+
+      ***  EditText                     All editable text areas.
+
+           text-clear-selection         Delete the selected text.
+           text-cut-selection           Cut the selected text to the            [c-w]
+                                        clipboard.
+
+           text-delete-backward-char    Delete one character backward.          [backspace]
+           text-delete-backward-word    Delete one word backward.               [esc backspace]
+           text-delete-forward-char     Delete one character forward.           [c-d]
+           text-delete-forward-word     Delete one word forward.                [esc d]
+
+           text-delete-to-beginning-of-line                                     [c-u]
+                                        Delete from cursor to beginning of
+                                        line.
+
+           text-delete-to-end-of-line                                           [c-k]
+                                        Delete from cursor to end of line.
+
+           text-insert                  Insert specified text.  See example
+                                        below.
+
+           text-open-line               Open a new line ahead of the cursor.    [c-o]
+
+           text-paste                   Insert the contents of the              [c-y]
+                                        clipboard.
+
+           text-self-insert             Insert the key just typed.
+
+         ****  Inputfield               All one-line text entry areas.
+
+               inputfield-accept        Accept current contents of the area.    [enter]
+
+            *****  Commandfield         All Z-Script text entry areas.
+
+                   command-accept       Accept contents of the area and         [enter]
+                                        execute as a Z-Script command.
+
+                   command-history-backward                                     [c-p]
+                                        Move backward through history list.
+
+                   command-history-forward                                      [c-n]
+                                        Move forward through history list.
+
+
+BINDKEY USAGE EXAMPLES
+----------------------
+
+Here are some simple examples of "bindkey" usage.
+
+    bindkey -c EditText ^W text-delete-backward-word
+
+This command causes <ctrl+W> to behave in editable texts the way it
+does in many shells; that is, it deletes one word to the left.
+
+    bindkey -c Menu \<esc> menu-cancel
+
+This command causes the Escape key to cancel a single menu level
+instead of canceling all pending menus.
+
+    bindkey -c EditText ^U do-sequence '!* text-end-of-line !* text-delete-to-beginning-of-line'
+
+This command causes <ctrl+U> to delete an entire line in editable
+texts.  By default, <ctrl+U> only deletes from the cursor position
+leftward, leaving any text to the right of the cursor untouched.
+
+
+ACTIONS THAT TAKE ADDITIONAL ARGUMENTS
+--------------------------------------
+
+Certain actions to which you can bind keystrokes require additional
+arguments specifying what to do.
+
+
+  *  Widget
+
+     do-sequence
+
+This action is used to perform one or more actions in areas that may
+not be the same as the one where the keysequence was pressed.
+Example:
+
+    bindkey -c Inputfield ^N do-sequence 'zmlite focus-next'
+
+This command makes <ctrl+N> "tab out" of one-line text entry areas
+(`Inputfields').  To "tab" out of an area requires the action
+`focus-next', but `focus-next' is not an action understood by
+`Inputfield'-class areas.  Instead, `do-sequence' is used to perform
+the `focus-next' action in the area named `zmlite', which is a name
+for the enclosing `Zmliteapp' container.  The additional argument to
+do-sequence takes the form:
+
+    NAME ACTION [ARGUMENT]
+
+and must be surrounded by quotation marks.  NAME is the name of an
+area; it may *not* be a classname.  ACTION is the name of an action
+that can be performed in the area named NAME; and ARGUMENT is any
+additional argument required by ACTION.
+
+The special name `*' in this context means "the area in which the
+keysequence was pressed".
+
+You may use the quoted argument to specify more than one action to
+perform.  Each action is written as
+
+    NAME ACTION [ARGUMENT]
+
+and is separated from the following action by any single character not
+appearing elsewhere in the command; an exclamation point (`!') is a
+popular character to use.  Finally, the first character must be the
+separator character that you intend to use.  Here's the <ctrl+U>
+example from earlier in this document:
+
+    bindkey -c EditText ^U do-sequence '!* text-end-of-line !* text-delete-to-beginning-of-line'
+
+The first `!' introduces the separator character.  The `*' means "the
+area where this action was invoked."  The first action to perform is
+`text-end-of-line'.  The next `!' introduces a second action, which
+also applies to the area where the keysequence was pressed (`*'); and
+the action to perform is `text-delete-to-beginning-of-line'.
+
+
+    **  Buttonpanel
+
+        buttonpanel-invoke
+
+This action causes a button in the affected buttonpanel to be pressed.
+The additional argument required is the name of the button to press.
+Example:
+
+    bindkey pager-aa D buttonpanel-invoke 'Done'
+
+
+    **  Dialog
+
+        pick-action-area
+
+This action is like `buttonpanel-invoke', but it's used in a `Dialog'
+context and refers to the buttons in the `ActionArea' at the bottom of
+the dialog, if there are any.  The preceding example is exactly
+equivalent to:
+
+    bindkey -c Pager pick-action-area 'Done'
+
+
+        zscript
+
+This action allows a keybinding to initiate any Z-Script command.  The
+additional argument is the Z-Script to execute.  Example:
+
+    bindkey -c Main \<f8> zscript "quit"
+
+
+         ****  MenuPopup
+         ****  MenuScreen
+
+               pick-menu
+
+This action allows a menu item to be invoked from any dialog that has
+a menubar.  The additional argument required is the name of the menu
+item to invoke.  The name is constructed as follows:  Start at the
+menubar; write the name of each menu item in the path to the desired
+item, separating each with a period (`.'); and eliminate spaces and
+punctuation.  Case is not significant in the menu-item name.  So, for
+example, to make `I' find the "next reference by message ID" using the
+Main screen menus, you would write
+
+    bindkey main I pick-menu find.nextReferenceBy.messageID
+
+
+    **  List
+
+        list-click-line
+
+This action allows you to click an item by its position in the list,
+starting at 1.  The additional argument required is the number of the
+item to click.
+
+
+      ***  EditText
+
+           text-insert
+
+This action allows you to insert a prearranged string into text.  For
+example, to make `esc S' "sign my name", I could write:
+
+    bindkey -c EditText \eS text-insert 'Bob Glickstein'
+
+
+NAMED AREAS
+-----------
+
+This is a list of all the areas in Z-Mail Lite that have individual
+names.  The class of each area appears in parentheses.  In some cases,
+a particular area may belong to one of two different classes depending
+on where it appears.  For example, `addrbrowse' is the name of the
+Address Browser dialog, which normally belongs to the class
+`Addrbrowse', but which belongs to the class `ComposeAddrbrowse' when
+invoked from the Compose screen.
+
+No descriptions are given for the names in this list.  Instead, you
+may locate these areas by navigating in Z-Mail Lite and by using
+`ctrl+X w' (`widget-info') and `esc k' (`show-keys'), both of which
+give the name and class of the current area and its container(s).
+
+
+addrbrowse                      (Addrbrowse *or* ComposeAddrbrowse)
+addrbrowse-aa                   (ActionArea)
+addrbrowse-display-rg           (Radiogroup)
+addrbrowse-matches              (List)
+addrbrowse-pattern-field        (Inputfield)
+addrbrowse-recalls-field        (Inputfield)
+alias-address-field             (Inputfield)
+alias-name-field                (Inputfield)
+aliases                         (Aliases)
+aliases-aa                      (ActionArea)
+aliases-list                    (List)
+aliases-options-tg              (Togglegroup)
+ask                             (Ask)
+ask-aa                          (ActionArea)
+ask-choices                     (List)
+ask-command-field               (Commandfield)
+ask-filename-field              (Inputfield)
+ask-fl                          (FileList)
+ask-input-field                 (Inputfield)
+ask-mkdir-mkfolder-rg           (Radiogroup)
+ask-newname-field               (Inputfield)
+ask-read-onlyness-rg            (Radiogroup)
+ask-summaries                   (MessageSummaries)
+attach                          (ComposeAttachlist *or* MessageAttachlist)
+attach-aa                       (ActionArea)
+attach-comment                  (Inputfield)
+attach-encoding-menu            (Menu)
+attach-encoding-pullright       (PullrightMenu)
+attach-list                     (List)
+attach-type-menu                (Menu)
+attach-type-pullright           (PullrightMenu)
+attachtype                      (Attachtype)
+attachtype-aa                   (ActionArea)
+available-headers-list          (List)
+bcc-header-field                (Inputfield)
+cc-header-field                 (Inputfield)
+choosealiases                   (Choosealias)
+choosealiases-aa                (ActionArea)
+choosealiases-list              (List)
+command-field                   (Inputfield)
+compoptions                     (Compoptions)
+compoptions-aa                  (ActionArea)
+compoptions-log-field           (Inputfield)
+compoptions-record-field        (Inputfield)
+compoptions-log-tg              (Togglegroup)
+compoptions-options-tg          (Togglegroup)
+compoptions-record-tg           (Togglegroup)
+compose                         (Compose)
+compose-aa                      (ActionArea)
+compose-body                    (EditText)
+compose-messages-field          (Inputfield)
+date1-field                     (Inputfield)
+date2-field                     (Inputfield)
+datesearch                      (Datesearch)
+datesearch-aa                   (ActionArea)
+datesearch-function-list        (List)
+datesearch-messages-field       (Inputfield)
+datesearch-options-tg           (Togglegroup)
+datesearch-searchtype-rg        (Radiogroup)
+dynamic-bcc-header-field        (Inputfield)
+dynamic-cc-header-field         (Inputfield)
+dynamic-subject-header-field    (Inputfield)
+dynamic-to-header-field         (Inputfield)
+dynamicheaders                  (Dynamicheaders)
+dynamicheaders-aa               (ActionArea)
+dynamicheaders-menu             (Menu)
+envelope                        (Envelope)
+envelope-aa                     (ActionArea)
+envelope-header-contents-field  (Inputfield)
+envelope-header-name-field      (Inputfield)
+envelope-headers-list           (List)
+header-name-field               (Inputfield)
+header-settings-list            (List)
+headers                         (Headers)
+headers-aa                      (ActionArea)
+help                            (Help)
+help-aa                         (ActionArea)
+help-text                       (Text)
+helpindex                       (Helpindex)
+helpindex-aa                    (ActionArea)
+helpindex-text                  (Text)
+helpindex-topic-list            (List)
+helpindex-topic-rg              (Radiogroup)
+keyname-field                   (Inputfield)
+keynames-list                   (List)
+main                            (Main)
+main-aa                         (ActionArea)
+main-folder-field               (Inputfield)
+main-folder-list                (FolderStatusList)
+main-messages-field             (Inputfield)
+main-summaries                  (MessageSummaries)
+message                         (Message)
+message-aa                      (ActionArea)
+message-body                    (Text)
+message-messages-field          (Inputfield)
+multikey                        (Multikey)
+multikey-aa                     (ActionArea)
+output-text                     (Text)
+pager                           (Pager)
+pager-aa                        (ActionArea)
+pager-text                      (Text)
+patternsearch                   (Patternsearch)
+patternsearch-aa                (ActionArea)
+patternsearch-function-list     (List)
+patternsearch-messages-field    (Inputfield)
+patternsearch-options-tg        (Togglegroup)
+print                           (Print)
+print-aa                        (ActionArea)
+print-command-field             (Inputfield)
+print-headers-rg                (Radiogroup)
+print-messages-field            (Inputfield)
+printer-list                    (List)
+show-which-headers-rg           (Radiogroup)
+sort                            (Sort)
+sort-aa                         (ActionArea)
+sort-by-tg                      (Togglegroup)
+sort-options-tg                 (Togglegroup)
+sort-reverse-tg                 (Togglegroup)
+subject-header-field            (Inputfield)
+taskmeter                       (Taskmeter)
+template-list                   (List)
+templates                       (Templates)
+templates-aa                    (ActionArea)
+textsearch                      (Textsearch or TextsearchReplace)
+textsearch-aa                   (ActionArea)
+textsearch-pattern-field        (Inputfield)
+textsearch-replacement-field    (Inputfield)
+textsearch-text                 (Text *or* EditText)
+textsearch-word-list            (List)
+to-header-field                 (Inputfield)
+variable-description            (Text)
+variable-list                   (List)
+variable-multivalue-tg          (Togglegroup)
+variable-onoff-btnpanel         (Buttonpanel)
+variable-value-field            (Inputfield)
+variables                       (Vars)
+variables-aa                    (ActionArea)
+zmlite                          (Zmliteapp)
+
+
+ANSWERS TO FREQUENTLY-ASKED QUESTIONS ABOUT "bindkey"
+-----------------------------------------------------
+
+Q:  What is the difference between an area's name and its class?
+
+A:  An area's class is the category to which it belongs, the same way
+the word "sedan" is a category for many different particular cars.
+An area's name is a way to identify that one particular area among the
+others in the same class, the same way "Oldsmobile Cutlass" is a name
+for a particular sedan.
+
+
+Q:  Why do keybindings beginning with `esc' only sometimes work when I
+press them?
+
+A:  A common error when using the Escape key is to use it like the
+Control key.  The Control key must be held down while pressing another
+key; in that respect, it is like the Shift key.  The Escape key,
+however, is more like a letter key, in that you must press and release
+it before pressing the next key.  If you hold down the Escape key, it
+will begin to repeat just like a letter key does.  The result is that
+Z-Mail Lite will attempt to interpret a string of many `esc'
+keypresses, which will usually be meaningless.
+
+
+Q:  Why do many classes have no actions associated with them?
+
+A:  Such classes inherit actions from their superclasses, and they
+exist so that keybindings can be made in contexts that are specific
+enough.  For instance, the following keybinding for `<' moves up one
+directory level in a Filelist:
+
+    bindkey -c Filelist '<' do-sequence '!* list-first !* list-doubleclick'
+
+Although Filelist has no actions associated with it, it would be wrong
+to use
+
+    bindkey -c List '<' do-sequence '!* list-first !* list-doubleclick'
+
+because, in lists that are not `Filelists'---for example, in a list of
+message summaries---, it is meaningless to try to move up a directory
+level.
+
+
+Q:  Is this anything like "object-oriented"?
+
+A:  Yes.  Classes inherit from one another just like in so-called
+object-oriented design.  An area is an "instance" of the class to
+which it belongs.  The actions for each class can be considered its
+"methods".

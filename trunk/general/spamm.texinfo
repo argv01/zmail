@@ -1,0 +1,790 @@
+\input texinfo @c -*- texinfo -*-
+@comment %**start of header (This is for running Texinfo on a region.)
+@setfilename spamm.info
+@settitle SPAMM
+@c @finalout
+@c @smallbook
+@c @setchapternewpage odd
+@footnotestyle separate
+@syncodeindex fn cp
+@syncodeindex vr cp
+@comment %**end of header (This is for running Texinfo on a region.)
+
+@ifinfo
+This file documents the programmers' interface to SPAMM, the Simple,
+Poor-man's Allocator/Memory-Manager.
+
+Software and documentation Copyright @copyright{} 1992,1993 Z-Code
+Software Corp.
+@end ifinfo
+
+@tex
+\def\$#1${{#1}}  % Kluge: collect RCS revision info without $...$
+\xdef\manvers{\$Revision: 2.7 $}  % For use in headers, footers too
+\xdef\mandate{\$Date: 1994/11/29 01:59:54 $}
+@end tex
+
+@titlepage
+@title SPAMM
+@subtitle The Simple, Poor-man's Allocator/Memory-Manager
+@subtitle Garbage collection extensions for C
+@subtitle Manual version $Revision: 2.7 $
+@subtitle $Date: 1994/11/29 01:59:54 $
+@author Bob Glickstein
+@page
+@vskip 0pt plus 1filll
+Software and documentation Copyright @copyright{} 1992,1993 Z-Code
+Software Corp.
+@end titlepage
+
+@node Top, Garbage collection overview, (dir), (dir)
+@unnumbered Introduction
+
+This document describes the application programmer's interface to SPAMM,
+a library package for adding automatic garbage collection to C programs.
+
+@ifinfo
+Manual version:  $Revision: 2.7 $ $Date: 1994/11/29 01:59:54 $
+@end ifinfo
+
+@menu
+* Garbage collection overview:: SPAMM functionality and concepts.
+* Mechanisms::                  Technical discussion of how SPAMM works.
+* Initializing::                Preparing to use SPAMM.
+* Creating a pool::             Pools are the source of SPAMM-managed objects.
+* Allocating an object::        How to get an object from a pool.
+* Rooting and tracing::         Protecting objects from garbage collection.
+* Controlling SPAMM::           Run-time options.
+* SPAMM and exceptions::        Interaction between SPAMM and EXCEPT
+                                and some constraints you must observe.
+
+* Index::                       Index of functions, variables, and concepts.
+@end menu
+
+@node Garbage collection overview, Mechanisms, Top, Top
+@chapter Garbage collection overview
+
+SPAMM is a simple yet powerful package for adding garbage-collection to
+C programs.  Garbage collection frees the programmer from concern about
+memory management.  The programmer simply requests memory when it's
+needed, then forgets about it.  The allocated memory is automatically
+reclaimed when it's no longer needed.
+
+SPAMM uses a straightforward mark-and-sweep garbage collection
+algorithm.  In this scheme, a garbage collection consists of two phases.
+In the @dfn{mark phase}, a special list of pointers called the
+@dfn{root} is traversed.  The referents of these @dfn{rooted pointers}
+are marked as @dfn{reachable}.  After the mark phase, the @dfn{sweep
+phase} takes place, during which all objects @emph{not} marked reachable
+are reclaimed (for later reuse).  It is the programmer's responsibility
+to ensure that any pointers to SPAMM-managed objects are properly rooted
+(that is, that they appear in the root list).
+
+The application programmer asks SPAMM to manage the allocation and
+reclamation for particular data types.  For each different type that is
+to be managed by SPAMM, the programmer creates a SPAMM @dfn{pool}.  New
+objects of a particular type are allocated from the corresponding pool.
+Managed objects are automatically reclaimed when they are no longer
+needed; i.e., when there no longer exist any pointers to them.
+
+A garbage collection is invoked automatically when the application
+requests a new object but the corresponding pool is full.  If the
+garbage collection does not result in freeing up some items in the pool,
+then the pool size is increased.  A garbage collection can be explicitly
+invoked by the application, or it can be suppressed for the duration of
+some critical computation.
+
+@cindex Reclaim function
+Each data type has an associated @dfn{trace function} and a @dfn{reclaim
+function}.  The reclaim function is invoked on an object when a garbage
+collection (in the sweep phase) is about to reclaim it.  The trace
+function's purpose is to allow the mark phase to find and traverse the
+pointers inside a SPAMM-managed data object.  @xref{Rooting and
+tracing}.
+
+@node Mechanisms, Initializing, Garbage collection overview, Top
+@chapter Mechanisms
+
+This chapter discusses the technology behind SPAMM, and is intended to
+motivate and clarify the sections that follow.  If you are not
+interested in the technical details of SPAMM, feel free to skip this
+chapter.
+
+@menu
+* Definitions::         Data structures and other terminology described.
+* Allocation::          What happens when you ask for an object.
+* Garbage collection::  What happens when a garbage collection occurs.
+@end menu
+
+@node Definitions, Allocation,  , Mechanisms
+@section Definitions
+
+SPAMM internally maintains two data structures, the @dfn{root list} and
+the @dfn{pool list}.
+
+@cindex Root list
+The root list is a list of addresses of pointers to SPAMM-managed
+objects.  In other words, if you've asked SPAMM to manage objects of
+type @code{struct @var{foo}}, then the root list will contain values of
+type @code{struct @var{foo} **}.  This is because SPAMM needs to know
+the @emph{address} of any variable that can point to a @code{struct
+@var{foo}}, as explained below.
+
+@cindex Pool
+The pool list is a list of object pools, one pool for each data type
+you've asked SPAMM to manage.  Each pool, in turn, consists of three
+@dfn{page lists}, designated the @dfn{empty page list}, the @dfn{full
+page list}, and the @dfn{neither page list}.  A page list is a list of
+@dfn{pages}.
+
+@cindex Page
+A page contains a fixed number of allocatable objects; this fixed number
+is chosen per data type when the type's pool is created.  When the
+application requests a new instance of some object, SPAMM hands back a
+pointer to one of the objects in one of the already-allocated pages of
+objects.  That object is then flagged (within the page) as @dfn{in use}.
+An @dfn{empty page} is one in which none of the constituent objects is
+in use.  A @dfn{full page} is one in which all of the constituent
+objects are in use.  A @dfn{neither page} is one which is neither empty
+nor full (i.e., some but not all of its constituent objects are in use).
+
+@node Allocation, Garbage collection, Definitions, Mechanisms
+@section Allocation
+
+When the application requests a new object from a given object pool,
+SPAMM examines the pool to see whether it contains any neither pages.
+If so, an object is allocated from the first neither page and returned.
+(If that was the last unused object in the neither page, then the page
+becomes a full page and is moved from the neither page list to the full
+page list.)
+
+If the pool contains no neither pages, then the empty pages are
+consulted.  If there is an empty page, an object is allocated from it
+and returned, and the page is moved to the neither page list (or the
+full page list if it is a one-element page).
+
+If the pool contains neither neither pages nor empty pages, then a
+garbage collection is triggered to try and create some empty pages or
+neither pages.  @xref{Garbage collection}.
+
+If the garbage collection fails to turn full pages into empty or neither
+pages, then SPAMM relents and actually allocates a new empty page.
+
+If the application has turned off garbage collection (@pxref{Controlling
+SPAMM}), then this sequence happens slightly differently.  If no empty
+or neither page is found, then SPAMM tries to allocate a new page right
+away.  If @emph{that} fails, SPAMM will try a garbage collection
+(regardless of the request to suspend garbage collection).  If
+@emph{even that} fails to produce new allocatable objects, then a
+new-page allocation is tried one more time before giving up.
+
+@node Garbage collection,  , Allocation, Mechanisms
+@section Garbage collection
+
+@cindex Mark
+@cindex Reachable
+In a garbage collection, all objects in all pages in all pools start out
+marked as @dfn{unreachable}.  The mark phase then begins and the root
+list is traversed.  Recall that the root list contains pointers to
+pointers to objects.  Each pointer pointed to in the root list is then
+@dfn{traced}.
+
+@cindex Tracing
+Tracing a pointer works as follows:  If the pointer is null, nothing
+happens.  Otherwise, the pointer is presumed to point to some
+SPAMM-managed object.  That object's page is found (by simple pointer
+arithmetic).  If the object is marked @dfn{reachable}, then nothing else
+is done.  Otherwise, the object is marked as reachable, and then it is
+recursively traced using the pool's trace function.  (The pool's trace
+function is responsible for calling @code{spamm_Trace} on the pointers
+inside a SPAMM-managed object.)
+
+@cindex Sweep
+After the pointers in the root list are traced, the sweep phase begins,
+and each in-use object is then processed (by traversing the pool list
+[and the neither page list and the full page list within each pool]) as
+follows:  The object is tested to see whether it was marked by the mark
+phase.  If so, it is still in use; otherwise, it is garbage.  The in-use
+flag is cleared for that object, reclaiming it for future re-use.  The
+page containing the reclaimed object is moved, if appropriate, from the
+full page list to the neither page list, or from the neither page list
+to the empty page list.  (The neither page is skipped if the pool's
+pages are only one element large.)
+
+After the sweep phase, the garbage collection concludes by freeing
+excess empty pages.  Empty pages are considered excessive if the number
+of in-use objects in a pool is smaller than 25% of the total number of
+objects in that pool.
+
+@deftypevar @w{(void (*) ())} spamm_GcStart
+This is a pointer to a void function of no arguments; if you set it to
+some function, that function will be called when a garbage collection
+begins.
+@end deftypevar
+
+@deftypevar @w{(void (*) ())} spamm_GcEnd
+This can point to a function to be called when garbage collection ends.
+Usually this and @code{spamm_GcStart} are used to invoke functions that
+advise the user that a garbage collection is underway.
+@end deftypevar
+
+@node Initializing, Creating a pool, Mechanisms, Top
+@chapter Initializing
+
+Before performing any other SPAMM operations, SPAMM must be initialized.
+
+@deftypefun void spamm_Initialize ()
+Initializes SPAMM.  Must be called exactly once before using SPAMM
+functionality.
+@end deftypefun
+
+@node Creating a pool, Allocating an object, Initializing, Top
+@chapter Creating a pool
+
+A SPAMM object pool is of type @code{struct spamm_ObjectPool}.  Create a
+pool by whatever means are appropriate, then initialize it with
+@code{spamm_InitPool}.  A separate pool should be created for each data
+type which you want SPAMM to manage.  The type of data object managed by
+one pool is referred to as the @dfn{pool type}.
+
+@cindex Page size
+The @code{elts} parameter specifies how many objects will be allocated
+at a time in a page.  For large data types which you know will be
+instantiated infrequently, it makes sense to choose a small value of
+@code{elts} to reduce the potential for allocating latent (unused)
+space.  For smaller data types, or ones which are frequently allocated,
+choose the maximum value for @code{elts}.  It sometimes happens that
+your application uses a single instance of some data type which, for
+bookkeeping reasons, needs to be SPAMM-managed @footnote{This will be
+the case, for instance, if the data type in question can be pointed to
+by a pointer which might also point to another SPAMM-managed
+object.}.  In this case, use a value of 1 for @code{elts} in that
+pool.
+
+@deftypefun void spamm_InitPool (@w{struct spamm_ObjectPool *@var{pool}}, @w{int @var{size}}, @w{int @var{elts}}, @w{void (*@var{tracefn})()}, @w{void (*@var{reclaimfn})()})
+Initialize a pool of objects of a particular type.  Arguments are:
+@var{pool}, a pointer to an uninitialized object pool structure;
+@var{size}, the size (in bytes) of an instance of the desired pool type;
+@var{elts}, the number of elements allocated at a time in a page of this
+pool; @var{tracefn}, a function responsible for tracing an object of the
+pool's type; and @var{reclaimfn}, a function responsible for finalizing
+a data structure before it becomes inaccessible.
+
+@vindex ULBITS
+The value @code{ULBITS} is the number of bits in an @code{unsigned long}
+on your architecture.  The value of @var{elts} must lie between 1 and
+@code{ULBITS}.
+
+The @var{tracefn} takes one argument, a pointer to an object of the
+pool's type.  This function will be called by the mark phase of the
+garbage collection.  @ref{Rooting and tracing} for more information.
+
+The @var{reclaimfn} takes one argument, a pointer to an object of the
+pool's type.  This function should free privately-allocated memory
+within the object and perform other cleanup tasks.  This function will
+be called by the sweep phase of a garbage collection on a reclaimed
+object.  Note that it is not in general possible to know when this will
+occur, or whether it will occur at all.
+
+This function can raise the @code{strerror[ENOMEM]} exception.
+@end deftypefun
+
+Suppose you have a data type defined as follows:
+
+@example
+@group
+struct foo @{
+    char         *name;
+    struct bar   *b;
+    struct xyzzy *x;
+    int           i;
+@};
+@end group
+@end example
+
+You wish SPAMM to manage allocation and reclamation of instances of
+@code{struct foo}, so you create a pool to hold @code{struct foo}
+objects:
+
+@example
+@group
+@r{@dots{}}
+struct spamm_ObjectPool fooPool;
+
+spamm_InitPool(&fooPool, sizeof (struct foo), ULBITS,
+               fooTrace, fooReclaim);
+@r{@dots{}}
+@end group
+@end example
+
+Suppose further that the @code{b} and @code{x} fields of a @code{struct
+foo} are pointers to other objects that are managed by SPAMM.  Then
+@code{fooTrace} could be defined like this:
+
+@example
+@group
+static void
+fooTrace(f)
+    struct foo *f;
+@{
+    spamm_Trace(f->b);
+    spamm_Trace(f->x);
+@}
+@end group
+@end example
+
+This allows SPAMM, in the mark phase of a garbage collection, to follow
+the pointers inside a @code{struct foo} and recursively mark the found
+objects.
+
+Now suppose that the @code{name} field of a @code{struct foo} is a
+privately-allocated string.  Then @code{fooReclaim} probably needs to
+look like this:
+
+@example
+@group
+static void
+fooReclaim(f)
+    struct foo *f;
+@{
+    if (f->name)
+        free(f->name);
+@}
+@end group
+@end example
+
+@deftypefun int spamm_PoolStats (@w{struct spamm_ObjectPool *@var{op}}, @w{int *@var{empty}}, @w{int *@var{neither}}, @w{int *@var{full}})
+Reports the number of pages allocated in @var{op}.  The @code{int}
+pointed to @var{empty} is set to the number of empty pages;
+@var{neither} will point to the number of neither pages; and @var{full}
+will point to the number of full pages.  The return value is the sum of
+all pages allocated in @var{op}.
+
+Any of @var{empty}, @var{neither}, or @var{full} may be @code{NULL}, but
+this does not affect the return value.
+@end deftypefun
+
+@node Allocating an object, Rooting and tracing, Creating a pool, Top
+@chapter Allocating an object
+
+Once you have created an object pool and initialized it with
+@code{spamm_InitPool}, you can request objects of the pool's type using
+@code{spamm_Allocate}.
+
+@deftypefun {void *} spamm_Allocate (@w{struct spamm_ObjectPool *@var{op}})
+Return a new object from @var{op}, an object pool initialized by
+@code{spamm_InitPool}.
+
+This function may raise the @code{strerror[ENOMEM]} exception.
+@end deftypefun
+
+@node Rooting and tracing, Controlling SPAMM, Allocating an object, Top
+@chapter Rooting and tracing
+
+@cindex Rooting
+All pointers to SPAMM-managed objects must be rooted (inserted by
+reference into SPAMM's private root list), or must be accessible from
+rooted pointers.  This allows the mark phase of a garbage collection to
+find objects that are being used and prevent them from being reclaimed
+in the sweep phase.
+
+SPAMM's private root list is a doubly-linked list of pointers to
+pointers to objects.  When the programmer creates a variable which can
+point to a SPAMM-managed object, it should be rooted immediately using
+one of the mechanisms described below.  The variable should be unrooted
+before its lifetime expires (i.e., before the end of the scope in which
+it was defined).
+
+Not all in-use objects are necessarily pointed to by pointers in the
+root list.  Objects pointed to from the root list might themselves point
+to other SPAMM-managed objects which are not rooted.  Such objects are
+said to be @dfn{accessible} from the rooted objects.  Those objects
+themselves might point to others which are also considered accessible.
+The transitive closure of the objects accessible from the root list
+constitutes the set of objects-in-use.  Other objects that have been
+allocated but which are not accessible are garbage which gets reclaimed
+during the sweep phase of a garbage collection.
+
+Because SPAMM does not know the internal layout of a data object it is
+managing, it has no way of knowing which parts of the object might be
+pointing to other SPAMM-managed objects.  It therefore relies on a
+programmer-defined trace function, one per data type being managed, to
+traverse the pointers within an object.  The trace function is
+associated with a data type in a call to @code{spamm_InitPool}
+(@pxref{Creating a pool}) and need only call the function
+@code{spamm_Trace} on each of the appropriate pointers contained within
+an object of the pool's type.
+
+@deftypefun void spamm_Trace (@w{void *@var{ptr}})
+Cause the appropriate trace function to be invoked on @var{ptr}, a
+pointer to a SPAMM-managed object.  Typically called from the trace
+function of one pool on the components of its pool type which are other
+SPAMM-managed types.  @code{spamm_Trace} ensures that the trace function
+is only called once for any particular object during a garbage
+collection.
+@end deftypefun
+
+@menu
+* Rooting mechanisms::          How to root your pointers.
+@end menu
+
+@node Rooting mechanisms,  ,  , Rooting and tracing
+@section Rooting mechanisms
+
+SPAMM provides three functions to control rooting and unrooting, and it
+also provides a new syntactic construct.  The syntactic construct is
+preferred over the lower-level functions to control rooting ad unrooting
+(except for pointers whose @dfn{extent} is not the same as their
+@dfn{scope}; see below). The syntactic construct consists of two macros,
+@code{SPAMM_ROOT} and @code{SPAMM_ENDROOT}, and is used like this:
+
+@findex SPAMM_ROOT
+@findex SPAMM_ENDROOT
+@example
+@group
+void somefunction()
+@{
+    struct foo *f = (struct foo *) 0;
+    struct bar *b = (struct bar *) 0;
+
+    SPAMM_ROOT((&f, &b, 0)) @{
+        @r{@dots{}Code that uses the variables @code{f} and @code{b}@dots{}}
+    @} SPAMM_ENDROOT;
+@}
+@end group
+@end example
+
+In this example, the pointers @code{f} and @code{b} are rooted on entry
+to the @code{SPAMM_ROOT} block, and are automatically unrooted on exit
+from that block.  Note the following:
+
+@itemize @bullet
+@item
+The arguments to @code{SPAMM_ROOT} are enclosed in @emph{double}
+parentheses.
+
+@item
+The arguments to @code{SPAMM_ROOT} are the @emph{addresses} of pointers.
+
+@item
+The argument list is terminated with a zero.
+
+@item
+The pointers whose addresses are given to @code{SPAMM_ROOT} are
+initialized to zero.
+@end itemize
+
+This last point is worth some explanation.  All pointers in SPAMM's root
+list are assumed either to be zero, or to point to a valid SPAMM-managed
+object.  These pointers will never be examined except during the mark
+phase of a garbage collection.  Because it is not in general possible to
+predict when a garbage collection will occur, it is safest to simply
+ensure that all rooted pointers are properly initialized @emph{before}
+they become rooted.
+
+@emph{Important warning}:  Beware of functions that return SPAMM-managed
+objects but which are called without rooting their values!  In a
+construct such as:
+
+@example
+@group
+a(b(), c());
+@end group
+@end example
+
+@noindent
+@code{b} may execute and produce a result, but the result is left,
+@emph{unrooted}, on the stack while @code{c} executes, which could
+result in the return value of @code{b} being garbage-collected before
+@code{a} gets control.  This workaround will solve the problem:
+
+@example
+@group
+x = NULL;
+y = NULL;
+SPAMM_ROOT((&x, &y, 0)) @{
+    a(x = b(), y = c());
+@} SPAMM_ENDROOT;
+@end group
+@end example
+
+@noindent
+The rooted variables @code{x} and @code{y} will protect the return
+values of @code{b} and @code{c}.
+
+@cindex extent
+@cindex scope
+The syntactic constructs @code{SPAMM_ROOT} and @code{SPAMM_ENDROOT} are
+only appropriate when the @dfn{extent} of the pointers being rooted
+equals their @dfn{scope}.  The scope of a variable refers to the region
+of code in which it is legal to refer to the variable; thus, a variable
+local to a function may only be referred to within that function, and
+the function is said to be that variable's scope.  The extent of a
+variable refers to the variable's lifetime, or the period during which
+the variable is valid.  For a variable local to a function, the extent
+is the same as the scope.  However, consider this:
+
+@example
+@group
+int foo()
+@{
+    static struct bar *b = 0;
+
+    SPAMM_ROOT((&b, 0)) @{
+        @r{@dots{}}
+    @} SPAMM_ENDROOT;
+@}
+@end group
+@end example
+
+The extent of @code{b} persists beyond the scope of the function; that
+is, its value remains intact between invocations of @code{foo}.  It is
+therefore wrong to unroot it at the end of @code{foo}'s scope.  The
+low-level functions @code{spamm_Root} and @code{spamm_Unroot} should be
+used instead:
+
+@example
+@group
+int foo()
+@{
+    static struct bar *b = 0;
+    static int rootindex;
+
+    if (@r{@dots{}first time through@dots{}}) @{
+        rootindex = spamm_Root(&b);
+    @}
+    @r{@dots{}}
+    if (@r{@dots{}last time through@dots{}}) @{
+        spamm_Unroot(rootindex);
+    @}
+@}
+@end group
+@end example
+
+@menu
+* Low-level rooting functions::         The low-level interface to
+                                        rooting and unrooting.
+@end menu
+
+@node Low-level rooting functions,  ,  , Rooting mechanisms
+@subsection Low-level rooting functions
+
+It is easier and less error-prone to use the
+@code{SPAMM_ROOT}/@code{SPAMM_ENDROOT} pair of macros to keep your
+pointers properly rooted.  However, if you require finer control over
+the process, there are three functions that you can use.
+
+@deftypefun int spamm_Root (@w{void **@var{ptr}})
+Inserts @var{ptr} (a pointer to a pointer to a SPAMM-managed object)
+into the root list and returns the new @dfn{root list index} used (see
+below).
+@end deftypefun
+
+@deftypefun int spamm_RootList (@w{void **@var{p1}}, @w{void **@var{p2}}, @dots{}, 0)
+Each argument is a pointer to a pointer to a SPAMM-managed object.
+Calls @code{spamm_Root} on each of its arguments.  A zero terminates the
+argument list.  The return value is the number of pointers that were
+rooted.
+@end deftypefun
+
+@deftypefun void spamm_Unroot (@w{int @var{n}})
+Removes from the root list the entry whose index is @var{n} (which is an
+index such as the one returned by @code{spamm_Root}).
+@end deftypefun
+
+@cindex Dlist
+The root list is implemented as a doubly-linked list using the Dlist
+package (q.v.).  Items in a dlist are referenced by their integer
+indices.  The value returned by @code{spamm_Root} is the dlist index of
+the entry used for rooting its argument.
+
+When a new pointer is rooted, it is always placed at the head of the
+dlist.  The convenience macros @code{SPAMM_ROOT} and
+@code{SPAMM_ENDROOT} rely on this property for keeping track of which
+pointers need to be removed from the root list.  @code{SPAMM_ROOT}
+records the position @var{p} in the root list of the latest element
+added (using @code{spamm_RootList}) as well as the number of elements
+@var{n} added.  At the end of a @code{SPAMM_ROOT} block,
+@code{SPAMM_ENDROOT} finds location @var{p} in the root list and unroots
+@var{n} pointers from that spot.  The correctness of this shortcut
+depends on that segment of the root list remaining intact through the
+@code{SPAMM_ROOT} block.  In other words, if the programmer adds or
+removes pointers in the middle of a portion of the root list which
+@code{SPAMM_ROOT} created, then @code{SPAMM_ENDROOT} will wind up
+removing the wrong pointers from the root list.  So don't do that.
+
+@node Controlling SPAMM, SPAMM and exceptions, Rooting and tracing, Top
+@chapter Controlling SPAMM
+
+SPAMM gives the programmer some control over how and when it operates.
+In particular, it is possible to request that a garbage collection take
+place immediately; it is also possible to suspend garbage collection for
+a period.
+
+@deftypefun void spamm_CollectGarbage ()
+Performs a garbage collection.  The global variable @code{spamm_GcStart}
+is a pointer to a void function of no arguments; if you set it to some
+function, that function will be called when a garbage collection begins.
+Similarly, the variable @code{spamm_GcEnd} can point to a function to be
+called when garbage collection ends.  Usually these function pointers
+are used to invoke functions that advise the user that a garbage
+collection is under way.
+@end deftypefun
+
+@cindex Suspending garbage collection
+To suspend garbage collection for a period, use the
+@code{SPAMM_GCSUSPEND} and @code{SPAMM_ENDGCSUSPEND} pair of macros like
+so:
+
+@findex SPAMM_GCSUSPEND
+@findex SPAMM_ENDGCSUSPEND
+@example
+@group
+@r{@dots{} code that might be interrupted by a garbage collection @dots{}}
+SPAMM_GCSUSPEND @{
+    @r{@dots{} some critical code you don't want interrupted @dots{}}
+@} SPAMM_ENDGCSUSPEND;
+@r{@dots{} code that might be interrupted by a garbage collection @dots{}}
+@end group
+@end example
+
+The macros @code{SPAMM_GCSUSPEND} and @code{SPAMM_ENDGCSUSPEND} are a
+convenient and less error-prone interface to the low-level functions
+that perform the actual suspension, namely @code{spamm_GcSuspend} and
+@code{spamm_GcUnsuspend}.
+
+@deftypefun void spamm_GcSuspend ()
+Suspend garbage collection until the next @code{spamm_GcUnsuspend}.
+@end deftypefun
+
+@deftypefun void spamm_GcUnsuspend ()
+Remove the current garbage collection suspension.
+@end deftypefun
+
+Actually, @code{spamm_GcSuspend} and @code{spamm_GcUnsuspend} don't
+necessarily start and stop garbage collection suspension.  They merely
+increment and decrement (respectively) an internal counter which starts
+at zero.  Only while the counter @emph{is} zero can a garbage collection
+occur.  Thus it is possible to write code like this:
+
+@example
+@group
+spamm_GcSuspend();
+foo();
+bar();
+spamm_GcUnsuspend();
+@end group
+@end example
+
+even if the definition of @code{foo} looks like this:
+
+@example
+@group
+void
+foo()
+@{
+    spamm_GcSuspend();
+    @r{@dots{} some code @dots{}}
+    spamm_GcUnsuspend();
+@}
+@end group
+@end example
+
+If garbage collection suspension did not use the counter scheme, then
+the call to @code{foo} would re-enable garbage collection when it called
+@code{spamm_GcUnsuspend}, unbeknownst to the caller, who thinks it's
+still suspended when it calls @code{bar} after @code{foo}.
+
+In fact, garbage collection suspension is even less straightforward than
+that.  It is still possible for a garbage collection to occur even if a
+suspension is pending.  However, as described in @ref{Allocation}, this
+will only happen as a last resort if the operating system cannot deliver
+more free memory when required.
+
+@node SPAMM and exceptions, Index, Controlling SPAMM, Top
+@chapter SPAMM and exceptions
+
+@cindex Exceptions
+SPAMM makes use of the Except package (q.v.).  Memory requested from the
+operating system is obtained via @code{emalloc}, and so can raise the
+@code{strerror[ENOMEM]} exception.  Also, the @code{SPAMM_ROOT},
+@code{SPAMM_ENDROOT}, @code{SPAMM_GCSUSPEND}, and
+@code{SPAMM_ENDGCSUSPEND} are defined in terms of Except primitives.  A
+block of code written as
+
+@example
+@group
+SPAMM_ROOT((&a, &b, &c, 0)) @{
+    @r{@dots{} your code @dots{}}
+@} SPAMM_ENDROOT;
+@end group
+@end example
+
+expands as
+
+@example
+@group
+do @{
+    int _Spamm_Root_Count_ = spamm_Rootlist(&a, &b, &c, 0);
+    int _Spamm_Root_First_Index = dlist_Head(&spamm_ObjectRoot);
+
+    TRY @{
+        @r{@dots{} your code @dots{}}
+    @} FINALLY @{
+        int i, j, index = _Spamm_Root_First_Index_;
+
+        for (i = 0; i < _Spamm_Root_Count_; ++i) @{
+            j = index;
+            index = dlist_Next(&spamm_ObjectRoot, j);
+            spamm_Unroot(j);
+        @}
+    @} ENDTRY;
+@} while (0);
+@end group
+@end example
+
+(Surrounding the expansion in a @code{do @dots{} while (0)} is an
+idiomatic programming construct for encapsulating multi-statement
+macros.)  Placing the unrooting portion of the expansion inside of a
+@code{FINALLY} block allows the pointers to be properly unrooted even if
+your code raises an exception that throws control outside of the
+@code{SPAMM_ROOT} block.
+
+Similarly, a block of code written as
+
+@example
+@group
+SPAMM_GCSUSPEND @{
+    @r{@dots{} your code @dots{}}
+@} SPAMM_ENDGCSUSPEND;
+@end group
+@end example
+
+expands as
+
+@example
+@group
+do @{
+    spamm_GcSuspend();
+    TRY @{
+        @r{@dots{}your code@dots{}}
+    @} FINALLY @{
+        spamm_GcUnsuspend();
+    @} ENDTRY;
+@} while (0);
+@end group
+@end example
+
+The caveats and constraints that apply to programming with the Except
+package also apply to SPAMM.  In particular, since a @code{SPAMM_ROOT}
+or a @code{SPAMM_GCSUSPEND} block is also a @code{TRY} block, you must
+use Except's special mechanisms for performing non-local exits from
+those blocks (@pxref{Non-local exits, , , except, Except}).
+
+@node Index,  , SPAMM and exceptions, Top
+@unnumbered Index
+
+@printindex cp
+
+@contents
+@bye

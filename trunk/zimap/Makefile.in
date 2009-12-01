@@ -1,0 +1,48 @@
+# 
+# Copyright 1994 by Z-Code Software Corp., an NCD company.
+#
+
+CCLIENTDIR = ../c-client/non-ansi
+DYNADTDIR = ../zmail/general
+
+CCLIENTLIB = ${CCLIENTDIR}/c-client.a
+LIBS = @LIBS@ ${CCLIENTLIB} -L${DYNADTDIR} -ldynadt
+
+srcdir = @srcdir@
+
+CFLAGS = -I${CCLIENTDIR} -I${DYNADTDIR} -g
+
+OBJS = zimapd.o init.o trace.o
+
+zimapd: ${OBJS}
+	${CC} ${OBJS} -o zimapd ${LIBS}
+
+zimapd.o: ${CCLIENTDIR}/mail.h ${CCLIENTDIR}/misc.h ${CCLIENTDIR}/osdep.h \
+	zimap.h config.h
+
+trace.o init.o: zimapd.h config.h
+
+clean:
+	rm -f *.o zimapd
+
+configure: configure.in
+	cd ${srcdir} && autoconf
+
+# autoheader might not change config.h.in
+config.h.in: config.h.in.stamp
+config.h.in.stamp: configure.in 
+	cd ${srcdir} && autoheader
+	touch ${srcdir}/config.h.in.stamp
+
+# config.status might not change config.h
+config.h: config.h.stamp
+config.h.stamp: config.h.in config.status
+	./config.status
+	touch config.h.stamp
+     
+Makefile: Makefile.in config.status
+	./config.status
+     
+config.status: configure
+	./config.status --recheck
+

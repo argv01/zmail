@@ -1,0 +1,330 @@
+<HTML>
+<HEAD>
+<TITLE>Z-Mail Architecture Overview</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>Z-Mail Architecture Overview</H1>
+<P>
+<UL>
+<LI> <A HREF="#summary">High-level summary</A>
+<LI> <A HREF="#folders">Folders and Messages</A>
+<LI> <A HREF="#compose">Compositions</A>
+<LI> <A HREF="#zscript">Z-Script Interpreter</A>
+<UL>
+<LI> <A HREF="#filters">Filters</A>
+<LI> <A HREF="#aliases">Aliases and Headers</A>
+</UL>
+<LI> <A HREF="#gui">Graphical User Interface</A>
+<UL>
+<LI> <A HREF="#dialogs">GUI — Dialogs</A>
+<LI> <A HREF="#state">Tracking ``Core'' State</A>
+<LI> <A HREF="#calling">Calling Z-Script</A>
+</UL>
+<LI> <A HREF="#picture">The Whole Picture</A>
+</UL>
+<P>
+<H2><A NAME="summary">High-level summary</A></H2>
+<P>
+Z-Mail is organized into two major sections, the ``core'' and the graphical
+user interface (GUI).  The ``core'' is in turn organized around four major data
+objects:
+<P>
+<UL>
+<LI> Folder (mailbox)
+<LI> Message
+<LI> Composition
+<LI> Z-Script Interpreter
+</UL>
+<P>
+Of these, folder, message, and compostion are implemented as true data objects
+(C structures) whereas the interpreter is actually a collection of global
+state.
+<P>
+The command-line interface on UNIX is little more than the interpreter
+accepting commands directly from textual user input, so it is not necessary to
+discuss it in an architectural context.
+<P>
+The ``core'' has some expectation that the GUI is organized around the concept
+of a frame object, where each frame represents one window or dialog.  The
+``core'' communicates with the GUI by sending messages (actually implemented as
+API calls) either to individual frames or, more frequently, to all frames as a
+broadcast.  With few exceptions, these messages instruct the GUI to re-examine
+the ``core'' data structures shared by the two sections, and to update the GUI
+view to incorporate any changes that have been made to those data structures.
+<P>
+<H2><A NAME="folders">Folders and Messages</A></H2>
+<P>
+A folder object serves 3 purposes:
+<P>
+<OL>
+<LI> Manage a cache correspondence between in-memory data and a persistent
+mailbox on disk.
+<LI> Act as a container for cached data about the collection of messages held
+in the corresponding persistent folder.
+<LI> Maintain mailbox-specific interpreter state, such as the last set of
+messages the interpreter acted upon within that mailbox.
+</OL>
+<P>
+For convenience, the folder object is also used on some platforms to cache
+certain mailbox-specific GUI data, such as a precomputed array of message
+summaries for the main window display.
+<P>
+The ``core'' is historically single-threaded, and maintains a concept of a
+single current folder from among those that have been opened.
+<P>
+Message objects are always (with one notable GUI exception) referenced
+indirectly via an array of pointers maintained by their folder
+container.<A HREF="#note1">(1)</A>
+Each message object represents cached data, including unsaved state changes
+(read, deleted, etc.) about a particular message.  The cached data includes the
+text contents of any message headers that have been referenced by the
+interpreter (or by the GUI), a decoded/transliterated copy of that header text
+if the display character set is different than that of a given header, the
+starting and ending offsets of the message within the (flat-file) mailbox on
+disk, and a linked list of attachment objects<A HREF="#note2">(2)</A> for any
+attachments (MIME body parts) contained in the message.
+<P>
+Via the current folder, the ``core'' maintains a concept of a single current
+message on which all interpreter commands act unless other messages are
+specified.
+<P>
+<H2><A NAME="compose">Compositions</A></H2>
+<P>
+Each composition object represents the complete state of an active composition.
+Initial values for this state (default behaviors, custom headers, etc.) are
+copied from the global interpreter and thereafter become unique to each
+composition (with very few exceptions, e.g. verbose sending or the addressbook
+cache).  The set of operations possible on a composition is so rich that a
+separable subset of the interpreter is used to manage it; this subset is
+accessed through the compcmd family of Z-Script commands.  In UNIX command-line
+mode, even the parser for composition commands is separate (although compcmd
+can still be used).  Consequently the interaction between compositions and
+global state is more complex than for any other object.
+<P>
+The composition object also maintains the correspondence between the cached
+state of the composition and the external files that are used to exchange data
+with third-party text editors.  Finally, the composition manages a linked list
+of attachment objects representing any MIME body parts that the user has
+requested (in addition to the basic ``message body'').  These are the same
+attachment objects used by the message object; messages and compositions are
+otherwise distinct.
+<P>
+When the user requests that the compostion be saved as a draft or sent, the
+composition object handles packaging up the message body and all attachments in
+MIME format, and sends the result either to the SMTP agent or into a folder (in
+the case of a draft or a queued send).  This is entirely a ``core'' operation;
+the GUI is involved only insofar as user confirmation of various actions is
+required.
+<P>
+The relationships among folders, messages, compositions, and the global
+``core'' state are summarized in <I>Figure 1</I>.
+<P ALIGN="center"><IMG SRC="zarch1.gif">
+<P ALIGN="center><I>Figure 1</I>
+<P>
+<H2><A NAME="zscript">Z-Script Interpreter</A></H2>
+<P>
+The interpreter consists of a relatively simple line-oriented text parser with
+a few syntax rules, plus a set of tables that control rewriting the text and,
+eventually, interpreting it as commands.  The tables are:
+<P>
+<UL>
+<LI> Variables
+<LI> ``Cmd''s (command abbreviations)
+<LI> Functions (user-defined)
+<LI> Built-in commands
+</UL>
+<P>
+All of these tables can change dynamically at run time, but only the first
+three are under user control.  Built-in commands are added, deleted, or
+modified by the ``core'' or by the GUI to match UI-specific or
+platform-specific constraints.
+<P>
+In a typical interpreter cycle, a line of text is read from the input.
+Variable references are textually replaced according to the syntax rules.  The
+word in the command position (in the simplest case, the first word on the line)
+is then compared to the table of ``cmd'' abbreviations; if there is a match,
+the text is again rewritten as specified by the abbreviation.  The (possibly
+new) word in command position is then looked up in the table of functions; if a
+matching function is found, the interpreter state is pushed onto a stack, the
+input is changed to be the text of the function body, and the cycle repeats.
+If no function matches, the word in command position is looked up in the table
+of built-ins, and if a match is found, that built-in command is executed.
+Finally, if no matching built-in is found, the interpreter sets the global
+error status flag (which in some cases causes any remaining lines of input to
+be discarded).
+<P>
+If there is more input to be consumed, the cycle begins again.  If the input is
+exhausted at the end of a function body, the state stack is popped and reading
+of the calling input is resumed.  Otherwise the interpreter returns control to
+whatever C routine originally requested the Z-Script interpretation.
+<P>
+<H3><A NAME="filters">Filters</A></H3>
+<P>
+A filter represents an automatic invocation of the interpreter triggered by
+opening a folder or by the arrival of new mail in a folder.  The table of
+filter actions is maintained by the ``core'' but is otherwise incidental to the
+architecture.  (To be really effective, filters should have been included in
+the architecture, not bolted onto it.  There are cases where filters fail to
+operate because they are interpreter entities rather than properly-integrated
+components of mailbox management.)
+<P>
+Flow of control through the Z-Script interpreter, and its relationship to the
+other core data structures, is shown in <I>Figure 2</I>.
+<P ALIGN="center"><IMG SRC="zarch2.gif">
+<P ALIGN="center"><I>Figure 2</I>
+<P>
+<H3><A NAME="aliases">Aliases and Headers</A></H3>
+<P>
+Two additional tables are maintained in the ``core'' for use by compositions.
+These are the user-defined aliases (e-mail address shorthands) and customized
+headers, also known as the message ``envelope.''
+<P>
+Customized headers are referenced once when a composition begins.  They are
+copied into the composition at that time, and further modifications within a
+given composition do not affect other compositions.  Similarly, modifications
+to the global copies of the custom headers do not affect compositions in
+progress.
+<P>
+Aliases, on the other hand, are maintained only in global state.  A given alias
+may optionally be expanded automatically at the time it is used in addressing a
+composition, in which case changing the global aliases will no longer affect
+that expansion.  However, if the global state is changed, a second reference to
+that same alias in the same composition expands to the new value from the
+global state, not to the previous value seen in that composition.  If aliases
+are not auto-expanded, they expand to the global state as it exists at time of
+send.
+<P>
+The complete ``core'' section of the architecture is summarized in <I>Figure 3</I>.
+<P ALIGN="center"><IMG SRC="zarch3.gif">
+<P ALIGN="center"><I>Figure 3</I>
+<P>
+<H2><A NAME="gui">Graphical User Interface</A></H2>
+<P>
+The GUI represents a set of views onto ``core'' data
+objects.<A HREF="#note3">(3)</A>  Each of these
+views is in turn represented by a frame object.  The primary views correspond
+to the three primary data objects in the ``core'':
+<UL>
+<LI> Main window - views a folder
+<LI> Message display window - views a message
+<LI> Compose window - views a composition
+</UL>
+<P>
+The main window is also the primary view onto the Z-Script interpreter.
+However, all the frames interact with the interpreter and global ``core'' state
+at some level.  The three primary frames have configurable toolbars, buttons,
+and menus, tied directly to the interpreter.
+<P>
+Each of the frames has a direct handle to the ``core'' object that it
+views.<A HREF="#note4">(4)</A>
+The frames are responsible for keeping the UI up to date with respect to
+changes in the state of the underlying objects.  An original design goal was
+that ``core'' objects would have as little knowledge of the UI as possible, so
+the ``core'' objects do not directly notify their viewers of state changes.
+Instead, the ``core'' uses a set of API calls to broadcast to all the frames
+whenever any object's state changes.  Each type of frame is expected to
+recognize broadcasts that apply to it, and to ignore the rest.  Very few of
+these API calls are directed to specific frames.
+<P>
+The relationships of the primary GUI frames to ``core'' objects are shown in
+<I>Figure 4</I>.
+<P ALIGN="center"><IMG SRC="zarch4.gif">
+<P ALIGN="center"><I>Figure 4</I>
+<P>
+<H3><A NAME="dialogs">GUI - Dialogs</A></H3>
+<P>
+In addition to the three primary frames, the GUI has several auxiliary frames
+that handle specific data management tasks.  These include Search (by date or
+by pattern), Variables, Aliases, Envelope (custom headers), and various File
+Finder dialogs (for saving messages, opening or renaming folders, and managing
+attachments).  Some of these, such as aliases and envelope, represent views
+onto global ``core'' state.  Others, such as search, represent interpreter
+actions and capture transient results of those actions for display.
+<P>
+Examples are shown in <I>Figure 5</I>.
+<P ALIGN="center"><IMG SRC="zarch5.gif">
+<P ALIGN="center"><I>Figure 5</I>
+<P>
+<H3><A NAME="state">Tracking ``Core'' State</A></H3>
+<P>
+The most significant state change in the ``core'' is a change of the current
+folder.  This may happen because a new folder is opened, or it may happen
+because the current folder is closed.<A HREF="#note5">(5)</A>  The main window tracks any change of
+current folder, as do most other frames that deal with folders or messages,
+including the compose window.  Frames that view other global state usually also
+track these changes, but do not make use of the information.
+<P>
+The notable exception is the message window, which tracks the message that it
+views and therefore tracks the folder containing that message.  If the folder
+is closed, so that the message becomes unavailable, the message window
+closes.<A HREF="#note6">(6)</A>
+<P>
+Each frame also maintains a message selection reflecting the messages most
+recently accessed by that frame.  In the main window, this is the user
+selection from the message summaries display; in the search dialogs, it is the
+result of the most recent search operation; in the message window, it is the
+message displayed.  Most frames, including the compose window but not the
+message window, track the main window selection if it has changed more recently
+than the frame's selection.  Frames that normally have no interaction with
+folders or messages always use the main window selection (should they happen to
+need one).
+<P>
+The message selection is maintained by number index into a folder object's
+array of message pointers.  This means that a ``sort'' operation invalidates
+the selected list of every frame that references the sorted folder.
+<P>
+<H3><A NAME="calling">Calling Z-Script</A></H3>
+<P>
+Recall that the interpreter always operates upon the current folder and single
+current message in that folder, unless instructed otherwise.  When a GUI frame
+makes a call to the interpreter, the folder and message selection associated
+with that frame must be used instead.  The ``core'' passes a global opaque
+handle to the calling frame through an API call to obtain that frame's message
+selection.  This same handle<A HREF="#note7">(7)</A> is also passed back to the GUI in the event of
+an error, so that error dialogs or other indicators can be associated with the
+problem UI element.
+<P>
+The complete calling sequence from the GUI to the interpreter must therefore
+include:
+<P>
+<OL>
+<LI> Set the global handle to the active UI element of the calling frame.
+<LI> Save a handle to the global current folder.
+<LI> Change the global current folder to the folder referenced by the calling frame.
+<LI> Call the interpreter.
+<LI> Restore the global current folder to its previous value.
+<LI> Update the display to reflect any state changes.
+</OL>
+<P>
+Step 5 must be special-cased when the operation in step 4 includes a request
+for the ``core'' to open or close a folder.  There are both GUI-level and
+interpreter-level wrapper functions to be sure these steps are followed in the
+correct order, but historically there has been confusion about using the
+wrappers or calling the lower-level interpreter functions directly.
+<P>
+<H2><A NAME="picture">The Whole Picture</A></H2>
+<P>
+All the major components of the architecture are shown in <I>Figure 6</I>.
+<P ALIGN="center"><IMG SRC="zarch6.gif">
+<P ALIGN="center"><I>Figure 6</I>
+<P>
+<HR>
+<P>
+Footnotes:
+<P>
+<OL>
+<LI><A NAME="note1">This</A> was originally an array of actual message structures; the change to an array of pointers is relatively recent, within the past year.
+<P>
+<LI><A NAME="note2">Attachment</A> objects are significant to Z-Mail's MIME handling, but not to the overall architecture.
+<P>
+<LI><A NAME="note3">And</A> onto the local file system, for persistent mailbox and configuration storage.
+<P>
+<LI><A NAME="note4">This</A> is the exception, mentioned earlier, to the rule that message objects are always referenced through the folder that contains them.  Each message window has a direct handle to the message that it views.  Back when messages were stored as an array of structures, sorting a mailbox invalidated the message window's handle to its message object.  The message window then had to search the message array to locate the correct object again.
+<P>
+<LI><A NAME="note5">The</A> ``update'' operation is performed by closing the current folder and then re-opening it.
+<P>
+<LI><A NAME="note6">This</A> is why the message window won't remain open across an ``update'' operation.
+<P>
+<LI><A NAME="note7">The</A> handle is called <tt>ask_item</tt> in the C code.
+</OL>
+</BODY>

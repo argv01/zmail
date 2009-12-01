@@ -1,0 +1,75 @@
+<HEAD>
+<TITLE>Metamail/mp Build Hints</TITLE>
+</HEAD>
+<BODY BGCOLOR=#ffffff>
+<H1>Metamail/mp Build Hints</H1>
+Syd Logan
+<P>
+This page indicates which makefile is used to build metamail/mp for a given platform, and what
+changes are needed in order for the builds to occur.  Perhaps we should build some host-specific 
+Makefiles based on these changes (e.g. Makefile.hp700_10) so that these steps are not needed each 
+time a clone is done. Note except for solaris, nothing needs to be done for mp.
+<BR>
+<BR>
+Note that minor source changes were made to metamail sources that correspond to the CFLAGS 
+changes described below. These changes have been checked into CVS, and need to be considered if 
+we upgrade to a newer version of metamail sometime in the future.
+<P>
+<LI> m88k4 
+<BR>
+cp Makefile.sysv Makefile
+<LI> hp700 
+<BR>
+cp Makefile.sysv Makefile, add -D_HPUX_SOURCE to CFLAGS
+<LI> hp700_10 
+<BR>
+cp Makefile.sysv Makefile, add -D_HPUX_SOURCE to CFLAGS
+<LI> hp800_10 
+<BR>
+cp Makefile.sysv Makefile, add -D_HPUX_SOURCE to CFLAGS
+<LI> osf1v3 
+<BR>
+cp Makefile.bsd Makefile
+<LI> sun411 
+<BR>
+cp Makefile.sysv Makefile 
+<LI> sun413 
+<BR>
+cp Makefile.sysv Makefile
+<LI> sun414 
+<BR>
+cp Makefile.sysv Makefile
+<LI> caldera 
+<BR>
+cp Makefile.sysv Makefile, add -DLINUX to CFLAGS
+<LI> sco 
+<BR>
+cp Makefile.sysv Makefile, add -DSCO to CFLAGS
+<LI> aix4 
+<BR>
+cp Makefile.sysv Makefile, add -DAIX4
+<LI> irix53 
+<BR>
+cp Makefile.sysv Makefile
+<LI> irix62 
+<BR>
+cp Makefile.sysv Makefile, add -DIRIX62
+<LI> sol23 
+<BR>
+cp Makefile.sysv Makefile
+<BR>
+For mp, change its makefile to use gcc, and add -I/usr/openwin/include to CDEF macro 
+<BR>
+<LI> sol24 
+<BR>
+cp Makefile.sysv Makefile
+<BR>
+For mp, change its makefile to use gcc, and add -I/usr/openwin/include to CDEF macro 
+<BR>
+<LI> sol25cc 
+<BR>
+cp Makefile.sysv Makefile
+<BR>
+For mp, add -I/usr/openwin/include to CDEF macro in makefile
+<BR>
+</BODY>

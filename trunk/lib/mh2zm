@@ -1,0 +1,69 @@
+#! /usr/local/bin/zmail -Nn!S!F!
+
+# USAGE:
+#	mh2zm -f input-mh-folder output-zmail-folder
+#
+# where input-mh-folder is a directory and output-zmail-folder is the
+# intended destination file.
+#
+# OR (if the above doesn't work because your kernel can't understand 1st line):
+#	zmail -N -n! -S! -F! mh2zm -f input-mh-folder output-zmail-folder
+#
+# OR (for interactive use):
+#	zmail -F! mh2zm
+
+# Meaning of -Nn!S!F! is:
+#	N	Don't show headers of folder when loaded
+#	n!	Read neither .zmailrc nor system.zmailrc
+#	S!	Force shell mode; arguments are NOT email addresses
+#	F!	Read commands from this file and then exit
+
+# If the initial open failed, give up now.
+if ! $?thisfolder
+    x				# Exit
+endif
+
+# If last word of file name is $user, guess we're in system folder ...
+if $thisfolder:t == $user
+    if $# == 0
+	# No first argument, ask for directory name
+	ask -i dir "Enter MH directory to convert:"
+	if $status != 0
+	    x			# Quit Z-Mail altogether
+	endif
+    else
+	# The first argument names the directory
+	set dir = $1		# Grab the directory name
+	shift			# Make $2 be $1
+    endif
+    open -N $dir		# Load the directory (don't show headers)
+    if $status != 0
+	# Open failed, give up -- it isn't an MH folder.
+	error "Unable to convert $dir (not an MH folder?)"
+	x			# Exit
+    endif
+endif
+
+# Ask for folder name if no argument
+if $# == 0
+    ask -i file "Enter folder name for output:"
+    if $status != 0
+	x			# Quit Z-Mail altogether
+    endif
+else
+    set file = $1		# Grab the argument
+endif
+
+copy * $file			# Write everything to the file
+if $status != 0
+    x				# Error writing, bail out
+endif
+
+close -n -N			# Close without update and don't show headers
+
+#ask "Conversion complete.\nRemove MH directory?"
+#if $status == 0
+#   sh /bin/rm -rf $dir		# Blow it away (ouch)
+#endif
+
+x				# Exit

@@ -1,0 +1,51 @@
+Dan and Bart,
+
+In this directory you will find two subdirectories, lib and src.
+lib contains the sources and (currently) Sparc versions of the
+ipc and mem libraries needed to use our IPC mechanism.  Each of
+the lib subdirectories (ipc and mem) in turn contains the necessary
+includes to build the libraries, and to reference when building the
+island_rq program.
+
+The src directory at the top level contains a modified version of
+your island_rq program, plus a simple how_to_make script to build
+everything you need.
+
+There were a few changes that needed to be made to your source code.
+Primarily, the function of yours that gets called when your edit
+graphic request is completed (called IpcEditApplyFunc in island_rq) now
+takes two arguments:  the first is the original file you started the
+edit graphic request with; the second is a temporary file with the
+actual data.  We found this necessary to combat the case where a user
+fired up multiple edit graphics without saving between them.  Note that
+the original file will probably be 0-length -- it serves merely as a
+placeholder after the original request.
+
+Another change was to increase the size of the iargv array passed
+in to the IOSRequestEditGraphic routine.  We fill in the first four
+(and possibly) five entries in the ipc library, so we need to have
+space for this.  If you are passing the command line argv to us, you
+will have problems.  You must allocate an array to hold your argv
+arguments PLUS room for four (or five) more and pass this instead
+(after filling in the args with your argv args).
+
+The possibly fifth arg has to do with licensing.  You'll also notice
+that there is one more argument to IOSInitIpc.  This should be 1 or
+0 depending on whether you're licensed or not.  If you pass in a 0,
+any program fired up will not be licensed.  If you pass in a 1, any
+edit graphic replies from unlicensed programs will be denied (other-
+wise, this would be a way to save from unlicensed versions of our
+products which handle edit graphics).
+
+So, to recap the differences:
+
+1. IOSInitIpc takes another argument to indicate licensing status.
+2. IOSRequestEditGraphic needs an argv array large enough to hold
+	four (or five) extra args.
+3. Your IpcEditApplyFunc func receives two filenames -- the original
+	(which probably will be empty) and a temporary with the
+	actual edited data.
+
+Let me know if you have any problems,
+Ken
+491-1000 x2221

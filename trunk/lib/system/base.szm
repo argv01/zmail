@@ -1,0 +1,63 @@
+# system.zmailrc -- /usr/lib/Zmail/system.zmailrc init file for Z-Mail
+# Copyright (c) 1991,1992 Z-Code Software Corp.
+
+# When Z-Mail is run as a mail filter from the .forward file, the
+# environment is likely to be that of the MTA, not the user.  The
+# Z-Mail variable "home" is forced to be correct, so export it.
+setenv HOME $home
+
+# Z-Mail and its users should always be able to execute Z-Mail utilities
+setenv PATH "${PATH}:${ZMLIB}/bin"
+
+# Set up the display early to allow quick exit in headers-only mode.
+# The hdrs_only flag is true if the command line was: "zmail -H".
+# The variable hdr_format is set to change the format of the header
+# summaries that are displayed.
+if hdrs_only
+    set hdr_format='%22a %M %-2N %5T  %.33s'
+    return	# Quits reading this file
+else
+    set hdr_format='%22n %M %-2N %5T (%l) %.25s'
+endif
+
+##########################################################################
+# Additional customizations for the local system should be added here.   #
+# Also check the rest of this file to be sure it is appropriate for your #
+# environment.                                                           #
+##########################################################################
+
+# Set the prompt to show current time, name of the current folder,
+# current message number, and count of total messages.
+set prompt="(%T) %f: #%m of %t> "
+
+# When reading messages, don't bother looking at lengthy, boring headers.
+ignore message-id received via status priority references
+ignore x-face encoding content-type content-length content-lines
+
+# By default, zmail's history is set to the last command only.  Set it to
+# remember the last 100 commands.
+set history = 100
+
+# If the variable "unix" is set, then any command that isn't a zmail command
+# will execute the command as if you typed it from the shell.  Note, such
+# commands will not go through another shell -- this is it.  This may be
+# considered confusing for new users, so it is commented out by default.
+set unix
+
+# When you use the -i option to reply, or use the ~i tilde escape in a letter
+# when in compose mode, the current message will be included in your text.
+# Put a nice wrapper around those included messages.  Here, show the author's
+# name and the subject of his letter, label the end, and add a trailing blank
+# to separate each inclusion and make finding the end easier.
+set pre_indent_str='On %M %N, %T, %.50n wrote:\n> Subject: %.65s'
+set indent_str='> '	# actual message text is preceded by a ">"
+set post_indent_str='>-- End of excerpt from %.50n\n'
+
+# Label replies with a header showing the who, what, and when of the
+# message being replied-to.
+set in_reply_to='%f\n\t"%s" (%d)'
+
+# This setting usually does no harm and stops problems before they show up.
+# Sun's sendmail.cf for diskless workstations is misconfigured to not allow
+# commas between addresses.
+set picky_mta = omit_commas

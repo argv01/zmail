@@ -1,0 +1,18 @@
+:
+cat <<\EOM > ${TMPDIR-/tmp}/sed$$
+s/^ //
+s/'/'"'"'/g
+s/'"'"''"'"'/'"''"'/g
+s/^/'/
+s/$/'/
+s/^''//
+s/''$//
+s/\\/'"$(\\\\)"'/g
+s/!/\\!/g
+$!s/$/"$(\\n)"\\/
+s/""$(\\n)"\\$/$(\\n)"\\/
+1s/^/my_hdr X-Face: /
+1!s/^/ /
+EOM
+sed -f ${TMPDIR-/tmp}/sed$$
+rm -f ${TMPDIR-/tmp}/sed$$

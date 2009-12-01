@@ -1,0 +1,633 @@
+<TITLE>Z-Mail for Windows FAQ</TITLE>
+<HEAD><A href=""><IMG align=middle SRC="../images/zncd-color.gif"></A>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<pre>
+<a name="I"><b>I. Internet Mail Basics</b></a>
+
+   <a name="IA"><b>A. What do I need to send and receive email?</b></a>
+
+Whether you are using the Internet from a University or inside a corporation
+using a departmental LAN, you still need three items to send email.  The first
+two components consist of a Mail User Agent (MUA), which is the client that you
+use to compose and send, as well as read your email, along with the Mail
+Transport Agents (MTA) which handle the delivery of your message.  The third
+component is the delivery protocol, which determines how your message is
+formatted and delivered.
+
+   <a name="IB"><b>B. What is a Mail User Agent?</b></a>
+
+The Mail User Agent (MUA) is the software you use at your desk, or on a shared
+computer, to read, send, filter, and sort your email.  Z-Mail for Windows is a
+MUA in that it handles everything but the actual delivery of a message to the
+receipient.
+
+   <a name="IC"><b>C. What is MIME?</b></a>
+
+Multipurpose Internet Mail Extensions (MIME) include support for sending binary
+attachments from one user to another.  They define the way a .gif image, for
+example, is encoded and attached to an email message so that the receiving 
+party can detach and decode the image and successfully view it.  Z-Mail 
+supports MIME on all platforms, including Windows.
+
+<a name="II"><b>II. Z-Mail for Windows</b></a>
+
+   <a name="IIA"><b>A. What is the most current version?</b></a>
+
+Z-Mail 3.21 has just recently been replaced by Z-Mail 4.0.00
+
+   <a name="IIB"><b>B. What system requirements must I fullfill?</b></a>
+
+Z-Mail 3.21:
+	4MB RAM (8MB RAM recommended)
+	4MB free space on your hard drive
+	MS-Windows 3.1 or newer
+	win32s subsystem (INCLUDED)
+	VGA display
+	80386DX or better CPU
+	WINSOCK TCP-IP networking (LAN-based, PPP, SLIP, UUPCX)
+	POP-3 and SMTP servers
+
+Z-Mail 4.0:
+	4MB RAM (8MB RAM recommended)
+	4MB free space on your hard drive
+	MS-Windows 3.1 or newer
+	VGA display
+	80386DX or better CPU
+	WINSOCK TCP-IP networking (INCLUDED  - not necessary with serial)
+	POP-3 and SMTP servers
+
+      <a name="IIB1"><b>1. What do I need to use Z-Mail from a LAN?</b></a>
+
+You will need a WINSOCK 1.1 compatible TCP/IP network interface running on the
+local PC.  Z-Mail for Windows 4.0 actually ships with one, the "NCD TCP/IP
+Stack", which can optionally be installed before or after setup.  If you are 
+on a LAN you will also need an account on a POP-3 server (usually a UNIX or 
+Windows NT box) from where you can retrieve your mail.  You will also need 
+access to a similiar machine running SMTP.
+
+      <a name="IIB2"><b>2. What do I need to use Z-Mail over a serial line?</b></a>
+
+Z-Mail for Windows 4.0 has the ability to upload and download mail directly
+over a serial line, without a TCP/IP network interface (though PPP and SLIP 
+are generally recommended).  For this you will need a Hayes-compatible modem 
+that supports error-correcting.  Speeds up to 28.8k with compression are 
+fully supported.
+
+You will also need an account on a POP-3 server (usually a UNIX or Windows NT 
+box) from where you can retrieve your mail.  You will also need access to a 
+similiar machine running SMTP.
+
+   <a name="IIC"><b>C. What is win32s?</b></a>
+
+Win32s is a subsystem designed by Microsoft for the Windows 3.1x and Windows
+for Workgroups 3.1x 16-bit operating systems. The Win32s libraries allow
+Win3.1x and WfW 3.1x users to run Win32 (32-bit) applications on their 16-bit
+operating systems. Windows NT and Win95 are 32-bit operating systems with
+Win32s and OLE support built into the operating system. Users of Windows NT and
+Win95 should NOT install Win32s on their systems.
+
+NOTE: Win32s is not required by Z-Mail for Windows 4.0.
+
+   <a name="IID"><b>D. What versions of Microsoft Windows are supported by Z-Mail?</b></a>
+
+Windows 3.1x
+Windows for Workgroups 3.11
+Windows NT 3.5x*
+Windows 95*
+
+*Although Z-Mail is not yet a 32-bit NT/95 application, the current
+ 16-bit version runs and is supported on these operating systems.
+
+   <a name="IIE"><b>E. Why is Z-Mail 4.0 a 16-bit program?</b></a>
+
+Four good reasons:
+
+Performance - On 16-bit versions of Windows Z-Mail 16 will outperform Z-Mail
+32. Also, it gives us the ability to run with virtually no performance
+penalties on 32-bitWindows versions, such as NT or '95.
+
+Support - A significant number of our support requests are related to
+configuration of Win32s - driver version conflicts, high memory problems, and
+so on.
+
+Stability - Win32s running on Windows 3.1x is subject to a wide variety of
+system configuration problems, making it harder to keep running as users add
+software, hardware, and so on.
+
+Broader supported platform range - A win16 version allows us to not only run
+on standard windows hardware, but also on things like SoftWindows, Wabi, OS/2,
+PowerPC NT (non-native) and so on, all of which have problems (to varying
+degrees) with 32-bit windows applications.
+
+   <a name="IIF"><b>F. Where can I find viewers for MIME attachments?</b></a>
+</pre><TABLE BORDER>
+<TR>
+<TH>MIME Type</TH>
+<TH>External Viewer</TH>
+<TH>File Type</TH>
+<TH>Extension</TH>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>application/postscript</TD>
+<TD ALIGN=CENTER>Ghostview </TD>
+<TD ALIGN=CENTER>Postscript file</TD>
+<TD ALIGN=CENTER> .ps</TD> 
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>video/mpeg</TD>
+<TD ALIGN=CENTER>Mpegplay </TD>
+<TD ALIGN=CENTER>movie file</TD>
+<TD ALIGN=CENTER> .mpg </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>image/jpeg</TD>
+<TD ALIGN=CENTER>Lview Pro</TD>
+<TD ALIGN=CENTER>image file</TD>
+<TD ALIGN=CENTER> .jpg </TD>
+</TR> 
+
+<TR>
+<TD ALIGN=CENTER>text/plain</TD>
+<TD ALIGN=CENTER>Superpad</TD>
+<TD ALIGN=CENTER>text file</TD>
+<TD ALIGN=CENTER> .txt </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>application/msword</TD>
+<TD ALIGN=CENTER>MS Word Viewer</TD>
+<TD ALIGN=CENTER>Word document</TD>
+<TD ALIGN=CENTER> .doc </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>audio/wav</TD>
+<TD ALIGN=CENTER>Windows Mplayer.exe</TD>
+<TD ALIGN=CENTER>audio file</TD>
+<TD ALIGN=CENTER> .wav </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>application/Zip</TD>
+<TD ALIGN=CENTER>PKWare Zip</TD>
+<TD ALIGN=CENTER>Zip file</TD>
+<TD ALIGN=CENTER> .zip </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>application/WordPerfect5.1</TD>
+<TD ALIGN=CENTER>Wordperfect 5.1</TD>
+<TD ALIGN=CENTER>Wordperfect 5.1 Document</TD>
+<TD ALIGN=CENTER> .wp5 </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>application/WordPerfect6</TD>
+<TD ALIGN=CENTER>Wordperfect 6</TD>
+<TD ALIGN=CENTER>Wordperfect 6 Document</TD>
+<TD ALIGN=CENTER> .wp6 </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>application/x-Zm-Folder</TD>
+<TD ALIGN=CENTER>Z-Mail</TD>
+<TD ALIGN=CENTER>Mail Folder</TD>
+<TD ALIGN=CENTER> .zmf </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>application/x-tar</TD>
+<TD ALIGN=CENTER>tar.exe</TD>
+<TD ALIGN=CENTER>Tar Archive</TD>
+<TD ALIGN=CENTER> .tar </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>application/x-WinGroup</TD>
+<TD ALIGN=CENTER>MS Windows</TD>
+<TD ALIGN=CENTER>Windows Group</TD>
+<TD ALIGN=CENTER> .grp </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>application/x-dBase</TD>
+<TD ALIGN=CENTER>d-Base II</TD>
+<TD ALIGN=CENTER>database</TD>
+<TD ALIGN=CENTER> .dbf </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>application/x-WinWrite</TD>
+<TD ALIGN=CENTER>MS Write</TD>
+<TD ALIGN=CENTER>Write file</TD>
+<TD ALIGN=CENTER> .wri </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>application/x-msExcel</TD>
+<TD ALIGN=CENTER>MS Excel</TD>
+<TD ALIGN=CENTER>spreadsheet</TD>
+<TD ALIGN=CENTER> .xls </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>application/x-msrtf</TD>
+<TD ALIGN=CENTER>MS Word Viewer</TD>
+<TD ALIGN=CENTER>MS Rich Text</TD>
+<TD ALIGN=CENTER> .rtf </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>application/x-msPowerpoint</TD>
+<TD ALIGN=CENTER>MS Powerpoint</TD>
+<TD ALIGN=CENTER>Powerpoint Document</TD>
+<TD ALIGN=CENTER> .ppt </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>application/x-AmiPro</TD>
+<TD ALIGN=CENTER>Lotus Ami Pro</TD>
+<TD ALIGN=CENTER>Ami Pro Document</TD>
+<TD ALIGN=CENTER> .sam </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>application/x-Paradox</TD>
+<TD ALIGN=CENTER>Paradox 4.5</TD>
+<TD ALIGN=CENTER>Paradox Database</TD>
+<TD ALIGN=CENTER> .db </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>video/quicktime</TD>
+<TD ALIGN=CENTER>Quicktime</TD>
+<TD ALIGN=CENTER>Quicktime Video</TD>
+<TD ALIGN=CENTER> .mov </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>application/pdf</TD>
+<TD ALIGN=CENTER>Adobe Acrobat Reader</TD>
+<TD ALIGN=CENTER>Portable Document File</TD>
+<TD ALIGN=CENTER> .pdf </TD>
+</TR>
+
+<TR>
+<TD ALIGN=CENTER>application/x-Presentations</TD>
+<TD ALIGN=CENTER>Novell Presentations</TD>
+<TD ALIGN=CENTER>pie file</TD>
+<TD ALIGN=CENTER> .shw </TD>
+</TR>
+</TABLE><pre>
+
+NCD does NOT endorse or support any particular viewer.  These products 
+are listed here as convenience to our users.  They can be found at <a href="http://www.ncsa.uiuc.edu/SDG/Software/WinMosaic/viewers.htm">NCSA</a>, 
+which is an excellent repository of viewers, though you will not need to 
+modify any "Preferences" as they describe.  Z-Mail will take it's MIME viewer 
+mappings from the "[extensions]" section of the C:\WINDOWS\WIN.INI file.  
+Alternatively these can be set up from within the File Manager's "Associate" 
+dialog.
+
+<a name="III"><b>III. Installation of Z-Mail for Windows</b></a>
+
+   <a name="IIIA"><b>A. What do I need to do to insure a "clean install?"</b></a>
+
+A clean install involves removing all previous traces of Z-Mail from your 
+install drive.  This would include the C:\WINDOWS\ZMAIL.INI and 
+C:\WINDOWS\SYSTEM\MAPI.DLL files as well as the entire C:\ZMAIL tree.  
+Z-Mail 4.0 for Windows does not require a clean upgrade, however, as it will 
+utilize the defaults from earlier Z-Mail 3.2x C:\WINDOWS\ZMAIL.INI entries.
+
+   <a name="IIIB"><b>B. What if I already had a copy of Z-Mail installed?</b></a>
+
+Z-Mail 4.0 for Windows should be able to utilize some of the existing
+information (SMTPHOST, MAILHOST, address_book, etc.) as defaults for a new
+install.  With Z-Mail 3.21 a clean install is often the best idea.
+
+   <a name="IIIC"><b>C. I don't know what machines and ports POP-3 and SMTP
+      services are installed on.  How do I find out?</b></a>
+
+If there are no system administrators (sysdaddys) around to ask, then you
+should start testing TCP services by opening up a terminal connection to the
+UNIX host you currently read your mail on.  After logging in, try to open up
+ports 25, 110, 15213, and 15232, respectively.
+
+Port 25: SMTP
+
+	% telnet localhost 25
+	Trying 127.0.0.1...
+	Connected to localhost.
+	Escape character is '^]'.
+	220-localhost Sendmail 8.6.11/8.6.9 ready at Thu, 17 Aug 1995
+	220 ESMTP spoken here
+
+Port 110: POP-3 (or) Z-POP
+
+	% telnet localhost 110
+	Trying 127.0.0.1...
+	Connected to localhost.
+	Escape character is '^]'.
+	+OK localhost POP3 3.3(19) w/IMAP2 client
+
+Port 15213: Z-Mail Directory Services
+
+	% telnet localhost 15213
+	Trying 127.0.0.1...
+	Connected to localhost.
+	Escape character is '^]'.
+
+		*** This is a special case. Please refer to the
+		dirserv.d install instructions for testing
+		the directory services daemon. ***
+
+Port 15232: Z-POP
+
+	% telnet localhost 15232
+	Trying 127.0.0.1...
+	Connected to localhost.
+	Escape character is '^]'.
+	+OK Welcome to Z-Mail ZPOP server  v.79dev (19sep94)
+
+
+   <a name="IIID"><b>D. What is Z-POP and how do I find out if I have it?</b></a>
+
+Z-Mail for Windows is designed for use in an environment where mail is
+delivered to a mail server and then downloaded to a PC via POP (Post Office 
+Protocol).  POP3 is a version of this protocol that has many freely available 
+implementations. Z-POP is an enhanced version of POP3 that provides additional
+functionality, and is available free of charge from NCD Software.
+
+Typically Z-POP is installed on TCP service ports 15232 and 110 of your UNIX 
+Mailhost.  See the above example for testing for TCP services.
+
+   <a name="IIIE"><b>E. Why does Z-Mail complain about my License Key?</b></a>
+
+If you entered your license key incorrectly, or it was a demo key that has
+expired, you should expect to see Z-Mail complain about the license.  Your
+license key must be 16 alphanumerics, with all letters in lowercase format.  
+To add a new demo key in version 3.21, you must edit the "license key" 
+entry in the C:\ZMAIL\LIB\SYSTEM.RC file , and the "ZMKEY" entry in the
+C:\WINDOWS\ZMAIL.INI.  If you are entering a new key into Z-Mail 4.0 a nifty 
+trick is to delete the text to the right of the 'LicenseInfo=' entry in the 
+C:\WINDOWS\ZMAIL.INI file.  When you restart Z-Mail it will then prompt you 
+for a new key!
+
+   <a name="IIIF"><b>F. Z-Mail 3.21 informed me that I already had win32s,
+      so I didn't install the copy you provided.</b></a>
+
+This is a bug in the Z-Mail 3.2x install script.  Ignore these warnings and 
+reinstall  Z-Mail 3.21 with win32s enabled.  Remember, however, that WindowsNT
+and Win95 should not have Win32s installed onto them from Z-Mail 3.21.  NOTE: 
+Z-Mail 4.0 is a "normal" 16-bit Windows application and is not subject to 
+these problems.
+
+      <a name="IIIF1"><b>1. When I run Z-Mail it crashes instantly!  What could it be?</b></a>
+
+This is probably due to a faulty installation of win32s.  Try reinstalling
+Z-Mail with the "Install Win32s" option enabled, then ignore any warnings while
+Z-Mail 3.21 installs.
+
+     <a name="IIIF2"><b> 2. What is a GROWSTUB error in my POINTER.DLL?</b></a>
+
+When you start a Win32-based application using Win32s under Windows 3.1
+or 3.11 or Windows for Workgroups, you may receive a general protection (GPF)
+fault in POINTER.DLL caused by the Microsoft Mouse driver 9.01 GROWSTUB
+component. Microsoft has corrected this problem, so all you need to do is
+download HD1061.EXE and replace the POINTER.DLL file.
+
+HD1061.EXE can be found at: ftp://ftp.microsoft.com/Softlib/MSLFILES/HD1061.EXE
+
+   <a name="IIIG"><b>G. Do I want my users to be able to save their passwords?</b></a>
+
+This option is enabled only during installation time.  Passwords are saved as 
+encrypted text, and therefore will be difficult to decipher.  This level of 
+security is left up to the local sysadmin. NOTE: if the $USER.INI file is 
+located on a personal network mapped drive, then security should not even be 
+an issue.
+
+  <a name="IIIH"><b> H. What is my PC's hostname?</b></a>
+
+Check with your sysdaddy or within the configuration options of your Winsock
+TCP/IP network suite to find your PC hostname.
+
+   <a name="IIIi"><b>I. How do I install Z-Mail on a network?</b></a>
+
+     <a name="IIIi1"><b> 1. How do I install to a shared drive?</b></a>
+
+--------- Z-Mail for Windows 3.21 SHARED NETWORK INSTALL ---------
+
+For the sake of illustration, Z-Mail binaries and library files are
+installed on a network server that is mapped as drive W:\ZMAIL as it appears
+to the users.  The users' local directories and files are on drive C:.
+
+
+NETWORK DRIVE STRUCTURE:
+
+W:\ZMAIL		 <- ZMAIL.INI (ZMROOT=w:\zmail)
+|   DIRSERV.TXT
+|   RELEASE.TXT
+|   ZYNC.TXT
+|   ZMAIL.EXE
+|
++---LIB 		 <- ZMAIL.INI (ZMLIB=w:\zmail\lib)
+|   |	ATTACH.TYP
+|   |	SYSTEM.RC
+|   |	LOCALE.RC
+|   |	VARIABLE
+|   |	ZMAILMNU.RC
+|   |	ZMUI.HLP
+|   |
+|   \---FORMS
+|	    BUGS
+|	    PHONE
+|			    (all <private>.INI variables point to C:)
++---USER-1		 <- USER-1.INI (HOME=c:\zmail\user-1)
+|	USER-1.INI	 <- USER-1.INI (USER=USER-1)
+|
++---USER-2		 <- USER-2.INI (HOME=c:\zmail\user-2)
+|	USER-2.INI	 <- USER-2.INI (USER=USER-2)
+|
+etc.
+
+
+LOCAL DRIVE STRUCTURE:
+
+C:\ZMAIL
+|
++---USER-1
+|   |	SIGNATUR.TXT
+|   |	ZMAIL.RC
+|   |
+|   \---MAIL
+|	|   MAILBOX
+|	|
+|	\---DETACH.DIR
+|
++---USER-2
+|   |	SIGNATUR.TXT
+|   |	ZMAIL.RC
+|   |
+|   \---MAIL
+|	|   MAILBOX
+|	|
+|	\---DETACH.DIR
+|
+etc.
+
+
+ZMAIL.INI:
+
+[Environment]
+ADDRESS_BOOK=zerex:72722   <- hostname:port of directory services (optional)
+MAILHOST=zen		   <- hostname of server running POP3
+;MAILHOST=zaibatsu:15232   <- hostname:port of server running Zync (optional)
+SMTPHOST=z-code 	   <- hostname of server running sendmail
+TZ=PST8PDT
+USER=USER-1		   <- username (omit if multiple users)
+ZCNLSERV=zyrcon:2721	   <- hostname:port of server running NLS (optional)
+ZMHOST=zymurgy		   <- hostname of PC running Z-Mail
+ZMLIB=w:\zmail\lib	   <- points to LIB directory (see tree above)
+ZMROOT=w:\zmail 	   <- points to top-level ZMAIL directory (above)
+
+
+<private>.INI:
+
+Each user has a directory that contains their personal settings, as well as
+any settings that override the system settings as established in ZMAIL.INI.
+The name of the directory and the $USER.INI file within it is the user's logon
+ID, such as BONNIES for Bonnie Smith.  It must be no more than 8 characters
+in length, in order to follow DOS file naming conventions.
+
+[Environment]
+FOLDER=c:\zmail\user-one\mail	       <- points to directory
+HOME=c:\zmail\user-one		       <- points to directory
+MAIL=c:\zmail\user-one\mail\mailbox    <- points to file (default mailbox)
+REALNAME=Wazmo X. Nariz 	       <- USER-1's real name
+TMPDIR=d:\tmp			       <- directory for temporary files
+USER=user-one			       <- user's logon ID
+
+;if using POP3 to receive mail, ignore these next two settings
+
+;ZYNCHOST=zaibatsu:1523 	       <- host:port of server running Zync
+;ZYNC_OPTIONS=prefs,config,realname    <- Zync options
+
+
+--------- Z-Mail for Windows 4.0 SHARED NETWORK INSTALL ---------
+
+A Z-Mail 4.0 Shared installation allows an Administrator to specify default 
+locations for user files.  NOTE: The Administrator _must_ have write access 
+to the locations where the Z-Mail files are to installes, and if Windows is 
+running from a network drive, then the Admin must also have write rights to 
+the \WINDOWS\SYSTEM directory.  NOTE: it is advisable to consistently map a 
+Personal drive (usually P:\ or H:\) for your users, and have them use that 
+as a default Z-Mail $USER location.  This provides for easier LAN management 
+and security.
+
+Z-Mail's shared installation installs Z-Mail on a shared drive you
+choose during the installation. While installing Z-Mail to a shared
+drive, you can provide system defaults for your users, such as
+SMTP host name and port number.
+
+Before attempting to install Z-Mail on a shared drive:
+
+It is recommended that your users have only read access to the
+directory where you are installing a shared copy of Z-Mail.
+
+If your users have write access to the shared directory, they can
+overwrite the ZMAIL.INI file, which is where you provided system
+defaults for all your users.
+
+After you've completed your Z-Mail installation to a shared drive,
+your users must run the installation from the shared drive on
+their local PCs in order to create necessary configuration files
+and the Z-Mail Program Manager group and icon.
+
+To begin a shared installation, from your temporary installation
+directory, use Program Manager to run SETUP.EXE with the shared option:
+
+SETUP.EXE SHARED
+
+Each user will then only need to run the SETUP.EXE program without any options.
+
+      <a name="IIIi2"><b>2. What is a "NETCOPY" install?</b></a>
+
+A Z-Mail for Windows 4.0 netcopy installation does not actually install Z-Mail.
+A netcopy installation enables you to provide a zmail.ini file that contains
+system defaults your users see when they install Z-Mail from the
+network drive or from two distribution disks.
+
+Before starting a netcopy installation:
+
+If you intend to distribute the Z-Mail installation program on
+floppy disks, and you do not have DISK1 and DISK2 subdirectories
+in your temporary installation directory, you must unpack the
+archive ZWIN40.EXE again by running the following command in
+Program Manager:
+
+ZWIN40.EXE -d
+
+This maintains a directory structure that makes copying to disks
+easy.
+
+To begin a netcopy installation, from your temporary installation
+directory, use Program Manager to run SETUP.EXE with the
+netcopy option:
+
+SETUP.EXE NETCOPY
+
+Make sure that you spell NETCOPY correctly, also.  Z-Mail will not warn you
+about mispellings if you make a mistake.
+
+<a name="IV"><b>IV. User Maintence</b></a>
+
+  <a name="IVA"><b> A. How do I add / remove users with Z-Mail 3.21?</b></a>
+
+To add users with Z-Mail 3.21 you will need to first remove the "USER=" field
+in the C:\WINDOWS\ZMAIL.INI file.  Then create a directory structure under
+C:\ZMAIL based on the username of your new user.  Copy the .INI files from your
+original C:\ZMAIL\$USER directory to the new location, and edit all folder
+references so that they point to the corrrect locations in the new tree.
+
+   <a name="IVB"><b>B. How do I add or remove users with Z-Mail 4.0?</b></a>
+
+For existing users from an upgrade all you need to do is "Browse" for theit 
+$USER.INI from the Login screen, after entering their $USERNAME and hitting 
+[enter].  If the user exists on a network drive, and is accessing his account 
+on several machines, note that the drives must be mapped the same on all
+involved machines.
+
+Alternatively, a new user can be added just by entering the new username at 
+the Login Screen, hitting [enter], and choosing New.  Just start a new user 
+profile.
+
+  <a name="IVC"><b> C. How do I change a user's POP-3 server, or SMTP host?</b></a>
+
+Z-Mail 3.21
+
+These settings can be changed by modifying the values in the MAILHOST and 
+SMTPHOST entries in the C:\ZMAIL\$USER\$USER.INI file.
+
+Z-Mail 4.0
+
+Adjust the POP-3 server and SMTP server entries in the Setup dialog from the 
+Login Screen.
+
+
+</pre>
+
+<HR>
+<address><a href="mailto:support@z-code.com">support@z-code.com</a></address><p>
+<a href="zsupport.html">
+<img src="../images/zslacker.gif"></a>
+<a href="../zcode.html">
+<img src="../images/zcode.gif"></a>
+<a href="../../welcome.html">
+<img src="../images/corp_small_icon.gif"></a><p>
+[<a href="zsupport.html">Z-Support</a>] [<a href="../zcode.html">Z-Code</a>] [<a
+ href="../../welcome.html">NCD</a>]
+<h6>COPYRIGHT 1994 Network Computing Devices , Inc.</H6>
+</BODY>

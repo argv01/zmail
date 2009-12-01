@@ -1,0 +1,450 @@
+"Kotl-3.0" ;; file-format
+
+   1  Widget
+      
+      do-sequence
+      widget-info
+
+     1a  App
+         
+         focus-next
+         focus-previous
+
+       1a1  Cursesapp
+            
+            redraw
+
+         1a1a  Zmliteapp
+               
+               show-keys
+               
+
+     1b  Buttonpanel
+         
+         buttonpanel-click
+         buttonpanel-down
+         buttonpanel-first
+         buttonpanel-invoke
+         buttonpanel-jump-to
+         buttonpanel-last
+         buttonpanel-left
+         buttonpanel-next-page
+         buttonpanel-previous-page
+         buttonpanel-right
+         buttonpanel-scroll-down
+         buttonpanel-scroll-up
+         buttonpanel-up
+         
+
+       1b1  ActionArea
+
+       1b2  Menu
+            
+            menu-cancel
+            menu-cancel-all
+            menu-down
+            menu-left
+            menu-right
+            menu-search
+            menu-up
+            
+
+         1b2a  PullrightMenu
+
+       1b3  Radiogroup
+
+       1b4  Togglegroup
+
+     1c  Dialog
+         
+         dialog-cancel
+         dialog-close
+         goto-action-area
+         pick-action-area
+         show-help
+         zscript
+         zscript-prompt
+         
+
+       1c1  Popup
+
+         1c1a  Ask
+
+           1c1a1  AddressAsk
+
+           1c1a2  FileAsk
+
+             1c1a2a  AddfolderAsk
+
+             1c1a2b  NewfolderAsk
+
+             1c1a2c  RenamefolderAsk
+
+           1c1a3  InputAsk
+
+             1c1a3a  AddressAsk
+
+             1c1a3b  CommandAsk
+
+           1c1a4  ListAsk
+
+           1c1a5  MsgAsk
+
+         1c1b  Attachlist
+
+           1c1b1  ComposeAttachlist
+
+           1c1b2  MessageAttachlist
+
+         1c1c  Attachtype
+
+         1c1d  Charset
+
+           1c1d1  ComposeCharset
+
+           1c1d2  MessageCharset
+
+         1c1e  Choosealias
+
+         1c1f  Compoptions
+
+         1c1g  Datesearch
+
+         1c1h  Dynamicheaders
+
+         1c1i  Help
+
+         1c1j  Helpindex
+
+         1c1k  MenuPopup
+               
+               cancel-menu
+               goto-menu
+               pick-menu
+
+           1c1k1  Addrbrowse
+
+             1c1k1a  ComposeAddrbrowse
+
+           1c1k2  Help
+
+           1c1k3  Pager
+
+         1c1l  Multikey
+
+         1c1m  Notifier
+
+         1c1n  Patternsearch
+
+         1c1o  Print
+
+         1c1p  Sort
+
+         1c1q  Templates
+
+         1c1r  Textsearch
+
+           1c1r1  TextsearchReplace
+
+         1c1s  Xface
+
+         1c1t  ZmcotDir
+               
+               chevdir-clear
+               chevdir-search
+               chevdir-use
+
+       1c2  Screen
+            
+            goto-main
+            next-screen
+            other-screen
+
+         1c2a  Aliases
+
+         1c2b  Envelope
+
+         1c2c  Headers
+
+         1c2d  MenuScreen
+               
+               cancel-menu
+               goto-menu
+               pick-menu
+
+           1c2d1  Compose
+                  
+                  goto-bcc-headers
+                  goto-body
+                  goto-cc-header
+                  goto-subject-header
+                  goto-to-header
+
+           1c2d2  Main
+                  
+                  goto-main-summaries
+                  main-zscript-prompt
+
+           1c2d3  Message
+                  
+                  message-next-page-or-message
+                  message-showface
+
+         1c2e  Vars
+
+         1c2f  Zmcot
+               
+               zmcot-clear-all
+               zmcot-clear-composition
+               zmcot-copy-msg
+               zmcot-delete
+               zmcot-directory
+               zmcot-grab-to
+               zmcot-redraw
+               zmcot-scan-backward
+               zmcot-scan-forward
+               zmcot-send
+               zmcot-to
+               zmcot-toggle-mail
+               zmcot-toggle-new-mail
+
+     1d  Filebox
+         
+         filebox-up
+         filebox-down
+         filebox-next-page
+         filebox-previous-page
+
+     1e  List
+         
+         list-backward-char
+         list-beginning-of-line
+         list-click
+         list-click-line
+         list-controlclick
+         list-doubleclick
+         list-down
+         list-end-of-line
+         list-first
+         list-forward-char
+         list-jump-to
+         list-last
+         list-next-page
+         list-previous-page
+         list-scroll-down
+         list-scroll-up
+         list-shiftclick
+         list-up
+
+       1e1  FileList
+
+       1e2  FolderStatusList
+
+       1e3  MessageSummaries
+
+     1f  Taskmeter
+         
+         taskmeter-interrupt
+
+     1g  Text
+         
+         text-backward-char
+         text-backward-word
+         text-beginning
+         text-beginning-of-line
+         text-copy-selection
+         text-deselect
+         text-end
+         text-end-of-line
+         text-forward-char
+         text-forward-word
+         text-next-line
+         text-next-page
+         text-previous-line
+         text-previous-page
+         text-resume-selecting
+         text-scroll-down
+         text-scroll-up
+         text-select-all
+         text-start-selecting
+         text-stop-selecting
+         text-toggle-wrap
+
+       1g1  EditText
+            
+            text-clear-selection
+            text-cut-selection
+            text-delete-backward-char
+            text-delete-backward-word
+            text-delete-forward-char
+            text-delete-forward-word
+            text-delete-to-beginning-of-line
+            text-delete-to-end-of-line
+            text-insert
+            text-open-line
+            text-paste
+            text-self-insert
+
+         1g1a  Inputfield
+               
+               inputfield-accept
+
+           1g1a1  Commandfield
+                  
+                  command-accept
+                  command-history-backward
+                  command-history-forward
+
+
+79 ;; id-counter
+alpha ;; label-type
+4 ;; label-min-width
+"  " ;; label-separator
+3 ;; level-indent
+
+;; depth-first kcell attributes
+[[0
+  (creator "liblit@z-code.com" create-time "19950909:15:44:55" id-counter 79 file "/usr/people/liblit/Z-Mail/build/irix53/lite/zmlite/wclasses.kotl")]
+ [1
+  (creator "bobg" create-time "19950804:21:37:53")]
+ [2
+  (creator "bobg" create-time "19950804:21:38:01" no-fill t)]
+ [4
+  (creator "bobg" create-time "19950804:21:38:13" no-fill t)]
+ [5
+  (creator "bobg" create-time "19950804:21:38:19" no-fill t)]
+ [6
+  (creator "bobg" create-time "19950804:21:38:26" no-fill t)]
+ [7
+  (creator "bobg" create-time "19950804:21:40:02" no-fill t)]
+ [8
+  (creator "bobg" create-time "19950804:21:40:07" no-fill t)]
+ [9
+  (creator "bobg" create-time "19950804:21:40:29" no-fill t)]
+ [10
+  (creator "bobg" create-time "19950804:21:40:36" no-fill t)]
+ [11
+  (creator "bobg" create-time "19950804:21:40:42" no-fill t)]
+ [12
+  (creator "bobg" create-time "19950804:21:40:46" no-fill t)]
+ [13
+  (creator "bobg" create-time "19950804:21:41:11" no-fill t)]
+ [14
+  (creator "bobg" create-time "19950804:21:41:19" no-fill t)]
+ [71
+  (creator "liblit@z-code.com" create-time "19950909:15:45:43" no-fill t)]
+ [15
+  (creator "bobg" create-time "19950804:21:41:20" no-fill t)]
+ [16
+  (creator "bobg" create-time "19950804:21:41:23" no-fill t)]
+ [17
+  (creator "bobg" create-time "19950804:21:41:25" no-fill t)]
+ [18
+  (creator "bobg" create-time "19950804:21:41:29" no-fill t)]
+ [19
+  (creator "bobg" create-time "19950804:21:41:32" no-fill t)]
+ [20
+  (creator "bobg" create-time "19950804:21:41:36" no-fill t)]
+ [21
+  (creator "bobg" create-time "19950804:21:41:38" no-fill t)]
+ [22
+  (creator "bobg" create-time "19950804:21:41:41" no-fill t)]
+ [23
+  (creator "bobg" create-time "19950804:21:41:43" no-fill t)]
+ [24
+  (creator "bobg" create-time "19950804:21:41:45" no-fill t)]
+ [25
+  (creator "bobg" create-time "19950804:21:41:52" no-fill t)]
+ [26
+  (creator "bobg" create-time "19950804:21:42:04" no-fill t)]
+ [27
+  (creator "bobg" create-time "19950804:21:42:08" no-fill t)]
+ [68
+  (creator "bobg" create-time "19950804:21:53:20" no-fill t)]
+ [69
+  (creator "bobg" create-time "19950804:21:53:24" no-fill t)]
+ [70
+  (creator "bobg" create-time "19950804:21:53:28" no-fill t)]
+ [28
+  (creator "bobg" create-time "19950804:21:42:13" no-fill t)]
+ [32
+  (creator "bobg" create-time "19950804:21:42:37" no-fill t)]
+ [33
+  (creator "bobg" create-time "19950804:21:42:42" no-fill t)]
+ [34
+  (creator "bobg" create-time "19950804:21:42:47" no-fill t)]
+ [35
+  (creator "bobg" create-time "19950804:21:42:51" no-fill t)]
+ [36
+  (creator "bobg" create-time "19950804:21:42:53" no-fill t)]
+ [37
+  (creator "bobg" create-time "19950804:21:42:55" no-fill t)]
+ [38
+  (creator "bobg" create-time "19950804:21:43:07" no-fill t)]
+ [72
+  (creator "liblit@z-code.com" create-time "19950909:15:52:58" no-fill t)]
+ [39
+  (creator "bobg" create-time "19950804:21:43:11" no-fill t)]
+ [40
+  (creator "bobg" create-time "19950804:21:43:12" no-fill t)]
+ [41
+  (creator "bobg" create-time "19950804:21:43:14" no-fill t)]
+ [42
+  (creator "bobg" create-time "19950804:21:43:18" no-fill t)]
+ [43
+  (creator "bobg" create-time "19950804:21:43:22" no-fill t)]
+ [44
+  (creator "bobg" create-time "19950804:21:43:25" no-fill t)]
+ [45
+  (creator "bobg" create-time "19950804:21:43:26" no-fill t)]
+ [46
+  (creator "bobg" create-time "19950804:21:43:29" no-fill t)]
+ [47
+  (creator "bobg" create-time "19950804:21:43:32" no-fill t)]
+ [74
+  (creator "liblit@z-code.com" create-time "19950909:15:59:38" no-fill t)]
+ [48
+  (creator "bobg" create-time "19950804:21:43:35" no-fill t)]
+ [78
+  (creator "liblit@z-code.com" create-time "19950909:16:04:09" no-fill t)]
+ [50
+  (creator "bobg" create-time "19950804:21:43:40" no-fill t)]
+ [51
+  (creator "bobg" create-time "19950804:21:43:53" no-fill t)]
+ [52
+  (creator "bobg" create-time "19950804:21:43:58" no-fill t)]
+ [53
+  (creator "bobg" create-time "19950804:21:44:01" no-fill t)]
+ [54
+  (creator "bobg" create-time "19950804:21:44:02" no-fill t)]
+ [55
+  (creator "bobg" create-time "19950804:21:44:13" no-fill t)]
+ [56
+  (creator "bobg" create-time "19950804:21:44:31" no-fill t)]
+ [57
+  (creator "bobg" create-time "19950804:21:44:43" no-fill t)]
+ [58
+  (creator "bobg" create-time "19950804:21:44:55" no-fill t)]
+ [76
+  (creator "liblit@z-code.com" create-time "19950909:16:01:12" no-fill t)]
+ [73
+  (creator "liblit@z-code.com" create-time "19950909:15:57:09" no-fill t)]
+ [59
+  (creator "bobg" create-time "19950804:21:45:02" no-fill t)]
+ [60
+  (creator "bobg" create-time "19950804:21:46:38" no-fill t)]
+ [61
+  (creator "bobg" create-time "19950804:21:46:41" no-fill t)]
+ [62
+  (creator "bobg" create-time "19950804:21:46:44" no-fill t)]
+ [63
+  (creator "bobg" create-time "19950804:21:46:46" no-fill t)]
+ [64
+  (creator "bobg" create-time "19950804:21:46:54" no-fill t)]
+ [65
+  (creator "bobg" create-time "19950804:21:48:37" no-fill t)]
+ [66
+  (creator "bobg" create-time "19950804:21:49:42" no-fill t)]
+ [67
+  (creator "bobg" create-time "19950804:21:49:51" no-fill t)]
+ nil nil nil nil nil nil nil nil]

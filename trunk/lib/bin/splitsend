@@ -1,0 +1,35 @@
+:
+if test -z "$SENDMAIL"
+    if test -f /usr/lib/sendmail
+    then
+	SENDMAIL="/usr/lib/sendmail -oi"
+    elif test -f /bin/rmail
+    then
+	SENDMAIL="/bin/rmail"
+    elif test -f /usr/bin/rmail
+    then
+	SENDMAIL="/usr/bin/rmail"
+    else
+	SENDMAIL="/bin/mail"
+    fi
+fi
+SPLITTER=${SPLITTER:-$ZMLIB/bin/splitmail}
+if test -f $SPLITTER
+then
+    TMPDIR=${TMPDIR:-/tmp}
+    TMPFIX=$TMPDIR/.sp$$.
+    $SPLITTER -p $TMPFIX
+    for i in ${TMPFIX}*
+    do
+	if test "$i" = "${TMPFIX}*"
+	then
+	    echo "Split failed!?!" 2>1
+	    exit 1
+	fi
+	$SENDMAIL "$@" < $i 
+	/bin/rm -f $i
+    done
+else
+    echo "$SPLITTER not found, sending message unsplit." 2>1
+    $SENDMAIL "$@"
+fi

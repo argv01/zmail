@@ -1,0 +1,87 @@
+/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+
+/* Define to `int' if <sys/types.h> doesn't define.  */
+#undef pid_t
+
+/* Define if realloc() can handle a NULL first argument (in which case it 
+ * acts like malloc().) */
+#undef REALLOC_NULL_OK
+
+/* Define to the name of the resolver state structure 
+   (sometimes "__res_state", somtimes "state".) */
+#undef RES_STATE
+
+/* Define if you have BSD 4.3 style syslog() */
+#undef HAVE_SYSLOG_43
+
+/* Define if you want to avoid using socket code */
+#undef SANS_SOCKETS
+
+/* For using authenticate_user(3x) on Ultrix */
+#undef USE_ULTRIX_AUTH_USER
+
+/* Define if you have basename.  */
+#undef HAVE_BASENAME
+
+/* Define if you have bigcrypt.  */
+#undef HAVE_BIGCRYPT
+
+/* Define if you have flock.  */
+#undef HAVE_FLOCK
+
+/* Define if you have getprpwnam.  */
+#undef HAVE_GETPRPWNAM
+
+/* Define if you have getpwanam.  */
+#undef HAVE_GETPWANAM
+
+/* Define if you have getspnam.  */
+#undef HAVE_GETSPNAM
+
+/* Define if you have lockf.  */
+#undef HAVE_LOCKF
+
+/* Define if you have maillock.  */
+#undef HAVE_MAILLOCK
+
+/* Define if you have strdup.  */
+#undef HAVE_STRDUP
+
+/* Define if you have vsprintf.  */
+#undef HAVE_VSPRINTF
+
+/* Define if you have the <arpa/inet.h> header file.  */
+#undef HAVE_ARPA_INET_H
+
+/* Define if you have the crypt library (-lcrypt).  */
+#undef HAVE_LIBCRYPT
+
+/* Define if you have the inet library (-linet).  */
+#undef HAVE_LIBINET
+
+/* Define if you have the mail library (-lmail).  */
+#undef HAVE_LIBMAIL
+
+/* Define if you have the nsl library (-lnsl).  */
+#undef HAVE_LIBNSL
+
+/* Define if you have the prot library (-lprot).  */
+#undef HAVE_LIBPROT
+
+/* Define if you have the resolv library (-lresolv).  */
+#undef HAVE_LIBRESOLV
+
+/* Define if you have the sec library (-lsec).  */
+#undef HAVE_LIBSEC
+
+/* Define if you have the security library (-lsecurity).  */
+#undef HAVE_LIBSECURITY
+
+/* Define if you have the seq library (-lseq).  */
+#undef HAVE_LIBSEQ
+
+/* Define if you have the socket library (-lsocket).  */
+#undef HAVE_LIBSOCKET
+
+/* Define if you have the x library (-lx).  */
+#undef HAVE_LIBX

@@ -1,0 +1,44 @@
+!!!! The following are Z-Mail corrections to SgiSpec
+
+#ifdef USE_COLORS
+
+! Override red background for text
+!Zmail*XmText.background:			grey90
+!Zmail*XmScrolledWindow.XmText.background:	grey90
+
+Zmail*compose_window*Xdraw.background:		OzCltnPanelColor
+Zmail*message_window*Xdraw.background:		OzReadOnlyColor
+Zmail*message_summaries.highlightThickness: 3
+
+#endif
+
+
+#ifdef USE_FONTS
+
+! Use a non-proportional font so the message summaries look right
+Zmail*XmList.fontList: FixedWidthFont
+
+! SGI incorrectly assumes that all menu bars are named "menuBar"
+*menu_bar*fontList:                              ObliqueLabelFont
+
+#endif
+
+
+#ifdef USE_SPACING
+
+Zmail*XmPushButton.marginWidth:			2
+Zmail*XmPushButton.marginHeight:		2
+Zmail*XmPushButtonGadget.marginWidth:		2
+Zmail*XmPushButtonGadget.marginHeight:		2
+Zmail*XmCascadeButton.marginWidth:		2
+Zmail*XmCascadeButton.marginHeight:		2
+Zmail*XmCascadeButtonGadget.marginWidth:	2
+Zmail*XmCascadeButtonGadget.marginHeight:	2
+
+! SGI incorrectly assumes that all menu bars are named "menuBar"
+*menu_bar*marginHeight:  	1
+*menu_bar.marginHeight:  	0
+*menu_bar*marginLeft:    	1
+*menu_bar.spacing:		7
+
+#endif

@@ -1,0 +1,881 @@
+#system.zmliterc
+# $ZMLIB/system.zmliterc init file for Z-Mail Lite
+# Copyright (c) 1993-94 Z-Code Software, a Division of NCD.
+#
+# This file contains the system-wide initialization for Z-Mail Lite.
+# It is sourced by the main initialization file, $ZMLIB/system.zmailrc
+# Make Lite-specific changes to the Z-Mail configuration here.
+# Make changes that should affect all Z-Mail interfaces in
+# $ZMLIB/system.zmailrc
+#
+# Users can override the settings in this file by making
+# appropriate changes to their ~/.zmailrc file.
+
+# check that the interface in use is Z-Mail Lite
+if is_lite
+  # set up the default configuration
+# Turn on the percent-scrolled indicator in texts and lists   
+  set scrollpct
+  unset warning
+  set autodismiss += folder
+  set autoformat += message
+# set wrapcolumn=72
+  set autoprint
+# turn on function-key labels at the bottom of the screen
+  set fkeylabels
+  set main_panes = folder,messages
+  set compose_panes -= action_area
+  set message_panes -= folder
+  set message_panes -= action_area
+# this is now in locale.zmailrc
+#  set msg_win_hdr_fmt = 'From: %46.46n %d (%l)\nSubject: %s'
+  set verify += quit
+  set newline = read
+
+# newmail_scroll is a good feature but a bad default, since it can
+# semi-asynchronously change the selection!
+  unset newmail_scroll
+
+
+# define some Lite-specific functions
+
+  function askQuit() {
+      ask -d n "Really quit Z-Mail Lite?"
+      if $status == 0
+	  if $?verify
+            set oldverify = "$verify"
+	    set verify -= quit
+	  else
+	    unset oldverify
+	  endif
+	  builtin quit
+	  if $?oldverify
+	    set verify = "$oldverify"
+          endif
+      endif
+  }
+
+
+  set __write_file=''
+  function write_to_file () {
+      if "x$__write_file" != "x"
+          ask -f __write_file -d "$__write_file" "File to write:"
+      else
+          ask -f __write_file "File to write:"
+      endif
+      if $status == 0
+          write "$__write_file"
+          if $status == 0
+              echo "Wrote to file $__write_file."
+          endif
+      endif
+  }
+
+# Text area bindings
+
+  #override other binding for Message
+  bindkey message-body j text-next-line
+  bindkey message-body k text-previous-line
+  bindkey -c Text  \<up> text-scroll-down
+  bindkey -c Text  \<down> text-scroll-up
+
+  bindkey -c Text \<space> text-next-page
+  # don't override the correct binding for the message-body
+  bindkey -d "Next page or message" message-body \<space> do-sequence 'message message-next-page-or-message'
+
+  bindkey -d "Help" main		? zscript help
+  bindkey -d "Help" main		h zscript help
+  unbindkey main-summaries h
+  unbindkey main-folder-list h
+
+  bindkey -d "Help" message-body	? do-sequence 'message zscript help'
+
+  bindkey -d "Reply to sender_all" main	R zscript replyall
+  unbindkey main-summaries R
+  unbindkey main-folder-list R
+  bindkey -d "Reply to sender_all" message-body R do-sequence 'message zscript replyall'
+
+  bindkey -d "Reply to sender" main		r zscript replysender
+  unbindkey main-summaries r
+  unbindkey main-folder-list r
+  bindkey -d "Reply to sender" message-body	r do-sequence 'message zscript replysender'
+
+  bindkey -d "Resend message" main		F zscript 'mail -send -forward'
+  unbindkey main-summaries F
+  unbindkey main-folder-list F
+  bindkey -d "Resend message" message-body	F do-sequence 'message zscript mail -send -forward'
+
+  bindkey -d "Forward message" main		f zscript 'mail -f'
+  unbindkey main-summaries f
+  unbindkey main-folder-list f
+  bindkey -d "Forward message" message-body	f do-sequence 'message zscript mail -f'
+
+  bindkey -d "Display selected message" main		t zscript type
+  unbindkey main-summaries t
+  unbindkey main-folder-list t
+
+  bindkey -d "Begin a new composition" main		c zscript mail
+  unbindkey main-summaries c
+  unbindkey main-folder-list c
+  bindkey -d "Begin a new composition" message-body	c do-sequence 'message zscript mail'
+
+  bindkey -d "Begin a new composition" main		m zscript mail
+  unbindkey main-summaries m
+  unbindkey main-folder-list m
+  bindkey -d "Begin a new composition" message-body	m do-sequence 'message zscript mail'
+
+  bindkey -d "View all messages" main	V zscript 'zmenu_unhide_all ; echo "All messages now displayed."'
+  unbindkey main-summaries V
+  unbindkey main-folder-list V
+
+  bindkey -d "Hide selected messages" main	H zscript 'hide ; echo "Selected messages have been hidden."'
+  unbindkey main-summaries H
+  unbindkey main-folder-list H
+	
+  bindkey -d "View selected messages only" main	v zscript zmenu_view_only_selected
+  unbindkey main-summaries v
+  unbindkey main-folder-list v
+
+  bindkey -d "Unmark message_selected" main - zscript unmark
+  bindkey -d "Unmark message" message-body	- do-sequence 'message zscript unmark ; echo "This message now unmarked."'
+  bindkey -d "Mark this message_selected" main	+ zscript toggle-marks
+  bindkey -d "Mark this message" message-body	+ do-sequence 'message zscript mark ; echo "This message now marked."'
+  bindkey -d "Show message number" message-body = do-sequence 'message zscript msg_list | set _the_selected ; eval echo "This is message $_the_selected of $(%t)."'
+
+  function toggle-marks() {
+  msg_list | set _the_selected
+  if ! $?_the_selected
+     echo -d "Please select messages to mark."
+     return -1
+  endif
+  :m | set _the_marked
+  if $?_the_marked
+    unmark $_the_selected
+    mark $_the_selected{$_the_marked}
+  else
+    mark $_the_selected
+  endif
+  }
+
+  bindkey -d "Quit, prompt for update" main         q zscript quit
+  unbindkey main-summaries q
+  unbindkey main-folder-list q
+  bindkey -d "Quit reading message" -c Message q zscript "dialog -close"
+
+  bindkey -d "Quit, update open folders" main         Q zscript 'quit -f'
+  unbindkey main-summaries Q
+  unbindkey main-folder-list Q
+  bindkey -d "Quit, update open folders" message-body Q do-sequence 'message zscript quit -f'
+
+  bindkey -d "Save_selected" main s zscript 'dialog save'
+  unbindkey main-summaries s
+  unbindkey main-folder-list s
+  bindkey -d "Save_message" message-body   s do-sequence 'message zscript dialog save'
+
+#  bindkey main S zscript 'pick -s $[%s]'
+#  unbindkey main-summaries S
+#  unbindkey main-folder-list S
+
+#  bindkey main K zscript 'pick -s $[%s] | delete'
+#  unbindkey main-summaries K
+#  unbindkey main-folder-list K
+
+  bindkey -d "Find all references by Message ID" main \er zscript 'pick -h references $[%?message-id?]'
+
+  bindkey -d "Undelete message_selected" main u zscript undelete
+  unbindkey main-summaries u
+  unbindkey main-folder-list u
+  bindkey -d "Undelete message" message-body   u do-sequence 'message zscript undelete'
+
+  bindkey -d "Print_selected" main P zscript 'dialog printer'
+  unbindkey main-summaries P
+  unbindkey main-folder-list P
+  bindkey -d "Print_message" message-body   P do-sequence 'message zscript dialog printer'
+
+  bindkey -d "Display next message" message-body       n do-sequence 'message zscript next'
+  bindkey -d "Display previous message" message-body   p do-sequence 'message zscript previous'
+
+  bindkey -d "Open folder" main o zscript 'dialog AddFolder'
+  unbindkey main-summaries o
+  unbindkey main-folder-list o
+
+  bindkey -d "Delete message_selected" main d zscript delete
+  unbindkey main-summaries d
+  unbindkey main-folder-list d
+  bindkey -d "Delete message" message-body   d do-sequence 'message zscript delete'
+
+  bindkey -d "Write message body to file" main          w zscript write_to_file
+  unbindkey main-summaries w
+  unbindkey main-folder-list w
+  bindkey -d "Write message body to file" message-body  w do-sequence 'message zscript write_to_file'
+
+  bindkey message-body   z do-sequence 'message goto-main'
+
+  bindkey -d "Activate most recently accessed folder"  main \# zscript 'folder #'
+  bindkey -d "Make system folder active"       main % zscript 'folder %'
+  bindkey -d "Save_mbox"  main & zscript 'save &'
+
+  bindkey -d "Go to beginning of list" main \^ zscript 'msg_list ^'
+  bindkey -d "Go to end of list"       main $ zscript 'msg_list $'
+  bindkey -d "Select from current selection to beginning of list" main ( zscript 'msg_list ^-.'
+  bindkey -d "Select from current selection to end of list" main ) zscript 'msg_list .-$'
+
+  bindkey -d "Prompt to select messages" main * zscript 'asksel *'
+  bindkey -d "Prompt to select messages" main 0 zscript 'asksel 0'
+  unbindkey main-summaries 0
+  unbindkey main-folder-list 0
+  bindkey -d "Prompt to select messages" main 1 zscript 'asksel 1'
+  unbindkey main-summaries 1
+  unbindkey main-folder-list 1
+  bindkey -d "Prompt to select messages" main 2 zscript 'asksel 2'
+  unbindkey main-summaries 2
+  unbindkey main-folder-list 2
+  bindkey -d "Prompt to select messages" main 3 zscript 'asksel 3'
+  unbindkey main-summaries 3
+  unbindkey main-folder-list 3
+  bindkey -d "Prompt to select messages" main 4 zscript 'asksel 4'
+  unbindkey main-summaries 4
+  unbindkey main-folder-list 4
+  bindkey -d "Prompt to select messages" main 5 zscript 'asksel 5'
+  unbindkey main-summaries 5
+  unbindkey main-folder-list 5
+  bindkey -d "Prompt to select messages" main 6 zscript 'asksel 6'
+  unbindkey main-summaries 6
+  unbindkey main-folder-list 6
+  bindkey -d "Prompt to select messages" main 7 zscript 'asksel 7'
+  unbindkey main-summaries 7
+  unbindkey main-folder-list 7
+  bindkey -d "Prompt to select messages" main 8 zscript 'asksel 8'
+  unbindkey main-summaries 8
+  unbindkey main-folder-list 8
+  bindkey -d "Prompt to select messages" main 9 zscript 'asksel 9'
+  unbindkey main-summaries 9
+  unbindkey main-folder-list 9
+  function asksel() {
+      #%
+      # Prompt user for message list
+      #%
+      ask -i _input -default $1 "Select messages: "
+      if $status == 0
+	  msg_list $_input
+      endif
+  }
+
+  function _sk_sayMark() {
+  msg_list | set _the_selected
+  mark -$1 $_the_selected
+  if $# == 0
+     echo "Priority cleared on the selected messages."
+  else
+     eval echo "The selected messages have been marked priority $1."
+  endif
+  }
+
+  bindkey -d "Assign priority A_selected" main A zscript '_sk_sayMark A'
+  bindkey -d "Assign priority B_selected" main B zscript '_sk_sayMark B'
+  bindkey -d "Assign priority C_selected" main C zscript '_sk_sayMark C'
+  bindkey -d "Assign priority D_selected" main D zscript '_sk_sayMark D'
+  bindkey -d "Assign priority E_selected" main E zscript '_sk_sayMark E'
+  bindkey -d "Clear marks and priorities" main U zscript '_sk_sayMark'
+  unbindkey main-summaries A
+  unbindkey main-folder-list A
+  unbindkey main-summaries B
+  unbindkey main-folder-list B
+  unbindkey main-summaries C
+  unbindkey main-folder-list C
+  unbindkey main-summaries D
+  unbindkey main-folder-list D
+  unbindkey main-summaries E
+  unbindkey main-folder-list E
+  unbindkey main-summaries U
+  unbindkey main-folder-list U
+  bindkey -d "Assign priority A" message-body A do-sequence 'message zscript mark -A ; echo "This message has been marked priority A."'
+  bindkey -d "Assign priority B" message-body B do-sequence 'message zscript mark -B ; echo "This message has been marked priority B."'
+  bindkey -d "Assign priority C" message-body C do-sequence 'message zscript mark -C ; echo "This message has been marked priority C."'
+  bindkey -d "Assign priority D" message-body D do-sequence 'message zscript mark -D ; echo "This message has been marked priority D."'
+  bindkey -d "Assign priority E" message-body E do-sequence 'message zscript mark -E ; echo "This message has been marked priority E."'
+  bindkey -d "Clear priority or mark" message-body U do-sequence 'message zscript mark - ; echo "Priority cleared on this message."'
+
+  bindkey -d "Move cursor and selection down one line" main-summaries n do-sequence '!* list-down!* list-click'
+  bindkey -d "Move cursor and selection up one line" main-summaries p do-sequence '!* list-up!* list-click'
+  bindkey -d "Move cursor and selection down one line" main-summaries \<down> do-sequence '!* list-down!* list-click'
+  bindkey -d "Move cursor and selection up one line" main-summaries \<up> do-sequence '!* list-up!* list-click'
+  bindkey -d "Move cursor up one line, leave selection" main-summaries k list-up
+  bindkey -d "Move cursor down one line, leave selection" main-summaries j list-down
+
+  # function to create fkey bindings along with buttons
+  # syntax: fkey_button -f <keynum> [-n] <name> <func>
+  #     where <keynum> is the function key number (e.g., 2)
+  #     <name> is the Label string; buttons will be named <name>-F<keynum>
+  #     <func> is the Z-Script function to call.
+  function fkey_button() {
+      if  "$1" !~ "-f"
+	  eval error "$0\: no function key (-f) specified"
+	  exit
+      endif
+      shift
+      set whichFkey = $1
+      shift
+      if $1 == -n
+	  set noMsgListArg = "-n"
+	  shift
+      else
+	  set noMsgListArg = ""
+      endif
+      set labelStrNum = "$whichFkey/$1"
+      set labelStr = "$1"
+      shift
+      if is_lite
+	  # this binds F<keynum> to click the button
+	  # <name>-F<keynum> on the main screen
+	  bindkey -l $labelStrNum -c Main \<f$whichFkey> zscript "$*"
+	  if $whichFkey < 10
+		bindkey -l $labelStrNum -c Main \e$whichFkey zscript "$*"
+	  endif
+      endif
+      # this creates the button itself
+      button $noMsgListArg $labelStr "$*"
+  }
+
+  # function to turn main panes on and off
+  function toggle-mainpane() {
+      if $main_panes =~ *$1*
+	  set main_panes -= $1
+      else
+	  set main_panes += $1
+      endif
+  }
+
+  function toggle-button() {
+      toggle-mainpane buttons
+  }
+
+  function toggle-command() {
+      toggle-mainpane command
+  }
+
+  function do-lpr() {
+      dialog printer
+  }
+
+  function do-sort() {
+      dialog sort
+  }
+
+  function toggle_read_wrap() {
+      if $# == 0
+          if $?autoformat:(message)
+              set autoformat -= message
+          else
+	      set autoformat += message
+          endif
+      else
+          if $1 == 1
+              set autoformat += message
+          else
+              set autoformat -= message
+          endif
+      endif
+  }
+
+  # LITE KEYBINDINGS BY CLASS
+
+  ## in all dialogs, F1 is Help.
+  bindkey -l "1/Help" -c Dialog \<f1> show-help
+  bindkey -l "1/Help" -c Dialog \e1 show-help
+
+  ## and in all dialogs that have a Help button, give more specific help
+  bindkey -l "1/Help" -d "Help" aliases \<f1> do-sequence '!aliases-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" aliases \e1 do-sequence '!aliases-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" charset \<f1> do-sequence '!charset-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" charset \e1 do-sequence '!charset-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" choosealiases \<f1> do-sequence '!choosealiases-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" choosealiases \e1 do-sequence '!choosealiases-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" compoptions \<f1> do-sequence '!compoptions-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" compoptions \e1 do-sequence '!compoptions-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" datesearch \<f1> do-sequence '!datesearch-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" datesearch \e1 do-sequence '!datesearch-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" dynamicheaders \<f1> do-sequence '!dynamicheaders-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" dynamicheaders \e1 do-sequence '!dynamicheaders-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" envelope \<f1> do-sequence '!envelope-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" envelope \e1 do-sequence '!envelope-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" headers \<f1> do-sequence '!headers-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" headers \e1 do-sequence '!headers-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" helpindex \<f1> do-sequence '!helpindex-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" helpindex \e1 do-sequence '!helpindex-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" multikey \<f1> do-sequence '!multikey-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" multikey \e1 do-sequence '!multikey-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" opened \<f1> do-sequence '!opened-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" opened \e1 do-sequence '!opened-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" patternsearch \<f1> do-sequence '!patternsearch-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" patternsearch \e1 do-sequence '!patternsearch-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" print \<f1> do-sequence '!print-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" print \e1 do-sequence '!print-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" sort \<f1> do-sequence '!sort-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" sort \e1 do-sequence '!sort-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" templates \<f1> do-sequence '!templates-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" templates \e1 do-sequence '!templates-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" textsearch \<f1> do-sequence '!textsearch-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" textsearch \e1 do-sequence '!textsearch-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" variables \<f1> do-sequence '!variables-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" variables \e1 do-sequence '!variables-aa buttonpanel-invoke Help'
+
+  ## all dialogs that have a help menu item rather than a help button
+  bindkey -l "1/Help" addrbrowse \<f1> do-sequence '!addrbrowse pick-menu Help.AddressBrowser'
+  bindkey -l "1/Help" addrbrowse \e1 do-sequence '!addrbrowse pick-menu Help.AddressBrowser'
+  bindkey -l "1/Help" pager \<f1> do-sequence '!pager pick-menu Help.AbouttheTextPager'
+  bindkey -l "1/Help" pager \e1 do-sequence '!pager pick-menu Help.AbouttheTextPager'
+
+  ## and a special case for the Help Pager to get to the Help Index
+  bindkey -l "1/Index" help \<f1> do-sequence '!help-aa buttonpanel-invoke Index'
+  bindkey -l "1/Index" help \e1 do-sequence '!help-aa buttonpanel-invoke Index'
+
+  ## dialogs that have neither a help menu item nor a help button
+
+  bindkey -l "1/Help" -c MessageAttachlist \<f1> zscript 'help -i "Receiving Attachments"'
+  bindkey -l "1/Help" -c MessageAttachlist \e1   zscript 'help -i "Receiving Attachments"'
+  bindkey -l "1/Help" -c ComposeAttachlist \<f1> zscript 'help -i "Sending Attachments"'
+  bindkey -l "1/Help" -c ComposeAttachlist \e1   zscript 'help -i "Sending Attachments"'
+  bindkey -l "1/Help" -c Attachtype        \<f1> zscript 'help -i "Sending Attachments"'
+  bindkey -l "1/Help" -c Attachtype        \e1   zscript 'help -i "Sending Attachments"'
+
+  bindkey -l "1/Help" -c AddfolderAsk      \<f1> zscript 'help -i "Opening Folders"'
+  bindkey -l "1/Help" -c AddfolderAsk      \e1   zscript 'help -i "Opening Folders"'
+  bindkey -l "1/Help" -c NewfolderAsk      \<f1> zscript 'help -i "Creating Folders"'
+  bindkey -l "1/Help" -c NewfolderAsk      \e1   zscript 'help -i "Creating Folders"'
+  bindkey -l "1/Help" -c RenamefolderAsk   \<f1> zscript 'help -i "Renaming Folders"'
+  bindkey -l "1/Help" -c RenamefolderAsk   \e1   zscript 'help -i "Renaming Folders"'
+
+  bindkey -l "1/Help" -c FileAsk           \<f1> zscript 'help -i "File Finder"'
+  bindkey -l "1/Help" -c FileAsk           \e1   zscript 'help -i "File Finder"'
+
+  ## in all popups, F8 cancels; so does esc-esc
+  bindkey -l "8/Cancel" -c Popup \<f8> dialog-cancel
+  bindkey -l "8/Cancel" -c Popup \e8 dialog-cancel
+  bindkey -c Popup \e\e dialog-cancel
+
+  ## in all screens, F8 goes to main
+  bindkey -l "8/Main" -c Screen \<f8> goto-main
+  bindkey -l "8/Main" -c Screen \e8 goto-main
+
+  # BINDINGS BY SCREEN
+
+  ## main screen bindings
+
+  # Main screen fkeys
+  bindkey -l "2/Read" -d "Display selected message" -c Main \<f2> zscript zbutton_read
+  bindkey -l "2/Read" -d "Display selected message" -c Main \e2 zscript zbutton_read
+  bindkey -l "3/Compos" -d "Begin a new composition" -c Main \<f3> zscript mail
+  bindkey -l "3/Compos" -d "Begin a new composition" -c Main \e3 zscript mail
+  bindkey -l "4/Delete" -d "Delete message_selected" -c Main \<f4> zscript delete
+  bindkey -l "4/Delete" -d "Delete message_selected" -c Main \e4 zscript delete
+  bindkey -l "5/Save" -d "Save_selected" -c Main \<f5> zscript 'dialog save'
+  bindkey -l "5/Save" -d "Save_selected" -c Main \e5 zscript 'dialog save'
+  bindkey -l "6/Update" -d "Update current folder" -c Main \<f6> zscript update
+  bindkey -l "6/Update" -d "Update current folder" -c Main \e6 zscript update
+  bindkey -l "7/Reply" -d "Reply to sender" -c Main \<f7> zscript replysender
+  bindkey -l "7/Reply" -d "Reply to sender" -c Main \e7 zscript replysender
+  bindkey -l "8/Quit" -d "Quit, prompt for update" -c Main \<f8> zscript quit
+  bindkey -l "8/Quit" -d "Quit, prompt for update" -c Main \e8 zscript quit
+  bindkey -l "9/Resend" -d "Resend message_selected" -c Main \<f9> zscript resend
+  bindkey -l "9/Resend" -d "Resend message_selected" -c Main \e9 zscript resend
+  # F10 is the menubar leap; predefined.
+  bindkey -l "11/Print" -d "Print_selected" -c Main \<f11> zscript 'dialog printer'
+  bindkey -l "12/Sort" -d "Sort current folder" -c Main \<f12> zscript 'dialog sort'
+
+  bindkey -d "Select first message" -c Main \e< do-sequence '!main-summaries list-first!main-summaries list-click'
+  bindkey -d "Select first message" -c Main \<home> do-sequence '!main-summaries list-first!main-summaries list-click'
+  bindkey -d "Select last message" -c Main \e> do-sequence '!main-summaries list-last!main-summaries list-click'
+  bindkey -d "Select last message" -c Main \<end> do-sequence '!main-summaries list-last!main-summaries list-click'
+
+  ## message screen fkey bindings
+  bindkey -l "2/Next" -d "Display next message" -c Message \<f2> zscript next
+  bindkey -l "2/Next" -d "Display next message" -c Message \e2 zscript next
+  bindkey -l "3/Prev" -d "Display previous message" -c Message \<f3> zscript previous
+  bindkey -l "3/Prev" -d "Display previous message" -c Message \e3 zscript previous
+  bindkey -l "4/Delete" -d "Delete message" -c Message \<f4> zscript delete
+  bindkey -l "4/Delete" -d "Delete message" -c Message \e4 zscript delete
+  bindkey -l "5/Save" -d "Save_message" -c Message \<f5> zscript 'dialog save'
+  bindkey -l "5/Save" -d "Save_message" -c Message \e5 zscript 'dialog save'
+  bindkey -l "6/Attach" -d "Bring up attachments dialog" -c Message \<f6> zscript 'dialog attach'
+  bindkey -l "6/Attach" -d "Bring up attachments dialog" -c Message \e6 zscript 'dialog attach'
+  bindkey -l "7/Reply" -d "Reply to sender" -c Message \<f7> zscript reply
+  bindkey -l "7/Reply" -d "Reply to sender" -c Message \e7 zscript reply
+  bindkey -l "8/Main" -d "Go to Main Screen" -c Message \<f8> goto-main
+  bindkey -l "8/Main" -d "Go to Main Screen" -c Message \e8 goto-main
+
+  ### these unbindkeys allow the subsequent bindings to work
+  unbindkey message-aa \<up>
+  unbindkey message-body \<up>
+  unbindkey message-aa ^P
+  unbindkey message-aa \<down>
+  unbindkey message-body \<down>
+  unbindkey message-aa ^N
+  unbindkey message-aa \<home>
+  unbindkey message-aa \e<
+  unbindkey message-aa \<end>
+  unbindkey message-aa \e>
+
+  bindkey -d "Scroll down" -c Message \<up> do-sequence 'message-body text-scroll-down'
+  bindkey -d "Scroll down" -c Message ^P do-sequence 'message-body text-scroll-down'
+  bindkey -d "Scroll up" -c Message \<down> do-sequence 'message-body text-scroll-up'
+  bindkey -d "Scroll up" -c Message ^N do-sequence 'message-body text-scroll-up'
+  bindkey -d "Previous page" -c Message \<pageup> do-sequence 'message-body text-previous-page'
+  bindkey -d "Previous page" -c Message \ev do-sequence 'message-body text-previous-page'
+  bindkey -d "Next page" -c Message \<pagedown> do-sequence 'message-body text-next-page'
+  bindkey -d "Next page" -c Message ^V do-sequence 'message-body text-next-page'
+  bindkey -d "Move to beginning of text" -c Message \<home> do-sequence 'message-body text-beginning'
+  bindkey -d "Move to beginning of text" -c Message \e< do-sequence 'message-body text-beginning'
+  bindkey -d "Move to end of text" -c Message \<end> do-sequence 'message-body text-end'
+  bindkey -d "Move to end of text" -c Message \e> do-sequence 'message-body text-end'
+
+  bindkey -d "Switch between wrapping/truncating long lines" -c Message W zscript toggle_read_wrap
+  unbindkey message-body W
+
+  ## Date search keys
+
+  bindkey -d 'Select next field' date1-year-field \<down> do-sequence 'zmlite focus-next'
+  bindkey -d 'Select next field' date1-year-field ^N do-sequence 'zmlite focus-next'
+  bindkey -d 'Select previous field' date1-year-field \<up> do-sequence 'zmlite focus-previous'
+  bindkey -d 'Select previous field' date1-year-field ^P do-sequence 'zmlite focus-previous'
+
+  bindkey -d 'Select next field' date1-month-field \<down> do-sequence 'zmlite focus-next'
+  bindkey -d 'Select next field' date1-month-field ^N do-sequence 'zmlite focus-next'
+  bindkey -d 'Select previous field' date1-month-field \<up> do-sequence 'zmlite focus-previous'
+  bindkey -d 'Select previous field' date1-month-field ^P do-sequence 'zmlite focus-previous'
+
+  bindkey -d 'Select next field' date1-day-field \<down> do-sequence 'zmlite focus-next'
+  bindkey -d 'Select next field' date1-day-field ^N do-sequence 'zmlite focus-next'
+  bindkey -d 'Select previous field' date1-day-field \<up> do-sequence 'zmlite focus-previous'
+  bindkey -d 'Select previous field' date1-day-field ^P do-sequence 'zmlite focus-previous'
+
+  bindkey -d 'Select next field' date2-year-field \<down> do-sequence 'zmlite focus-next'
+  bindkey -d 'Select next field' date2-year-field ^N do-sequence 'zmlite focus-next'
+  bindkey -d 'Select previous field' date2-year-field \<up> do-sequence 'zmlite focus-previous'
+  bindkey -d 'Select previous field' date2-year-field ^P do-sequence 'zmlite focus-previous'
+
+  bindkey -d 'Select next field' date2-month-field \<down> do-sequence 'zmlite focus-next'
+  bindkey -d 'Select next field' date2-month-field ^N do-sequence 'zmlite focus-next'
+  bindkey -d 'Select previous field' date2-month-field \<up> do-sequence 'zmlite focus-previous'
+  bindkey -d 'Select previous field' date2-month-field ^P do-sequence 'zmlite focus-previous'
+
+  bindkey -d 'Select next field' date2-day-field \<down> do-sequence 'zmlite focus-next'
+  bindkey -d 'Select next field' date2-day-field ^N do-sequence 'zmlite focus-next'
+  bindkey -d 'Select previous field' date2-day-field \<up> do-sequence 'zmlite focus-previous'
+  bindkey -d 'Select previous field' date2-day-field ^P do-sequence 'zmlite focus-previous'
+
+  ## compose screen function keys
+
+  bindkey -l "2/Inclde" -d "Include selected messages" -c Compose \<f2> zscript 'compcmd include-message'
+  bindkey -l "2/Inclde" -d "Include selected messages" -c Compose \e2 zscript 'compcmd include-message'
+  bindkey -l "3/Edit" -d "Bring up external editor" -c Compose \<f3> zscript 'compcmd edit'
+  bindkey -l "3/Edit" -d "Bring up external editor" -c Compose \e3 zscript 'compcmd edit'
+  bindkey -l "4/Cancel" -d "Cancel the composition" -c Compose \<f4> zscript 'compcmd cancel'
+  bindkey -l "4/Cancel" -d "Cancel the composition" -c Compose \e4 zscript 'compcmd cancel'
+  bindkey -l "5/Save" -d "Save_compose" -c Compose \<f5> zscript zmenu_save_to_file
+  bindkey -l "5/Save" -d "Save_compose" -c Compose \e5 zscript zmenu_save_to_file
+  bindkey -l "6/Attach" -d "Attach a file" -c Compose \<f6> zscript 'dialog attachfile'
+  bindkey -l "6/Attach" -d "Attach a file" -c Compose \e6 zscript 'dialog attachfile'
+  bindkey -l "7/Send" -d "Send the message" -c Compose \<f7> zscript 'compcmd send'
+  bindkey -l "7/Send" -d "Send the message" -c Compose \e7 zscript 'compcmd send'
+  bindkey -l "8/Main" -c Compose \<f8> goto-main
+  bindkey -l "8/Main" -c Compose \e8 goto-main
+
+  bindkey -d "Select next field" to-header-field \<down> do-sequence 'zmlite focus-next'
+  bindkey -d "Select next field" to-header-field ^N do-sequence 'zmlite focus-next'
+  bindkey -d "Select next field" subject-header-field \<down> do-sequence 'zmlite focus-next'
+  bindkey -d "Select next field" subject-header-field ^N do-sequence 'zmlite focus-next'
+  bindkey -d "Select previous field" subject-header-field \<up> do-sequence 'zmlite focus-previous'
+  bindkey -d "Select previous field" subject-header-field ^P do-sequence 'zmlite focus-previous'
+  bindkey -d "Select next field" cc-header-field \<down> do-sequence 'zmlite focus-next'
+  bindkey -d "Select next field" cc-header-field ^N do-sequence 'zmlite focus-next'
+  bindkey -d "Select previous field" cc-header-field \<up> do-sequence 'zmlite focus-previous'
+  bindkey -d "Select previous field" cc-header-field ^P do-sequence 'zmlite focus-previous'
+  bindkey -d "Select next field" bcc-header-field \<down> do-sequence 'zmlite focus-next'
+  bindkey -d "Select next field" bcc-header-field ^N do-sequence 'zmlite focus-next'
+  bindkey -d "Select previous field" bcc-header-field \<up> do-sequence 'zmlite focus-previous'
+  bindkey -d "Select previous field" bcc-header-field ^P do-sequence 'zmlite focus-previous'
+
+  # List attachments
+  bindkey -d "List attachments" -c Compose \eL zscript 'dialog attach'
+  bindkey -d "Create a new attachment" -c Compose \eN zscript 'dialog attachnew'
+  bindkey -d "Attach a file" -c Compose \eF zscript 'dialog attachfile'
+  bindkey -d "List attachments" -c Message \eL zscript 'dialog attach'
+
+  ## Ask dialog function keys
+  bindkey -d "Accept answer, close dialog" -l "2/OK" -c Ask \<f2> do-sequence '!ask-aa buttonpanel-invoke Ok'
+  bindkey -d "Accept answer, close dialog" -l "2/OK" -c Ask \e2 do-sequence '!ask-aa buttonpanel-invoke Ok'
+  bindkey -d "Scan directory" -l "3/Search" -c FileAsk \<f3> do-sequence '!ask-aa buttonpanel-invoke Search'
+  bindkey -d "Scan directory" -l "3/Search" -c FileAsk \e3 do-sequence '!ask-aa buttonpanel-invoke Search'
+  bindkey -d "Check the address again" -l "3/Retry" -c AddressAsk \<f3> pick-action-area Retry
+  bindkey -d "Check the address again" -l "3/Retry" -c AddressAsk \e3   pick-action-area Retry
+  bindkey -d "Do not send to this address" -l "4/Omit" -c AddressAsk \<f4> pick-action-area Omit
+  bindkey -d "Do not send to this address" -l "4/Omit" -c AddressAsk \e4   pick-action-area Omit
+
+  ## Help Pager function keys
+  bindkey -l "2/Search" -d "Search" help \<f2> do-sequence '!help-aa buttonpanel-invoke Search'
+  bindkey -l "2/Search" -d "Search" help \e2 do-sequence '!help-aa buttonpanel-invoke Search'
+  bindkey -l "5/Save" -d "Save" help \<f5> do-sequence '!help-aa buttonpanel-invoke Save'
+  bindkey -l "5/Save" -d "Save" help \e5 do-sequence '!help-aa buttonpanel-invoke Save'
+  bindkey -l "8/Done" -d "Done" help \<f8> do-sequence '!help-aa buttonpanel-invoke Done'
+  bindkey -l "8/Done" -d "Done" help \e8 do-sequence '!help-aa buttonpanel-invoke Done'
+
+  ## Variables screen function keys
+  bindkey -l "2/Toggle" -d "Set/unset selected variable" -c Vars \<f2> do-sequence 'variable-onoff-btnpanel buttonpanel-click'
+  bindkey -l "2/Toggle" -d "Set/unset selected variable" -c Vars \e2 do-sequence 'variable-onoff-btnpanel buttonpanel-click'
+  bindkey -l "3/Load" -d "Load variable settings" -c Vars \<f3> do-sequence 'variables-aa buttonpanel-invoke Load'
+  bindkey -l "3/Load" -d "Load variable settings" -c Vars \e3 do-sequence 'variables-aa buttonpanel-invoke Load'
+  bindkey -l "5/Save" -d "Save_variables" -c Vars \<f5> do-sequence 'variables-aa buttonpanel-invoke Save'
+  bindkey -l "5/Save" -d "Save_variables" -c Vars \e5 do-sequence 'variables-aa buttonpanel-invoke Save'
+  bindkey -l "7/Done" -d "Dismiss the dialog" -c Vars \<f7> do-sequence 'variables-aa buttonpanel-invoke Done'
+  bindkey -l "7/Done" -d "Dismiss the dialog" -c Vars \e7 do-sequence 'variables-aa buttonpanel-invoke Done'
+
+  ## Address browser function keys
+  bindkey -l "2/Search" -d "Perform search" -c Addrbrowse \<f2> do-sequence 'addrbrowse-aa buttonpanel-invoke Search'
+  bindkey -l "2/Search" -d "Perform search" -c Addrbrowse \e2 do-sequence 'addrbrowse-aa buttonpanel-invoke Search'
+
+  bindkey -l "3/Mail" -d "Mail to selected addresses" -c Addrbrowse \<f3> do-sequence 'addrbrowse-aa buttonpanel-invoke Mail'
+  bindkey -l "3/Mail" -d "Mail to selected addresses" -c Addrbrowse \e3 do-sequence 'addrbrowse-aa buttonpanel-invoke Mail'
+
+  bindkey -l "3/To" -d "To address" -c ComposeAddrbrowse \<f3> do-sequence 'addrbrowse-aa buttonpanel-invoke To'
+  bindkey -l "3/To" -d "To address" -c ComposeAddrbrowse \e3 do-sequence 'addrbrowse-aa buttonpanel-invoke To'
+  bindkey -l "4/Cc" -d "Cc address" -c ComposeAddrbrowse \<f4> do-sequence 'addrbrowse-aa buttonpanel-invoke Cc'
+  bindkey -l "4/Cc" -d "Cc address" -c ComposeAddrbrowse \e4 do-sequence 'addrbrowse-aa buttonpanel-invoke Cc'
+  bindkey -l "5/Bcc" -d "Bcc address" -c ComposeAddrbrowse \<f5> do-sequence 'addrbrowse-aa buttonpanel-invoke Bcc'
+  bindkey -l "5/Bcc" -d "Bcc address" -c ComposeAddrbrowse \e5 do-sequence 'addrbrowse-aa buttonpanel-invoke Bcc'
+
+  bindkey -l "6/Clear" -d "Clear addresses" -c Addrbrowse \<f6> do-sequence 'addrbrowse-aa buttonpanel-invoke Clear'
+  bindkey -l "6/Clear" -d "Clear addresses" -c Addrbrowse \e6 do-sequence 'addrbrowse-aa buttonpanel-invoke Clear'
+  bindkey -l "8/Done" -d "Done" -c ComposeAddrbrowse \<f8> do-sequence 'addrbrowse-aa buttonpanel-invoke Done'
+  bindkey -l "8/Done" -d "Done" -c ComposeAddrbrowse \e8 do-sequence 'addrbrowse-aa buttonpanel-invoke Done'
+
+  ## search/replace/spell dialog and text search dialog function keys
+  bindkey -l "2/Search" -d "Search_for_text" -c Textsearch \<f2> do-sequence 'textsearch-aa buttonpanel-invoke Search'
+  bindkey -l "2/Search" -d "Search_for_text" -c Textsearch \e2 do-sequence 'textsearch-aa buttonpanel-invoke Search'
+  bindkey -l "3/Replace" -d "Search_and_replace" -c TextsearchReplace \<f3> do-sequence 'textsearch-aa buttonpanel-invoke Replace'
+  bindkey -l "3/Replace" -d "Search_and_replace" -c TextsearchReplace \e3 do-sequence 'textsearch-aa buttonpanel-invoke Replace'
+  bindkey -l "4/Spell" -d "Check spelling" -c TextsearchReplace \<f4> do-sequence 'textsearch-aa buttonpanel-invoke Spell'
+  bindkey -l "4/Spell" -d "Check spelling" -c TextsearchReplace \e4 do-sequence 'textsearch-aa buttonpanel-invoke Spell'
+  bindkey -l "6/Clear" -d "Clear fields" -c Textsearch \<f6> do-sequence 'textsearch-aa buttonpanel-invoke Clear'
+  bindkey -l "6/Clear" -d "Clear fields" -c Textsearch \e6 do-sequence 'textsearch-aa buttonpanel-invoke Clear'
+  bindkey -l "8/Done" -d "Done" -c Textsearch \<f8> do-sequence 'textsearch-aa buttonpanel-invoke Done'
+  bindkey -l "8/Done" -d "Done" -c Textsearch \e8 do-sequence 'textsearch-aa buttonpanel-invoke Done'
+
+  ### unbind end and home to use them for the main-summaries
+  unbindkey command-field \<end>
+  unbindkey command-field \e>
+  unbindkey command-field \<home>
+  unbindkey command-field \e<
+
+  bindkey -d "Move cursor and selection up one line" command-field \<up> do-sequence '!main-summaries list-up!main-summaries list-click'
+  bindkey -d "Move cursor and selection down one line" command-field \<down> do-sequence '!main-summaries list-down!main-summaries list-click'
+  bindkey -d "Previous page" command-field \<pageup> do-sequence '!main-summaries list-previous-page!main-summaries list-click'
+  bindkey -d "Previous page" command-field \ev do-sequence '!main-summaries list-previous-page!main-summaries list-click'
+  bindkey -d "Next page" command-field \<pagedown> do-sequence '!main-summaries list-next-page!main-summaries list-click'
+  bindkey -d "Next page" command-field ^V do-sequence '!main-summaries list-next-page!main-summaries list-click'
+
+  ## Help Index function keys
+  bindkey -l "2/UsrInt" -d "User Interface topics" helpindex \<f2> do-sequence '!helpindex-topic-rg buttonpanel-invoke User Interface'
+  bindkey -l "2/UsrInt" -d "User Interface topics" helpindex \e2 do-sequence '!helpindex-topic-rg buttonpanel-invoke User Interface'
+  bindkey -l "3/ZScrpt" -d "Z-Script Commands" helpindex \<f3> do-sequence '!helpindex-topic-rg buttonpanel-invoke Z-Script Commands'
+  bindkey -l "3/ZScrpt" -d "Z-Script Commands" helpindex \e3 do-sequence '!helpindex-topic-rg buttonpanel-invoke Z-Script Commands'
+
+  ## Printer dialog function keys
+  bindkey -l "2/Print" -d "Print" print \<f2> do-sequence '!print-aa buttonpanel-invoke Print'
+  bindkey -l "2/Print" -d "Print" print \e2 do-sequence '!print-aa buttonpanel-invoke Print'
+
+  ## Attachtype dialog key bindings and function keys
+  bindkey -d "Select next field" attach-type-menu \<down> do-sequence 'zmlite focus-next'
+  bindkey -d "Select next field" attach-type-menu ^N do-sequence 'zmlite focus-next'
+  bindkey -d "Select previous field" attach-encoding-menu \<up> do-sequence 'zmlite focus-previous'
+  bindkey -d "Select previous field" attach-encoding-menu ^P do-sequence 'zmlite focus-previous'
+  bindkey -d "Select next field" attach-encoding-menu \<down> do-sequence 'zmlite focus-next'
+  bindkey -d "Select next field" attach-encoding-menu ^N do-sequence 'zmlite focus-next'
+  bindkey -d "Select previous field" attach-comment \<up> do-sequence 'zmlite focus-previous'
+  bindkey -d "Select previous field" attach-comment ^P do-sequence 'zmlite focus-previous'
+  bindkey -l "2/Ok" -d "Accept settings, close dialog" -c Attachtype \<f2> do-sequence 'attachtype-aa buttonpanel-invoke Ok'
+  bindkey -l "2/Ok" -d "Accept settings, close dialog" -c Attachtype \e2 do-sequence 'attachtype-aa buttonpanel-invoke Ok'
+
+  ## Attachlist dialog function keys
+  bindkey -l "2/Dsplay" -d "Display selected attachments" -c Attachlist \<f2> do-sequence 'attach-aa buttonpanel-invoke Display'
+  bindkey -l "2/Dsplay" -d "Display selected attachments" -c Attachlist \e2 do-sequence 'attach-aa buttonpanel-invoke Display'
+  bindkey -l "8/Done" -d "Done" -c Attachlist \<f8> do-sequence 'attach-aa buttonpanel-invoke Done'
+  bindkey -l "8/Done" -d "Done" -c Attachlist \e8 do-sequence 'attach-aa buttonpanel-invoke Done'
+
+  ## ComposeAttachlist dialog function keys
+  bindkey -l "3/Unattc" -d "Unattach attachment" -c ComposeAttachlist \<f3> do-sequence 'attach-aa buttonpanel-invoke Unattach'
+  bindkey -l "3/Unattc" -d "Unattach attachment" -c ComposeAttachlist \e3 do-sequence 'attach-aa buttonpanel-invoke Unattach'
+
+  ## MessageAttachlist dialog function keys
+  bindkey -l "5/Save" -d "Save_attach" -c MessageAttachlist \<f5> do-sequence 'attach-aa buttonpanel-invoke Save'
+  bindkey -l "5/Save" -d "Save_attach" -c MessageAttachlist \e5 do-sequence 'attach-aa buttonpanel-invoke Save'
+
+  ## Charset dialog function keys
+  bindkey -d "Accept charset, close dialog" -l "2/OK" -c Charset \<f2> do-sequence '!charset-aa buttonpanel-invoke Ok'
+  bindkey -d "Accept charset, close dialog" -l "2/OK" -c Charset \e2 do-sequence '!charset-aa buttonpanel-invoke Ok'
+
+  ## Pattern Search dialog key bindings and function keys
+  bindkey -d "Select next field"     patternsearch-entire-field  \<down> do-sequence '!zmlite focus-next'
+  bindkey -d "Select next field"     patternsearch-entire-field  ^N      do-sequence '!zmlite focus-next'
+  bindkey -d "Select previous field" patternsearch-body-field    \<up>   do-sequence '!zmlite focus-previous'
+  bindkey -d "Select previous field" patternsearch-body-field    ^P      do-sequence '!zmlite focus-previous'
+  bindkey -d "Select next field"     patternsearch-body-field    \<down> do-sequence '!zmlite focus-next'
+  bindkey -d "Select next field"     patternsearch-body-field    ^N      do-sequence '!zmlite focus-next'
+  bindkey -d "Select previous field" patternsearch-to-field      \<up>   do-sequence '!zmlite focus-previous'
+  bindkey -d "Select previous field" patternsearch-to-field      ^P      do-sequence '!zmlite focus-previous'
+  bindkey -d "Select next field"     patternsearch-to-field      \<down> do-sequence '!zmlite focus-next'
+  bindkey -d "Select next field"     patternsearch-to-field      ^N      do-sequence '!zmlite focus-next'
+  bindkey -d "Select previous field" patternsearch-from-field    \<up>   do-sequence '!zmlite focus-previous'
+  bindkey -d "Select previous field" patternsearch-from-field    ^P      do-sequence '!zmlite focus-previous'
+  bindkey -d "Select next field"     patternsearch-from-field    \<down> do-sequence '!zmlite focus-next'
+  bindkey -d "Select next field"     patternsearch-from-field    ^N      do-sequence '!zmlite focus-next'
+  bindkey -d "Select previous field" patternsearch-subject-field \<up>   do-sequence '!zmlite focus-previous'
+  bindkey -d "Select previous field" patternsearch-subject-field ^P      do-sequence '!zmlite focus-previous'
+  bindkey -d "Select next field"     patternsearch-subject-field \<down> do-sequence '!zmlite focus-next'
+  bindkey -d "Select next field"     patternsearch-subject-field ^N      do-sequence '!zmlite focus-next'
+  bindkey -d "Select previous field" patternsearch-name-field    \<up>   do-sequence '!zmlite focus-previous'
+  bindkey -d "Select previous field" patternsearch-name-field    ^P      do-sequence '!zmlite focus-previous'
+  bindkey -d "Select next field"     patternsearch-name-field    \<down> do-sequence '!zmlite focus-next'
+  bindkey -d "Select next field"     patternsearch-name-field    ^N      do-sequence '!zmlite focus-next'
+  bindkey -d "Select previous field" patternsearch-value-field   \<up>   do-sequence '!zmlite focus-previous'
+  bindkey -d "Select previous field" patternsearch-value-field   ^P      do-sequence '!zmlite focus-previous'
+  ### the following 4 bindkeys make the 'Perform Function' list work better
+  bindkey -d "Select previous item" patternsearch-function-list \<up> do-sequence '!* list-up!* list-click'
+  bindkey -d "Select previous item" patternsearch-function-list ^P do-sequence '!* list-up!* list-click'
+  bindkey -d "Select next item" patternsearch-function-list \<down> do-sequence '!* list-down!* list-click'
+  bindkey -d "Select next item" patternsearch-function-list ^N do-sequence '!* list-down!* list-click'
+
+  bindkey -l "2/Search" -d "Perform search" -c Patternsearch \<f2> do-sequence '!patternsearch-aa buttonpanel-invoke Search'
+  bindkey -l "2/Search" -d "Perform search" -c Patternsearch \e2 do-sequence '!patternsearch-aa buttonpanel-invoke Search'
+  bindkey -l "6/Clear" -d "Clear search pattern" -c Patternsearch \<f6> do-sequence '!patternsearch-aa buttonpanel-invoke Clear'
+  bindkey -l "6/Clear" -d "Clear search pattern" -c Patternsearch \e6 do-sequence '!patternsearch-aa buttonpanel-invoke Clear'
+  bindkey -l "8/Done" -d "Done" -c Patternsearch \<f8> do-sequence '!patternsearch-aa buttonpanel-invoke Done'
+  bindkey -l "8/Done" -d "Done" -c Patternsearch \e8 do-sequence '!patternsearch-aa buttonpanel-invoke Done'
+
+  ## Date Search dialog key bindings and function keys
+  ### the following 4 bindkeys make the 'Perform Function' list work better
+  bindkey -d "Select previous item" datesearch-function-list \<up> do-sequence '!* list-up!* list-click'
+  bindkey -d "Select previous item" datesearch-function-list ^P do-sequence '!* list-up!* list-click'
+  bindkey -d "Select next item" datesearch-function-list \<down> do-sequence '!* list-down!* list-click'
+  bindkey -d "Select next item" datesearch-function-list ^N do-sequence '!* list-down!* list-click'
+
+  bindkey -l "2/Search" -d "Perform search" -c Datesearch \<f2> do-sequence '!datesearch-aa buttonpanel-invoke Search'
+  bindkey -l "2/Search" -d "Perform search" -c Datesearch \e2 do-sequence '!datesearch-aa buttonpanel-invoke Search'
+  bindkey -l "6/Clear" -d "Clear search dates" -c Datesearch \<f6> do-sequence '!datesearch-aa buttonpanel-invoke Clear'
+  bindkey -l "6/Clear" -d "Clear search dates" -c Datesearch \e6 do-sequence '!datesearch-aa buttonpanel-invoke Clear'
+  bindkey -l "8/Done" -d "Done" -c Datesearch \<f8> do-sequence '!datesearch-aa buttonpanel-invoke Done'
+  bindkey -l "8/Done" -d "Done" -c Datesearch \e8 do-sequence '!datesearch-aa buttonpanel-invoke Done'
+
+  ## Headers screen function keys
+  bindkey -l "2/Set" -d "Set selected header" headers \<f2> do-sequence '!headers-aa buttonpanel-invoke Set'
+  bindkey -l "2/Set" -d "Set selected header" headers \e2 do-sequence '!headers-aa buttonpanel-invoke Set'
+  bindkey -l "3/Unset" -d "Unset selected header" headers \<f3> do-sequence '!headers-aa buttonpanel-invoke Unset'
+  bindkey -l "3/Unset" -d "Unset selected header" headers \e3 do-sequence '!headers-aa buttonpanel-invoke Unset'
+  bindkey -l "4/Ignore" -d "List ignored headers" headers \<f4> do-sequence '!show-which-headers-rg buttonpanel-invoke Ignored Headers'
+  bindkey -l "4/Ignore" -d "List ignored headers" headers \e4 do-sequence '!show-which-headers-rg buttonpanel-invoke Ignored Headers'
+  bindkey -l "5/Save" -d "Save_settings" headers \<f5> do-sequence '!headers-aa buttonpanel-invoke Save'
+  bindkey -l "5/Save" -d "Save_settings" headers \e5 do-sequence '!headers-aa buttonpanel-invoke Save'
+  bindkey -l "6/ShwOnl" -d "List show-only headers" headers \<f6> do-sequence '!show-which-headers-rg buttonpanel-invoke Show Only'
+  bindkey -l "6/ShwOnl" -d "List show-only headers" headers \e6 do-sequence '!show-which-headers-rg buttonpanel-invoke Show Only'
+  bindkey -l "7/Done" -d "Close dialog" headers \<f7> do-sequence '!headers-aa buttonpanel-invoke Done'
+  bindkey -l "7/Done" -d "Close dialog" headers \e7 do-sequence '!headers-aa buttonpanel-invoke Done'
+
+  ## Envelope screen function keys
+  bindkey -l "2/Set" -d "Set header" envelope \<f2> do-sequence '!envelope-aa buttonpanel-invoke Set'
+  bindkey -l "2/Set" -d "Set header" envelope \e2 do-sequence '!envelope-aa buttonpanel-invoke Set'
+  bindkey -l "3/Unset" -d "Unset header" envelope \<f3> do-sequence '!envelope-aa buttonpanel-invoke Unset'
+  bindkey -l "3/Unset" -d "Unset header" envelope \e3 do-sequence '!envelope-aa buttonpanel-invoke Unset'
+  bindkey -l "5/Save" -d "Save_settings" envelope \<f5> do-sequence '!envelope-aa buttonpanel-invoke Save'
+  bindkey -l "5/Save" -d "Save_settings" envelope \e5 do-sequence '!envelope-aa buttonpanel-invoke Save'
+  bindkey -l "7/Done" -d "Close dialog" envelope \<f7> do-sequence '!envelope-aa buttonpanel-invoke Done'
+  bindkey -l "7/Done" -d "Close dialog" envelope \e7 do-sequence '!envelope-aa buttonpanel-invoke Done'
+
+  ## Aliases screen function keys
+  bindkey -l "2/Set" -d "Set alias" aliases \<f2> do-sequence '!aliases-aa buttonpanel-invoke Set'
+  bindkey -l "2/Set" -d "Set alias" aliases \e2 do-sequence '!aliases-aa buttonpanel-invoke Set'
+  bindkey -l "3/Unset" -d "Unset alias" aliases \<f3> do-sequence '!aliases-aa buttonpanel-invoke Unset'
+  bindkey -l "3/Unset" -d "Unset alias" aliases \e3 do-sequence '!aliases-aa buttonpanel-invoke Unset'
+  bindkey -l "4/Mail" -d "Mail to selected aliases" aliases \<f4> do-sequence '!aliases-aa buttonpanel-invoke Mail'
+  bindkey -l "4/Mail" -d "Mail to selected aliases" aliases \e4 do-sequence '!aliases-aa buttonpanel-invoke Mail'
+  bindkey -l "5/Save" -d "Save_settings" aliases \<f5> do-sequence '!aliases-aa buttonpanel-invoke Save'
+  bindkey -l "5/Save" -d "Save_settings" aliases \e5 do-sequence '!aliases-aa buttonpanel-invoke Save'
+  bindkey -l "6/Clear" -d "Clear fields" aliases \<f6> do-sequence '!aliases-aa buttonpanel-invoke Clear'
+  bindkey -l "6/Clear" -d "Clear fields" aliases \e6 do-sequence '!aliases-aa buttonpanel-invoke Clear'
+  bindkey -l "7/Done" -d "Close dialog" aliases \<f7> do-sequence '!aliases-aa buttonpanel-invoke Done'
+  bindkey -l "7/Done" -d "Close dialog" aliases \e7 do-sequence '!aliases-aa buttonpanel-invoke Done'
+
+  ## Choosealiases dialog function keys
+  bindkey -l "2/To" -d "To" choosealiases \<f2> do-sequence '!choosealiases-aa buttonpanel-invoke To'
+  bindkey -l "2/To" -d "To" choosealiases \e2 do-sequence '!choosealiases-aa buttonpanel-invoke To'
+  bindkey -l "3/Cc" -d "Cc" choosealiases \<f3> do-sequence '!choosealiases-aa buttonpanel-invoke Cc'
+  bindkey -l "3/Cc" -d "Cc" choosealiases \e3 do-sequence '!choosealiases-aa buttonpanel-invoke Cc'
+  bindkey -l "4/Bcc" -d "Bcc" choosealiases \<f4> do-sequence '!choosealiases-aa buttonpanel-invoke Bcc'
+  bindkey -l "4/Bcc" -d "Bcc" choosealiases \e4 do-sequence '!choosealiases-aa buttonpanel-invoke Bcc'
+  bindkey -l "8/Done" -d "Done" choosealiases \<f8> do-sequence '!choosealiases-aa buttonpanel-invoke Done'
+  bindkey -l "8/Done" -d "Done" choosealiases \e8 do-sequence '!choosealiases-aa buttonpanel-invoke Done'
+
+  ## Templates dialog function keys
+  bindkey -l "2/Use" -d "Use template" -c Templates \<f2> do-sequence '!templates-aa buttonpanel-invoke Use'
+  bindkey -l "2/Use" -d "Use template" -c Templates \e2 do-sequence '!templates-aa buttonpanel-invoke Use'
+
+  ## Custom Sort dialog function keys
+  bindkey -l "2/Sort" -d "Perform sort" -c Sort \<f2> do-sequence '!sort-aa buttonpanel-invoke Sort'
+  bindkey -l "2/Sort" -d "Perform sort" -c Sort \e2 do-sequence '!sort-aa buttonpanel-invoke Sort'
+  bindkey -l "3/IgnCas" -d "Toggle ignore case" -c Sort \<f3> do-sequence '!sort-options-tg buttonpanel-invoke Ignore Case in Sort'
+  bindkey -l "3/IgnCas" -d "Toggle ignore case" -c Sort \e3 do-sequence '!sort-options-tg buttonpanel-invoke Ignore Case in Sort'
+  bindkey -l "4/Date" -d "Toggle sort by date" -c Sort \<f4> do-sequence '!sort-by-tg buttonpanel-invoke Date'
+  bindkey -l "4/Date" -d "Toggle sort by date" -c Sort \e4 do-sequence '!sort-by-tg buttonpanel-invoke Date'
+  bindkey -l "5/Subj" -d "Toggle sort by subject" -c Sort \<f5> do-sequence '!sort-by-tg buttonpanel-invoke Subject'
+  bindkey -l "5/Subj" -d "Toggle sort by subject" -c Sort \e5 do-sequence '!sort-by-tg buttonpanel-invoke Subject'
+  bindkey -l "6/Author" -d "Toggle sort by author" -c Sort \<f6> do-sequence '!sort-by-tg buttonpanel-invoke Author'
+  bindkey -l "6/Author" -d "Toggle sort by author" -c Sort \e6 do-sequence '!sort-by-tg buttonpanel-invoke Author'
+  bindkey -l "7/Status" -d "Toggle sort by status" -c Sort \<f7> do-sequence '!sort-by-tg buttonpanel-invoke Status'
+  bindkey -l "7/Status" -d "Toggle sort by status" -c Sort \e7 do-sequence '!sort-by-tg buttonpanel-invoke Status'
+  bindkey -l "8/Done" -d "Done" Sort \<f8> do-sequence '!sort-aa buttonpanel-invoke Done'
+  bindkey -l "8/Done" -d "Done" Sort \e8 do-sequence '!sort-aa buttonpanel-invoke Done'
+
+  ## Pager popup function keys
+  bindkey -l "2/Search" -d "Search" -c Pager \<f2> do-sequence 'pager-aa buttonpanel-invoke Search'
+  bindkey -l "2/Search" -d "Search" -c Pager \e2 do-sequence 'pager-aa buttonpanel-invoke Search'
+  bindkey -l "3/Print" -d "Print_pager_contents" -c Pager \<f3> do-sequence 'pager pick-menu File.Print'
+  bindkey -l "3/Print" -d "Print_pager_contents" -c Pager \e3 do-sequence 'pager pick-menu File.Print'
+  bindkey -l "5/Save" -d "Save_pager_contents" -c Pager \<f5> do-sequence 'pager-aa buttonpanel-invoke Save'
+  bindkey -l "5/Save" -d "Save_pager_contents" -c Pager \e5 do-sequence 'pager-aa buttonpanel-invoke Save'
+  bindkey -l "6/SaveAs" -d "Save_pager_contents_file" pager \<f6> do-sequence '!pager pick-menu File.SaveAs'
+  bindkey -l "6/SaveAs" -d "Save_pager_contents_file" pager \e6 do-sequence '!pager pick-menu File.SaveAs'
+  bindkey -l "8/Done" -d "Done" Pager \<f8> do-sequence '!pager-aa buttonpanel-invoke Done'
+  bindkey -l "8/Done" -d "Done" Pager \e8 do-sequence '!pager-aa buttonpanel-invoke Done'
+
+  ## Dynamic headers dialog function keys
+  bindkey -l "8/Done" -d "Done" dynamicheaders \<f8> do-sequence '!dynamicheaders-aa buttonpanel-invoke Done'
+  bindkey -l "8/Done" -d "Done" dynamicheaders \e8 do-sequence '!dynamicheaders-aa buttonpanel-invoke Done'
+
+  ## Compose options dialog function keys
+  bindkey -l "8/Done" -d "Done" compoptions \<f8> do-sequence '!compoptions-aa buttonpanel-invoke Done'
+  bindkey -l "8/Done" -d "Done" compoptions \e8 do-sequence '!compoptions-aa buttonpanel-invoke Done'
+
+  ## Multikey dialog function keys
+  bindkey -l "1/Help" -d "Help" multikey \<f1> do-sequence '!multikey-aa buttonpanel-invoke Help'
+  bindkey -l "1/Help" -d "Help" multikey \e1 do-sequence '!multikey-aa buttonpanel-invoke Help'
+  bindkey -l "2/Define" -d "Define key" multikey \<f2> do-sequence '!multikey-aa buttonpanel-invoke Define'
+  bindkey -l "2/Define" -d "Define key" multikey \e2 do-sequence '!multikey-aa buttonpanel-invoke Define'
+  bindkey -l "3/Load" -d "Load settings" multikey \<f3> do-sequence '!multikey-aa buttonpanel-invoke Load'
+  bindkey -l "3/Load" -d "Load settings" multikey \e3 do-sequence '!multikey-aa buttonpanel-invoke Load'
+  bindkey -l "5/Save" -d "Save_settings" multikey \<f5> do-sequence '!multikey-aa buttonpanel-invoke Save'
+  bindkey -l "5/Save" -d "Save_settings" multikey \e5 do-sequence '!multikey-aa buttonpanel-invoke Save' 
+  bindkey -l "8/Done" -d "Done" multikey \<f8> do-sequence '!multikey-aa buttonpanel-invoke Done'
+  bindkey -l "8/Done" -d "Done" multikey \e8 do-sequence '!multikey-aa buttonpanel-invoke Done'
+
+# Choose a behavior for dismissing menus.
+# The first option causes `esc esc' to cancel a single level of menus.
+# The second option causes `esc' to cancel a single level of menus.
+# The third option causes `esc' to cancel all pending menus.
+# 
+# bindkey -c Menu \e\e menu-cancel
+# bindkey -c Menu \e menu-cancel
+bindkey -c Menu \e menu-cancel-all
+
+# load multikey settings for $LITETERM or TERM
+  multikey -q -l
+
+endif

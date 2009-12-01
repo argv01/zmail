@@ -1,0 +1,372 @@
+?
+     List the available commands.
+
+about
+     Give general information about Z-Mail and its authors.
+
+alias, unalias, group
+     Creates, lists or removes mail aliases (address abbreviations).
+
+alternates, alts
+     Tells Z-Mail about other e-mail addresses you may have.
+
+ask
+     Asks a question and obtains a response from the user.
+
+await
+     In Motif mode, checks for new mail and then continues.
+
+builtin
+     Allows a function with the same name as a standard Z-Mail 
+     command. Precede a function name with builtin to make 
+     Z-Mail perform the standard command instead of the function.
+
+bind-macro, unbind-macro
+    Create, list or remove fullscreen mode macros.
+
+button, unbutton
+     Creates, lists, or removes buttons in the Main Window Action 
+     Area. In fullscreen mode, these buttons are available through 
+     the user-button macro.
+
+cd
+     Changes the current working directory.
+
+chroot	
+     Limits the directories you may access in a File Finder.
+
+close
+     Closes an open folder.
+
+cmd, uncmd
+     Creates, lists or removes command abbreviations.
+
+compcmd	
+     Performs actions on compositions in progress.
+
+copy, co
+    Copy messages to another folder, without setting the saved (S)
+    status flag of those messages.  Messages having the saved status
+    may be deleted when a folder is updated, so this command can be
+    used to assure that two folders each contain a copy of a message.
+
+debug
+    Enable debugging output.  Use "setenv DBFILE filename" to save this
+    output in a file instead of displaying it.
+
+delete, d
+    Delete messages.  Deleted messages are not permanently removed from
+    a folder until that folder is updated.  Some commands will skip over
+    deleted messages.
+
+detach
+    Store one or more attachments of a message in files, and optionally
+    display those attachments.
+
+dialog
+     Displays a dialog box for any one of the following: Aliases, 
+     Buttons, Colors, Compose, Dates, Envelope, Folders, Fonts, 
+     Headers, Help, Printer, Search, Sort, Templates, Toolbox and 
+     Variables, Buttons, Functions, Menus, Browser, Save, Filters.
+
+display
+     Displays the contents of a message.
+
+dp, dt
+     Delete a message and display (print or type) the next
+     message.  See "next" for rules used to location the 
+     next message.
+each
+     Executes a command you specify on each message in a mes-
+     sage list.
+
+echo, error
+     Re-displays the commands you type, expanding all arguments 
+     to show their values.
+
+edit, e, v
+    In line mode only, edit the contents of one or more messages, using
+    either the "editor" or the "visual" editor.
+
+else
+    Introduces the alternative case of an if...else...endif conditional.
+    This is not a true command, rather it is a control structure.  It
+    may be used only in user-defined functions or scripts, and must be
+    on a line by itself.
+
+endif
+    Marks the end of an if...else...endif conditional.  This is not a
+    true command, rather it is a control structure.  It may be used only
+    in user-defined functions or scripts, and must be on a line by itself.
+
+eval
+     Re-parses its arguments, then executes them as a command.
+
+exit, x, xit
+     Terminates Z-Mail without updating any folders. In user-
+     defined scripts, terminates the script. The x command always 
+     terminates Z-Mail.
+
+expand
+     Shows the addresses referenced by a mail alias. Z-Mail fully 
+     expands nested or hierarchical aliases.
+
+filter, unfilter
+     Creates, lists, or removes message filters.
+
+flags
+    Examine or set the status flags of messages.  Status flags are:
+	D deleted    O old         R read     U unread       p printed
+	N new        P preseved    S saved    f forwarded    r replied
+
+
+folder, fo
+    Change the active folder, open a folder, or close a folder.
+
+folders
+     Lists the folders that are present in the folder directory. 
+     
+foreach
+    Perform a command for each message in a list of messages or for each
+    file in a list of file names.  This differs from "each" in that a
+    variable is set to contain each of the items in turn.
+
+from, f
+    Display the header summary of one or more messages, and optionally
+    change the current message to the first or last of those messages.
+
+fullscreen
+    Change from the line mode to the fullscreen mode.  Cannot be used
+    in GUI mode.
+
+function
+    Create a user-defined function.
+
+headers, H, h, z, z+, z-
+    Display a screenful of header summaries.  Useful only in line mode
+    or in user-defined functions.  The "z" forms move one screenful
+    forward or backward.  These commands may also be used to select
+    groups of messages by their status, as follows:
+	:d  deleted        :n  new            :r  replied-to
+	:f  forwarded      :o  old            :s  saved
+	:m  marked         :p  preserved      :u  unread
+
+functions	
+     Lists the names of all user-defined functions.
+
+help
+     Displays help information on various topics, which follow 
+     as options.
+
+hide, unhide
+     Hides and displays specified messages summaries in the main 
+     window.
+
+history
+     Displays a list of recently-entered commands.
+
+iconify
+     Convert all Z-Mail windows to icon state.
+
+if ... else ... endif
+     Defines conditional processing in a script. Use only in 
+     user-defined functions and scripts.
+
+ignore, unignore
+     Tells Z-Mail which message header fields to hide when it 
+     displays messages.
+
+interpose, uninterpose
+     Allows a user-defined function to "piggyback" on top of a 
+     Z-Mail command or operation.
+
+jobs
+     Show a summary of the compositions (Compose Windows) 
+     currently in progress.
+
+license
+     Manipulates licensing for the current Z-Mail session.
+
+lpr
+     Sends the contents of messages to the printer.
+
+mail, m
+     Opens a window so you can compose a message.
+
+map, unmap
+     Create, list or remove line mode key bindings.
+
+map!, unmap!
+     Create, list or remove composition mode key bindings.
+
+mark, unmark
+     Tags messages with priorities or temporary marks, 
+     or removes those priorities or marks.
+
+menu, unmenu
+     Creates or removes menu items and menus from 
+     Z-Mail windows.
+
+merge
+     Copies messages from a folder you specify into your 
+     active folder.
+
+msg_list
+     Simplifies a message list in metacharacter form into a 
+     simple list of numbers.
+
+my_hdr, un_hdr
+     Creates, lists or removes custom headers that Z-Mail inserts at 
+     the beginning of all your outgoing messages.
+
+next, n
+     Displays the contents of the next message, or the current 
+     message if it has not yet been read.
+
+open
+     Opens a folder, or makes that folder active if it is already open.
+
+page
+     Displays a file in a Z-Mail pager window.
+
+pick, search
+     Searches for and selects messages according to a variety of 
+     criteria. Synonym for search.
+
+pinup
+     Displays a message in a Pinup Window, to be viewed simulta
+     neously with other messages in the Message Window.
+
+pipe
+     Sends the contents of selected messages as input to standard 
+     UNIX commands.
+
+preserve, unpreserve, pre, unpre
+     Saves a message list in your system folder rather than your main 
+     mailbox unless you explicitly delete it. 
+
+previous
+    Display the contents of the previous message.  The previous message
+    is is the message nearest to the current message, having a lower
+    message number, that has not been saved or deleted.
+
+printenv
+     Displays the set of environment strings that Z-Mail passes to 
+     other UNIX processes that it creates.
+
+print
+     Synonym for display.
+
+pwd
+     Prints the name of the current working directory.
+
+quit, q
+     Terminates Z-Mail, after updating any open folders that have 
+     been modified.
+
+read
+     Synonym for display.
+
+redraw
+     Causes all Z-Mail window to "refresh".
+
+remove
+     Remove a file; see also rmfolder.
+
+rename
+     Changes the name of a folder.
+
+reply, r
+     Replies to a message you have received, addressing the 
+     response only to the sender of that message.
+
+replyall, R
+    Compose a reply to a message you have recieved, addressing the reply
+    to the sender of that message and also to all of the persons who
+    received a copy of that message.
+
+replysender, reply, respond, r
+    Compose a reply to a message you have received, addressing the reply
+    only to the sender of that message.
+
+resume, fg
+    Resume a suspended composition, identified by its number.  To list
+    the numbers of all suspended composition, use the "jobs" command.
+
+retain, unretain
+    Specify exactly those message header fields that should be shown when
+    displaying the contents of messages.  All other headers are hidden.
+    
+return
+     Terminates a script and returns a result.
+
+rmfolder
+     Remove a folder, first closing it if it is open and checking 
+     whether it is empty.
+
+save, s
+     Saves the current message to a file or folder.
+
+saveopts
+     Stores a copy of all of the current Z-Mail settings in a file.
+
+search
+     Searches for and selects messages according to a variety of 
+     criteria.
+
+set, unset
+     Sets the values of Z-Mail variables, or removes those variables 
+     and their values.
+
+setenv
+     Sets the values of environment strings that Z-Mail passes to 
+     other UNIX processes it creates.
+
+sh
+     Executes a command using the shell (/bin/sh).
+
+shift
+    Remove one or more arguments from the list of arguments passed to a
+    user-defined function.  Arguments are removed from the left (front) of
+    the list, and the remaining arguments are renumbered starting from 1.
+
+close, shut
+    Close a folder (usually the active folder).  This is the same as
+    "folder -shut".  
+
+sort
+    Sort the messages in the active folder according to a variety of
+    criteria.  The messages are renumbered to reflect the new order.
+
+source
+    Read and execute commands from a script file.
+
+stop
+    Suspend the Z-Mail process.  This is not available on all operating
+    systems.  In GUI mode, this is the same as "iconify".
+
+top
+    Display the first few lines of the contents of a message.
+
+undelete, u
+    Remove the deleted (*) status flag from messages.  This may be done
+    at any time before a folder is updated.
+
+undigest
+    Unpack a digest message into its component messages, either storing
+    those messages in a file or merging them into the active folder.
+
+update
+    Store all changes that have been made to a folder (usually the
+    active folder) back to disk.  Deletions become permanent once a
+    folder is updated.  Saved messages are normally deleted from the
+    spool mailbox on update, and may optionally be deleted from other
+    folders as well.
+
+version
+    Display the current version of Z-Mail.
+
+write, w
+    Store the text of messages to a file, without storing any of the
+    message headers.  Files created with this command cannot be read
+    back into Z-Mail as folders.

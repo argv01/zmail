@@ -1,0 +1,29 @@
+:
+# makeface - Takes any Graphic File Format that pbmplus knows about
+# and generates Lines for .zmailrc to put an X-Face in all of your
+# outgoing Messages.
+#
+# Author: Felix Gaehtgens (felix@cs.uni-frankfurt.de)
+# Use it, abuse it, sell it - I couldn't care less ;-)
+if test "$#" != "1" ; then
+  echo "Usage: $0 <bitmap>"
+  echo "where <bitmap> can be gif, tiff, jpeg, xbm, sunrast,"
+  echo "or any other graphics file format that the pbmplus"
+  echo "toolkit supports".
+  exit 1
+fi
+if test -f $1 ; then
+  rm -f face.pbm face.xface
+  anytopnm $1 | ppmtopgm | pgmnorm | pnmscale -xy 48 48 | \
+  pgmtopbm > face.pbm
+  bla=`pnmfile face.pbm | awk '{ print $4}'`
+  fasel=`expr "(" 48 - $bla ")" / 2`
+  pbmmake -white 48 48 | pnmpaste face.pbm $fasel 0 | \
+  pbmtoicon | tail +3 | compface |  facetohdr > face.xface
+  echo "A file called face.xface has been generated. Please"
+  echo "append the contents of this file to your .zmailrc."
+  exit 0
+else
+  echo "$0: $1 not found.";
+  exit 1
+fi

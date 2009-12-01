@@ -1,0 +1,103 @@
+#
+# Emacs-like directory editing (Dired) for Z-Mail Lite
+#
+
+# Motif requires Xt translations, not installable from Z-Script.
+
+function __textedit_select_line () {
+    textedit beginning-of-line
+    textedit get-cursor-position __line_start
+    textedit end-of-line
+    textedit get-cursor-position __line_end
+    textedit set-selection-position $__line_start $__line_end
+}
+function __textedit_select_word () {
+    textedit forward-char
+    textedit backward-word
+    textedit get-cursor-position __word_start
+    textedit forward-word
+    textedit get-cursor-position __word_end
+    textedit set-selection-position $__word_start $__word_end
+}
+
+set __lastdir = .
+
+function __dired_push () {
+    if ! $?__dired_stack
+	set __lastdir = . __dired_stack_0 = . __dired_stack = 0
+	echo -d "WARNING!  Dired starting!$(\n)Be sure to exit all dired pagers before starting other pagers!"
+    endif
+    arith __dired_stack += 1
+    set __lastdir = "$1" __dired_stack_$__dired_stack = "$1"
+}
+function __dired_pop () {
+    if $?__dired_stack
+	if $__dired_stack
+	    unset __dired_stack_$__dired_stack
+	    arith __dired_stack -= 1
+	    eval set __lastdir = '"$'__dired_stack_$__dired_stack'"'
+	else
+	    set __lastdir = .
+	endif
+    endif
+}
+function __dired_chdir() {
+    set __curdir = "$cwd"
+    cd "$1"
+    __dired_push "$cwd"
+    ls -l
+    cd "$__curdir"
+}
+function __dired_page() {
+    __dired_push "$__lastdir"
+    if -F "$1"
+	__dired_pop
+	dialog -close
+	open -r "$1"
+    else
+	page "$1"
+    endif
+}
+
+function __dired () {
+    textedit set-item pager-text
+    textedit get-selection-position __start __end
+    if $__start == $__end
+	__textedit_select_line
+    endif
+    textedit get-selection __text
+    textedit set-selection-position $__start $__end
+    match '\([-d]\)[-r][-w][-x][-r][-w][-x][-r][-w][-x].* \(.*\)' "$__text"
+    if $status
+	__textedit_select_word
+	textedit get-selection __text
+	textedit set-selection-position $__start $__end
+	if -e "$__lastdir/$__text/." 
+	    __dired_chdir "$__lastdir/$__text"
+	else
+	    __dired_page "$__lastdir/$__text" 
+	endif
+    else
+	if $__match_1 == d
+	    __dired_chdir "$__lastdir/$__match_2"
+	else
+	    __dired_page "$__lastdir/$__match_2"
+	endif
+    endif
+    echo Dired Mode
+}
+
+function dired () {
+    if $?1
+	if -e "$1/."
+	    cd "$1"
+	endif
+    endif
+    ls -la
+}
+
+if is_lite
+    bindkey pager \<return> zscript __dired
+    bindkey -d "Done" pager \e8 do-sequence '!pager zscript __dired_pop !pager-aa buttonpanel-invoke Done'
+    bindkey -l "8/Done" -d "Done" pager \<f8> do-sequence '!pager zscript __dired_pop !pager-aa buttonpanel-invoke Done'
+endif

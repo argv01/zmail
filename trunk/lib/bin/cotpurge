@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# This script must run as root
+
+# Edit ZMLIB to point to the right place
+ZMLIB=/usr/lib/Zmlite
+
+# Edit USERLIST to point to a file naming all users, one per line
+USERLIST=$ZMLIB/userlist
+
+for user in `cat $USERLIST`
+do
+    (su - $user -c "/usr/local/bin/zmlite -shell -source! $ZMLIB/cotpurge.zm")
+done

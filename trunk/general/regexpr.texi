@@ -1,0 +1,572 @@
+\input texinfo @c -*- texinfo -*-
+@comment %**start of header (This is for running Texinfo on a region.)
+@setfilename regexpr.info
+@settitle REGEXPR
+@c @finalout
+@c @smallbook
+@c @setchapternewpage odd
+@footnotestyle separate
+@syncodeindex fn cp
+@syncodeindex tp cp
+@comment %**end of header (This is for running Texinfo on a region.)
+
+@ifinfo
+This file documents the programmers' interface to REGEXPR, the freeware
+GNU-like regular expression package that is used by Z-Mail.
+
+Software Copyright @copyright{} 1991 Tatu Ylonen, Espoo, Finland.
+Documentation Copyright @copyright{} 1995 Z-Code Software.
+@end ifinfo
+
+@tex
+\def\$#1${{#1}}  % Kluge: collect RCS revision info without $...$
+\xdef\manvers{\$Revision: 2.3 $}  % For use in headers, footers too
+\xdef\mandate{\$Date: 1995/04/06 02:14:31 $}
+@end tex
+
+@titlepage
+@title REGEXPR
+@subtitle Regular Expression Library for C
+@subtitle Manual version $Revision: 2.3 $
+@subtitle $Date: 1995/04/06 02:14:31 $
+@author Bart Schaefer
+@page
+@vskip 0pt plus 1filll
+Software Copyright @copyright{} 1991 Tatu Ylonen, Espoo, Finland.
+Documentation Copyright @copyright{} 1995 Z-Code Software.
+@end titlepage
+
+@node Top, Regular Expressions Overview, (dir), (dir)
+@unnumbered Introduction
+
+This document describes the application programmer's interface to the
+REGEXPR library package for regular expression searching.
+
+@ifinfo
+Manual version:  $Revision: 2.3 $ $Date: 1995/04/06 02:14:31 $
+@end ifinfo
+
+@menu
+* Regular Expressions Overview::  
+* Initializing::                
+* Compiling a Pattern::         
+* Using Compiled Patterns::  
+* Convenience Routines::        
+* Index::                       
+@end menu
+
+@node Regular Expressions Overview, Initializing, Top, Top
+@chapter Regular Expressions Overview
+
+This overview assumes some level of basic computer science knowledge
+on the part of the reader.  Only the specifics of this particular regular
+expression package are discussed.  If you don't know what a regular
+expression is, go get a textbook.
+
+In the text that follows, @dfn{intercharacter space} refers to a position
+between two characters in the plain-text string being compared against the
+regular expression pattern.  This may include positions at the beginning
+or end of the buffer, that is, to the left of the first character or to
+the right of the last character.  It does @emph{not} refer to the ASCII
+character @samp{ } (a space).
+
+Special tokens (@dfn{escapes}) interpreted in patterns by this regular
+expression library:
+
+@table @samp
+@item \
+Backslash always introduces another character.  If the character that
+follows the backslash is another special character, the backslash
+causes it to be treated as a normal (plain text) character.  If the
+character that follows is not a special character, it may become special;
+see ``Special characters that must be preceded with a backslash'' below.
+
+In particular, @samp{\\} @emph{always} must be used to match a plain-text
+backslash.
+
+@item ^
+Beginning of line.  Matches no characters; instead, it matches
+@emph{between} a newline and the first character of the next line, or it
+matches before the first character of the string being matched.
+
+@item $
+End of line.  Matches no characters; instead, it matches @emph{between}
+the last non-newline character of the line and the newline that follows,
+or it matches after last character of the string being matched.
+
+@item .
+Any single character except a newline.  The simplest wildcard.
+
+@item [@var{set}]
+@itemx [^@var{set}]
+In the first form, any single character in @var{set}, which may
+contain abbreviations for ranges such as @samp{A-Z} (meaning any capital
+letter).  In the second form, any single character @emph{not} in
+@var{set}.  To include a hyphen (@samp{-}) in @var{set}, it should be
+preceded by a backslash (@samp{\}), or must not be the first or last
+character (so it's not interpreted as a range).  To include a caret
+(@samp{^}) in the first form (@samp{[@var{set}]}), precede it by a
+backslash or place it anywhere but in the first position, where it
+would cause thep expression to be mistaken for the second form
+(@samp{[^@var{set}]}).
+
+@item *
+Zero or more occurrences of the immediately preceding pattern.  This
+character is treated as plain text if not preceded by another pattern.
+
+Note that in the regular expression @samp{abcd*}, the @samp{*} modifies
+@samp{d}, not @samp{abcd}, so this expression matches the characters
+@samp{abc} followed by zero or more repetitions of @samp{d} (@samp{abc},
+@samp{abcd}, @samp{abcdd}, etc.).  See @samp{\(} and @samp{\)} for
+grouping.
+
+@item +
+One or more occurrences of the immediately preceding pattern.  Except
+that the pattern must appear at least once, this is the same as
+@samp{*}; i.e., @samp{abcd+} matches @samp{abcd} and @samp{abcdd} (but
+not @samp{abc}).
+
+@item ?
+Zero or one occurrence of the immediately preceding pattern; i.e.,
+@samp{abcd?} matches @samp{abc} and @samp{abcd} only.
+@end table
+
+@heading Special characters that must be preceded with a backslash
+
+@table @samp
+@item \|
+Alternate patterns.  If the pattern to the left of @samp{\|} does not
+match, the pattern to the right is attempted.
+
+Alternation is @emph{not} a modifier like @samp{*} or @samp{+}!!  The
+entire subpattern to the left is tried, and then the entire subpattern
+to the right.  Example: @samp{abc\|def} matches @samp{abc} or @samp{def}
+only.
+
+@item \(@var{subpattern}\)
+Pattern grouping.  The entire @var{subpattern} enclosed in @samp{\(} and
+@samp{\)} becomes a single pattern for purposes of repetition by the
+@samp{*}, @samp{+}, and @samp{?} modifiers.
+
+Substrings matched by subpatterns enclosed in the grouping syntax are
+loaded into indexed positions in the @dfn{memory registers} maintained
+by the regular expression library.  There are nine such registers;
+grouped patterns are numbered 1 through 9, left to right, and matching
+substrings are recorded (by starting and ending offset) in the
+correspondingly-numbered register.  Example: the pattern
+@samp{ab\(cd\|ef\)gh} matches the string @samp{abcdgh}, and records the
+position of the substring @samp{cd} in register 1.
+
+Note that when a grouped subpattern is modified by one of the repetition
+modifiers, it is @emph{not} loaded into a corresponding register.
+Example: the pattern @samp{ab\(cd\|ef\)*gh} matches the string
+@samp{abefefcdcdgh}, but nothing is assigned to register 1 because the
+grouped subpattern is modified by @samp{*}.
+
+@item \1
+@itemx \2
+@itemx \3
+@itemx @r{@dots{}}
+@itemx \9
+These special tokens are replaced by strings previously loaded into
+``memory registers'' by matching a grouped subpattern.
+Example: the pattern @samp{ab\(cd\|ef\)gh\1} matches the string
+@samp{abcdghcd} but not @samp{abcdghef}.
+
+@item \w
+Word character; shorthand for the set @samp{[a-zA-Z0-9]}.
+
+Note that this is unlike Perl, in that @samp{_} is a word character in
+Perl but is @emph{not} a word character here.
+
+@item \W
+Not a word character; shorthand for the set @samp{[^a-zA-Z0-9]}.
+
+@item \<
+Beginning of word; matches the intercharacter space between any
+character not in the set @samp{[a-zA-Z0-9]} and any character in that
+set.
+
+@item \>
+End of word; matches the intercharacter space between any character in
+the set @samp{[a-zA-Z0-9]} and any character not in that set.
+
+@item \b
+Word boundary (beginning or end); matches where either of @samp{\<} or
+@samp{\>} would match.
+
+@item \B
+Not word boundary; matches where neither @samp{\<} nor @samp{\>} would
+match.
+
+@item \`
+Beginning of buffer; like @samp{^} but only at the beginning of the entire
+string, not at the beginning of each embedded line.
+
+@item \'
+End of buffer; like @samp{$} but only at the end of the entire string,
+not at the end of each embedded line.
+@end table
+
+The following additional special tokens are enabled if the package is
+compiled with the constant @code{emacs} defined to the C preprocessor:
+
+@table @samp
+@item \=
+Matches if the offset of the current character is equal to @code{point},
+which is a global variable defined outside this module.
+
+@item \s@var{x}
+The character @var{x} is a @dfn{syntax code}.  The entry for @var{x} is
+looked up in the global table @w{@code{syntax_spec_code}}, which
+indicates what should be matched.
+
+@item \S@var{x}
+The character @var{x} is a @dfn{syntax code} (see above).
+This is the inverse of @samp{\s@var{x}}, matching anything @emph{not}
+matched by that.
+@end table
+
+@xref{Initializing}, for additional special syntactic tokens that can be
+enabled or disabled.
+
+@node Initializing, Compiling a Pattern, Regular Expressions Overview, Top
+@chapter Initializing
+
+@deftypefun int re_set_syntax (@w{int @var{syntax}})
+This sets the syntax to use and returns the previous syntax.  The syntax
+is set globally for all uses of the library, but is referenced only
+during compilation of the pattern (@pxref{Compiling a Pattern}).  Thus
+it is possible to perform simultaneous searches with two or more
+different syntaxes, as long as the patterns have not been recompiled
+since the syntax was changed.
+
+The syntax is specified by a bit mask of the following defined bits:
+
+@table @code
+@item RE_NO_BK_PARENS
+Parentheses are used for grouping subpatterns.  With this syntax set,
+parens are always ``special'' and are interpreted as part of the plain
+text @emph{only} when ``protected'' by preceding them with a backslash,
+e.g. @samp{\(} and @samp{\)}.
+
+The default syntax (without @w{@code{RE_NO_BK_PARENS}}) is for parens to
+be treated as plain text, with @samp{\(} and @samp{\)} reserved for
+subpattern grouping.
+
+@item RE_NO_BK_VBAR
+Vertical bar (@samp{|}) is used for delimiting alternate subpatterns.  With
+this syntax set, vertical bar is always ``special'' and is interpreted as
+part of the plain text @emph{only} when ``protected'' by preceding it with
+a backslash, e.g. @samp{\|}.
+
+The default syntax (without @w{@code{RE_NO_BK_VBAR}}) is for vertical
+bar to be treated as plain text, with @samp{\|} reserved for delimiting
+alternatives.
+
+@item RE_BK_PLUS_QM
+Plus (@samp{+}) indicates one or more occurrences of the preceding
+subpattern; question mark (@samp{?}) indicates zero or one occurrence of
+the preceding subpattern.  With this syntax set, plus and question mark
+are treated as plain text, and are special @emph{only} when ``escaped''
+by preceding them with a backslash, e.g. @samp{\+} and @samp{\?}.
+
+The default syntax (without @w{@code{RE_BK_PLUS_QM}}) is for plus and
+question mark to always be special, with @samp{\+} and @samp{\?}
+required to match plain-text plus and question mark.@footnote{Z-Mail's
+@code{pick} command (a.k.a. @code{search}) uses @w{@code{RE_BK_PLUS_QM}}
+unless it is invoked as @w{@code{pick -X}}.}
+
+@item RE_TIGHT_VBAR
+With this syntax set, vertical bars that delimit alternate subpatterns
+bind more tightly than caret (@samp{^}, beginning of line) and dollar
+(@samp{$}, end of line).
+
+This should mean that (for example)
+
+@example
+^patONE\|patTWO
+@end example
+is interpreted as
+@example
+^\(patONE\|patTWO\)
+@end example
+whereas without this syntax it would be interpreted as
+@example
+\(^patONE\)\|\(patTWO\)
+@end example
+
+@noindent
+but neither behavior has been verified.
+
+@item RE_NEWLINE_OR
+With this syntax set, a newline appearing in the pattern is treated as
+separating alternate patterns, as if it were a vertical bar.
+
+@item RE_CONTEXT_INDEP_OPS
+With this syntax set, the special characters @samp{^}, @samp{$},
+@samp{?}, @samp{*}, and @samp{+} are special in @emph{all} contexts.
+This means that if one of these characters is used at a point in the
+pattern where it does not make sense (e.g, placing @samp{^} or @samp{$}
+in the middle of a word; placing @samp{*}, @samp{\?} or @samp{\+} at the
+beginning of a word), then compiling the pattern is an error.
+
+The default behavior (without @w{@code{RE_CONTEXT_INDEP_OPS}}) is to
+treat any special character that occurs out of context as if it were
+plain text.
+
+@item RE_ANSI_HEX
+This syntax specifies that ANSI character escapes and hexadecimal
+sequences be interpreted in the pattern.  In each case the escapes are
+replaced by a single character.@footnote{Z-Mail's @code{pick} command
+(a.k.a. @code{search}) uses @w{@code{RE_ANSI_HEX}} only when it is invoked
+as @w{@code{pick -X}}.}  The ANSI character escapes are as follows:
+
+@table @samp
+@item \a
+@itemx \A
+Audible bell, ASCII value 7.
+
+@item \b
+@itemx \B
+Backspace, ASCII value 8.
+
+@item \f
+@itemx \F
+Form feed, ASCII value 12 (decimal).
+
+@item \n
+@itemx \N
+Line feed, ASCII value 10 (decimal).
+
+@item \r
+@itemx \R
+Carriage return, ASCII value 13 (decimal).
+
+@item \t
+@itemx \T
+Horizontal tab, ASCII value 9.
+
+@item \V
+Vertical tab, ASCII value 11 (decimal).  (Note that @samp{\v} is pre-empted,
+see below.)
+
+@item \x@var{hh}
+@itemx \X@var{hh}
+A hexadecimal sequence, that is, a four-character string beginning with
+@samp{\x} or @samp{\X} followed by two hexadecimal digits (@samp{0-9},
+@samp{a-f}).  The entire sequence is replaced by the single character
+whose ASCII value is given by the two hex digits @var{hh}.
+@end table
+
+This syntax also extends the number of registers (recorded matches of
+subpatterns) that can be referenced from 9 to 99.  The syntax for
+referencing registers 10-99 is @samp{\v@var{dd}}, where @var{dd} are
+two decimal digits (@samp{0-9}).  @emph{However}, as currently compiled,
+the library supports no more than 9 registers, so references using
+@samp{\v} always generate a pattern compilation error.
+
+@item RE_NO_GNU_EXTENSIONS
+With this syntax set, the special patterns @samp{\w}, @samp{\W},
+@samp{\<}, @samp{\>}, @samp{\b}, @samp{\B}, @samp{\`}, and @samp{\'} are
+@emph{not} recognized.@footnote{Z-Mail's @code{pick} command (a.k.a.
+@code{search}) uses @w{@code{RE_NO_GNU_EXTENSIONS}} unless it is invoked
+as @w{@code{pick -X}}.}
+@end table
+
+The following predefined combinations duplicate the behavior of some common
+programs that each use slightly differing regular expression syntax:
+
+@itemize @bullet
+@item @code{RE_SYNTAX_AWK}
+@item @code{RE_SYNTAX_EGREP}
+@item @code{RE_SYNTAX_GREP}
+@item @code{RE_SYNTAX_EMACS}
+@end itemize
+@end deftypefun
+
+@node Compiling a Pattern, Using Compiled Patterns, Initializing, Top
+@chapter Compiling a Pattern
+
+To speed searching, the library requires that the regular expression be
+precompiled into an efficient format stored in the following structure:
+
+@tindex struct re_pattern_buffer
+@tindex regexp_t
+@example
+@group
+typedef struct re_pattern_buffer @{
+    char *buffer;          /* @r{compiled pattern} */
+    int allocated;         /* @r{allocated size of compiled pattern} */
+    int used               /* @r{actual length of compiled pattern} */
+    char *fastmap;         /* @r{fastmap[ch] true if ch can start pattern} */
+    char *translate;       /* @r{translation to apply} */
+    char fastmap_accurate; /* @r{true if fastmap is valid} */
+    char can_be_null;      /* @r{true if can match empty string} */
+    char uses_registers;   /* @r{registers used and must be initialized} */
+    char anchor;           /* @r{anchor: 0=none 1=begline 2=begbuf} */
+@} *regexp_t;
+@end group
+@end example
+
+The structure should normally be initialized with all fields zeroed
+before calling @w{@code{re_compile_pattern}} to parse the regular
+expression.  Some fields may be initialized to other values to change
+the behavior of the compilation; this is noted below.
+
+@deftypefun {char *} re_compile_pattern (@w{const char *@var{pattern}}, @w{int @var{pattern_length}}, @w{regexp_t @var{compiled}})
+Compile the regexp given by @var{pattern} with length @w{@var{pattern_length}}.
+Note that @code{NUL} bytes may appear in the pattern and can be matched
+by the library; strings are not treated as @code{NUL}-terminated.
+
+Returns @code{NULL} if the pattern compiled successfully, or an error
+message if an error was encountered.
+
+The @code{buffer} field of @var{compiled} must be initialized to a memory
+area allocated by @code{malloc} (or to @code{NULL}) before use, and the
+@code{allocated} field must be set to the size of the allocated space (or
+0 if @code{buffer} is @code{NULL}).
+
+The @code{translate} field must be set to point to a valid translation
+table, or to @code{NULL} if no translation is to be done.  A translation
+table is a 256-character mapping table which is applied to both the pattern
+at compile time and to the string being matched at search time.  It can be
+used, for example, to map upper case onto lower case.  The table @emph{must}
+have a valid entry for each of the 256 ASCII characters (0-255 decimal).
+
+The @code{fastmap} field must be set to point to a 256-character space
+for use as a mapping table, or to @code{NULL} if fast mappings are not
+to be used.
+@end deftypefun
+
+@deftypefun void re_compile_fastmap (@w{regexp_t @var{compiled}})
+Computes the ``fastmap'' for the regexp.  For this to have any effect,
+the calling program must have initialized the @code{fastmap} field of
+@var{compiled} to point to an array of 256 characters.
+
+The fastmap is automatically computed during a search if the @code{fastmap}
+field is non-@code{NULL}; this function may be called to precompute the
+mapping if that is desired.
+@end deftypefun
+
+@node Using Compiled Patterns, Convenience Routines, Compiling a Pattern, Top
+@chapter Using Compiled Patterns
+@tindex struct re_registers
+@tindex regexp_registers_t
+
+Substrings matched by grouped subpatterns (@samp{\(} and @samp{\)}) are
+recorded in the @dfn{re_registers} structure, which is defined as:
+
+@example
+@group
+typedef struct re_registers @{
+    int start[RE_NREGS];  /* @r{start offset of region} */
+    int end[RE_NREGS];    /* @r{end offset of region} */
+@} *regexp_registers_t;
+@end group
+@end example
+
+@menu
+* Searching::                   
+* Matching::                    
+@end menu
+
+@node Searching, Matching, Using Compiled Patterns, Using Compiled Patterns
+@section Searching
+
+@deftypefun int re_search (@w{regexp_t @var{compiled}}, @w{const char *@var{string}}, @w{int @var{size}}, @w{int @var{startpos}}, @w{int @var{range}}, @w{regexp_registers_t @var{regs}})
+Search for a substring of @var{string} matching the regular expression
+represented by @var{compiled}.  The search begins at @var{startpos} and
+is attempted repeatedly for @var{range} positions, extending no farther
+than the offset @var{size}.  Positive values of @var{range} indicate
+searching forwards from @var{startpos}, and negative values indicate
+searching backwards.  As with @code{re_match}, strings are @emph{not}
+treated as @code{NUL}-terminated.
+
+Returns the offset of the first match found, or less than zero on any error.
+Error values are as for @code{re_match}.
+
+Substrings matched by grouped subpatterns (@samp{\(} and @samp{\)}) are
+recorded in the structure pointed to by @var{regs}.
+@end deftypefun
+
+@deftypefun int re_search_2 (@w{regexp_t @var{compiled}}, @w{const char *@var{string1}}, @w{int @var{size1}}, @w{const char *@var{string2}}, @w{int @var{size2}}, @w{int @var{startpos}}, @w{int @var{range}}, @w{regexp_registers_t @var{regs}}, @w{int @var{mstop}})
+Search for a substring of the concatenation of @var{string1} and
+@var{string2} matching the regular expression represented by
+@var{compiled}.  As with @code{re_search}, positive values of
+@var{range} search forwards and negative values search backwards.
+Matching begins at the offset @var{startpos} in the concatenated string,
+and any match must end at or before the offset
+@var{mstop}.@footnote{This function is used in the X11/Motif version of
+Z-Mail for wraparound searches in text widgets; in this case,
+@var{mstop} is used to prevent the search from overlapping the original
+search position.}
+
+Return values are as for @code{re_search}.
+
+Substrings matched by grouped subpatterns are recorded in the structure
+pointed to by @var{regs}.
+@end deftypefun
+
+@node Matching,  , Searching, Using Compiled Patterns
+@section Matching
+These functions are primarily useful for constructing other pattern
+searching algorithms; matching is anchored to the starting position
+(the @code{anchor} field of the @code{regexp_t} is not used).
+
+@deftypefun int re_match (@w{regexp_t @var{compiled}}, @w{char *@var{string}}, @w{int @var{size}}, @w{int @var{pos}}, @w{regexp_registers_t @var{regs}})
+Match the regular expression represented by @var{compiled} against the given
+@var{string} beginning at the offset @var{pos} and searching no farther than
+the offset @var{size}.  Note that @var{string} is @emph{not} considered to
+be @code{NUL} terminated, so zero-valued characters may appear and be matched
+within the space indicated by @var{size}.
+
+Returns the length of the matched portion (which may be zero), or less
+than zero on any error.  A return of @w{-1} means the regular expression
+does not match the string; @w{-2} means a real error (such as failure
+stack overflow) was encountered.
+
+Substrings matched by grouped subpatterns are recorded in the structure
+pointed to by @var{regs}.
+@end deftypefun
+
+@deftypefun int re_match_2 (@w{regexp_t @var{compiled}}, @w{const char *@var{string1}}, @w{int @var{size1}}, @w{const char *@var{string2}}, @w{int @var{size2}}, @w{int @var{pos}}, @w{regexp_registers_t @var{regs}}, @w{int @var{mstop}})
+Match the regular expression comiled in @var{compiled} against the
+concatenation of @var{string1} and @var{string2}.  The length of each
+string is given by @var{size1} and @var{size2}, respectively; the strings
+are @emph{not} treated as @code{NUL}-terminated.
+
+Matching begins at the offset @var{pos} in the concatenated string, and any
+match must end at or before the offset @var{mstop}.
+
+Return values are as for @code{re_match}.
+
+Substrings matched by grouped subpatterns are recorded in the structure
+pointed to by @var{regs}.
+@end deftypefun
+
+@node Convenience Routines, Index, Using Compiled Patterns, Top
+@chapter Convenience Routines
+
+@deftypefun {char *} re_comp (@w{const char *@var{pattern}})
+Emulate the BSD 4.2 regex library routine @code{re_comp}.  This compiles
+the regular expression @var{pattern} into an internal buffer, so at most
+one search may be active at a time when using this function.  Returns
+@code{NULL} if @var{pattern} was compiled successfully, or an error message
+if there was an error.
+@end deftypefun
+
+@deftypefun int re_exec (@w{const char *@var{string}})
+Emulate the BSD 4.2 regexp library routine @code{re_exec}.  This returns
+nonzero if @var{string} matches the regular expression most recently compiled
+with @code{re_comp} (that is, a matching substring is found anywhere in
+@var{string}).
+@end deftypefun
+
+@node Index,  , Convenience Routines, Top
+@unnumbered Index
+
+@printindex cp
+
+@contents
+@bye

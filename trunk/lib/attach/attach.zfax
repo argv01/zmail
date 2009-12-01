@@ -1,0 +1,8 @@
+# Entry for fax documents using the Z-Fax software from Z-Code.
+
+# Mime fax type
+TYPE	application/X-Zm-Fax	"zfax '%s' &"	None	"Z-Fax document"
+BITMAP	application/X-Zm-Fax	bitmaps/fax.xbm
+
+# Older Z-Mail fax type, for viewing messages from Z-Mail 2.1 and earlier
+ALIAS	fax	application/X-Zm-Fax

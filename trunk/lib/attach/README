@@ -1,0 +1,18 @@
+This subdirectory (/z-code/zm/lib/attach) contains assorted pieces of
+attachment type files and a script called "buildat" that glues them all
+together into the attach.types file for a given port.  Any new types that
+should be added to the distribution should go into files in the attach
+subdirectory.  If you add a file, add the appropriate reference to it to
+the buildat script.
+
+If one of your changes is specific to a platform, it should go in a file
+"attach.platform" (e.g. "attach.sun" or "attach.sgi").  If it is an audio
+type, the file should be "audio.platform"; similarly for video, once we
+have some of those (DECstation?) ...  If you invent a new zmail builtin
+command, then use "description.zm" as the filename (e.g. "audio.zm" is
+for the "sound" command).
+
+Insert references to generic (any platform) attachment type files into
+buildat in the "generic" section at the beginning; platform-specific stuff
+goes in the "case" statement at the end (add a new case if you're adding
+something for a platform that isn't there yet).

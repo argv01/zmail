@@ -1,0 +1,76 @@
+               Z-POP 1.1 Quick Installation Guide
+
+
+             Copyright (C) 1993-1998 NetManage Software.
+                       All rights reserved.
+
+
+Important:
+
+Installation instructions detailed in this document are based  on
+installing Z-POP on a Silicon Graphics computer running IRIX. The
+installation process on other UNIX variants may differ  slightly.
+These differences have been noted in the appropriate sections.
+
+These are only basic steps required  to  install  Z-POP  as  your
+POP-3  server  and  enable  Z-POP  services.  For  more  detailed
+information  about  each  of these steps, refer to the CONFIG.TXT
+file included in the tar file.
+
+1.  Unpack Z-POP from its tar file, which requires:
+
+      - Logging in as root on the host where you are installing
+        Z-POP.
+
+      - Changing your current working directory to:
+
+               /usr/local/etc
+
+      - Using tar to extract Z-POP's installation files from the
+        Z-POP tar file:
+
+               zcat zpop10-irix.tar.Z | tar xvf -
+
+    This creates the directory /usr/local/etc/zpoplib.
+
+2.  Change your working directory to /usr/local/etc/zpoplib and edit
+    the file zpop.config to configure Z-POP's POP-3 defaults, Z-POP
+    services, and Z-POP logs.
+
+3.  Provide configuration files for Z-POP's Configuration
+    Download service, if you'd like to enable it.
+
+4.  Ensure the same group that owns the mail spool directory owns
+    zpop, and that zpop has permissions set to 2755.  On most
+    systems you can use these two commands:
+
+        chgrp mail zpop
+        chmod 2755 zpop
+
+5.  Add an entry for port 15232 to the system configuration file
+    /etc/services.
+
+        zpop        15232/tcp
+
+6.  Add the following line to the system configuration file
+    /etc/inetd.conf.  On some systems the inetd.conf file may
+    reside in /usr/etc, or have a different name such as
+    /etc/servers.
+
+        zpop stream tcp nowait root /usr/local/etc/zpoplib/zpop zpop
+
+7.  If desired, you can replace your existing POP-3 server with
+    zpop.  Add this line to /etc/services, if necessary:
+
+        pop-3       110/tcp
+
+    Add or modify this line in /etc/inetd.conf:
+
+        pop-3 stream tcp nowait root /usr/local/etc/zpoplib/zpop zpop
+
+8.  Now you must re-start the inetd daemon to activate your new
+    Z-POP server.  Determine the process ID of inetd and enter the
+    following command:
+
+               kill -HUP <process-id>
+

@@ -1,0 +1,109 @@
+#! /bin/sh -
+# Usage:
+#       ltree <source> <destination>
+#
+# NOTE: Assumes that ../ always works, so <source> and <destination> must
+#       be on the same filesystem whenever NFS is involved.
+# NOTE: Directories named CVS are omitted as a special case.
+#
+if [ $# -ne 2 ]
+then
+    echo 'usage: ltree source-directory destination-directory' 1>&2
+    exit 1
+fi
+[ -n "$1" ] || set - . "$2"
+[ -n "$2" ] || set - "$1" .
+
+TOP=`/bin/pwd`
+cd $1 || exit 1
+READ=`/bin/pwd`
+cd $TOP || exit 1
+cd $2 2>/dev/null || {
+    {
+        mkdir $2 && cd $2
+    } || exit 1
+}
+WRITE=`/bin/pwd`
+case $WRITE in
+$READ)
+    echo "$0: destination-directory is same as source-directory"
+    exit 1
+    ;;
+$READ/*)
+    echo "$0: destination-directory is inside source-directory"
+    exit 1
+    ;;
+esac
+cd $TOP
+
+echo "Mirroring directory structure ..." 1>&2
+PID=$$
+{
+    cd $READ
+    find . ! -name CVS -type d -print
+} | {
+    cd $WRITE
+    while read dir
+    do
+        if [ ! -d $dir ]
+        then mkdir $dir || exit 1
+        fi
+    done
+} || exit $?
+
+echo "Creating relative paths ..." 1>&2
+count=0
+aprefix=
+set - `echo $WRITE | tr / ' '`
+for dir in `echo $READ | tr / ' '`
+do
+    case $1 in
+    $dir)
+        count=`expr $count + 1`
+        aprefix=$aprefix/$1
+        shift
+        ;;
+    *) break;;
+    esac
+done
+rprefix=
+while [ $# -gt 0 ]
+do
+    aprefix=$aprefix/$1
+    rprefix=../$rprefix
+    shift
+done
+set - `echo $READ | tr / ' '`
+shift $count
+rest=
+while [ $# -gt 0 ]
+do
+    rest=$rest/$1
+    shift
+done
+echo "Replacing $aprefix with $rprefix.$rest in symlinks." 1>&2
+
+echo "Linking files ..." 1>&2
+{
+    cd $READ
+    find . ! -type d -print
+} | {
+    while read file
+    do
+        case $file in
+        */CVS/*) continue;;
+        esac
+        walkup=`echo $file | sed \
+                                -e 's@^\./@@' \
+                                -e 's@[^/]*/@../@g' \
+                                -e 's@^[^/]*$@.@' \
+                                -e 's@/[^/]*$@@'`
+        echo $rprefix$walkup$rest/$file $file
+    done
+} | sed 's@/\./@/@g' | {
+    cd $WRITE
+    while read source destination
+    do ln -s $source $destination
+    done
+}
+exit 0

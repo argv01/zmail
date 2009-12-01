@@ -1,0 +1,700 @@
+<HTML>
+<HEAD>
+<!-- This HTML file has been created by texi2html 1.35
+     from ../mstore/mime.texi on 9 August 1996 -->
+
+<TITLE>MIME Parser API</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>MIME Parser API</H1>
+
+
+<H1><A NAME="SEC1" HREF="mime_toc.html#SEC1">Introduction</A></H1>
+
+<P>
+This is a PROPRIETARY and CONFIDENTIAL DRAFT.  Comments and critique are
+urgently requested.
+
+</P>
+<P>
+This API is not actually a parser at all.  Instead, it is a family of
+functions with which any of several kinds of MIME parser can be built.
+Some of the job of parsing MIME messages is left to the caller of these
+functions.
+
+</P>
+<P>
+A full-fledged parser is not sufficiently general-purpose.  The caller
+may need to exert control over the parsing process at many different
+points; for instance, to skip a multipart subpart without parsing it, or
+to record the source stream's seek position when a particular subpart is
+found.  Without a bewildering maze of callbacks and special data types,
+the best way to achieve this is with a flattened, piecewise approach to
+parsing.  Each function is meant to perform all of the processing up to
+a decision point; for instance, reaching the end of a block of headers,
+where the caller may then decide to parse the following body, or to skip
+it.  There is no recursive parsing of nested bodyparts.  Nesting of
+subparts is not reflected by recursion in the parse routines, but in an
+external data structure which tracks the nesting structure.
+
+</P>
+
+
+
+<H1><A NAME="SEC2" HREF="mime_toc.html#SEC2">Functions</A></H1>
+
+<P>
+<A NAME="IDX1"></A>
+<A NAME="IDX2"></A>
+<A NAME="IDX3"></A>
+<U>Function:</U> const char * <B>mime_Readline</B> <I>(struct dpipe *<VAR>dp</VAR>, struct dynstr *<VAR>d</VAR>)</I><P>
+<A NAME="IDX4"></A>
+Read bytes from <VAR>dp</VAR>, appending them to <VAR>d</VAR>, until end-of-file
+or until a newline is encountered.  The newline is not appended to
+<VAR>d</VAR>.  A <CODE>NUL</CODE>-terminated version of the newline sequence
+recognized is returned.  For convenience, the three possible newline
+sequences are available in global string variables: <CODE>mime_CR</CODE>,
+<CODE>mime_CRLF</CODE>, and <CODE>mime_LF</CODE>.  If end-of-file is
+encountered before a newline, the return value is 0.  If <VAR>d</VAR> is 0,
+the line is read and discarded.
+
+</P>
+<P>
+<A NAME="IDX5"></A>
+For purposes of the functions in this document, the definition of
+<STRONG>newline</STRONG> is any of the three major line-terminating conventions:
+the canonical line terminator, <CODE>CR</CODE>-<CODE>LF</CODE>, is accepted as a
+single newline, as are <CODE>CR</CODE> and <CODE>LF</CODE> by themselves.
+
+</P>
+<P>
+<U>Function:</U> void <B>mime_Header</B> <I>(struct dpipe *<VAR>dp</VAR>, struct dynstr *<VAR>name</VAR>, struct dynstr *<VAR>value</VAR>, const char *<VAR>newline</VAR>)</I><P>
+<A NAME="IDX6"></A>
+Given a readable stream <VAR>dp</VAR> which is presumed to be positioned at
+the beginning of an RFC822 header, append the name of the header to
+<VAR>name</VAR> and the content of the header to <VAR>value</VAR>.  Each of
+<VAR>name</VAR> and <VAR>value</VAR> may be 0 to indicate that the corresponding
+data should be discarded after being read.
+
+</P>
+<P>
+<A NAME="IDX7"></A>
+If the header spans multiple lines (using RFC822's newline-whitespace
+continuation syntax), all lines are appended to <VAR>value</VAR> complete
+with their terminating newline sequences.  If <VAR>newline</VAR> is non-zero,
+then it points to a <CODE>NUL</CODE>-terminated string to which all newline
+sequences encountered will be converted.  Typically, <VAR>newline</VAR> will
+contain one of the values <CODE>mime_CR</CODE>, <CODE>mime_LF</CODE>, or
+<CODE>mime_CRLF</CODE>, for canonicalization.
+
+</P>
+<P>
+<A NAME="IDX8"></A>
+If end-of-file or an illegal character is found in the header name, this
+function raises the exception <CODE>mime_err_Header</CODE>.
+
+</P>
+<P>
+<A NAME="IDX9"></A>
+<U>Function:</U> int <B>mime_Headers</B> <I>(struct dpipe *<VAR>dp</VAR>, struct glist *<VAR>hlist</VAR>, const char *<VAR>newline</VAR>)</I><P>
+<A NAME="IDX10"></A>
+Given a readable stream <VAR>dp</VAR> which is presumed to be positioned at
+the beginning of a (possible empty) block of RFC822 headers, parse each
+header using <CODE>mime_Header</CODE>, appending the name/value pairs
+to <VAR>hlist</VAR>.  The data type of the records in <VAR>hlist</VAR> is
+<CODE>struct mime_pair</CODE>, which is defined as follows:
+
+</P>
+
+<PRE>
+struct mime_pair {
+    struct dynstr name, value;
+};
+</PRE>
+
+<P>
+Returns the number of headers read.  The stream is left positioned after
+the terminating newline of the last header, meaning that if the header
+block is terminated as usual, by newline-newline, the first newline will
+have been read and the second newline will be waiting to be read.
+However, parsing of headers will stop at any line that does not look
+like a header; for instance, one beginning with a "special" character
+like <SAMP>`@'</SAMP>.
+
+</P>
+<P>
+Each header is read with <CODE>mime_Header</CODE>, and the parameter
+<VAR>newline</VAR> is as in that function.
+
+</P>
+<P>
+<U>Function:</U> void <B>mime_ContinueHeader</B> <I>(struct dpipe *<VAR>dp</VAR>, struct dynstr *<VAR>value</VAR>, const char *<VAR>newline</VAR>)</I><P>
+<A NAME="IDX11"></A>
+Read zero or more header continuation lines from <VAR>dp</VAR>, appending
+them to <VAR>value</VAR>, transforming embedded newlines according to
+<VAR>newline</VAR>, which is as in <CODE>mime_Header</CODE>.
+
+</P>
+<P>
+This function is useful if one has already read a line, e.g. with
+<CODE>mime_Readline</CODE>, discovered it to be the first line of a
+message header, and wishes to slurp up any remaining lines.  Lines that
+begin with whitespace are appended to <VAR>value</VAR>, up until the first
+line that does not begin with whitespace, which is where <VAR>dp</VAR> is
+left positioned after this call.
+
+</P>
+<P>
+<A NAME="IDX12"></A>
+<U>Function:</U> void <B>mime_Unfold</B> <I>(struct dynstr *<VAR>value</VAR>, int <VAR>collapse</VAR>)</I><P>
+<A NAME="IDX13"></A>
+Given a header value <VAR>value</VAR>, rewrite it in place to perform RFC822
+<STRONG>unfolding</STRONG>.  Unfolding is the process of removing embedded newlines
+in multi-line header values.  If <VAR>collapse</VAR> is non-zero, also
+collapse all whitespace characters following each newline into a single
+space.
+
+</P>
+<P>
+<A NAME="IDX14"></A>
+<U>Function:</U> char * <B>mime_NextToken</B> <I>(char *<VAR>str</VAR>, char **<VAR>end</VAR>, int <VAR>tspecial</VAR>)</I><P>
+<A NAME="IDX15"></A>
+Given a string <VAR>str</VAR>, presumably the content of a mail header,
+return the next <STRONG>token</STRONG>, and place in <CODE>*<VAR>end</VAR></CODE> the
+position in <VAR>str</VAR> of the first byte following the token.  The
+tokenizing rules are selected by <VAR>tspecial</VAR>; if 0, RFC822
+"special" characters are delimiters; otherwise, MIME "tspecial"
+characters are delimiters.  MIME "tspecials" are for tokenizing the
+MIME Content-Type header.
+
+</P>
+<P>
+The return value is stored in an internal buffer which is overwritten
+with each call.  The token is either an RFC822 "atom," a "special"
+or "tspecial" character as appropriate, or a "quoted-string."
+
+</P>
+<P>
+If the token is a quoted string, the delimiting quotation marks are
+removed and backslash-escapes in the quoted-string are decoded.
+Tokenizing skips whitespace and comments.
+
+</P>
+<P>
+<A NAME="IDX16"></A>
+If the token is a "special" or "tspecial," the global <CODE>int</CODE>
+variable <CODE>mime_SpecialToken</CODE> is set to its value; if not,
+that variable is set to 0.  This allows one to distinguish between a
+"special" character in the header, and a quoted string containing a
+special character.  For example, if the tokenizer encounters <SAMP>`:'</SAMP> in
+the input, then the return value will be the string <CODE>":"</CODE> and
+<CODE>mime_SpecialToken</CODE> will be set to 58; but if the tokenizer
+encounters <SAMP>`":"'</SAMP> in the input, then the return value will still be
+the string <CODE>":"</CODE> but <CODE>mime_SpecialToken</CODE> will be 0.
+
+</P>
+<P>
+The RFC822 "special" characters are:
+
+</P>
+
+<PRE>
+<SAMP>`('</SAMP>, <SAMP>`)'</SAMP>, <SAMP>`&#60;'</SAMP>, <SAMP>`&#62;'</SAMP>, <SAMP>`@'</SAMP>, <SAMP>`,'</SAMP>, <SAMP>`;'</SAMP>,
+<SAMP>`:'</SAMP>, <SAMP>`\'</SAMP>, <SAMP>`"'</SAMP>, <SAMP>`.'</SAMP>, <SAMP>`['</SAMP>, <SAMP>`]'</SAMP>.</PRE>
+
+<P>
+The MIME "tspecial" characters are:
+
+</P>
+
+<PRE>
+<SAMP>`('</SAMP>, <SAMP>`)'</SAMP>, <SAMP>`&#60;'</SAMP>, <SAMP>`&#62;'</SAMP>, <SAMP>`@'</SAMP>, <SAMP>`,'</SAMP>, <SAMP>`;'</SAMP>,
+<SAMP>`:'</SAMP>, <SAMP>`\'</SAMP>, <SAMP>`"'</SAMP>, <SAMP>`/'</SAMP>, <SAMP>`['</SAMP>, <SAMP>`]'</SAMP>, <SAMP>`?'</SAMP>,
+<SAMP>`='</SAMP>.</PRE>
+
+<P>
+Return value is 0 when no token follows in <VAR>str</VAR>.
+
+</P>
+<P>
+<A NAME="IDX17"></A>
+<A NAME="IDX18"></A>
+If a quoted-string is unterminated or contains an illegal character,
+this function raises the exception <CODE>mime_err_String</CODE>.  If a
+comment is unterminated or contains an illegal character, this function
+raises the exception <CODE>mime_err_Comment</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>mime_MultipartStart</B> <I>(struct glist *<VAR>stack</VAR>, const char *<VAR>boundary</VAR>, void (*<VAR>cleanup</VAR>)(void *), void *<VAR>cleanup_data</VAR>)</I><P>
+<A NAME="IDX19"></A>
+This function must be called in order to parse the subparts of a
+multipart.  The caller presumably has read a block of headers using
+<CODE>mime_Headers</CODE> and has discovered (possibly using
+<CODE>mime_ParseContentType</CODE> or
+<CODE>mime_AnalyzeHeaders</CODE>) a Content-Type header indicating a
+multipart type and a boundary string.
+No recursive call is made to parse the subparts of a multipart, instead,
+<VAR>stack</VAR> is used to keep track of multipart nesting.
+
+</P>
+<P>
+<A NAME="IDX20"></A>
+The elements of <VAR>stack</VAR> are of type <CODE>struct
+mime_stackelt</CODE>.  A new element is placed on <VAR>stack</VAR> indicating
+the pending boundary string, <VAR>boundary</VAR>, which is the value of the
+<CODE>boundary</CODE> parameter in the <CODE>Content-Type</CODE> header.  The
+function <VAR>cleanup</VAR> will be called when the new stack frame is
+unwound (usually by encountering the end of this multipart, but see
+<CODE>mime_NextBoundary</CODE>).  When <VAR>cleanup</VAR> is called, it is
+passed <VAR>cleanup_data</VAR> as an argument.
+
+</P>
+<P>
+<U>Function:</U> int <B>mime_NextBoundary</B> <I>(struct dpipe *<VAR>dp</VAR>, struct dpipe *<VAR>dest</VAR>, struct glist *<VAR>stack</VAR>, const char *<VAR>newline</VAR>)</I><P>
+<A NAME="IDX21"></A>
+Given a readable stream <VAR>dp</VAR> which is presumed to be positioned at
+the beginning of a line, skip to the next occurrence of any multipart
+boundary appearing in <VAR>stack</VAR>.  If <VAR>dest</VAR> is non-zero, text up
+to but not including the boundary is written to it.  If <VAR>stack</VAR> is 0
+or empty, text up to end-of-file is read.  If end-of-file is encountered
+while a boundary is expected, the entire stack is unwound.
+
+</P>
+<P>
+The text is read line by line from <VAR>dp</VAR> using
+<CODE>mime_ReadLine</CODE>, which recognizes three different character
+sequences as a valid newline (<I>vide supra</I>).  When copying lines to
+<VAR>dest</VAR>, the parameter <VAR>newline</VAR> controls how newlines are to be
+depicted.  If <VAR>newline</VAR> is 0, newline sequences read from <VAR>dp</VAR>
+are copied as-is to <VAR>dest</VAR>.  If <VAR>newline</VAR> is a string, that
+string is used as the newline sequence.  (Typically, <VAR>newline</VAR> will
+be one of the convenience variables <CODE>mime_CR</CODE>,
+<CODE>mime_CRLF</CODE>, or <CODE>mime_LF</CODE>.)  When an unterminated line
+is read from <VAR>dp</VAR> (because end-of-file was encountered), no newline
+is written to <VAR>dest</VAR>.
+
+</P>
+<P>
+In a properly-formatted MIME stream, only the innermost multipart
+boundary is expected to be found; but we expect that nesting errors will
+be common in received MIME mail.  Hence any multipart boundary placed on
+the stack with <CODE>mime_MultipartStart</CODE> is accepted when found.
+If the found boundary does not correspond to the top element of the
+stack, the stack is unwound with <CODE>mime_Unwind</CODE> until it is
+the top element.  If the found boundary is a multipart terminator rather
+than merely a separator (that is, <CODE>--boundary--</CODE> instead of
+<CODE>--boundary</CODE>), then that stack frame is unwound also.  In the
+normal case--a non-terminating boundary corresponding to the top of the
+stack--no stack frames are unwound.
+
+</P>
+<P>
+Return value is the number of stack frames unwound.  The stream is
+left positioned at the start of the line following the found boundary.
+
+</P>
+<P>
+<U>Function:</U> void <B>mime_Unwind</B> <I>(struct glist *<VAR>stack</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX22"></A>
+Unwind <VAR>n</VAR> stack frames from <VAR>stack</VAR>.  As each frame is unwound,
+its <VAR>cleanup</VAR> function (as provided in
+<CODE>mime_MultipartStart</CODE>), if any, is invoked with the
+corresponding <VAR>cleanup_data</VAR> as an argument.
+
+</P>
+<P>
+<U>Function:</U> char * <B>mime_ParseContentType</B> <I>(char *<VAR>str</VAR>, char **<VAR>subtype</VAR>, struct glist *<VAR>plist</VAR>)</I><P>
+<A NAME="IDX23"></A>
+Given <VAR>str</VAR>, which is presumed to be the value of a Content-Type
+header, parse the MIME type/subtype pair and any "name=value"
+parameters.  If parsing was successful, the MIME type string is returned
+and <CODE>*<VAR>subtype</VAR></CODE> is set to the subtype string.  Parameters are added
+to <VAR>plist</VAR>, which is a Glist of <CODE>struct mime_pair</CODE>s.  If
+parsing fails, the return value is 0.  Each of <VAR>subtype</VAR> and
+<VAR>plist</VAR> may be 0 to indicate that the corresponding data is not
+needed.
+
+</P>
+<P>
+The string that is returned and the string to which <CODE>*<VAR>subtype</VAR></CODE>
+points are stored in private static buffers which are overwritten with
+each call.
+
+</P>
+<P>
+<U>Function:</U> void <B>mime_AnalyzeHeaders</B> <I>(struct glist *<VAR>hlist</VAR>, struct glist **<VAR>plistp</VAR>, char **<VAR>type</VAR>, char **<VAR>subtype</VAR>, char **<VAR>boundary</VAR>, char **<VAR>encoding</VAR>)</I><P>
+<A NAME="IDX24"></A>
+Given a list of headers <VAR>hlist</VAR> such as that yielded by
+<CODE>mime_Headers</CODE>, look for and extract MIME information.
+
+</P>
+<P>
+If a Content-Transfer-Encoding header is found, <CODE>*<VAR>encoding</VAR></CODE>
+is set to its value (which is extracted using
+<CODE>mime_NextToken</CODE>).
+
+</P>
+<P>
+If a Content-Type header is found, then
+<CODE>mime_ParseContentType</CODE> is called as follows:
+
+</P>
+
+<PRE>
+*<VAR>type</VAR> = mime_ParseContentType(header,
+                              *<VAR>subtype</VAR>,
+                              *<VAR>plistp</VAR>);
+</PRE>
+
+<P>
+The parameter <VAR>plistp</VAR> may be 0 to indicate that the parameter list
+is not needed.  On the other hand, if <VAR>plist</VAR> is not 0 but
+<CODE>*<VAR>plistp</VAR></CODE> is 0, then <CODE>*<VAR>plistp</VAR></CODE> is first set to
+point to a static, internally-allocated, empty Glist which is
+overwritten with each call.
+
+</P>
+<P>
+After the call to <CODE>mime_ParseContentType</CODE>, if
+<CODE>*<VAR>type</VAR></CODE> is <CODE>"multipart"</CODE>, then a <CODE>boundary</CODE>
+parameter is sought in <CODE>*<VAR>plistp</VAR></CODE>.  (If <VAR>plistp</VAR> was
+passed as 0, an internal parameter list is computed for this purpose
+anyway.)  If found, <CODE>*<VAR>boundary</VAR></CODE> is set to the value of
+the parameter.
+
+</P>
+<P>
+Each of <CODE>*<VAR>type</VAR></CODE>, <CODE>*<VAR>subtype</VAR></CODE>,
+<CODE>*<VAR>boundary</VAR></CODE>, and <CODE>*<VAR>encoding</VAR></CODE> is set to 0
+if an appropriate value is not found.  The values of
+<CODE>*<VAR>type</VAR></CODE> and <CODE>*<VAR>subtype</VAR></CODE>, if set, will be
+static buffers in <CODE>mime_ParseContentType</CODE>.  The value of
+<CODE>*<VAR>encoding</VAR></CODE>, if set, is a static buffer in
+<CODE>mime_AnalyzeHeaders</CODE>, overwritten with each call.  The
+value of <CODE>*<VAR>boundary</VAR></CODE>, if set, is the same copy of the
+boundary string as stored in the corresponding entry of
+<CODE>*<VAR>plistp</VAR></CODE>.
+
+</P>
+<P>
+Any of <VAR>subtype</VAR>, <VAR>boundary</VAR>, and <VAR>encoding</VAR> may be passed
+as 0 to indicate that the corresponding data is not needed.  If both
+<VAR>boundary</VAR> and <VAR>plistp</VAR> are 0, no internal parameter list is
+created in the case that <CODE>"multipart"</CODE> is encountered.
+
+</P>
+<P>
+<U>Function:</U> void <B>mime_pair_init</B> <I>(struct mime_pair *<VAR>p</VAR>)</I><P>
+<A NAME="IDX25"></A>
+Initializes the pair pointed to by <VAR>p</VAR> (by calling
+<CODE>dynstr_Init</CODE> on its two fields).
+
+</P>
+<P>
+<U>Function:</U> void <B>mime_pair_destroy</B> <I>(struct mime_pair *<VAR>p</VAR>)</I><P>
+<A NAME="IDX26"></A>
+Finalizes the pair pointed to by <VAR>p</VAR> (by calling
+<CODE>dynstr_Destroy</CODE> on its two fields).
+
+</P>
+<P>
+<U>Function:</U> void <B>mime_GenMultipart</B> <I>(struct dpipe *<VAR>dp</VAR>, const char *<VAR>subtype</VAR>, struct glist *<VAR>parts</VAR>)</I><P>
+<A NAME="IDX27"></A>
+Write to <VAR>dp</VAR> the MIME syntax for a
+<CODE>multipart/<VAR>subtype</VAR></CODE> bodypart whose subparts are in
+<VAR>parts</VAR>.  See RFC1521 for legal values of <VAR>subtype</VAR>.
+
+</P>
+<P>
+Each element of <VAR>parts</VAR> is a pointer to a Dpipe.  Each Dpipe must be
+a readable stream containing a complete, MIME-conformant stream for one
+subpart.  This includes any relevant headers and a properly-encoded
+body.  Note that the output of this function (in <VAR>dp</VAR>) may be used
+as input to a future invocation of this function, to create nested
+multiparts.
+
+</P>
+<P>
+The stream generated by this function looks something like this:
+
+</P>
+
+<PRE>
+Content-Type: multipart/<VAR>subtype</VAR>; boundary=<VAR>boundary-string</VAR>
+
+--<VAR>boundary-string</VAR>
+<I>contents of first subpart</I>
+
+--<VAR>boundary-string</VAR>
+<I>contents of second subpart</I>
+...
+
+--<VAR>boundary-string</VAR>
+<I>contents of last subpart</I>
+
+--<VAR>boundary-string</VAR>--
+</PRE>
+
+<P>
+where <VAR>boundary-string</VAR> is an automatically-generated unique string.
+
+</P>
+
+
+<H1><A NAME="SEC3" HREF="mime_toc.html#SEC3">Usage</A></H1>
+
+<P>
+This chapter outlines how MIME parsing using this library should
+proceed.  In the examples below, the variable <VAR>dp</VAR> refers to a
+readable Dpipe which is the source of a MIME-conformant stream.  For
+clarity, exception-handling constructs which ought to be present have
+been omitted.
+
+</P>
+<P>
+The following example illustrates parsing a MIME stream with possible
+deeply-nested multiparts.  Each leaf part is written to a destination
+Dpipe named <CODE>dest</CODE>.  The caller should naturally initialize
+<CODE>dest</CODE> on each iteration to point to an appropriate destination for
+the data given its MIME type and subtype, and its depth in the multipart
+hierarchy.  The nesting depth of the leaf part being read at any point
+is given (in this example) by <CODE>glist_Length(&#38;stack)</CODE>.
+
+</P>
+<P>
+Note that the call to <CODE>mime_NextBoundary</CODE> which sends a leaf
+part to <CODE>dest</CODE> does not perform any base64 or quoted-printable
+decoding.  The caller may want to initialize <CODE>dest</CODE> to be one end
+of a Dpipeline which performs the appropriate decoding and then sends
+the output to its final destination (e.g., a file).
+
+</P>
+
+<PRE>
+struct glist hlist, stack, *plist;
+char *type, *subtype, *boundary, *encoding;
+int loop;
+
+glist_Init(&#38;stack, sizeof (struct mime_stackelt), 4);
+
+do {
+    loop = 0;
+    glist_Init(&#38;hlist, sizeof (struct mime_pair), 8);
+    mime_Headers(dp, &#38;hlist, 0);
+    mime_Readline(dp, 0); /* <I>discard the separator line</I> */
+    mime_AnalyzeHeaders(&#38;hlist, &#38;plist,
+                        &#38;type, &#38;subtype,
+                        &#38;boundary, &#38;encoding);
+    if (type &#38;&#38; !strcasecmp(type, "multipart")) {
+        /* <I>It's a multipart; push the boundary string on</I>
+         * <I>the stack and scan for the first boundary</I>
+         */
+        mime_MultipartStart(&#38;stack, boundary, 0, 0);
+</PRE>
+
+<P>
+At this point, the boundary string for the pending multipart has been
+placed on <CODE>stack</CODE>.  Next we search forward for the first occurrence
+of the boundary using <CODE>mime_NextBoundary</CODE>.  For robustness,
+however, we don't just call mime_NextBoundary once; we call it as many
+times as it returns non-zero.  Naturally we expect it to return zero,
+but if the message syntax is garbled, we might encounter a different
+boundary line first, in which case we want to keep slurping up
+possibly-terminating boundaries until we're again positioned at the
+start of a new bodypart (which condition is indicated by a zero return
+from <CODE>mime_NextBoundary</CODE>).
+
+</P>
+
+<PRE>
+        while (mime_NextBoundary(dp, 0, &#38;stack, 0))
+            ;
+    } else if (type &#38;&#38; !strcasecmp(type, "message")) {
+        /* <I>It's a message/something.  Loop again to</I>
+         * <I>read its (embedded) headers and body</I>
+         */
+        loop = 1;
+    } else {
+        /* <I>It's a leaf part</I> */
+        struct dpipe dest;
+        int unwound;
+
+        dpipe_Init(&#38;dest, <I>...whatever is appropriate...</I> */);
+        unwound = mime_NextBoundary(dp, &#38;dest, &#38;stack, mime_LF);
+</PRE>
+
+<P>
+Of course, the use of <CODE>mime_LF</CODE> here is just an example.
+
+</P>
+
+<PRE>
+        dpipe_Close(&#38;dest);
+        dpipe_Destroy(&#38;dest);
+</PRE>
+
+<P>
+Again, call <CODE>mime_NextBoundary</CODE> repeatedly until we're at the
+beginning of a new bodypart somewhere.
+
+</P>
+
+<PRE>
+        if (unwound)
+            while (mime_NextBoundary(dp, 0, &#38;stack, 0))
+                ;
+    }
+    glist_CleanDestroy(&#38;hlist, mime_pair_finalize);
+} while (loop || !glist_EmptyP(&#38;stack));
+
+glist_Destroy(&#38;stack);
+</PRE>
+
+<P>
+The next example builds on the first one but treats
+<CODE>multipart/alternative</CODE> in the way intended by RFC1521: that
+is, upon entering a <CODE>multipart/alternative</CODE>, each subpart is
+stashed somewhere; and upon exiting the
+<CODE>multipart/alternative</CODE>, a single suitable subpart is selected
+for presentation.  While scanning the subparts of a
+<CODE>multipart/alternative</CODE>, parsing does not descend into
+subsubparts.  The type <CODE>struct part_data</CODE> is a hypothetical
+structure for holding information about each subpart while a
+<CODE>multipart/alternative</CODE> is being scanned.
+
+</P>
+
+<PRE>
+struct glist hlist, stack, *plist;
+char *type, *subtype, *boundary, *encoding;
+int loop;
+
+glist_Init(&#38;stack, sizeof (struct mime_stackelt), 4);
+
+do {
+    loop = 0;
+    glist_Init(&#38;hlist, sizeof (struct mime_pair), 8);
+    mime_Headers(dp, &#38;hlist, 0);
+    mime_Readline(dp, 0); /* <I>discard separator line</I> */
+    mime_AnalyzeHeaders(&#38;hlist, &#38;plist,
+                        &#38;type, &#38;subtype,
+                        &#38;boundary, &#38;encoding);
+    if (type &#38;&#38; !strcasecmp(type, "multipart")) {
+        if (subtype &#38;&#38; !strcasecmp(type, "alternative")) {
+            /* <I>it's a multipart/alternative</I> */
+            struct glist subparts;
+            int unwound;
+
+            glist_Init(&#38;subparts, sizeof (struct part_data), 4);
+            mime_MultipartStart(&#38;stack, boundary,
+                                alternative_finish,
+                                &#38;subparts);
+            if (unwound = mime_NextBoundary(dp, 0, &#38;stack, 0)) {
+                while (mime_NextBoundary(dp, 0, &#38;stack, 0))
+                    ;
+            } else {
+                /* <I>doing multipart/alternative subparts</I> */
+                struct glist hlist2;
+                char *type, *subtype;
+                struct dpipe dest;
+
+                glist_Init(&#38;hlist2, sizeof (struct mime_pair), 4);
+                do {
+                    mime_Headers(dp, &#38;hlist2, 0);
+                    mime_Readline(dp, 0);
+                    mime_AnalyzeHeaders(&#38;hlist2, 0,
+                                        &#38;type, &#38;subtype,
+                                        0, 0);
+                    dpipe_Init(&#38;dest, <I>...whatever...</I>);
+                    unwound = mime_NextBoundary(dp, &#38;dest,
+                                                &#38;stack, mime_LF);
+                    dpipe_Close(&#38;dest);
+                    dpipe_Destroy(&#38;dest);
+                    /* <I>Add an entry to <CODE>subparts</CODE></I> */
+                } while (!unwound);
+                while (mime_NextBoundary(dp, 0, &#38;stack, 0))
+                    ;
+            }
+        } else {
+            /* <I>multipart/something-else</I> */
+            mime_MultipartStart(&#38;stack, boundary, 0, 0);
+            while (mime_NextBoundary(dp, 0, &#38;stack, 0))
+                ;
+        }
+    } else if (type &#38;&#38; !strcasecmp(type, "message")) {
+        /* <I>It's a message/something.  Loop again to</I>
+         * <I>read its (embedded) headers and body</I>
+         */
+        loop = 1;
+    } else {
+        /* <I>It's a leaf part</I> */
+        struct dpipe dest;
+        int unwound;
+
+        dpipe_Init(&#38;dest, <I>...whatever...</I>);
+        unwound = mime_NextBoundary(dp, &#38;dest, &#38;stack, mime_LF);
+        dpipe_Close(&#38;dest);
+        dpipe_Destroy(&#38;dest);
+        if (unwound)
+            while (mime_NextBoundary(dp, 0, &#38;stack, 0))
+                ;
+    }
+    glist_CleanDestroy(&#38;hlist, mime_pair_finalize);
+} while (loop || !glist_EmptyP(&#38;stack));
+
+glist_Destroy(&#38;stack);
+</PRE>
+
+
+
+<H1><A NAME="SEC4" HREF="mime_toc.html#SEC4">Index</A></H1>
+
+<P>
+<H2>c</H2>
+<DIR>
+<LI><A HREF="mime.html#IDX7">continuation line</A>
+</DIR>
+<H2>m</H2>
+<DIR>
+<LI><A HREF="mime.html#IDX24">mime_AnalyzeHeaders</A>
+<LI><A HREF="mime.html#IDX11">mime_ContinueHeader</A>
+<LI><A HREF="mime.html#IDX1">mime_CR</A>
+<LI><A HREF="mime.html#IDX3">mime_CRLF</A>
+<LI><A HREF="mime.html#IDX18">mime_err_Comment</A>
+<LI><A HREF="mime.html#IDX8">mime_err_Header</A>
+<LI><A HREF="mime.html#IDX17">mime_err_String</A>
+<LI><A HREF="mime.html#IDX27">mime_GenMultipart</A>
+<LI><A HREF="mime.html#IDX6">mime_Header</A>
+<LI><A HREF="mime.html#IDX10">mime_Headers</A>
+<LI><A HREF="mime.html#IDX2">mime_LF</A>
+<LI><A HREF="mime.html#IDX19">mime_MultipartStart</A>
+<LI><A HREF="mime.html#IDX21">mime_NextBoundary</A>
+<LI><A HREF="mime.html#IDX15">mime_NextToken</A>
+<LI><A HREF="mime.html#IDX9">mime_pair</A>
+<LI><A HREF="mime.html#IDX26">mime_pair_destroy</A>
+<LI><A HREF="mime.html#IDX25">mime_pair_init</A>
+<LI><A HREF="mime.html#IDX23">mime_ParseContentType</A>
+<LI><A HREF="mime.html#IDX4">mime_Readline</A>
+<LI><A HREF="mime.html#IDX16">mime_SpecialToken</A>
+<LI><A HREF="mime.html#IDX20">mime_stackelt</A>
+<LI><A HREF="mime.html#IDX13">mime_Unfold</A>
+<LI><A HREF="mime.html#IDX22">mime_Unwind</A>
+</DIR>
+<H2>n</H2>
+<DIR>
+<LI><A HREF="mime.html#IDX5">newline</A>
+</DIR>
+<H2>t</H2>
+<DIR>
+<LI><A HREF="mime.html#IDX14">token</A>
+</DIR>
+<H2>u</H2>
+<DIR>
+<LI><A HREF="mime.html#IDX12">unfold</A>
+</DIR>
+
+</P>
+
+</BODY>
+</HTML>

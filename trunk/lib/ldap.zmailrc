@@ -1,0 +1,56 @@
+# To add your own LDAP server definition:
+# On the first line enter 'hostname: <server address> <server name>'.
+# Next enter 'searchbase: <search base>' if your server has a search base. 
+# If your server does not have a search base leave it out.
+# Next enter 'pattern: <variable name> <compare type> <symbolic name>'
+# one line for each pattern you want to use for searching. You may enter up to
+# five pattern lines. Search keys may be '=' (exact match), '~=' (phonetic
+# match), '=*' (partial match), '>=' (greater or equal), '<=' (less or equal).
+# Next enter 'returns: <variable name>'. Enter one line for each variable 
+# you wish to have your server return. You may return the contents of
+# up to five variables. See the lines below as examples. Consult the release
+# notes for a more detailed description of adding your own LDAP server 
+# definition.
+#
+# Bigfoot resources
+#
+hostname:   ldap.bigfoot.com  bigfoot
+pattern:    cn     ~=         Name:
+pattern:    o      ~=         Organization:
+pattern:    ou     ~=         Organizational Unit:
+returns:    cn
+returns:    mail
+#
+# Extended bigfoot resources
+#
+hostname:   ldap.bigfoot.com  extended bigfoot
+pattern:    cn     ~=         Name:
+pattern:    mail   ~=         E-mail Address:
+pattern:    phoneNumber   =*  Phone:
+pattern:    o      ~=         Organization:
+pattern:    ou     ~=         Organizational Unit:
+returns:    cn
+returns:    mail
+returns:    phonenumber
+returns:    o
+returns:    ou
+#
+# Infospace resources
+#
+hostname:   ldap.infospace.com   infospace
+searchbase: c=US
+pattern:    cn     =*         Name:
+pattern:    o      =*         Organization:
+pattern:    ou     =*         Organizational Unit:
+returns:    cn
+returns:    mail
+#
+# Four11 resources
+#
+hostname:   ldap.four11.com   four11
+searchbase: c=US
+pattern:    cn     =          Name:
+pattern:    o      =          Organization:
+pattern:    ou     =          Organizational Unit:
+returns:    cn
+returns:    mail

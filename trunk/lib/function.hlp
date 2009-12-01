@@ -1,0 +1,44 @@
+%resend%
+ "resend" is a user-defined function.
+
+
+     !!resend [msg-list] [addresses]
+
+ Resend (unedited) the listed messages to the addresses.
+%%
+%saveit%
+ "saveit" is a user-defined function.
+
+
+      saveit [msg-list]
+%%
+%bugreport%
+ "bugreport" is a user-defined function.
+
+
+ Use this function to send mail to report problems with Z-Mail.
+%%
+%view_msg%
+ "view_msg" is a user-defined function.
+
+
+      view_msg [folder]
+
+ This is used to view a single rfc822 message in a file
+%%
+%view_fldr%
+ "view_fldr" is a user-defined function.
+
+
+      view_fldr [folder]
+
+ This is used to view a folder (file of more than one message)
+%%
+%page_edit%
+ "page_edit" is a user-defined function.
+
+
+      page_edit [filename]
+
+ This is used to create a new text file
+%%

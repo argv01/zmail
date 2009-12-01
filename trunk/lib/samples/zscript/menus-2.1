@@ -1,0 +1,496 @@
+# Button and menu definitions to give Z-Mail 3.x the GUI look of Z-Mail 2.1
+# Copyright 1994 Z-Code Software, a Division of NCD.  All rights reserved.
+
+# NOTE:
+# Requires some functions defined in Z-Mail 3.0 $ZMLIB/zmail.menus
+
+function zmenu_two_one() {
+    # default button list names
+    button -W main -b MainActionsZ
+    button -W compose -b ComposeActionsZ
+    button -W message -b MessageActionsZ
+    menu -W main -b MainMenuZ
+    menu -W compose -b ComposeMenuZ
+    menu -W message -b MessageMenuZ
+    menu -popup main-summaries -b MainSummariesPopupMenuZ
+}
+function zmenu_three_zero() {
+    button -W main -b MainActions
+    button -W compose -b ComposeActions
+    button -W message -b MessageActions
+    menu -W main -b MainMenu
+    menu -W compose -b ComposeMenu
+    menu -W message -b MessageMenu
+    menu -popup main-summaries -b MainSummariesPopupMenu
+}
+
+function zmenu_fwd_add_comments () {
+    ask -i _comment "Add Comment:"
+    if $status == 0
+        mail -C "$_comment" -resend
+	unset _comment
+    endif
+}
+
+function zmenu_send_and_close () {
+    compcmd send
+    if $status == 0
+        dialog -close
+    endif
+}
+
+function zmenu_insert_file () {
+    ask -f _file "File to Read:"
+    if $status == 0
+	compcmd insert-file "$_file"
+        unset _file
+    endif
+}
+
+function zmenu_replace_file () {
+    ask -f _file "File to Read:"
+    if $status == 0
+	textedit set-item compose-body
+	textedit delete-all
+	compcmd insert-file "$_file"
+        unset _file
+    endif
+}
+
+function clear_output () {
+    textedit set-item output-text
+    textedit delete-all
+}
+
+set _save_file=''
+function zmenu_save_to_file () {
+    if "x$_save_file" != "x"
+        ask -f _save_file -d "$_save_file" "File to write:"
+    else
+	ask -f _save_file "File to write:"
+    endif
+    if $status == 0
+        compcmd save-to-file "$_save_file"
+    endif
+}
+
+function zmenu_next_ref_subj () {
+    msg_list . | set _msgno
+    set _subj="$[%S]"
+    if "x$_subj" == "x"
+        error "Message $msgno has no subject"
+	unset _msgno _subj
+	exit
+    endif
+    search +2 -1 -r .-$ -s -e "$_subj"$
+    if $output == $_msgno
+        error No next message about '"'$_subj'"'.
+    else
+	msg_list - $output | display
+    endif
+    # unset _msgno _subj
+}
+
+function zmenu_next_ref_auth () {
+    msg_list . | set _msgno
+    set _auth="$[%a]"
+    search +2 -1 -r .-$ -f "$_auth"
+    if $output == $_msgno
+        error No next message from '"'$_auth'"'.
+    else
+	msg_list - $output | display
+    endif
+    # unset _msgno _auth
+}
+
+function zmenu_next_ref_msgid () {
+    msg_list . | set _msgno
+    set _mid="$[%i]"
+    if "x$_mid" == "x"
+        error "Message $_msgno has no Message-Id"
+	unset _msgno _mid
+	exit
+    endif
+    search +1 -r .-$ -h references,in-reply-to -e "$_mid"
+    if "x$output" == x
+        error No next message that references this message.
+    else
+	msg_list - $output | display
+    endif
+    # unset _msgno _mid
+}
+
+function zmenu_comp_body_textedit () {
+    textedit set-item compose-body
+    textedit $*
+}
+
+set _pipe_cmd=''
+function zmenu_comp_pipe () {
+    if "x$_pipe_cmd" != "x"
+    	ask -i _pipe_cmd -d "$_pipe_cmd" "Pipe to shell command:"
+    else
+    	ask -i _pipe_cmd "Pipe to shell command:"
+    endif
+    if $status == 0
+        textedit set-item compose-body
+	textedit pipe "$_pipe_cmd"
+    endif
+}
+
+function zmenu_comp_indent () {
+    set _pfx=''
+    if $?indent_str != 0
+        eval -p set _pfx=\"$indent_str\"
+    endif
+    if "x$_pfx" == "x"
+        ask -i _pfx "Indent with:"
+    else
+        ask -i _pfx -d "$_pfx" "Indent with:"
+    endif
+    if $status == 0
+        textedit set-item compose-body
+	textedit indent "$_pfx"
+        unset _pfx
+    endif
+}
+
+function zbutton_reuse () {
+    textedit set-item compose-body
+    textedit save-to-file /tmp/.zmsg$$
+    if $status < 0
+        echo bad save
+        exit
+    endif
+    textedit set-item subject-header-field
+    textedit get-text _subj
+    # if the above operation did not succeed, Edit Headers must be set
+    if $status == 0
+        if "x$_subj" == "x"
+            mail -edit_hdrs! -file /tmp/.zmsg$$
+        else
+            mail -edit_hdrs! -subject "$_subj" -file /tmp/.zmsg$$
+        endif
+    else
+        mail -edit_hdrs -draft /tmp/.zmsg$$
+    endif   
+    sh rm /tmp/.zmsg$$
+}
+
+# Switch button and menu lists, then build them
+menu -n -b MainOptionsMenu -name om_two_one \
+    	-label '2.1 Buttons/Menus' zmenu_two_one
+zmenu_two_one
+
+source $ZMLIB/samples/zscript/oldsave.zsc	# For "Save" button
+
+# main window buttons
+button -W main
+button -position 1 Read type
+button -position 2 Delete delete
+button -position 3 Undelete undelete
+button -position 4 Save old_saveit
+button -position 5 -n Compose mail
+button -position 6 Reply reply
+button -position 7 Resend resend
+
+# compose window buttons
+button -W compose
+button -position 1 -focus-condition '!$?compose_state:(active)' Done 'dialog -close'
+button -position 2 New mail
+button -position 3 -label Reuse -sensitivity '!$?compose_state:(active) && !$?autoclear' zbutton_reuse
+button -position 4 -label Send -sensitivity '$?compose_state:(active)' 'compcmd send'
+button -position 5 -label Cancel -sensitivity '$?compose_state:(active)' 'compcmd cancel'
+#button -position 6 -label Attachments -sensitivity '$?compose_state:(active)' dialog Attachments
+button -position 7 Help 'help -i Compose Window'
+button -W main
+
+# message window buttons
+button -W message
+button -position 1 Done dialog -close
+button -position 2 -focus-condition '!$?message_state:(is_prev)' -sensitivity '$?message_state:(is_next) && !$?message_state:(pinup)' Next next
+button -position 3 -focus-condition '!$?message_state:(is_next)' -sensitivity '$?message_state:(is_prev) && !$?message_state:(pinup)' Prev previous
+button -position 4 Delete delete
+button -position 5 Save saveit
+button -position 6 Reply reply
+button -position 7 -sensitivity '!$?message_state:(pinup)' Pinup pinup
+button -position 8 Help help -i Message Display Window
+button -W main
+
+menu -W main
+menu -position 1 -name file -menu MainFileMenuZ -M F -label 'File'
+menu -position 2 -name edit -menu MainEditMenuZ -M E -label 'Edit'
+menu -position 3 -name view -menu MainViewMenuZ -M V -label 'View'
+menu -position 4 -name options -menu MainOptionsMenuZ -M O -label 'Options'
+menu -position 5 -name compose -menu MainComposeMenuZ -M C -label 'Compose'
+menu -position 6 -name sort -menu MainSortMenuZ -M S -label 'Sort'
+menu -position 7 -name windows -menu MainPanesMenuZ -M P -label 'Panes'
+menu -name help -menu MainHelpMenuZ -M H -help-menu -label 'Help'
+
+menu -B MainFileMenuZ
+menu -n -name fm_folders -mnemonic F -accelerator 'Ctrl+F' -label 'Folder Manager ...' 'dialog Folders'
+menu -n -name fm_add_folder -mnemonic A -accelerator 'Ctrl+A' -label 'Add Folder ...' dialog AddFolder
+menu -n -name fm_update -mnemonic U -label 'Update Folder' update
+menu -n -name fm_close_fldr -mnemonic C -label 'Close Folder' close
+menu -n -name fm_active -mnemonic O -label 'Opened Folders ...' dialog Opened
+menu -n -name fm_save_message -mnemonic S -accelerator 'Ctrl+S' -label 'Save Messages ...' dialog Save
+menu -n -name fm_print -mnemonic P -label 'Print Messages ...' 'dialog Printer'
+menu -n -name fm_save_state -mnemonic v -label 'Save Configuration ...' saveopts
+menu -separator fmsep
+menu -n -name fm_iconify -mnemonic I -accelerator 'Ctrl+I' -label 'Iconify' dialog -iconic
+menu -n -name fm_quit -mnemonic Q -accelerator 'Ctrl+C' -label 'Quit' quit
+
+menu -B MainEditMenuZ
+menu -name em_delete -mnemonic D -label 'Delete' delete
+menu -name em_undelete -mnemonic U -label 'Undelete' undelete
+menu -name em_preserve -mnemonic P -label 'Preserve' preserve
+menu -name em_unpreserve -label 'Unpreserve' unpreserve
+menu -name em_mark -mnemonic M -label 'Mark' mark
+menu -name em_unmark -label 'Unmark' unmark
+menu -name em_priority -menu PriorityMenuZ -label 'Prioritize'
+menu -separator -name _sep1
+menu -n -name em_select_all -mnemonic A -accelerator 'Shift+Meta+A' -label 'Select All' 'msg_list *'
+
+menu -B MainViewMenuZ
+menu -name vm_show -mnemonic R -label 'Read Message' 'display'
+menu -name vm_pinup -mnemonic P -label 'Pin-Up Message' 'pinup'
+menu -name vm_hide -mnemonic H -label 'Hide Summary' 'hide'
+menu -name vm_unhide -label 'Unhide Summary' 'unhide'
+menu -n -label 'Unhide All' 'unhide *'
+menu -separator -name _sep1
+menu -name vm_next_reference -menu ViewNextRefMenuZ -mnemonic R -label 'Next Reference'
+menu -n -name vm_pattern -label 'Pattern Search ...' dialog Search
+menu -n -name vm_date -label 'Date Search ...' dialog Dates
+
+menu -B ViewNextRefMenuZ
+menu -name nm_same_subject -mnemonic S -label 'By Subject' zmenu_next_ref_subj
+menu -name nm_same_author -mnemonic A -label 'By Author' zmenu_next_ref_auth
+menu -name nm_same_msgid -mnemonic M -label 'By Message ID' zmenu_next_ref_msgid
+
+menu -B MainOptionsMenuZ
+menu -n -name om_variables -mnemonic V -accelerator 'Ctrl+V' -label 'Variables ...' 'dialog Variables'
+menu -n -name om_headers -mnemonic H -label 'Headers ...' 'dialog Headers'
+menu -n -name om_envelope -mnemonic E -label 'Envelope ...' 'dialog Envelope'
+menu -n -name om_aliases -mnemonic A -label 'Aliases ...' 'dialog Aliases'
+menu -n -name om_buttons -mnemonic B -accelerator 'Ctrl+B' -label 'Buttons ...' 'dialog Buttons'
+menu -n -name om_colors -mnemonic C -label 'Colors ...' 'dialog Colors'
+menu -n -name om_fonts -mnemonic F -label 'Fonts ...' 'dialog Fonts'
+menu -separator -name _sep1
+menu -n -name om_toolbox -mnemonic T -accelerator 'Ctrl+T' -label 'Toolbox ...' 'dialog Toolbox'
+menu -n -name om_three_zero -label '3.0 Buttons/Menus' zmenu_three_zero
+
+menu -B MainComposeMenuZ
+menu -n -name cm_compose -mnemonic N -accelerator 'Ctrl+N' -label 'New' mail
+menu -name cm_reply -mnemonic R -menu MainReplyMenuZ -label 'Reply'
+menu -name cm_forward -mnemonic F -label 'Forward' 'mail -f'
+menu -separator -name _sep1
+menu -n -name cm_browser -mnemonic A -label 'Address Browser ...' 'dialog Browser'
+menu -n -name cm_templates -mnemonic T -label 'Templates ...' 'dialog Templates'
+
+menu -B MainReplyMenuZ
+menu -name rm_replysender -label 'Sender Only' replysender
+menu -name rm_replyall -label 'All Recipients' replyall
+menu -name rm_sender_inc -label 'Sender (Include Msg.)' 'replysender -i'
+menu -name rm_all_inc -label 'All (Include Msg.)' 'replyall -i'
+
+menu -B MainSortMenuZ
+menu -name sm_date -mnemonic D -label 'By Date' 'zmenu_sort_by d'
+menu -name sm_subject -mnemonic S -label 'By Subject' 'zmenu_sort_by s'
+menu -name sm_author -mnemonic A -label 'By Author' 'zmenu_sort_by a'
+menu -name sm_length -mnemonic L -label 'By Message Length' 'zmenu_sort_by l'
+menu -name sm_priority -mnemonic P -label 'By Priority/Mark' 'zmenu_sort_by p'
+menu -name sm_status -mnemonic t -label 'By Status' 'zmenu_sort_by S'
+menu -separator -name _sep1
+menu -n -name sm_custom -label 'Custom Sort ...' 'dialog Sort'
+
+menu -B MainPanesMenuZ
+menu -n -name win_title -value '$?main_panes:(status)' -mnemonic F -label 'Folder Status'
+menu -n -name win_control -value '$?main_panes:(folder)' -mnemonic P -label 'Folder Panel'
+menu -n -name win_list -value '$?main_panes:(messages)' -mnemonic S -label 'Message Summaries'
+menu -n -name win_panel -value '$?main_panes:(buttons)' -mnemonic B -label 'Button Panel'
+menu -n -name win_output -value '$?main_panes:(output)' -mnemonic O -label 'Output Window'
+menu -n -name win_command -value '$?main_panes:(command)' -mnemonic L -label 'Command Line'
+
+menu -B MainHelpMenuZ
+menu -n -name hm_general -mnemonic G -label 'General ...' help -i General
+menu -n -name hm_context -mnemonic C -label 'On Context' help -i context
+menu -n -name hm_main_window -mnemonic W -label 'Main Window ...' help -i Main Window
+menu -n -name hm_folder_field -mnemonic F -label 'Folder: Field ...' help -i Folder: Field
+menu -n -name hm_messages_field -mnemonic M -label 'Messages: Field ...' help -i Messages: Field
+menu -n -name hm_summaries -mnemonic S -label 'Message Summaries ...' help -i Message Summaries
+menu -n -name hm_buttons -mnemonic B -label 'Button Panel ...' help -i Button Panel
+menu -n -name hm_output_win -mnemonic O -label 'Output Window ...' help -i Output Window
+menu -n -name hm_command_area -mnemonic L -label 'Command Line ...' help -i Command Line
+menu -n -name hm_about -mnemonic A -label 'About ...' help -i About This Program
+menu -n -name hm_index -mnemonic I -label 'Index ...' help -i Help Index
+
+menu -B PriorityMenuZ
+menu -name emp_a -mnemonic A -label 'A' 'mark -A'
+menu -name emp_b -mnemonic B -label 'B' 'mark -B'
+menu -name emp_c -mnemonic C -label 'C' 'mark -C'
+menu -name emp_d -mnemonic D -label 'D' 'mark -D'
+menu -name emp_e -mnemonic E -label 'E' 'mark -E'
+menu -name emp_clear -mnemonic N -label 'None' 'mark -'
+
+menu -W compose
+menu -name file -mnemonic F -menu ComposeFileMenuZ -label 'File'
+menu -name edit -sensitivity '$?compose_state:(active)' -mnemonic E -menu ComposeEditMenuZ -label 'Edit'
+menu -name options -sensitivity '$?compose_state:(active)' -mnemonic O -menu ComposeOptionsMenuZ -label 'Options'
+menu -name include -sensitivity '$?compose_state:(active)' -mnemonic I -menu ComposeIncludeMenuZ -label 'Include'
+menu -name deliver -sensitivity '$?compose_state:(active)' -mnemonic D -menu ComposeDeliverMenuZ -label 'Deliver'
+menu -name headers -sensitivity '$?compose_state:(active)' -mnemonic H -menu ComposeHeadersMenuZ -label 'Headers'
+menu -menu ComposePanesMenuZ -M P -label 'Panes'
+menu -name help -mnemonic H -menu ComposeHelpMenuZ -help-menu -label 'Help'
+
+menu -B ComposeFileMenuZ
+menu -name fm_open -sensitivity '$?compose_state:(active)' -mnemonic O -menu ComposeFileOpenMenuZ -label 'Open'
+menu -name fm_save -sensitivity '$?compose_state:(active)' -mnemonic S -accelerator 'Ctrl+S' -label 'Save ...' zmenu_save_to_file
+menu -name fm_templates -sensitivity '$?compose_state:(active)' -mnemonic T -label 'Templates ...' 'dialog Templates'
+menu -separator -name _sep1
+menu -name fm_done -mnemonic D -label 'Done' 'compcmd kill'
+
+menu -B ComposeFileOpenMenuZ
+menu -name om_insert -mnemonic I -label 'Insert Text ...' zmenu_insert_file
+menu -name om_replace -mnemonic R -label 'Replace Text ...' zmenu_replace_file
+
+menu -B ComposeEditMenuZ
+menu -name em_cut -mnemonic C -accelerator 'Shift+Meta+X' -label 'Cut' zmenu_comp_body_textedit cut-selection
+menu -name em_copy -mnemonic o -accelerator 'Shift+Meta+C' -label 'Copy' zmenu_comp_body_textedit copy-selection
+menu -name em_paste -mnemonic P -accelerator 'Shift+Meta+V' -label 'Paste' zmenu_comp_body_textedit paste
+menu -name em_select_all -mnemonic A -accelerator 'Shift+Meta+A' -label 'Select All' zmenu_comp_body_textedit select-all
+menu -name em_clear -mnemonic l -label 'Clear' zmenu_comp_body_textedit deselect
+menu -separator -name _sep0
+menu -name em_format -mnemonic F -menu ComposeEditFormatMenuZ -label 'Format'
+menu -name em_search -mnemonic S -label 'Search/Spell ...' dialog SearchReplace
+menu -name em_spell -mnemonic I -label 'Interactive Spell ...' compcmd spell
+menu -separator -name _sep1
+menu -name em_editor -mnemonic E -label 'Editor ...' compcmd edit
+
+menu -B ComposeEditFormatMenuZ
+menu -name em_fill -mnemonic F -label 'Fill' zmenu_comp_body_textedit fill
+menu -name em_indent -mnemonic I -label 'Indent' zmenu_comp_indent
+menu -name em_unindent -mnemonic U -label 'Unindent' zmenu_comp_body_textedit unindent
+menu -name em_process -mnemonic P -label 'Pipe through Command ...' zmenu_comp_pipe
+
+menu -B ComposeOptionsMenuZ
+menu -name om_autosign -value '$?compose_state:(autosign)' -mnemonic A -label 'Autosign'
+menu -name om_autoformat -value '$?compose_state:(autoformat)' -mnemonic f -label 'Autoformat'
+menu -name om_return-receipt -value '$?compose_state:(return_receipt)' -mnemonic R -label 'Return-Receipt'
+menu -name om_edit-headers -value '$?compose_state:(edit_headers)' -mnemonic E -label 'Edit Headers'
+menu -name om_record-msg -value '$?compose_state:(record_msg)' -mnemonic M -label 'Record Message'
+menu -name om_sort_addrs -value '$?compose_state:(sort_addresses)' -mnemonic S -label 'Sort Addresses'
+menu -name om_directory -value '$?compose_state:(directory_check)' -mnemonic d -label 'Address Book'
+menu -name om_sendcheck -value '$?compose_state:(sendtime_check)' -mnemonic C -label 'Send-Time Check'
+menu -name hdrs_priority -mnemonic P -menu ComposePriorityMenuZ -label 'Prioritize'
+menu -name om_autosend -value '$?autosend' -mnemonic u -label 'AutoSend Editor'
+menu -name om_options -mnemonic O -label 'Options ...' dialog CompOptions
+
+menu -B ComposeIncludeMenuZ
+menu -name im_selected -mnemonic I -label 'Indented Message(s)' compcmd include-message
+menu -name im_forward -mnemonic U -label 'Unmodified Message(s)' compcmd forward-message
+
+menu -B ComposeDeliverMenuZ
+menu -name dm_send -mnemonic S -accelerator 'Shift+Ctrl+S' -label 'Send' compcmd send
+menu -name dm_send_n_close -accelerator 'Shift+Ctrl+D' -label 'Send, Close window' zmenu_send_and_close
+menu -name dm_cancel -mnemonic C -accelerator 'Ctrl+C' -label 'Cancel' compcmd quit
+
+menu -B ComposeHeadersMenuZ
+menu -name hdrs_to -mnemonic T -label 'To' compcmd to
+menu -name hdrs_subject -mnemonic S -label 'Subject' compcmd subject
+menu -name hdrs_cc -mnemonic C -label 'Cc' compcmd cc
+menu -name hdrs_bcc -mnemonic B -label 'Bcc' compcmd bcc
+menu -separator -name _sep1
+menu -name hdrs_browse -mnemonic r -label 'Browse ...' dialog Browser
+menu -name hdrs_check -mnemonic h -label 'Check ...' compcmd address-check
+menu -name hdrs_dynamic -mnemonic D -label 'Dynamic ...' dialog DynamicHdrs
+menu -name hdrs_custom -mnemonic u -label 'Custom ...' dialog Envelope
+menu -name hdrs_aliases -mnemonic A -label 'Aliases ...' dialog CompAliases
+
+menu -B ComposePriorityMenuZ
+menu -name emp_a -value '$?compose_state:(pri_A)' -mnemonic A -label 'A'
+menu -name emp_b -value '$?compose_state:(pri_B)' -mnemonic B -label 'B'
+menu -name emp_c -value '$?compose_state:(pri_C)' -mnemonic C -label 'C'
+menu -name emp_d -value '$?compose_state:(pri_D)' -mnemonic D -label 'D'
+menu -name emp_e -value '$?compose_state:(pri_E)' -mnemonic E -label 'E'
+menu -name emp_clear -value '$?compose_state:(pri_none)' -mnemonic N -label 'None'
+
+menu -B ComposeHelpMenuZ
+menu -name hm_compose_win -mnemonic C -accelerator 'F1' -label 'Compose Window ...' help -i Compose Window
+menu -name hm_addressing -mnemonic A -label 'Addressing ...' help -i Addressing
+
+menu -W message
+menu -name file -mnemonic F -menu MessageFileMenuZ -label 'File'
+menu -name edit -mnemonic E -menu MessageEditMenuZ -label 'Edit'
+menu -name view -mnemonic V -menu MessageViewMenuZ -label 'View'
+menu -name reply -mnemonic R -menu MessageReplyMenuZ -label 'Reply'
+menu -name forward -mnemonic F -menu MessageForwardMenuZ -label 'Forward'
+menu -menu MessagePanesMenuZ -M P -label 'Panes'
+menu -name help -mnemonic H -menu MessageHelpMenuZ -help-menu -label 'Help'
+
+menu -B MessageFileMenuZ
+menu -name fm_save_message -mnemonic S -accelerator 'Ctrl+S' -label 'Save Messages ...' dialog Save
+menu -name fm_print -mnemonic P -label 'Print Messages ...' 'dialog Printer'
+menu -name fm_folders -mnemonic F -accelerator 'Ctrl+F' -label 'Folder Manager ...' 'dialog Folders'
+menu -separator -name _sep1
+menu -name fm_iconify -mnemonic I -accelerator 'Ctrl+I' -label 'Iconify' dialog -iconic
+menu -name fm_close -mnemonic C -accelerator 'Ctrl+C' -label 'Close' dialog -close
+
+menu -B MessageEditMenuZ
+menu -name em_delete -mnemonic D -label 'Delete' delete
+menu -name em_undelete -mnemonic U -label 'Undelete' undelete
+menu -name em_preserve -mnemonic P -label 'Preserve' preserve
+menu -name em_unpreserve -label 'Unpreserve' unpreserve
+menu -name em_mark -mnemonic M -label 'Mark' mark
+menu -name em_unmark -label 'Unmark' unmark
+menu -name em_priority -menu PriorityMenuZ -label 'Prioritize'
+
+menu -B MessageViewMenuZ
+menu -name vm_next -accelerator 'Ctrl+N' -mnemonic N -label 'Read Next' next
+menu -name vm_prev -accelerator 'Ctrl+P' -label 'Read Previous' previous
+menu -name vm_next_reference -menu ViewNextRefMenuZ -mnemonic R -label 'Next Reference'
+menu -name vm_pinup -mnemonic P -label 'Pin-Up Message' 'pinup'
+menu -name vm_hide -mnemonic H -label 'Hide Summary' 'flags +H'
+menu -name vm_unhide -label 'Unhide Summary' 'flags -H'
+menu -name vm_search -mnemonic S -label 'Search ...' dialog SearchReplace
+
+menu -B MessageReplyMenuZ
+menu -accelerator 'Ctrl+R' -name rm_replysender -label 'Sender Only' replysender
+menu -accelerator 'Shift+Ctrl+R' -name rm_replyall -label 'All Recipients' replyall
+menu -name rm_sender_inc -label 'Sender (Include Msg.)' 'replysender -i'
+menu -name rm_all_inc -label 'All (Include Msg.)' 'replyall -i'
+
+menu -B MessageForwardMenuZ
+menu -name fwm_resend -mnemonic R -label 'Resend ...' 'mail -send -forward'
+menu -name fwm_add_cmnts -mnemonic C -label 'with Comments ...' zmenu_fwd_add_comments
+menu -name fwm_edit -mnemonic E -label 'Edited ...' 'mail -forward'
+
+menu -B MessageHelpMenuZ
+menu -name hm_message_win -mnemonic M -accelerator 'F1' -label 'Message Window ...' help -i Message Display Window
+menu -name hm_context -mnemonic C -label 'On Context' help -i context
+menu -name hm_index -mnemonic I -label 'Index ...' help -i Help Index
+
+menu -B ComposePanesMenuZ
+menu -n -value '$?compose_panes:(folder)' -mnemonic F -label 'Folder Panel'
+menu -n -value '!$?compose_state:(edit_headers)' -mnemonic H -label 'Message Headers'
+menu -n -value '$?compose_panes:(body)' -mnemonic B -label 'Message Body'
+menu -n -value '$?compose_panes:(action_area)' -mnemonic B -label 'Buttons'
+menu -n -sensitivity '$?compose_state:(attachments)' -mnemonic A -value '$?compose_panes:(attachments)' -label 'Attachments Area'
+
+menu -B MessagePanesMenuZ
+menu -n -value '$?message_panes:(folder)' -mnemonic F -label 'Folder Panel'
+menu -n -value '$?message_panes:(headers)' -mnemonic H -label 'Message Headers'
+menu -n -value '$?message_panes:(body)' -mnemonic B -label 'Message Body'
+menu -n -value '$?message_panes:(action_area)' -mnemonic B -label 'Buttons'
+menu -n -sensitivity '$?message_state:(attachments)' -mnemonic A -value '$?message_panes:(attachments)' -label 'Attachments Area'
+
+menu -popup-context main-summaries
+menu Read 'type'
+menu Delete 'delete'
+menu Undelete 'undelete'
+menu Save dialog Save
+menu 'Hide Summary' 'flags +H'
+menu -menu PriorityMenuZ 'Priorities'
+menu Print 'lpr'
+menu -n 'Select All' 'msg_list *'
+
+menu -W main

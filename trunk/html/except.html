@@ -1,0 +1,819 @@
+<HTML>
+<HEAD>
+<!-- This HTML file has been created by texi2html 1.35
+     from ../general/except.texinfo on 9 August 1996 -->
+
+<TITLE>Except</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>Except</H1>
+
+
+<H1><A NAME="SEC1" HREF="except_toc.html#SEC1">Introduction</A></H1>
+
+<P>
+This manual describes Except, a library package for adding exception
+handling constructs to C programs.
+
+</P>
+
+
+
+<H1><A NAME="SEC2" HREF="except_toc.html#SEC2">Exception handling overview</A></H1>
+
+<P>
+Exception handling is a programming technique in which error-handling
+code is kept separate from code representing the normal flow of a
+program.  Writing code in an exception-handling style results in
+smaller, more readable, more correct programs.
+
+</P>
+<P>
+Error-handling in conventional C programs is cumbersome and error-prone
+itself!  Suppose function <VAR>a</VAR> calls function <VAR>b</VAR> which calls
+function <VAR>c</VAR> ... which calls function <VAR>y</VAR> which calls
+function <VAR>z</VAR>.  Now suppose <VAR>z</VAR> encounters an error.  Typically,
+it will return a special "error" value to <VAR>y</VAR>, which will return a
+(possibly different) special error value to <VAR>x</VAR> ... which will
+return a (possibly different) special error value to <VAR>b</VAR> which will
+finally inform <VAR>a</VAR> of the error by returning a (possibly different)
+special error value.  Every function is responsible for checking for
+errors and communicating that information to its caller, even though
+the only functions that really <EM>care</EM> about the error are the
+innermost one (the one that encounters the error) and the one, possibly
+many call frames higher, which intends to handle the error.  If someone
+in the chain fails to check for an error condition, it will go
+completely unnoticed and will probably wind up in a software crash later
+on (because, for instance, the program didn't notice that <CODE>malloc</CODE>
+returned <CODE>NULL</CODE> and tried to use it as a valid address).
+
+</P>
+<P>
+Here is a sample sequence of code in which the programmer has been
+fastidious about checking for error codes:
+
+</P>
+
+<PRE>
+if ((ptr = malloc(n)) == NULL) {
+    return (-1);
+}
+if ((fp = fopen("foo", "r")) == NULL) {
+    free(ptr);
+    return (-1);
+}
+if (unlink("bar") != 0) {
+    free(ptr);
+    fclose(fp);
+    return (-1);
+}
+... other processing ...
+</PRE>
+
+<P>
+The code is choked with <CODE>if</CODE> tests and cleanup cases, which are
+often highly redundant.  The return values that mean "error" often
+change from one function to the next.  Functions which do not produce a
+computationally meaningful result are nonetheless forced to have a
+return value to indicate success or failure.  And functions which do
+yield usable values must reserve one such value as its error token,
+unnecessarily constraining its value range.
+
+</P>
+<P>
+In exception handling programming, errors, or <STRONG>exceptions</STRONG>, cause an
+immediate jump <A NAME="FOOT1" HREF="except_foot.html#FOOT1">(1)</A> from
+the place where the error happened to the place which has previously
+assured that it can handle that kind of exception.  In the process of
+finding the handler, it will execute any cleanup code the programmer has
+associated with aborting the intervening call frames.  Different kinds
+of exceptions can have different names, and a function can say it's able
+to handle "out of memory" errors but not "no such file" errors (for
+instance).  In any event, it's impossible for an exception to get lost
+in the shuffle; <EM>someone</EM> will handle it (even if it's the default
+exception handler that's installed at the beginning of a program).
+
+</P>
+<P>
+Here's how the above code fragment might look rewritten in an exception
+handling style:
+
+</P>
+
+<PRE>
+TRY {
+    ptr = e_malloc(n);
+    fp  = e_fopen("foo", "r");
+    e_unlink("bar");
+    ... other processing ...
+} EXCEPT(ANY) {
+    if (ptr)
+        free(ptr);
+    if (fp)
+        free(fp);
+    PROPAGATE();
+} ENDTRY;
+</PRE>
+
+<P>
+The <CODE>TRY</CODE> statement encapsulates code where errors might occur.
+<CODE>EXCEPT</CODE> clauses contain cleanup code, or <STRONG>handlers</STRONG>, to be
+executed when particular exceptions arise.  (Exceptions themselves are
+indicated with the <CODE>RAISE</CODE> function.)
+
+</P>
+<P>
+The calls to <CODE>malloc</CODE>, <CODE>fopen</CODE>, and <CODE>unlink</CODE> have been
+replaced here with calls to <CODE>e_malloc</CODE>, <CODE>e_fopen</CODE>, and
+<CODE>e_unlink</CODE>.  These are fictional functions with names that suggest
+that they work like the originals but when they encounter an error,
+instead of returning a special value, they raise one of several
+exceptions whose names are known.
+
+</P>
+<P>
+This example says to perform the desired computation, and if anything
+goes wrong, make sure any allocated memory is released and any opened
+files are closed.
+
+</P>
+<P>
+Incidentally, the definition of <CODE>e_malloc</CODE> would probably look
+something like this:
+
+</P>
+
+<PRE>
+void *
+e_malloc(n)
+    int n;
+{
+    void *result = malloc(n);
+
+    if (result == NULL)
+        RAISE("out of memory", NULL);
+    return (result);
+}
+</PRE>
+
+
+
+<H1><A NAME="SEC3" HREF="except_toc.html#SEC3">The TRY statement</A></H1>
+
+<P>
+The syntax of the <CODE>TRY</CODE> statement is:
+
+</P>
+<P>
+<A NAME="IDX1"></A>
+<A NAME="IDX2"></A>
+<A NAME="IDX3"></A>
+<A NAME="IDX4"></A>
+
+<PRE>
+TRY {
+    body of normal case
+} [ EXCEPT(<VAR>eid</VAR>) {
+    body of handler for exception case <VAR>eid</VAR>
+} ] ... [ FINALLY {
+    body of cleanup clause
+} ] ENDTRY;
+</PRE>
+
+<P>
+<A NAME="IDX5"></A>
+Square brackets denote optional sections.  Each "body" is an arbitrary
+sequence of C statements (potentially including nested <CODE>TRY</CODE>
+statements).  The "normal case" body is executed normally, stopping if
+an exception occurs.  (The exception may be raised by a <CODE>RAISE</CODE>
+call many call frames down.)  There may be any number of
+<CODE>EXCEPT(<VAR>eid</VAR>) { ... }</CODE> blocks (called <STRONG>exception
+clauses</STRONG>), including zero.  Each <VAR>eid</VAR> is a null-terminated string
+naming the exception which the clause handles; this string is called the
+<STRONG>exception ID</STRONG>.  An exception ID may be the constant <CODE>ANY</CODE>;
+such a clause will handle any raised exception that reaches it.  An
+exception clause is executed when an exception is raised and the clause
+is an <STRONG>appropriate handler</STRONG> as described in section <A HREF="except.html#SEC4">The RAISE function</A>.  The <CODE>FINALLY { ... }</CODE> block (called the
+<STRONG>finally clause</STRONG>) is optional.  Its body is executed at the end of a
+<CODE>TRY ... ENDTRY</CODE> block, whether or not an exception
+occurred, and whether or not any raised exception was handled by this
+particular <CODE>TRY</CODE> block.
+
+</P>
+<P>
+Consider the following <CODE>TRY</CODE> statement:
+
+</P>
+
+<PRE>
+TRY {
+    a();
+    b();
+    c();
+} EXCEPT("out of memory") {
+    d();
+} EXCEPT("file not found") {
+    e();
+} FINALLY {
+    f();
+    g();
+} ENDTRY;
+</PRE>
+
+<P>
+When control reaches this block, the body of the normal case is executed
+(a call to <CODE>a</CODE> followed by a call to <CODE>b</CODE> followed by a call to
+<CODE>c</CODE>).  If all goes well, control then jumps to the finally clause,
+where <CODE>f</CODE> and then <CODE>g</CODE> are called.
+
+</P>
+<P>
+If an "out of memory" exception occurs sometime during the call to
+<CODE>b</CODE> (say), then control jumps directly to the handler for the "out
+of memory" error, and <CODE>d</CODE> is executed.  Similarly, if a "file not
+found" exception occurs during the call to <CODE>b</CODE>, then control jumps
+directly to the "file not found" handler, executing <CODE>e</CODE>.
+Execution in both exception cases resumes with <CODE>f</CODE> and <CODE>g</CODE> in
+the finally clause, then continues after the <CODE>TRY</CODE> block.
+
+</P>
+<P>
+If an exception other than "out of memory" and "file not found"
+occurs during <CODE>a</CODE>, <CODE>b</CODE>, or <CODE>c</CODE>, then the finally clause
+is executed and control jumps to a call frame containing a handler for
+the raised exception.  No statements after the <CODE>ENDTRY</CODE> are
+executed.
+
+</P>
+<P>
+If there is no <CODE>EXCEPT</CODE> block in any pending call frame that will
+handle the raised exception, then the <STRONG>uncaught exception handler</STRONG>
+is invoked (see section <A HREF="except.html#SEC7">Miscellaneous functions</A>).
+
+</P>
+<P>
+It is sometimes the case that a section of exception-handling code needs
+to apply to all raised exceptions even when there is additional code
+that needs to apply to specific exceptions.  This won't suffice:
+
+</P>
+
+<PRE>
+TRY {
+    ...
+} EXCEPT(<VAR>specific</VAR>) {
+    code for a specific exception
+} EXCEPT(ANY) {
+    code for all other exceptions
+} ENDTRY;
+</PRE>
+
+<P>
+because the "code for all other exceptions" won't be executed in the
+case of the <VAR>specific</VAR> exception.  Use this instead:
+
+</P>
+
+<PRE>
+TRY {
+    ...
+} EXCEPT(ANY) {
+    if (!strcmp(except_GetRaisedException(), <VAR>specific</VAR>)) {
+        code for a specific exception
+    }
+    code for all exceptions
+} ENDTRY;
+</PRE>
+
+<P>
+Generally speaking, a program will contain many more <CODE>TRY ...
+FINALLY ... ENDTRY</CODE> blocks than <CODE>TRY ... EXCEPT ...
+ENDTRY</CODE> blocks.  This is because the exception handler for a particular
+kind of error only needs to be in a small number of places, while
+cleanup code for code blocks where failures can occur is much more
+prevalent.  There is no reason to write a <CODE>TRY</CODE> block with no
+<CODE>EXCEPT</CODE> clauses and no <CODE>FINALLY</CODE> clause.  This is a common
+idiom:
+
+</P>
+
+<PRE>
+p = e_malloc(n);        /* or fp = e_fopen(...), or ... */
+TRY {
+    code that uses the value of <CODE>p</CODE>
+} FINALLY {
+    free(p);            /* or fclose(fp), or ... */
+} ENDTRY;
+</PRE>
+
+<P>
+This ensures that <CODE>p</CODE> is always freed when it's no longer needed,
+even if an exception occurs deep inside the "code that uses the value
+of <CODE>p</CODE>".  Note that the call to <CODE>e_malloc</CODE> is outside the
+<CODE>TRY</CODE> block because if it fails, the <CODE>FINALLY</CODE> clause needn't
+be executed (no memory will have been allocated), and the "out of
+memory" exception raised by <CODE>e_malloc</CODE> will abort this frame and
+unwind the stack to search for an appropriate handler.
+
+</P>
+
+
+<H1><A NAME="SEC4" HREF="except_toc.html#SEC4">The RAISE function</A></H1>
+
+<P>
+The <CODE>RAISE</CODE> function raises a named exception and associates a
+piece of data with it.
+
+</P>
+<P>
+<U>Function:</U>  <B>RAISE</B> <I>(const char *<VAR>eid</VAR>, void *<VAR>edata</VAR>)</I><P>
+<A NAME="IDX6"></A>
+Raises exception <VAR>eid</VAR> (a null-terminated string).  This function
+does not return.  Instead, it causes a <CODE>longjmp</CODE> to the nearest
+appropriate enclosing handler for the exception.  "The nearest
+appropriate" handler is the innermost pending <CODE>TRY</CODE> statement
+containing either a <CODE>FINALLY</CODE> clause or an <CODE>EXCEPT</CODE> clause
+matching <VAR>eid</VAR>.  An <CODE>EXCEPT</CODE> clause "matches" <VAR>eid</VAR> if
+the <CODE>EXCEPT</CODE> clause's name compares the same as <VAR>eid</VAR> (using
+<CODE>strcmp</CODE>), or if it is an <CODE>EXCEPT(ANY)</CODE> clause.
+
+</P>
+<P>
+If the nearest appropriate handler is a <CODE>FINALLY</CODE> clause, its body
+is executed and then the search for an appropriate handler continues as
+above.  If the nearest appropriate handler is a matching
+<CODE>EXCEPT</CODE> clause, its body is executed, followed by the
+<CODE>FINALLY</CODE> clause (if present) of the same <CODE>TRY</CODE> statement, and
+then control proceeds normally following the <CODE>TRY</CODE> block.
+
+</P>
+<P>
+Any handler for the raised exception may call the function
+<CODE>except_GetExceptionValue</CODE> to get the value of <VAR>edata</VAR>, which
+is an arbitrary datum that is associated with the exception.
+
+</P>
+<P>
+If no appropriate handler for exception <VAR>eid</VAR> exists, the uncaught
+exception handler is called (see section <A HREF="except.html#SEC7">Miscellaneous functions</A>).
+
+</P>
+
+
+<H1><A NAME="SEC5" HREF="except_toc.html#SEC5">Non-local exits</A></H1>
+
+<P>
+This implementation of exceptions for C is entirely based on macro
+definitions and library functions; i.e., it is not a part of the
+language <I>per se</I>.  As such, it has one important limitation not found
+in languages with intrinsic exception-handling:  <CODE>TRY</CODE> statements
+that can be aborted by non-local exits must be written specially.
+
+</P>
+<P>
+A <STRONG>non-local exit</STRONG> in C is a point in the program where control does
+not flow sequentially from one statement to the next.  <A NAME="FOOT2" HREF="except_foot.html#FOOT2">(2)</A>  In C, the following keywords
+all cause non-local exits:
+
+</P>
+
+<UL>
+<LI><CODE>break</CODE>
+
+<LI><CODE>continue</CODE>
+
+<LI><CODE>goto</CODE>
+
+<LI><CODE>return</CODE>
+
+</UL>
+
+<P>
+To keep its internal state consistent, Except expects that a <CODE>TRY</CODE>
+block will always reach its <CODE>ENDTRY</CODE> (or will be exited via a
+raised exception).  <EM>It is an error to write a <CODE>break</CODE>,
+<CODE>continue</CODE>, or <CODE>return</CODE> statement inside a <CODE>TRY</CODE> block if
+it will cause control to leave the <CODE>TRY</CODE> block</EM>!  These control
+constructs can be replaced with the following:
+
+</P>
+<P>
+<A NAME="IDX7"></A>
+<A NAME="IDX8"></A>
+<A NAME="IDX9"></A>
+<A NAME="IDX10"></A>
+
+<UL>
+<LI><CODE>EXC_BREAK</CODE>
+
+<LI><CODE>EXC_CONTINUE</CODE>
+
+<LI><CODE>EXC_RETURN</CODE>
+
+<LI><CODE>EXC_RETURNVAL(<VAR>t</VAR>, <VAR>v</VAR>)</CODE>
+
+</UL>
+
+<P>
+Note that there is no <CODE>EXC_</CODE> equivalent for <CODE>goto</CODE>; this means
+it is an error to use <CODE>goto</CODE> to leave a <CODE>TRY</CODE> block.  The
+<CODE>EXC_RETURN</CODE> form is used when returning from <CODE>void</CODE> functions
+that do not return a value.  The <CODE>EXC_RETURNVAL</CODE> form is used when
+returning from functions that do need to return a value.  It takes two
+arguments: <VAR>t</VAR> is the type of the value and <VAR>v</VAR> is the value
+itself.<A NAME="FOOT3" HREF="except_foot.html#FOOT3">(3)</A>
+
+</P>
+<P>
+Note that a <CODE>break</CODE> statement in a <CODE>switch</CODE> statement does
+<EM>not</EM> get replaced by <CODE>EXC_BREAK</CODE>, but a <CODE>break</CODE>
+statement that exits from a loop construct does.
+
+</P>
+<P>
+Each of these non-local exit keywords exits a particular kind of block
+non-locally.  <CODE>return</CODE> exits an entire function, while <CODE>break</CODE>
+and <CODE>continue</CODE> each exits the innermost enclosing loop containing
+them.  Whichever kind of block has had a non-local exit replaced with an
+<CODE>EXC_</CODE> form must <EM>itself</EM> be rewritten as follows:
+
+</P>
+<P>
+<A NAME="IDX11"></A>
+<A NAME="IDX12"></A>
+
+<UL>
+<LI>
+
+A function containing an <CODE>EXC_RETURN</CODE> or <CODE>EXC_RETURNVAL</CODE> must
+have its outermost braces surrounded with <CODE>EXC_BEGIN</CODE> and
+<CODE>EXC_END</CODE>, like so:
+
+
+<PRE>
+char *
+somefunc(a)
+    char *a;
+EXC_BEGIN
+{
+    ...
+    TRY {
+        ...
+        EXC_RETURNVAL(char *, index(foo, bar));
+        ...
+    } ENDTRY;
+    ...
+} EXC_END;
+</PRE>
+
+However, <CODE>EXC_RETURN</CODE> and <CODE>EXC_RETURNVAL</CODE> only need to be used
+when returning from within a <CODE>TRY</CODE> block.  It's okay to use an
+ordinary <CODE>return</CODE> when returning from a
+<CODE>EXC_BEGIN</CODE>-<CODE>EXC_END</CODE> wrapped function if not returning from
+within a <CODE>TRY</CODE> block.
+
+<A NAME="IDX13"></A>
+<A NAME="IDX14"></A>
+<A NAME="IDX15"></A>
+<LI>
+
+A loop containing an <CODE>EXC_BREAK</CODE> or <CODE>EXC_CONTINUE</CODE> must be
+rewritten to replace the <CODE>do</CODE>, <CODE>for</CODE>, or <CODE>while</CODE> with
+<CODE>EXC_DO</CODE>, <CODE>EXC_FOR</CODE>, or <CODE>EXC_WHILE</CODE>, respectively.  Also,
+the body of the loop (whether a single statement with no surrounding
+braces, or a compound statement with surrounding braces) must be
+followed by an <CODE>EXC_END</CODE>.  Only the loop affected by the non-local
+exit need be rewritten; if such a loop is contained within another loop,
+the outer loop need not be rewritten.  Example:  this function
+
+
+<PRE>
+char *
+newfunc(a)
+    char *a;
+{
+    ...
+    for (i = 0; i &#60; 17; ++i) {
+        ...
+        TRY {
+            ...
+            if (i == j)
+                break;
+            ...
+        } ENDTRY;
+        ...
+    }
+    ...
+}
+</PRE>
+
+should be rewritten as
+
+
+<PRE>
+char *
+newfunc(a)
+    char *a;
+{
+    ...
+    EXC_FOR (i = 0; i &#60; 17; ++i) {
+        ...
+        TRY {
+            ...
+            if (i == j)
+                EXC_BREAK;
+            ...
+        } ENDTRY;
+        ...
+    } EXC_END;
+    ...
+}
+</PRE>
+
+Only loops containing <CODE>TRY</CODE> statements containing non-local exits
+need be rewritten.  A <CODE>TRY</CODE> statement which totally encloses a loop
+which contains a non-local exit does not need to be rewritten, since the
+non-local exit will not cause control to leave the <CODE>TRY</CODE> block.
+</UL>
+
+<P>
+<STRONG>Warning</STRONG>:  All of the non-local exit constructs will bypass the
+<CODE>FINALLY</CODE> clause of any <CODE>TRY</CODE> block which they exit!
+
+</P>
+
+
+<H1><A NAME="SEC6" HREF="except_toc.html#SEC6">Signal handling</A></H1>
+
+<P>
+A variation of the <CODE>TRY</CODE> statement allows the programmer to treat
+Unix signals as exceptions.  The <CODE>TRYSIG</CODE> statement is used to
+enclose a block containing exception handlers for certain signals.  The
+syntax of a <CODE>TRYSIG</CODE> block is parallel to the syntax for a
+<CODE>TRY</CODE> block:
+
+</P>
+<P>
+<A NAME="IDX16"></A>
+<A NAME="IDX17"></A>
+<A NAME="IDX18"></A>
+<A NAME="IDX19"></A>
+
+<PRE>
+TRYSIG((<VAR>sig1</VAR>, <VAR>sig2</VAR>, ..., 0)) {
+    body of normal case
+} [ EXCEPTSIG(<VAR>sig1</VAR>) {
+    body of handler for signal number <VAR>sig1</VAR>
+} ] ... [ FINALLYSIG {
+    body of cleanup clause
+} ] ENDTRYSIG;
+</PRE>
+
+<P>
+Square brackets denote optional sections, and there may be any number of
+<CODE>EXCEPTSIG(<VAR>sig</VAR>) { ... }</CODE> blocks.  Note the
+double-parentheses required in <CODE>TRYSIG</CODE>'s parameter list, and also
+note the required terminating <CODE>0</CODE>.
+
+</P>
+<P>
+Upon entry to a <CODE>TRYSIG</CODE> block, a signal handler is installed for
+each of the listed signal numbers which simply performs a
+<CODE>RAISE(strsignal(<VAR>sig</VAR>), NULL)</CODE> (where
+<CODE>strsignal(<VAR>sig</VAR>)</CODE> yields a string naming the signal numbered
+<VAR>sig</VAR>).  This exception can be caught by a
+<CODE>EXCEPTSIG(<VAR>sig</VAR>)</CODE> clause.  Upon (any kind of) exit from the
+<CODE>TRYSIG</CODE> block, the previously-installed handlers for the listed
+signals are restored.
+
+</P>
+<P>
+Note that <CODE>EXCEPTSIG(<VAR>sig</VAR>)</CODE> is exactly equivalent to
+<CODE>EXCEPT(strsignal(<VAR>sig</VAR>))</CODE> and, in fact, ordinary <CODE>EXCEPT</CODE>
+clauses can be freely mixed among <CODE>EXCEPTSIG</CODE> clauses.  However, if
+<CODE>EXCEPTSIG</CODE> is used, then <CODE>TRYSIG</CODE>, <CODE>FINALLYSIG</CODE>, and
+<CODE>ENDTRYSIG</CODE> must be used instead of their non-signal-related
+counterparts.
+
+</P>
+<P>
+Finally, note that an <CODE>EXCEPT(ANY)</CODE> clause will catch all
+signal-generated exceptions as well as ordinary exceptions.
+
+</P>
+
+
+<H1><A NAME="SEC7" HREF="except_toc.html#SEC7">Miscellaneous functions</A></H1>
+
+<P>
+<U>Macro:</U>  <B>ASSERT</B> <I>(<VAR>e</VAR>, const char *<VAR>eid</VAR>, void *<VAR>edata</VAR>)</I><P>
+<A NAME="IDX20"></A>
+Evaluates the arbitrary expression <VAR>e</VAR>.  If it is zero,
+<CODE>ASSERT</CODE> raises the exception named <VAR>eid</VAR> (a string), with
+associated datum <VAR>edata</VAR> (see section <A HREF="except.html#SEC4">The RAISE function</A>).  If <VAR>e</VAR>
+is non-zero, <CODE>ASSERT</CODE> yields its value and takes no further action.
+
+</P>
+<P>
+<U>Function:</U>  <B>PROPAGATE</B> <I>()</I><P>
+<A NAME="IDX21"></A>
+Inside an <CODE>EXCEPT</CODE> clause, re-raises the same exception (i.e., the
+one being handled).  Control immediately leaves the pending <CODE>TRY</CODE>
+block and searches for the next appropriate handler as described in
+section <A HREF="except.html#SEC4">The RAISE function</A>.  <STRONG>Warning</STRONG>:  If <CODE>PROPAGATE</CODE> is
+called inside an <CODE>EXCEPT</CODE> clause, and there is an associated
+<CODE>FINALLY</CODE> clause awaiting execution, the <CODE>FINALLY</CODE> clause will
+be bypassed!  A workaround for this unfortunate state of affairs is
+this:  Instead of writing
+
+</P>
+
+<PRE>
+TRY {
+    ...
+} EXCEPT("some error") {
+    ...
+    PROPAGATE();
+    ...
+} FINALLY {
+    cleanup code
+} ENDTRY;
+</PRE>
+
+<P>
+(in which the "cleanup code" will never be executed if
+<CODE>PROPAGATE</CODE> is reached), write
+
+</P>
+
+<PRE>
+TRY {
+    TRY {
+        ...
+    } EXCEPT("some error") {
+        ...
+        PROPAGATE();
+        ...
+    } ENDTRY;
+} FINALLY {
+    cleanup code
+} ENDTRY;
+</PRE>
+
+<P>
+In this version, the call to <CODE>PROPAGATE</CODE> immediately aborts the
+inner <CODE>TRY</CODE>.  In searching for a new handler for the raised
+exception, the outer <CODE>TRY</CODE> is encountered and its <CODE>FINALLY</CODE>
+clause is executed.
+
+</P>
+<P>
+<U>Function:</U> const char * <B>except_GetRaisedException</B> <I>()</I><P>
+<A NAME="IDX22"></A>
+Returns the name (exception ID) of the latest exception raised.
+
+</P>
+<P>
+<U>Function:</U> void <B>except_SetExceptionValue</B> <I>(void *<VAR>v</VAR>)</I><P>
+<A NAME="IDX23"></A>
+Associates arbitrary datum <VAR>v</VAR> with the pending exception.  <VAR>v</VAR>
+becomes the value returned by <CODE>except_GetExceptionValue</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void * <B>except_GetExceptionValue</B> <I>()</I><P>
+<A NAME="IDX24"></A>
+Returns the datum that was associated with a raised exception by
+<CODE>RAISE</CODE> or a subsequent <CODE>except_SetExceptionValue</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>except_SetUncaughtExceptionHandler</B> <I>(void (*<VAR>func</VAR>)())</I><P>
+<A NAME="IDX25"></A>
+Causes <VAR>func</VAR> to become the function that handles uncaught
+exceptions (exceptions which, when raised, can find no appropriate
+handler after checking the outermost enclosing <CODE>TRY</CODE> block).
+<VAR>func</VAR> is a void function of no arguments, and can access the name
+and data of the pending exception using the functions
+<CODE>except_GetRaisedException</CODE> and <CODE>except_GetExceptionValue</CODE>.
+It is expected that <VAR>func</VAR> doesn't return normally (i.e., it does a
+<CODE>longjmp</CODE> or it exits the application or somesuch); if it does
+return normally, control will resume after the outermost pending
+<CODE>TRY</CODE> block, or immediately following the pending call to
+<CODE>RAISE</CODE> if there are no pending <CODE>TRY</CODE> blocks.
+
+</P>
+<P>
+The default uncaught exception handler generates a core-dumping signal
+that is guaranteed not to be caught.
+
+</P>
+<P>
+<U>Function:</U> (void (*) ()) <B>except_GetUncaughtExceptionHandler</B> <I>()</I><P>
+<A NAME="IDX26"></A>
+Returns the function that handles uncaught exceptions.
+
+</P>
+<P>
+<U>Macro:</U>  <B>DEFINE_EXCEPTION</B> <I>(<VAR>name</VAR>, <VAR>string</VAR>)</I><P>
+<A NAME="IDX27"></A>
+Define a string-valued variable and an exception identifier to serve as
+its value.  The variable name should be used in <CODE>RAISE</CODE> and
+<CODE>EXCEPT</CODE> constructs rather than the string constant, to guard
+against typographical errors in duplicating the exception identifier.
+This macro expands to:
+
+</P>
+
+<PRE>
+const char <VAR>name</VAR>[] = <VAR>string</VAR>
+</PRE>
+
+<P>
+and must be followed by a semi-colon.
+
+</P>
+<P>
+<U>Macro:</U>  <B>DECLARE_EXCEPTION</B> <I>(<VAR>name</VAR>)</I><P>
+<A NAME="IDX28"></A>
+Declare the name of a variable whose string value is intended to be used
+as an exception identifier.  This macro expands to:
+
+</P>
+
+<PRE>
+extern const char <VAR>name</VAR>[]
+</PRE>
+
+<P>
+and must be followed by a semi-colon.
+
+</P>
+
+
+<H1><A NAME="SEC8" HREF="except_toc.html#SEC8">Compiling</A></H1>
+
+<P>
+To use Except in a C program, include the header file <TT>`except.h'</TT> in
+any module that uses Except macros or functions.  Link your object files
+with <TT>`libexcept.a'</TT>.
+
+</P>
+
+
+<H1><A NAME="SEC9" HREF="except_toc.html#SEC9">Function index</A></H1>
+
+<P>
+<H2>a</H2>
+<DIR>
+<LI><A HREF="except.html#IDX5">ANY</A>
+<LI><A HREF="except.html#IDX20">ASSERT</A>
+</DIR>
+<H2>d</H2>
+<DIR>
+<LI><A HREF="except.html#IDX28">DECLARE_EXCEPTION</A>
+<LI><A HREF="except.html#IDX27">DEFINE_EXCEPTION</A>
+</DIR>
+<H2>e</H2>
+<DIR>
+<LI><A HREF="except.html#IDX4">ENDTRY</A>
+<LI><A HREF="except.html#IDX19">ENDTRYSIG</A>
+<LI><A HREF="except.html#IDX11">EXC_BEGIN</A>
+<LI><A HREF="except.html#IDX7">EXC_BREAK</A>
+<LI><A HREF="except.html#IDX8">EXC_CONTINUE</A>
+<LI><A HREF="except.html#IDX13">EXC_DO</A>
+<LI><A HREF="except.html#IDX12">EXC_END</A>
+<LI><A HREF="except.html#IDX14">EXC_FOR</A>
+<LI><A HREF="except.html#IDX9">EXC_RETURN</A>
+<LI><A HREF="except.html#IDX10">EXC_RETURNVAL</A>
+<LI><A HREF="except.html#IDX15">EXC_WHILE</A>
+<LI><A HREF="except.html#IDX2">EXCEPT</A>
+<LI><A HREF="except.html#IDX24">except_GetExceptionValue</A>
+<LI><A HREF="except.html#IDX22">except_GetRaisedException</A>
+<LI><A HREF="except.html#IDX26">except_GetUncaughtExceptionHandler</A>
+<LI><A HREF="except.html#IDX23">except_SetExceptionValue</A>
+<LI><A HREF="except.html#IDX25">except_SetUncaughtExceptionHandler</A>
+<LI><A HREF="except.html#IDX17">EXCEPTSIG</A>
+</DIR>
+<H2>f</H2>
+<DIR>
+<LI><A HREF="except.html#IDX3">FINALLY</A>
+<LI><A HREF="except.html#IDX18">FINALLYSIG</A>
+</DIR>
+<H2>p</H2>
+<DIR>
+<LI><A HREF="except.html#IDX21">PROPAGATE</A>
+</DIR>
+<H2>r</H2>
+<DIR>
+<LI><A HREF="except.html#IDX6">RAISE</A>
+</DIR>
+<H2>t</H2>
+<DIR>
+<LI><A HREF="except.html#IDX1">TRY</A>
+<LI><A HREF="except.html#IDX16">TRYSIG</A>
+</DIR>
+
+</P>
+</BODY>
+</HTML>

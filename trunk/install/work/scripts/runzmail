@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ -z $NLSPATH]
+then
+NLSPATH=LIBPATH/zmail
+export NLSPATH
+else
+NLSPATH=$NLSPATH:LIBPATH/zmail
+export NLSPATH
+fi
+$BINPATH/zmailbin -gui $*

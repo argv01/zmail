@@ -1,0 +1,1991 @@
+//
+// BLDNOTES.TXT
+//
+// This file will contain a running log of build notes.
+// Before giving a build to QA, each engineer should
+// make sure that a summary of his or her work since the
+// last build (or, at least, salient points) makes it
+// into this file. I suggest using SourceSafe to incorporate
+// the log comments into this file, so we'll get a common
+// look and feel in addition to an easy to use UI.
+//
+// YT, MLAS, Z-Date 4/28/95 (Jason's Birthday)
+//
+// ----------------------------------------------------------
+//
+// $Header: /usr/cvsroot/zmail/bldnotes.txt,v 1.6 1995/07/14 03:53:22 schaefer Exp $
+// $Revision: 1.6 $
+// $Modtime: 7/07/95 5:13p $
+//
+// $History: BLDNOTES.TXT $
+// 
+// *****************  Version 199  *****************
+// User: Schwa        Date: 7/07/95    Time: 5:13p
+// Updated in $/zmailsrc
+// Some big changes to menus and buttons:
+// 
+// - Removed all buttons that have toolbar counterparts per RQ
+// - Added Signature button to compose button panel
+// - Added Queue button to compose button panel
+// - Added Resend button to message button panel
+// - Added Detach uuencoded to message button panel
+// 
+// - Added Signature to Compose Tools menu
+// - Added Schwa's Add to Aliases to Message Message menu
+// - Changed tooltip Add Alias to Add to Aliases
+// - Revised Sync menu items
+// 
+// *****************  Version 198  *****************
+// User: Tstring      Date: 7/07/95    Time: 1:51p
+// Updated in $/zmailsrc
+// aliases.cpp
+// Oh, so now you want to EDIT an existing ALIAS?! Sheesh! :)
+// Now you can.
+// 
+// button.cpp
+// Don't conditionally decide whether or not to draw the owner draw icon
+// buttons -- just do it!
+// This fixed the disappearing attachments and toolbox buttons probelms.
+// 
+// choose1.cpp
+// Don't ever allow the AskMultiple's listbox to be greater than 40
+// characters wide. This fixes the "gosh, the address check dialog is
+// humongo" bug, that has existed in ZWin since the dawn of time...
+// 
+// funcs.cpp
+// Limit the minimum size of the functions dialog to prevent the
+// mysterious "disappearing" functions dialog edit control bug.
+// 
+// hdrpmpt.cpp
+// Code reformatting, and make address_check work for compose.
+// 
+// rowcol.cpp
+// Make sure to initialize a few critical members of a RowCol, just in
+// case.
+// 
+// zdlgs.rc.h
+// Shrink the alias dialog a little bit, and add back a "edit" button in
+// the aliases dialog. 
+// NOTE TO QA AND DOC: A double-click on an entry in the alias list has
+// the same effect as an "edit"; this is consistent with the addressing
+// area of the compose window.
+// 
+// msgs\folders.c
+// Don't allow more than 9 folders open at one time.
+// 
+// msgs\mail.c
+// Get address_check to work when sending. (YAY!!!) -- BART RULES!
+// 
+// *****************  Version 196  *****************
+// User: Cmb          Date: 7/06/95    Time: 6:50p
+// Updated in $/zmailsrc
+// wingui\zmailmnu.rc:
+// added one "echo" statement in zmenu_change_connected.
+// 
+// *****************  Version 195  *****************
+// User: Cmb          Date: 7/06/95    Time: 6:50p
+// Updated in $/zmailsrc
+// wingui\system.rc:
+// Added a startup hook that is commented out for RQ.
+// 
+// *****************  Version 194  *****************
+// User: Schwa        Date: 7/06/95    Time: 6:10p
+// Updated in $/zmailsrc
+// zmailmnu.rc - 
+// reorganized Main Help Menu
+// fixed some mneonics on compose window
+// 
+// *****************  Version 193  *****************
+// User: Wilbur       Date: 7/06/95    Time: 5:33p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/WINGUI/login.cpp
+// More on updating password if change in user name. We now get password
+// directly from the user.ini file, rather than from the environment
+// space. The environment variable PASSWD may be left over from the
+// previous user name if the new user does not have an explicit PASSWD set
+// in his ini file.
+// 
+// *****************  Version 192  *****************
+// User: Wilbur       Date: 7/06/95    Time: 3:14p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/WINGUI/login.[cpp,h]
+// Update the login password field if the user name is changed. If there
+// is no password available (remembered), blank out the password field.
+// 
+// Updated in $/zmailsrc/WINGUI/parent.[cpp,h]
+// Updated in $/zmailsrc/WINGUI/parentcf.cpp
+// Add text entry check for the "PC host name" field of Setup to insure a
+// non-blank entry is present.
+// 
+// Updated in $/zmailsrc/WINGUI/zmapp.cpp
+// Modify load_environment() function so that zmail.ini variables are
+// loaded first, and then the user.ini variables are loaded. In this way
+// if the user defines the same variable as zmail.ini, the user variable
+// overrides the zmail.ini variable.
+// 
+// Updated in $/zmailsrc/WINGUI/zdlgs.rc
+// Changed Setup dialog box text to "PC host name" and "Enable
+// remote preferences" from "Z-Mail host" and "Save preferences
+// to Z-POP host" respectively.
+// 
+// *****************  Version 191  *****************
+// User: Gary         Date: 7/05/95    Time: 11:55a
+// Updated in $/zmailsrc
+// added savestate=yes to [general] in env.ini
+// 
+// *****************  Version 190  *****************
+// User: Tstring      Date: 7/05/95    Time: 11:12a
+// Updated in $/zmailsrc
+// buttons.c:
+// Oops. Don't make the button list names live in the CS; this goes "bang"
+// when you try to swap button lists....
+// 
+// *****************  Version 189  *****************
+// User: Tstring      Date: 7/05/95    Time: 10:58a
+// Updated in $/zmailsrc
+// compose.cpp:
+// Don't do the WM_SETREDRAW thing anymore, for saving window positions.
+// 
+// Call SavePosition() in the destructor, so that if the user closes the
+// app without explicitly closing the compose window, its position is
+// maintained.
+// 
+// framewnd.cpp:
+// Make sure that the default ShowWindow() is WM_SHOW, so that if the user
+// DOESN'T have SaveState=1 in their .INI, everything still gets
+// displayed!
+// 
+// Don't throw away WM_XBUTTONDOWN messages when we're blocking; this
+// could easily cause confusion, opposite to the comment left there by
+// Paul....this is not Motif.
+// 
+// Handle OnEraseBkgnd() so we can actually properly draw ourselves when
+// we need to...
+// 
+// msgwin.cpp:
+// MAJOR contortions to properly handle the case in which a message window
+// is first invoked, or when it is subsequently used (ie, by doing a
+// 'next' message, et. al.), in the context of saving window positions.
+// Without this mod, the message window would get created in the correct
+// place, however, if you subsequently moved the window, it would "snap"
+// back to its original location when you did a 'next', or whatever.
+// 
+// Don't directly call pop_periodic() to do the init check; call
+// main_frame->DoCmdLine ("await") instead, so that all paths to
+// pop_periodic are consistent.
+// 
+// Put back a refresh command which was causing ini_check mail to be
+// performed PRIOR to the redrawing of the message summaries, which meant
+// that they sometimes wound't show up.
+// 
+// zmapp.cpp:
+// Change the wincat_lookup stuff to use a static array of CStrings,
+// rather than a CPtrList of CString *'s, to minimize the amount of
+// 'new'd' data. This is a possible fix for the "update crash" bug, and
+// other mysterious, seemingly random crashers / hangs.
+// 
+// *****************  Version 188  *****************
+// User: Wilbur       Date: 6/30/95    Time: 7:19p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/WINGUI/parent.[cpp,h]
+// Updated in $/zmailsrc/WINGUI/parentcf.cpp
+// Add text edit control validation to real name field of User Info pane
+// of Setup. Checks that real name is no greater than 120 characters.
+// 
+// *****************  Version 187  *****************
+// User: Tstring      Date: 6/30/95    Time: 6:00p
+// Updated in $/zmailsrc
+// Another TEST TEST TEST !
+// 
+// *****************  Version 186  *****************
+// User: Tstring      Date: 6/30/95    Time: 5:43p
+// Branched in $/zmailsrc
+// 
+// *****************  Version 185  *****************
+// User: Tstring      Date: 6/30/95    Time: 5:41p
+// Branched in $/zmailsrc
+// 
+// *****************  Version 184  *****************
+// User: Schwa        Date: 6/30/95    Time: 4:10p
+// Updated in $/zmailsrc
+// custom\download.c
+// custom\mailserv.c
+// shell\refresh.c
+// 
+// changed user visible strings of zync to Z-POP
+// 
+// *****************  Version 183  *****************
+// User: Gary         Date: 6/30/95    Time: 3:57p
+// Updated in $/zmailsrc
+// chgd filename for .exe in readme.txt
+// 
+// *****************  Version 182  *****************
+// User: Tstring      Date: 6/30/95    Time: 3:34p
+// Updated in $/zmailsrc
+// frame.cpp:
+// Ooops! Make sure that the analysis as to whether or not to move the MDI
+// child window (as in, if it would get created off the screen) is using a
+// consistent coordinate system. Ooops.
+// 
+// compose.cpp, framewnd.*, msgwin.cpp, mainwin.cpp, zmapp.cpp:
+// MDI child windows now save their position, if asked to, both between
+// sessions, and in-instance.
+// 
+// *****************  Version 181  *****************
+// User: Wilbur       Date: 6/30/95    Time: 2:35p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/WINGUI/parent.[cpp,h]
+// Updated in $/zmailsrc/WINGUI/parentcf.cpp
+// Added text edit control validation for Inbox and Outbox fields of the
+// Incoming Mail & Outgoing Mail panes of Setup dialog. Checks for blank
+// entry and valid dos name.
+// 
+// *****************  Version 180  *****************
+// User: Tstring      Date: 6/30/95    Time: 10:09a
+// Updated in $/zmailsrc
+// fontmap.cpp:
+// Fix a complier error; 
+// 
+// NOTE: for those who are doing mods in the coldebase, but which haven't
+// been doing it long, Please follow the following guidelines:
+// 
+// 1. If you are in a file in the WINGUI subdiorectory, and you want to
+// comment-out a line of code, please us the C++ mechanism of a 
+// //
+// in fron of the line.
+// 
+// 2. if you are anywhere else in the source tree and want to comment out
+// a line of 'c' code, please use the standard 'c' convention of
+// /*  */
+// surrounding the line you want commented out.
+// 
+// The '#' character is a pre-processor directive in 'c', and 'c++', and
+// will generate an error; this is the correct character to use in a file
+// containinig zscript, however.
+// 
+// FYI.
+// 
+// *****************  Version 179  *****************
+// User: Tstring      Date: 6/30/95    Time: 8:46a
+// Updated in $/zmailsrc
+// attachu.cpp
+// Make sure that we don't overflow memory in a strcpy, just in case the
+// extension of an attachment name  is more than 4 characters wide; use
+// strncpy instead. This could have caused random memory trashing (heap).
+// 
+// *****************  Version 178  *****************
+// User: Schwa        Date: 6/29/95    Time: 6:26p
+// Updated in $/zmailsrc
+// variable - commented out unused variables - pr 5503
+// fontmap - fuzzified fonts
+// zmailmnu - removed scoll2new toggle
+// 
+// *****************  Version 177  *****************
+// User: Wilbur       Date: 6/29/95    Time: 3:19p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/CUSTOM/zwsock.[ch]
+// Updated in $/zmailsrc/CUSTOM/poplib.c
+// Updated in $/zmailsrc/CUSTOM/sendmail.c
+// Updated in $/zmailsrc/LICENSE/hostserv.c
+// Updated in $/zmailsrc/LICENSE/register.c
+// Updated in $/zmailsrc/LICENSE/lsnetw.c
+// Updated in $/zmailsrc/LICENSE/access.c
+// Updated in $/zmailsrc/WINGUI/sock.cpp
+// Updated in $/zmailsrc/INCLUDE/zcsock.h
+// Modify winsock API calls to use alternate "lpfn" calls. This is needed
+// to allow Z-Mail serial to run without winsock.dll being present.
+// 
+// Updated in $/zmailsrc/CUSTOM/zcomm.cpp
+// Relocate the ClearInputBuffer() call to right after a send string is
+// output from just before the expect string is received. This prevents
+// any received data from being lost before the expect command is issued.
+// 
+// Updated in $/zmailsrc/WINGUI/zmapp.[cpp,h]
+// Explicitly "LoadLibrary()" winsock.dll and manage the serial connect
+// case where winsock is not used and need not be present.
+// 
+// Updated in $/zmailsrc/WINGUI/login.cpp
+// Check that winsock.dll has been loaded before accessing network for pop
+// check.
+// 
+// Updated in $/zmailsrc/WINGUI/confdata.cpp
+// Support blank script statement (just CR) and modify host/port settings
+// to not output ":port" in ini file and allow blank host/port for Z-POP.
+// 
+// Updated in $/zmailsrc/WINGUI/parent.cpp
+// Modify "create directory" error message to indicate a network drive not
+// found should be attached or mounted. Also added EndDialog() statement
+// to close button for Setup Dialogbox.
+// 
+// Updated in $/zmailsrc/WINGUI/zdlgs.rc
+// Modified dialog text to "PC host name" and "enable remote preferences".
+// 
+// *****************  Version 176  *****************
+// User: Schwa        Date: 6/29/95    Time: 3:07p
+// Updated in $/zmailsrc
+// guiitems.txt - fixed label in variable dialog from browse back to
+// search
+// 
+// *****************  Version 175  *****************
+// User: Schwa        Date: 6/28/95    Time: 5:48p
+// Updated in $/zmailsrc
+// zmailmnu - cosmetic change to drafts submenu
+// 
+// *****************  Version 174  *****************
+// User: Slater       Date: 6/28/95    Time: 5:42p
+// Updated in $/zmailsrc
+// Beta4 BandAid build.
+// 
+// *****************  Version 173  *****************
+// User: Schwa        Date: 6/27/95    Time: 8:48p
+// Updated in $/zmailsrc
+// variable - chnaged default wrapcolumn to TRUE 72 from false
+// 72 for the convenience of laptop users.  By defaut it was creating a 
+// compose win 80 cols across.
+// 
+// *****************  Version 172  *****************
+// User: Schwa        Date: 6/26/95    Time: 6:20p
+// Updated in $/zmailsrc
+// zmailmnu.rc - error checking in open drafts,inbox,outbox scripts
+// 
+// *****************  Version 171  *****************
+// User: Schwa        Date: 6/26/95    Time: 3:38p
+// Updated in $/zmailsrc
+// zmailmnu.rc - Added in some friendlier error checking for the
+// incoming/outgoing buttons
+// 
+// *****************  Version 170  *****************
+// User: Tstring      Date: 6/26/95    Time: 5:38a
+// Updated in $/zmailsrc
+// zmapp.cpp
+// 
+// Make sure that everything having to do with the BigEd, in cleanup, is
+// surrounded by consistent #ifdefs, relative to the #ifdefs used when
+// contructing the thing.
+// 
+// *****************  Version 169  *****************
+// User: Tstring      Date: 6/26/95    Time: 5:36a
+// Updated in $/zmailsrc
+// ***READ ME****
+// zed\main.c
+// Mike, I removed the deletion of the default font from the WEP; this
+// deletion was corrupting GDI something fierce, and it appears that the
+// DK believes the font was previously deleted (no leak shown), eventhough
+// I didn't see it get destroyed elsewhere. We should revisit this one
+// before ER, if possible.
+// 
+// *****************  Version 168  *****************
+// User: Tstring      Date: 6/24/95    Time: 1:58p
+// Updated in $/zmailsrc
+// framewnd.cpp
+// Fix the @$%@$%^ geometry bug with ask dialogs.
+// 
+// *****************  Version 167  *****************
+// User: Gary         Date: 6/23/95    Time: 3:12p
+// Updated in $/zmailsrc
+// added bugs and phone to \lib\forms.  these will need to be copied over
+// for every wash
+// 
+// *****************  Version 166  *****************
+// User: Tstring      Date: 6/22/95    Time: 7:45p
+// Updated in $/zmailsrc
+// Aliases:
+// Ok, so, you want MORE than 1 alias?! With DIFFERENT names than your
+// original?! Geeze!! You guys are tough!  :)
+// 
+// Fixed that.
+// 
+// *****************  Version 165  *****************
+// User: Wilbur       Date: 6/21/95    Time: 5:54p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/SHELL/file.c
+// Added valid ascii character check in the function is_valid_dos_fname().
+// 
+// Updated in $/zmailsrc/WINGUI/parent.[cpp,h]
+// Updated in $/zmailsrc/WINGUI/parentcf.cpp
+// Added text entry validation for path names in the Setup "directories"
+// dialog pane. Checks for valid dos names, drive specification, and empty
+// strings.
+// 
+// *****************  Version 164  *****************
+// User: Schwa        Date: 6/21/95    Time: 4:49p
+// Updated in $/zmailsrc
+// ressrc.rc - Added spell.bmp definitions for new spellcheck bmps
+// zmailmnu.rc -  hooked in spell_bmp compose tb
+// 
+// *****************  Version 163  *****************
+// User: Tstring      Date: 6/21/95    Time: 3:23p
+// Updated in $/zmailsrc
+// Rowcol.*
+// 
+// Initialize the @#$% rect that will be used to calculate the position of
+// rowcolumn children; the ndebug MFC DOES NOT PAINT with NULLS'!!!!
+// 
+// *****************  Version 162  *****************
+// User: Wilbur       Date: 6/21/95    Time: 11:40a
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/SHELL/file.h
+// Added function prototype for is_valid_dos_fname(char*).
+// 
+// *****************  Version 161  *****************
+// User: Wilbur       Date: 6/20/95    Time: 6:18p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/WINGUI/parent.[cpp,h]
+// Updated in $/zmailsrc/WINGUI/parentcf.cpp
+// Updated in $/zmailsrc/WINGUI/parentsc.cpp
+// Updated in $/zmailsrc/WINGUI/prmptdlg.[cpp,h]
+// Removed code to prompt for a password when user wants to unhide chat
+// script statement. Now when the user clicks "hide", the chat statement
+// is permanently hidden. There is no way to unhide it. The user can,
+// however, delete the statement and start afresh. Also the CR checkbox is
+// default selected when send or prompt actions are chosen.
+// 
+// *****************  Version 160  *****************
+// User: Wilbur       Date: 6/20/95    Time: 2:43p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/CUSTOM/zcomm.cpp
+// Add code to check for modem being connected to PC.
+// 
+// *****************  Version 159  *****************
+// User: Wilbur       Date: 6/20/95    Time: 10:25a
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/CUSTOM/zcomm.[cpp,h]
+// Updated in $/zmailsrc/WINGUI/zmapp.cpp
+// Added code to check for carrier before any serial I/O. If carrier is
+// not present, Z-Mail reverts to a disconnected state. Icons and menu
+// commands reflect this as well.
+// 
+// *****************  Version 158  *****************
+// User: Wilbur       Date: 6/20/95    Time: 10:16a
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/WINGUI/parentcf.cpp
+// Add "%" as the default Unix shell host prompt.
+// 
+// *****************  Version 157  *****************
+// User: Wilbur       Date: 6/19/95    Time: 7:55p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/WINGUI/login.cpp
+// Add code to insure that m_IniPath is set to the most current user.ini
+// file.
+// 
+// *****************  Version 156  *****************
+// User: Tstring      Date: 6/19/95    Time: 7:09p
+// Updated in $/zmailsrc
+// buttons.cpp
+// Fix a @%^%$@ typo, which was caugin buttons to be HUGE, not smaller!
+// 
+// *****************  Version 155  *****************
+// User: Gary         Date: 6/19/95    Time: 5:20p
+// Updated in $/zmailsrc
+// tweaked env.ini
+// 
+// *****************  Version 154  *****************
+// User: Tstring      Date: 6/19/95    Time: 4:45p
+// Updated in $/zmailsrc
+// aliases.*
+// A fair number of changes having to do with default focus, retaining
+// focus, and listbox selection stuff. Almost there...
+// 
+// browser.*, framewnd.*
+// Added some (not yet working) handlers for the changeing of the cursor
+// to an hourglass; currently, the modal dialogs don't work well with
+// timeout_cursors().
+// 
+// button.*
+// Futz a bit with the size of buttons, which are geometry managed;
+// they're still not quite right, but they're a bit better.
+// 
+// framewnd.cpp
+// added some code which will eventually be used to make timeout_cursors()
+// work correctly with modal dialogs.
+// 
+// *****************  Version 153  *****************
+// User: Wilbur       Date: 6/19/95    Time: 4:46p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/WINGUI/login.cpp
+// Make sure the connect state is set to either network or serial so that
+// changing user will set connect state to a specific mode.
+// 
+// *****************  Version 152  *****************
+// User: Gary         Date: 6/19/95    Time: 3:58p
+// Updated in $/zmailsrc
+// added STOREPW=YES default to ENV.INI/ZMAIL.INI
+// 
+// *****************  Version 151  *****************
+// User: Wilbur       Date: 6/19/95    Time: 4:00p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/CUSTOM/zcomm.cpp
+// Added code to ClearInputBuffer() before the expect commnad is issued.
+// Also check for shell prompt by issuing a CR rather than QUIT command.
+// If still no shell prompt, ask user if he wants to issue QUIT command to
+// proceed.
+// 
+// Updated in $/zmailsrc/CUSTOM/popmail.c
+// Do not display password if error message comes in pop connect failure.
+// 
+// *****************  Version 150  *****************
+// User: Schwa        Date: 6/19/95    Time: 1:44p
+// Updated in $/zmailsrc
+// changed the help icons to yellow because the blue frightened
+// too many.
+// 
+// *****************  Version 149  *****************
+// User: Tstring      Date: 6/19/95    Time: 11:51a
+// Updated in $/zmailsrc
+// frame.cpp; framewnd.cpp:
+// 
+// Make the main frame do an artificial "resize" when the number of panes
+// changes, or a relayout happens within a pane, when the child is
+// maximized; this ensures that the redraw occurs, and that the "main
+// resizer" absorbs the additional / decreased space.
+// 
+// *****************  Version 148  *****************
+// User: Tstring      Date: 6/19/95    Time: 8:49a
+// Updated in $/zmailsrc
+// filters:
+// Remove the last instance of the string "File Finder", and replace with
+// "Browse..." PR #5393
+// 
+// *****************  Version 147  *****************
+// User: Tstring      Date: 6/18/95    Time: 10:24p
+// Updated in $/zmailsrc
+// alias.cpp .h
+// Make the alias dialog a bit more palatable, and pretty much work; only
+// thing left seems to be the maintaining of selected states in the
+// various listboxes...
+// 
+// Guiapi.cpp; framewnd.cpp
+// Ooops. Put the called defered in the right place, so it actually gets
+// called in time! This has to do with the exit crash.
+// 
+// zdlgs.rc
+// remove some confusing alias dialog buttons / move some others to where
+// they are (arguably) a bit less confusing.
+// 
+// *****************  Version 146  *****************
+// User: Tstring      Date: 6/18/95    Time: 12:15p
+// Updated in $/zmailsrc
+// Guiitems.txt:
+// 
+// Make the "RE:" label have double-quotes, rather than single quotes in
+// the custom sord dialog.
+// 
+// *****************  Version 145  *****************
+// User: Tstring      Date: 6/16/95    Time: 2:03p
+// Updated in $/zmailsrc
+// regexpr.c
+// Fix a "gee, it's a pointer -- let's dereference it!!!" bug, which
+// caused a crash found by Bond, Doug Bond.  :)
+// 
+// PR #5413
+// 
+// Browser.cpp:
+// Don't crash if the user chooses to "remember" an addr. lookup.
+// 
+// 
+// combobox.cpp
+// Give combo-boxed a slightly bigger inner margin, relative to the other
+// controls around them.
+// 
+// Make the resource data that it uses when displying be the same as
+// litboxes, rather than just inheriting the parent dialog's. (This is why
+// they were grey).
+// 
+// filters.cpp
+// Do a refresh after the pullright is "pulled" (comboboxes). This is a
+// step in the right direction for getting them to draw the 3D borser
+// correctly after the drop-down is displayed.
+// 
+// framewnd.cpp
+// Put the WS_POPUP style back on the FR_CANNOT_RESIZE styled windows...
+// 
+// hdrpmpt.*
+// Add a function which isolates the calls to "get the number of panes we
+// can still display". This is part of the pseudo-fix for PR 5122, and
+// related PR's.
+// 
+// *****************  Version 144  *****************
+// User: Schwa        Date: 6/16/95    Time: 2:00p
+// Updated in $/zmailsrc
+// zmailmnu.rc
+// fix typo on reflow button in compose window
+// 
+// *****************  Version 143  *****************
+// User: Cmb          Date: 6/15/95    Time: 3:54p
+// Updated in $/zmailsrc
+// wingui\system.rc:
+// fixed bad, bad typo in laptop function
+// 
+// wingui\variable:
+// made verify -= spellcheck
+// 
+// *****************  Version 142  *****************
+// User: Schwa        Date: 6/14/95    Time: 6:06p
+// Updated in $/zmailsrc
+// system.rc
+// added "laptop"  function.  Sets panes on and off.
+// 
+// *****************  Version 141  *****************
+// User: Wilbur       Date: 6/14/95    Time: 4:46p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/CUSTOM/poplib.c
+// Fix IP address bug for pop and smtp host access. The get_ip_addr()
+// function has been modified to cast address components to unsigned long,
+// since the IP address is 32 bits.
+// 
+// *****************  Version 140  *****************
+// User: Schwa        Date: 6/14/95    Time: 1:50p
+// Updated in $/zmailsrc
+// zmailmnu.rc
+// system.rc
+// added new buttons to main,msg, and compose win
+// tryem youll luv'em.  REmoved checkin/out buttons
+// added "real" next/previous fns to system.rc
+// 
+// *****************  Version 139  *****************
+// User: Wilbur       Date: 6/14/95    Time: 10:25a
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/WINGUI/parentsc.cpp
+// Updated in $/zmailsrc/WINGUI/zdlgs.[rc,h]
+// Add code to support hiding of entries in prompt dialog box and to
+// require user password before unhiding script statement can occur.
+// 
+// Updated in $/zmailsrc/CUSTOM/zcomm.cpp
+// Added code to hide user prompt entry if specified in script. Also use a
+// dialog box for script "expect" timeouts to allow choice of user
+// continue or abort login session.
+// 
+// *****************  Version 138  *****************
+// User: Gary         Date: 6/13/95    Time: 4:03p
+// Updated in $/zmailsrc
+// Added a blank entry in each Action dropdown in Setup->Script dialogs
+// 
+// *****************  Version 137  *****************
+// User: Tstring      Date: 6/13/95    Time: 3:04p
+// Updated in $/zmailsrc
+// Attachi.cpp
+// Make sure to call is_valid_dos_fname() when detaching, so that the
+// correct name is passed to the viewing app.
+// 
+// Broser.cpp
+// Ok, this time with feeling: make the 'Clear' button really clear the
+// edit control of the browser dialog.
+// 
+// chalias.cpp
+// Add a horizontal scrollbar for the compose alias dialog...
+// 
+// *****************  Version 136  *****************
+// User: Slater       Date: 6/13/95    Time: 12:21p
+// Updated in $/zmailsrc
+// License Manager.
+// Improved make file with ALL debug info.
+// Removed debug info from GENERAL and LICENSE.
+// 
+// *****************  Version 135  *****************
+// User: Wilbur       Date: 6/13/95    Time: 10:35a
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/CUSTOM/zcomm.cpp
+// Allow a terminal window to be shown if phone number field is blank.
+// This is to facilitate debugging, as the user will be able to enter a
+// phone number and login manually to try to connect.
+// 
+// *****************  Version 134  *****************
+// User: Wilbur       Date: 6/12/95    Time: 8:59p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/CUSTOM/zcomm.cpp
+// Disable display of user password in telnet login sequence in a terminal
+// window.
+// 
+// *****************  Version 133  *****************
+// User: Schwa        Date: 6/12/95    Time: 2:59p
+// Updated in $/zmailsrc
+// zmailmnu.rc
+// moved find by next/prev from edit to View menu
+// 
+// *****************  Version 132  *****************
+// User: Wilbur       Date: 6/12/95    Time: 2:40p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/CUSTOM/zcomm.[cpp,h]
+// Add code to check for Unix shell host prompt string. This is done at
+// the end of the login chat script and before any telnet session. It
+// improves the reliability of comm synchronization with network calls.
+// 
+// *****************  Version 131  *****************
+// User: Cmb          Date: 6/12/95    Time: 2:28p
+// Updated in $/zmailsrc
+// wingui\variable:
+// removed the 'mswindows' option from many unused or dangerous 
+// variables so that they no longer appear in the variables dialog
+// (PR 5503)
+// 
+// *****************  Version 130  *****************
+// User: Slater       Date: 6/12/95    Time: 1:52p
+// Updated in $/zmailsrc
+// - Added Zen Engine (ZEN = Zcode ENcryption).
+// - Optimized header formatting time, improved approx 30-40% dependent on
+// disk caching.
+// - Fixed line wrapping on message reading.
+// - Fixed SplashWnd bug when Z-Mail timers turned on and Z-Mail has a
+// problem on startup.
+// - Added colors support to user.ini.
+// - Moved splash bitmap stuff to [General] in zmail.ini.
+// 
+// *****************  Version 129  *****************
+// User: Gary         Date: 6/12/95    Time: 1:06p
+// Updated in $/zmailsrc
+// PR5391 in ..\wingui\zdlgs.rc - frame added around scrollable objects
+// and removed blank entry in Action dropdowns
+// 
+// *****************  Version 128  *****************
+// User: Wilbur       Date: 6/12/95    Time: 12:36p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/WINGUI/parent.[cpp,h]
+// Updated in $/zmailsrc/WINGUI/parentcf.cpp
+// Updated in $/zmailsrc/WINGUI/confdata.[cpp,h]
+// Updated in $/zmailsrc/CUSTOM/zcomm.cpp
+// Add code to support the additional edit controls for zmhost, modem dial
+// retries, and script host prompt string in the setup dialog boxes. Also
+// removed support for redial checkbox, since the dial retry number serves
+// the same purpose.
+// 
+// Updated in $/zmailsrc/WINGUI/login.cpp
+// Updated in $/zmailsrc/WINGUI/zmapp.cpp
+// Removed call to hide_comm(), since it is now incorporated in the
+// function disconnect_comm().
+// 
+// *****************  Version 127  *****************
+// User: Tstring      Date: 6/12/95    Time: 11:23a
+// Updated in $/zmailsrc
+// attachd.cpp
+// Initialize the detach dialog with the file name of the attachment
+// PR #5296
+// 
+// Remove the readonly toggle, since it has no meaning.
+// PR #4962.
+// 
+// PR#5268, "attach..." is now "Browse..."
+// PR #5371 should be ok now (Show now works)
+// ----------
+// attachi.cpp
+// Do a better job of setting the curseof to a "wait", while detaching
+// files and lauching the viewers.
+// PR #745
+// --------
+// attachu.cpp
+// DON'T CURRUPT MEMORY!!! When detaching a non-8.3 filename!
+// 
+// Another part of PR #3955
+// 
+// No PR associated with the crash aspect of this, but Reinhart has a file
+// which caused it to happen.
+// ------
+// Browser.cpp
+// Do a better job of putting a "wait" cursor up when doing an address
+// lookup.
+// 
+// PR #5314
+// ------
+// Button.cpp button.h
+// Add a drwing method fo ZIconButtons so that when they get the focus,
+// they will actually draw themselves.
+// 
+// PR #5093
+// ------
+// frame.cpp
+// Make it so that NO text "directions" appear in the ZFrame derived
+// dialogs. This is like the Mac. There is a PR, but I can't remember what
+// it's number is...
+// 
+// Don't COMPLETELY defeat the purpose of hdr_cache; presently, we redraw
+// THE ENTIRE summary list when ANYTHING happens to a single entry. Fix
+// that.
+// PR #'s: 4897, & 5126
+// ------
+// guiapi.cpp
+// More to the fixed for PR#'s: 4897 & 5126.
+// ------
+// guiitems.txt
+// 1. Put sashes back in PR #4570
+// 
+// 2. Change all appropriate places to say "Browse...", as I found them.
+// PR #5393
+// 
+// 3. More on PR#'s 4897 & 5126
+// ------
+// Mainwnd.cpp, panedw.cpp, sash.cpp
+// More for PR #4570.
+// 
+// *****************  Version 126  *****************
+// User: Cmb          Date: 6/12/95    Time: 9:48a
+// Updated in $/zmailsrc
+// wingui\variable:
+// change value of msg_win_hdr_fmt
+// 
+// *****************  Version 125  *****************
+// User: Schwa        Date: 6/10/95    Time: 8:00p
+// Updated in $/zmailsrc
+// ressrc.rc
+// added/changed  mnemonics in text pager menus
+// 
+// *****************  Version 124  *****************
+// User: Schwa        Date: 6/10/95    Time: 7:55p
+// Updated in $/zmailsrc
+// zmailmnu.rc
+// added jonnie mnemonics for drafts menu and removed
+// unneeded ellipses
+// changed menu description for sort-by-length
+// 
+// *****************  Version 123  *****************
+// User: Schwa        Date: 6/09/95    Time: 8:49p
+// Updated in $/zmailsrc
+// variables:
+// removed the 32 char limit from
+// message_win_hdr_fmt to & cc headers
+// 
+// *****************  Version 122  *****************
+// User: Schwa        Date: 6/09/95    Time: 8:20p
+// Updated in $/zmailsrc
+// zmailmnu.rc
+// added spell and search icons
+// and replace comp done with native dialog
+// 
+// *****************  Version 121  *****************
+// User: Schwa        Date: 6/09/95    Time: 7:51p
+// Updated in $/zmailsrc
+// changed color of help.bmp - all rez
+// red help dan help; blue help good help
+// 
+// *****************  Version 120  *****************
+// User: Schwa        Date: 6/09/95    Time: 6:46p
+// Updated in $/zmailsrc
+// prisel.cpp:
+// changed the compose priority popup to match 
+// the message priorities (Low, Med, High, Normal).
+// Why this is hardcoded in this file is beyond me!
+// 
+// *****************  Version 118  *****************
+// User: Schwa        Date: 6/08/95    Time: 8:01p
+// Updated in $/zmailsrc
+// zmailmnu.rc  added functions for quick sync
+// variable        added default for afterlife = 7
+// 
+// *****************  Version 117  *****************
+// User: Wilbur       Date: 6/08/95    Time: 6:54p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/WINGUI/zmapp.[cpp,h]
+// Updated in $/zmailsrc/WINGUI/termwnd.cpp
+// Updated in $/zmailsrc/WINGUI/ressrc.rc
+// Register a serial windows class for the terminal window, including
+// specification of a serial icon. This allows terminal window to be
+// repainted when scrolled and provides an icon when minimized.
+// 
+// Updated in $/zmailsrc/CUSTOM/zcomm.cpp
+// Add message for expect string read timeout. This MessageBox asks user
+// to increase script timeout or add a pause statement to script. Also
+// when this dialog box comes up, it allows time for the expect string to
+// arrive. This addresses the sequencing problem on some logins.
+// 
+// *****************  Version 116  *****************
+// User: Jerry        Date: 6/08/95    Time: 4:10p
+// Updated in $/zmailsrc
+// msgs\edmail.c
+// 
+// From the trunk:  Only xfree(tmpv[1]) if it got initialized.
+// 
+// msgs\encode\mimehead.c
+// 
+// From the trunk:  Since 'mid' might be at the beginning of the string,
+// check if that is the case before looking at mid[-1].
+// 
+// msgs\addrs.c
+// msgs\dates.c
+// msgs\msgs.c
+// 
+// From the trunk:  Add a new token, 's', to time_str() to have it return
+// the number of seconds from the struct tm.  Use this to add seconds to
+// the strings generated for message-id and MIME-boundary purposes.
+// 
+// *****************  Version 114  *****************
+// User: Slater       Date: 6/08/95    Time: 10:16a
+// Updated in $/zmailsrc
+// Add INI variables:
+// 
+// [General]
+// SaveState
+// 
+// [Setup]
+// DisableUserSetup
+// 
+// 
+// *****************  Version 113  *****************
+// User: Schwa        Date: 6/07/95    Time: 6:57p
+// Updated in $/zmailsrc
+// zmailmnu.rc
+// added QuickSync Menu Skeleton (sensitivty expr needs work)
+// moved Address Checking into a submenu of ComposeTools
+// 
+// *****************  Version 112  *****************
+// User: Wilbur       Date: 6/07/95    Time: 6:03p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/WINGUI/prmptdlg.cpp
+// Add code to issue "unset connected" command when cancelling dialup
+// before login completes. Z-Mail connect state is thus consistent with
+// serial connect state.
+// 
+// Updated in $/zmailsrc/WINGUI/termwnd.cpp
+// Allow user to close terminal window without disconnecting serial
+// connect.
+// 
+// Updated in $/zmailsrc/CUSTOM/zcomm.cpp
+// Close the serial "connecting..." dialog box if user toggles Z-Mail
+// connected state before serial connection has fully completed. The
+// "connecting..." dialg is modeless, so this can happen.
+// 
+// *****************  Version 111  *****************
+// User: Slater       Date: 6/07/95    Time: 10:01a
+// Updated in $/zmailsrc
+// Add in support for Undo, Redo, Center, Lowercase, Uppercase.
+// Fixed several toolbar assertion failures & crashes.
+// 
+// *****************  Version 110  *****************
+// User: Schwa        Date: 6/06/95    Time: 7:54p
+// Updated in $/zmailsrc
+// zmailmnu.rc:    added autosign toggle to spoon and changed
+// recor<d> mnemonic to re<c>ord to be consistent with
+// menu mnemoncs.
+// 
+// *****************  Version 109  *****************
+// User: Schwa        Date: 6/06/95    Time: 2:24p
+// Updated in $/zmailsrc
+// Modified temp file deletion zscript in system.rc to:
+// (1) only execute if in private user's temp directory
+// (2) also del *.msg files
+// (3) run by default
+// 
+// *****************  Version 108  *****************
+// User: Wilbur       Date: 6/05/95    Time: 7:55p
+// Updated in $/zmailsrc
+// Updated in $/zmailsrc/CUSTOM/zcomm.cpp
+// Updated in $/zmailsrc/CUSTOM/scomfc.h
+// Updated in $/zmailsrc/DLL/saxcom10.dll
+// Updated in $/zmailsrc/LIBS/scomfcld.lib
+// Updated in $/zmailsrc/LIBS/scomfcln.lib
+// 
+// Add code to support disconnecting serial without having to wait for
+// timeout to complete. Note that Saxcomm library has been modified to
+// accomplish this.
+// 
+// *****************  Version 107  *****************
+// User: Wilbur       Date: 6/05/95    Time: 7:18p
+// Updated in $/zmailsrc
+// Added the SAXCOMM subproject to SourceSafe, including source and
+// support files for Saxcomm DLL and MFC library functions.
+// 
+// *****************  Version 106  *****************
+// User: Schwa        Date: 6/05/95    Time: 6:03p
+// Updated in $/zmailsrc
+// changed menu sensitivities for address browser, address checking,
+// removed always_send_spool sens dependency.
+// tried making icons respect sens expressionm - no luck
+// file = zmailmnu.rc
+// 
+// *****************  Version 105  *****************
+// User: Schwa        Date: 6/05/95    Time: 2:36p
+// Updated in $/zmailsrc
+// removed unneeded lite stuff in system.rc
+// 
+// *****************  Version 104  *****************
+// User: Wilbur       Date: 6/05/95    Time: 2:00p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/CUSTOM/zcomm.cpp
+// Remove Status bar messages for "Comm Read timeout" and "Comm Write
+// buffer full". These conditions can occur as a normal part of comm
+// processing in ZMail, so these messages have been rerouted to debug
+// output to provide information in the debug process. 
+// 
+// Updated in $/zmailsrc/WINGUI/termwnd.[cpp,h]
+// Added support for Saxcomm "Events". For the most part we are not using
+// Saxcomm events. But the stubs are in place should we want to in the
+// future. I do use the OnChangeCTS() event to give more information on
+// hardware handshaking.
+// 
+// *****************  Version 103  *****************
+// User: Schwa        Date: 6/05/95    Time: 1:14p
+// Updated in $/zmailsrc
+// Removed "Spell" from Search/Replace/Spell in pager's
+// edit menu since spell is unavail there
+// 
+// *****************  Version 102  *****************
+// User: Tstring      Date: 6/05/95    Time: 10:53a
+// Updated in $/zmailsrc
+// Fix the stupid 'show button doesn't work' thingus. PR 5371.
+// 
+// *****************  Version 101  *****************
+// User: Schwa        Date: 6/02/95    Time: 8:23p
+// Updated in $/zmailsrc
+// Oops, fixed a redundant priority menu.
+// 
+// *****************  Version 100  *****************
+// User: Schwa        Date: 6/02/95    Time: 7:54p
+// Updated in $/zmailsrc
+// Added Drafts menus and fixed prob with Priorities sensitivities
+// 
+// *****************  Version 99  *****************
+// User: Slater       Date: 6/02/95    Time: 2:00p
+// Updated in $/zmailsrc
+// Added support for large edit controls, conversion buffers, splash
+// screen, split mapi support into separate file, added last user fill in
+// for login dialog, misc updates.
+// 
+// *****************  Version 98  *****************
+// User: Schwa        Date: 6/01/95    Time: 4:57p
+// Updated in $/zmailsrc
+// Implemented Menu changes suggested by the UI review.
+// zmailmnu.rc
+// 
+// *****************  Version 97  *****************
+// User: Wilbur       Date: 5/30/95    Time: 6:23p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/CUSTOM/zcomm.cpp
+// Added code to disable autoprocessing when dialing and chat script
+// logging in. It is re-enabled after login completed. This change makes
+// sequencing of send and expect strings more reliable.
+// 
+// *****************  Version 96  *****************
+// User: Jerry        Date: 5/30/95    Time: 5:10p
+// Updated in $/zmailsrc
+// wingui\winsync.cpp - Lengthened sync keepalive timer to 60 seconds.
+// Disable the timer when obtaining differences or updating folders.
+// 
+// *****************  Version 95  *****************
+// User: Jerry        Date: 5/28/95    Time: 12:28p
+// Updated in $/zmailsrc
+// wingui\syncdlg3.cpp
+// wingui\winsync.cpp
+// 
+// Updated some sync status line progress messages.
+// 
+// *****************  Version 94  *****************
+// User: Wilbur       Date: 5/26/95    Time: 8:12p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/CUSTOM/zcomm.cpp
+// Corrected code to LoadModemOptions so that selected modem strings are
+// indeed used, instead of Hayes compatible default. Saxcomm
+// LoadModemOptions() function returns an indeterminate value when
+// successful. We now do not check for a return value, since if it is
+// unsuccessful, the modem option is set to Hayes compatible anyway.
+// 
+// *****************  Version 93  *****************
+// User: Jerry        Date: 5/26/95    Time: 12:48p
+// Updated in $/zmailsrc
+// winspell\spfunc.cpp - Make the speller look for the default dictionary
+// using the following search order:
+// 
+// DEFAULTDICT value in user's INI file
+// DEFAULTDICT value in ZMAIL.INI
+// $ZMROOT\AMERICAN.VTD
+// 
+// *****************  Version 92  *****************
+// User: Wilbur       Date: 5/25/95    Time: 7:25p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/CUSTOM/download.c
+// Updated in $/zmailsrc/CUSTOM/zcomm.[cpp,h]
+// Added code to send serial baud rate setting in response to Z-POP query
+// about client characteristics. This addresses the issue of Z-POP timing
+// out on large messages at low baud rates. 
+// 
+// Updated in $/zmailsrc/WINGUI/login.cpp
+// Fix the setup dialog bug. The setup dialog object is now instantiated
+// in the global heap using the "new" operator, instead of on the stack.
+// This should solve the setup dialog not coming up on some machines while
+// not doing so on others (different memory configurations).
+// 
+// *****************  Version 91  *****************
+// User: Jerry        Date: 5/25/95    Time: 2:12p
+// Updated in $/zmailsrc
+// shell\commands.c - Bart's fix to prevent duplicate signatures on queued
+// messages.
+// 
+// *****************  Version 90  *****************
+// User: Jerry        Date: 5/25/95    Time: 11:51a
+// Updated in $/zmailsrc
+// msgs\mime.c - Bart's fix to IsAsciiSuperset().
+// 
+// *****************  Version 89  *****************
+// User: Wilbur       Date: 5/24/95    Time: 8:13p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/WINGUI/parent.[cpp,h]
+// Updated in $/zmailsrc/WINGUI/parentcf.cpp
+// Updated in $/zmailsrc/WINGUI/confdata.cpp
+// Updated in $/zmailsrc/CUSTOM/zcomm.cpp
+// Added code to support modem database in setup combobox edit control.
+// Now init and hangup strings are available and used for specific modem
+// brands and models.
+// 
+// *****************  Version 88  *****************
+// User: Slater       Date: 5/24/95    Time: 3:38p
+// Updated in $/zmailsrc
+// Added better font listbox entries (need better text, still...)
+// Added icon message count and new message count.
+// Added update of icon text upon receipt of new messages.
+// 
+// *****************  Version 87  *****************
+// User: Jerry        Date: 5/24/95    Time: 3:33p
+// Updated in $/zmailsrc
+// custom\mailserv.c
+// custom\realname.c
+// 
+// OK, actually *remove* the status line stuff for Z-POP realname, prefs,
+// and config when done.  Oops.
+// 
+// *****************  Version 86  *****************
+// User: Jerry        Date: 5/24/95    Time: 3:07p
+// Updated in $/zmailsrc
+// custom\mailserv.c
+// custom\realname.c
+// 
+// Added status line progress information for the Z-POP realname, prefs,
+// and config options.  Addresses PR #5118 (again!).
+// 
+// *****************  Version 85  *****************
+// User: Jerry        Date: 5/23/95    Time: 6:03p
+// Updated in $/zmailsrc
+// wingui\winsync.cpp - Based on a discussion with B. Crane, when:
+// 
+// 1)  Synchronization with preview is requested, and
+// 2)  No changes are required, so no preview dialog appears,
+// 
+// we now present a message box that confirms that no action was required,
+// rather than just completing.
+// 
+// *****************  Version 84  *****************
+// User: Jerry        Date: 5/23/95    Time: 5:12p
+// Updated in $/zmailsrc
+// wingui\pagerd.cpp
+// wingui\pagerfr.cpp
+// 
+// Fixed the heinous crud-at-EOL printing problem.  Should now work
+// properly for both message printing and pager printing.  Addresses PR
+// #5324.
+// 
+// *****************  Version 83  *****************
+// User: Cmb          Date: 5/23/95    Time: 2:46p
+// Updated in $/zmailsrc
+// \wingui\zmailmnu.rc
+// sensitivity in toolbar expressions
+// accidentally deleted a '$' in add alias zscript
+// 
+// *****************  Version 82  *****************
+// User: Cmb          Date: 5/22/95    Time: 6:18p
+// Updated in $/zmailsrc
+// \wingui\zmailmnu.rc
+// add schwa's add alias function and icon from the delphi branch.
+// 
+// *****************  Version 81  *****************
+// User: Cmb          Date: 5/22/95    Time: 6:17p
+// Updated in $/zmailsrc
+// \wingui\system.rc
+// put useful things in the headers in displayed in the message body.
+// 
+// *****************  Version 80  *****************
+// User: Cmb          Date: 5/22/95    Time: 6:14p
+// Updated in $/zmailsrc
+// \wingui\variable
+// put useful headers in the message body.
+// for INI variables, put the Setup dialog's child pane.
+// make hold permanent.
+// 
+// *****************  Version 79  *****************
+// User: Wilbur       Date: 5/22/95    Time: 2:40p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/CUSTOM/poplib.c
+// Correct problem with invoking sync with serial connect. Wrong read
+// buffer pointer was used to check for zpop server. Instead of using
+// pointers in the server structure, which change dynamically, getline()
+// is now used to retrieve a valid fromline pointer. 
+// 
+// *****************  Version 78  *****************
+// User: Jerry        Date: 5/22/95    Time: 11:38a
+// Updated in $/zmailsrc
+// wingui\zmapp.cpp - Re-fixed POP_OPTIONS=init_check when switching from
+// off-line to on-line.  Addresses PR #5323.
+// 
+// *****************  Version 77  *****************
+// User: Jerry        Date: 5/22/95    Time: 11:13a
+// Updated in $/zmailsrc
+// wingui\syncdlg3.cpp
+// wingui\winsync.cpp
+// 
+// Corrected status line and busy cursor behavior in sync preview dialog.
+// 
+// *****************  Version 76  *****************
+// User: Cmb          Date: 5/19/95    Time: 7:12p
+// Updated in $/zmailsrc
+// \wingui\msgwin.cpp:
+// message title bar now contains the subject.
+// 
+// *****************  Version 75  *****************
+// User: Jerry        Date: 5/19/95    Time: 1:38p
+// Updated in $/zmailsrc
+// wingui\zdlgs.rc - Corrected the tab order in the sync scenario editor
+// dialog so that it makes sense with the new button arrangement.
+// 
+// *****************  Version 74  *****************
+// User: Cmb          Date: 5/19/95    Time: 12:41p
+// Updated in $/zmailsrc
+// \wingui\system.rc
+// add one more cmd alias
+// 
+// *****************  Version 73  *****************
+// User: Cmb          Date: 5/19/95    Time: 11:41a
+// Updated in $/zmailsrc
+// \wingui\variable:
+// picky_mty is "omit_comma" not "omit_commas" oops.
+// 
+// *****************  Version 72  *****************
+// User: Tstring      Date: 5/18/95    Time: 8:43p
+// Updated in $/zmailsrc
+// Attachments:
+// Made the update of the combo boxes in the attachment dialog a bit
+// better.
+// 
+// Search and replace:
+// Fix a stupid typo, and make the search/replace dialog work again...
+// 
+// Dialog layout changes:
+// 1. Made the default button in the two headers dialogs be the apply
+// button, not the close button.
+// 
+// 2. Moved the buttons for the sync scenario editor dialog to the right,
+// and added a bit of space to the list of scenario names.
+// 
+// *****************  Version 71  *****************
+// User: Wilbur       Date: 5/18/95    Time: 4:14p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/WINGUI/btndlg.cpp
+// Updated in $/zmailsrc/WINGUI/confdata.[cpp,h]
+// Updated in $/zmailsrc/WINGUI/dialogs.[cpp,h]
+// Updated in $/zmailsrc/WINGUI/parent.[cpp,h]
+// Updated in $/zmailsrc/WINGUI/parentcf.cpp,h
+// Updated in $/zmailsrc/WINGUI/prmptdlg.[cpp,h]
+// Updated in $/zmailsrc/WINGUI/scriplst.h
+// Updated in $/zmailsrc/WINGUI/zdlgs.[rc,h]
+// Updated in $/zmailsrc/CUSTOM/zcomm.cpp
+// 
+// Added separate dialog pane for connections in setup dialogs.
+// Added new serial read/write timeout variable in configuration.
+// Added new script commands "prompt" and "pause", while
+// removing the command "send special".
+// Fixed setup next/prev button bug so that sequencing of dialog
+// panes are now correct.
+// Prompt dialog during login now allows user entry of an
+// annotation for the prompt dialog.
+// 
+// *****************  Version 70  *****************
+// User: Cmb          Date: 5/18/95    Time: 3:03p
+// Updated in $/zmailsrc
+// /wingui/variable:
+// change # of options to verify so spell_check is set.
+// 
+// *****************  Version 69  *****************
+// User: Tstring      Date: 5/18/95    Time: 2:48p
+// Updated in $/zmailsrc
+// Main Windows:
+// Make the window title respond to the value of the connected variable.
+// 
+// *****************  Version 68  *****************
+// User: Jerry        Date: 5/18/95    Time: 2:16p
+// Updated in $/zmailsrc
+// mstore\zpopfldr.c - Apply Bob's corrections to the handling of an empty
+// remote spool folder during sync.
+// 
+// *****************  Version 67  *****************
+// User: Cmb          Date: 5/18/95    Time: 2:13p
+// Updated in $/zmailsrc
+// \wingui\zmailmnu.rc:
+// deleted folder panel from main window view menu.
+// 
+// *****************  Version 66  *****************
+// User: Cmb          Date: 5/18/95    Time: 2:12p
+// Updated in $/zmailsrc
+// \wingui\variable:
+// snagged zync_options variable description from zmac lib files.
+// set picky_mta to omit_commas, precheck
+// set msg_win_hdr_fmt to a reasonable value.
+// 
+// *****************  Version 65  *****************
+// User: Cmb          Date: 5/18/95    Time: 2:10p
+// Updated in $/zmailsrc
+// system.rc
+// Removed setting picky_mta (now in variables)
+// Added a couple of DOS cmd aliases for UNIX commands.  Need to think of
+// some more.
+// 
+// *****************  Version 64  *****************
+// User: Slater       Date: 5/18/95    Time: 1:27p
+// Updated in $/zmailsrc
+// Add in code to set statusbar font.
+// Add in better code to delete headers which may fix an update bug.
+// 
+// *****************  Version 63  *****************
+// User: Jerry        Date: 5/18/95    Time: 12:43p
+// Updated in $/zmailsrc
+// custom\popmail.c - Write "Checking for new mail..." to the status line
+// when initiating a POP check.  Addresses PR #5292.
+// 
+// *****************  Version 62  *****************
+// User: Tstring      Date: 5/18/95    Time: 9:27a
+// Updated in $/zmailsrc
+// Toolbars:
+// 
+// Ok, things look faily good so now. Running under the debug kernel in
+// windows, I no longer see any undeleted bitmaps, nor do I see the scary
+// "deleting system resource" warnings. I also don't get crashes on exit
+// anymore either.
+// 
+// Why:
+// 1. The unfreed bitmaps were real, and easy to clean up, though theyh
+// don't account for the crashes, just the leaks.
+// 2. The crashes were casued by the following:
+// A) I was deleting all the right things, BUT I didn't NULL some of the
+// pointers to the members I had already deleted, so the MFC tried to
+// delete them again. This was the reason for the crashes on exit, and
+// general GDI corruption.
+// 
+// *****************  Version 61  *****************
+// User: Jerry        Date: 5/18/95    Time: 2:49a
+// Updated in $/zmailsrc
+// include\folder.h
+// include\zmflag.h
+// msgs\attach.c
+// msgs\compose.c
+// msgs\copy_msg.c
+// msgs\edmail.c
+// msgs\folders.c
+// msgs\foload.c
+// msgs\hdrs.c
+// msgs\mail.c
+// msgs\mcache.c
+// msgs\msgs.c
+// msgs\newmail.c
+// msgs\pick.c
+// msgs\sort.c
+// shell\commands.c
+// shell\curses.c
+// shell\lpr.c
+// shell\refresh.c
+// custom\mailserv.c
+// custom\syncfldr.c
+// mstore\v7folder.c
+// uisupp\uifldr.c
+// wingui\msgwin.cpp
+// wingui\newarriv.cpp
+// wingui\zmapp.cpp
+// 
+// Applied Bart's changes to make the msg_folder structure mf_msgs
+// field a pointer to an array of pointers to messages.  This will allow
+// us to open much larger folders under Win16 than was formerly possible.
+// 
+// 
+// *****************  Version 60  *****************
+// User: Jerry        Date: 5/17/95    Time: 6:09p
+// Updated in $/zmailsrc
+// wingui\syncdlg1.h
+// wingui\syncdlg1.cpp
+// wingui\zdlgs.h
+// wingui\zdlgs.rc
+// 
+// Terminate (with extreme prejudice) the "Edit Scenarios..." button on
+// the sync scenario dialog.  Ahh.
+// 
+// *****************  Version 59  *****************
+// User: Jerry        Date: 5/17/95    Time: 4:58p
+// Updated in $/zmailsrc
+// msgs\encode\mimehead.c - Bart's change to fix decoding of "B" encoded
+// RFC1522 headers.
+// 
+// *****************  Version 58  *****************
+// User: Wilbur       Date: 5/17/95    Time: 4:57p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/WINGUI/login.cpp
+// Updated in $/zmailsrc/WINGUI/zmapp.cpp
+// Updated in $/zmailsrc/CUSTOM/mailserv.c
+// 
+// Modified code to dialup serially (instantiate comm object and connect)
+// in the login dialog box, so that pop initialization can occur. Once
+// serially connected, it will remian so until explicitly disconnected for
+// duration of Z-Mail session.
+// 
+// *****************  Version 57  *****************
+// User: Jerry        Date: 5/17/95    Time: 4:28p
+// Updated in $/zmailsrc
+// mstore\zpopfldr.c - Bart's change to allow generation of a hash on an
+// empty folder.
+// 
+// *****************  Version 56  *****************
+// User: Jerry        Date: 5/17/95    Time: 4:14p
+// Updated in $/zmailsrc
+// wingui\pagerfr.cpp - Corrected the running length calculation used by
+// the pager when breaking up text into lines for printing, a problem
+// neatly hidden by NT.  Addresses PR #5274.
+// 
+// *****************  Version 55  *****************
+// User: Jerry        Date: 5/17/95    Time: 3:26p
+// Updated in $/zmailsrc
+// shell\pager.c - Check for PG_CANCELLED flag after ZmPagerInitialize()
+// in pgfirst_write().  Addresses PR #5275.
+// 
+// *****************  Version 54  *****************
+// User: Jerry        Date: 5/17/95    Time: 2:34p
+// Updated in $/zmailsrc
+// custom\mailserv.c
+// shell\refresh.h
+// shell\refresh.c
+// 
+// Make sure last_pop_check gets initialized properly whenever the
+// pop_initialized flag is set, so that the first POP check can happen
+// after the requested interval, not immediately or at the first passive
+// timeout.  POP_OPTIONS=init_check can still force an immediate check
+// upon connection.
+// 
+// *****************  Version 52  *****************
+// User: Slater       Date: 5/17/95    Time: 2:06p
+// Updated in $/zmailsrc
+// Added new splash window to Mapi DLL.
+// 
+// *****************  Version 48  *****************
+// User: Tstring      Date: 5/17/95    Time: 1:06p
+// Updated in $/zmailsrc
+// Headers and Envelope Dialogs:
+// Too much to list, but basically the headers dialogs work fine.
+// 
+// *****************  Version 47  *****************
+// User: Tstring      Date: 5/16/95    Time: 9:25p
+// Updated in $/zmailsrc
+// UIFILTER.C:
+// Fix PR 5004, by not trying to imcrement a char * inside the call to
+// tolower(), since that fails for us, due to our compiler settings.
+// 
+// ZDLGS.RC
+// Don't have 4 buttons which are defined as the DEFPUSHBUTTON in the
+// alias' creation dialog; this was giving the illusion of weird tabbing
+// order.
+// 
+// Attachments:
+// 1. Call memset() on a local array used for the extension, rather than
+// simply doing array[0]; the array was being, and needs to be still,
+// passed sometimes as array[1], which is trash in almost all cases if not
+// memset. This was causing the screwed-up attachment filenames.
+// 
+// 2. Fix the "don't tell the user when we cound't fire up an external
+// viewer" bug PR #4893. Basically, just check the return from
+// WinExec()....
+// 
+// Date stuff:
+// Fix the < 1970 bug, a la Bart's change in 3.2.1.
+// 
+// 
+// *****************  Version 46  *****************
+// User: Jerry        Date: 5/16/95    Time: 7:20p
+// Updated in $/zmailsrc
+// wingui\zmapp.cpp - More work on getting the pop_timeout variable and
+// POP_OPTIONS=init_check to behave properly.  Still not perfect, but
+// workable (I think).
+// 
+// *****************  Version 45  *****************
+// User: Jerry        Date: 5/16/95    Time: 4:33p
+// Updated in $/zmailsrc
+// .\zmail16.mak
+// msgs\mail.c
+// custom\sendmail.c
+// wingui\compose.cpp
+// wingui\variable
+// wingui\delphi\variable
+// 
+// Implement VarPickyMta=precheck, which checks all addresses on a
+// composition before actually sending it.  This allows the composition to
+// be preserved if an address is bad, giving the user the option of
+// correcting or removing the bad address(es).  Logic borrowed from Greg.
+// Addresses PR #3755.
+// 
+// *****************  Version 44  *****************
+// User: Slater       Date: 5/16/95    Time: 11:14a
+// Updated in $/zmailsrc
+// Add in code to run the spell checker if verify=spell_check.
+// 
+// *****************  Version 43  *****************
+// User: Tstring      Date: 5/15/95    Time: 9:09p
+// Updated in $/zmailsrc
+// Sliders:
+// Make sliders draw properly, by adding a cool new Draw3D method to the
+// winitem baseclass.
+// 
+// Attachment Panel:
+// Make the attachments panel draw properly; still some minor tweaks to be
+// don here....
+// 
+// *****************  Version 42  *****************
+// User: Tstring      Date: 5/15/95    Time: 4:30p
+// Updated in $/zmailsrc
+// Variable dialog:
+// 
+// Fix the bug having to do with the description field always shrinking
+// down to a too-small size, whenever there are toggle-groups on the
+// window.
+// 
+// *****************  Version 41  *****************
+// User: Wilbur       Date: 5/15/95    Time: 3:03p
+// Updated in $/zmailsrc
+// 
+// Updated in $/zmailsrc/CUSTOM/mailserv.c
+// Updated in $/zmailsrc/CUSTOM/poplib.c
+// Updated in $/zmailsrc/CUSTOM/sendmail.c
+// Updated in $/zmailsrc/CUSTOM/zcomm.[cpp,h]
+// 
+// Added open_comm_zync() function to support comm connection to a z-pop
+// server different from pop3 server.
+// 
+// *****************  Version 40  *****************
+// User: Slater       Date: 5/15/95    Time: 1:34p
+// Updated in $/zmailsrc
+// Add remaining code for font dialog, basically a resource id -> font
+// mapping table. Also fixed a problem with the username not getting set
+// in logging in online.
+// 
+// *****************  Version 39  *****************
+// User: Tstring      Date: 5/15/95    Time: 11:41a
+// Updated in $/zmailsrc
+// Attach dialog:
+// Fix the always grey unattach button.
+// Make the listbox update with the new encodinga dn type, if the user
+// changes them
+// 
+// General:
+// A variety of changes, including special handling for the paste action.
+// 
+// Implement correct paste behavior (ie, remember where the last focus
+// was, so it goes to the right place.)
+// Fix some stuff having to do with getting the correct toolbar; more
+// stuff having to do with the correct paste behavior.
+// 
+// Toolbars:
+// Too many changes to document. Essentially, 
+// 1. Greying of icons works
+// 2. sensitivity expressions work
+// 3. the -position parameter works
+// 4. the FolderComboBox is correctly sized / auto scrolls / is now 3D
+// 5. loadable icons / bitmaps work.
+// 6. toggle icons (ie -- disconnected->connected) works.
+// 
+// *****************  Version 38  *****************
+// User: Jerry        Date: 5/12/95    Time: 3:41p
+// Updated in $/zmailsrc
+// wingui\zmapp.cpp - Provisionally replace some set_alarm() calls with
+// gui_refresh().  This module is currently too screwed-up to be able to
+// tell if this was effective, alas.
+// 
+// *****************  Version 37  *****************
+// User: Jerry        Date: 5/12/95    Time: 12:37p
+// Updated in $/zmailsrc
+// custom\syncfldr.c - Revert to using gui_refresh() to refresh message
+// summaries after sync.
+// 
+// *****************  Version 36  *****************
+// User: Jerry        Date: 5/12/95    Time: 12:14p
+// Updated in $/zmailsrc
+// msgs\zpopsync.c - Bart's updates to bury_ghosts() and
+// exorcise_ghosts().
+// 
+// mstore\zpopmsg.c - Bob's change to stop looking for a "From" line in
+// sync'd messages.
+// 
+// *****************  Version 35  *****************
+// User: Jerry        Date: 5/11/95    Time: 5:14p
+// Updated in $/zmailsrc
+// msgs\zpopsync.c - Update Bart's fix to prevent tombfile creation when
+// afterlife == 0.
+// 
+// *****************  Version 34  *****************
+// User: Slater       Date: 5/11/95    Time: 5:05p
+// Updated in $/zmailsrc
+// Add in last of Font setup dialog code. At this point in time it saves
+// and restores fonts. I'm still looking to see if Z-Mail uses these fonts
+// correctly. In addition, updated ZmApp methods GetIniPath() and
+// get_user_ini() to work correctly.
+// 
+// *****************  Version 33  *****************
+// User: Jerry        Date: 5/11/95    Time: 2:01p
+// Updated in $/zmailsrc
+// wingui\syncdlg1.h, .cpp
+// wingui\syncdlg3,h, .cpp
+// wingui\syncdlg4.h, .cpp
+// wingui\syncdlg6.h, .cpp
+// 
+// Voluminous changes to replace all references to saved object pointers
+// obtained with GetDlgItem() with macros which expand to an in-line call
+// to the function instead.  Wilbur found at least one place where, when
+// using a serial connection, Windows changed the address of the object by
+// the time the saved pointer was used.
+// 
+// *****************  Version 32  *****************
+// User: Wilbur       Date: 5/11/95    Time: 1:26p
+// Updated in $/zmailsrc
+// 
+// User: Wilbur       Date: 5/11/95    Time: 1:18p
+// Updated in $/zmailsrc/CUSTOM/zcomm.[cpp,h]
+// Updated in $/zmailsrc/CUSTOM/poplib.c
+// Updated in $/zmailsrc/CUSTOM/mailserv.c
+// Updated in $/zmailsrc/WINGUI/zmapp.[cpp,h]
+// 
+// Add commIO flag to indicate serial I/O, either read or write, is in
+// progress. This is necessary to prevent concurrent access to the comm
+// port within Z-Mail. Noops, for example, are sent on a periodic basis
+// during a synch session.
+// 
+// *****************  Version 31  *****************
+// User: Jerry        Date: 5/11/95    Time: 11:38a
+// Updated in $/zmailsrc
+// msgs\zpopsync.c - Apply Bart's fix to prevent calculating and writing
+// tombfile entries when afterlife == 0.  Addresses PR #5101.
+// 
+// *****************  Version 30  *****************
+// User: Tstring      Date: 5/11/95    Time: 10:53a
+// Updated in $/zmailsrc
+// get the ctrl+tab to work; kinda -- about as good as it'll be for now...
+// 
+// make toolbars REALLY cool. They now use the correct BitBlt() and
+// CreateCompatibleDC() calls. Buttons can be added and removed
+// dynamically now, and the DynCondition state is now updated (though
+// still a bit buggy). Still a bit of work to do on this.
+// 
+// Basically, MFCTB.* was completely rewritt
+// 
+// *****************  Version 29  *****************
+// User: Wilbur       Date: 5/10/95    Time: 7:10p
+// Updated in $/zmailsrc
+// 
+// User: Wilbur       Date: 5/10/95    Time: 7:04p
+// Updated in $/zmailsrc/CUSTOM/epoplib.c
+// Updated in $/zmailsrc/CUSTOM/mailserv.c
+// Updated in $/zmailsrc/CUSTOM/realname.c
+// Updated in $/zmailsrc/CUSTOM/sendmail.c
+// Updated in $/zmailsrc/CUSTOM/poplib.c
+// Updated in $/zmailsrc/INCLUDE/pop.h
+// Updated in $/zmailsrc/MSTORE/zpopmsg.c
+// Updated in $/zmailsrc/MSTORE/zpopfolder.c
+// 
+// Change all calls to getline() to incorporate an expect string argument.
+// This is primarily in support of serial connectivity.
+// 
+// *****************  Version 28  *****************
+// User: Jerry        Date: 5/10/95    Time: 5:03p
+// Updated in $/zmailsrc
+// custom\syncfldr.c - Added gui_bell() to various error messages.  Use
+// #ifdef GUI to wrap all gui_foo() functions.
+// 
+// wingui\winsync.h - Added some prototypes needed by sync edit
+// reorganization.
+// 
+// wingui\winsync.cpp - Reorganized sync edit hiearchy.  Added some audio
+// feedback.
+// 
+// wingui\syncdlg1.cpp - Remember selection if "Edit Scenarios..." is
+// chosen.  Check for selection correctly when updating button
+// sensitivity.
+// 
+// wingui\syncdlg4.cpp - Reorganized sync edit hiearchy.  Added some audio
+// feedback.  Make user confirm scenario deletion.  Check for selection
+// correctly when updating button sensitivity.  Update selection as
+// appropriate.
+// 
+// *****************  Version 27  *****************
+// User: Slater       Date: 5/10/95    Time: 3:12p
+// Updated in $/zmailsrc
+// 1. Turn of cache on close of message window. Should clear up ghosting
+// problems.
+// 2. Turn on header deletion on folder close. Needs testing.
+// 3. Add in font setup dialogs.
+// 
+// *****************  Version 26  *****************
+// User: Jerry        Date: 5/10/95    Time: 10:07a
+// Updated in $/zmailsrc
+// wingui\edit.h - Modify the SetText() and ClearText() members of the
+// ZEdit class to force an immediate window update.  This was done to
+// allow an in-line update of the output area.
+// 
+// wingui\frame.cpp - Simplify the immediate-update logic in
+// SetStatusLine().
+// 
+// *****************  Version 25  *****************
+// User: Jerry        Date: 5/09/95    Time: 6:53p
+// Updated in $/zmailsrc
+// custom\syncfldr.c - Update the status line at strategic places during
+// synchronization.  Partially addresses PR #5118.
+// 
+// wingui\winsync.cpp - Update the status line at strategic places during
+// synchronization.  Wait to turn off the busy cursor until the preview
+// dialog is ready for display.  Addresses PR #5138, partially addresses
+// PR #5118.
+// 
+// wingui\frame.cpp - Change SetStatusLine() to force an immediate status
+// line change and update when pane == 0.  Required for PR's 5118 and
+// 5138.
+// 
+// *****************  Version 24  *****************
+// User: Jerry        Date: 5/09/95    Time: 3:37p
+// Updated in $/zmailsrc
+// custom\syncfldr.c -- use MAILHOST, not ZYNCHOST, for the sync
+// connection.  Oops.
+// 
+// *****************  Version 23  *****************
+// User: Jerry        Date: 5/09/95    Time: 3:10p
+// Updated in $/zmailsrc
+// custom\syncfldr.c - now uses set_alarm() rather than gui_refresh() to
+// force an update after synchronizing spools.
+// 
+// *****************  Version 22  *****************
+// User: Jerry        Date: 5/09/95    Time: 2:42p
+// Updated in $/zmailsrc
+// wingui\zmapp.cpp - force a mail folder check immediately after
+// transitioning from offline to online when POP_OPTIONS=init_check,
+// rather than waiting for the passive timeout.  Addresses PR #5119.
+// 
+// *****************  Version 21  *****************
+// User: Tstring      Date: 5/09/95    Time: 10:02a
+// Updated in $/zmailsrc
+// 
+// *****************  Version 20  *****************
+// User: Wilbur       Date: 5/05/95    Time: 8:19p
+// Updated in $/zmailsrc
+// 
+// User: Wilbur       Date: 5/05/95    Time: 8:15p
+// Updated in $/zmailsrc/WINGUI/login.cpp
+// Updated in $/zmailsrc/WINGUI/prmptdlg.[cpp,h]
+// Updated in $/zmailsrc/WINGUI/zdlgs.[rc,h]
+// 
+// Add a dialog box to query user if he wants to create a new or use an
+// existing ini file if the user name is not defined during login.
+// 
+// *****************  Version 19  *****************
+// User: Slater       Date: 5/05/95    Time: 1:58p
+// Updated in $/zmailsrc
+// Redo font database code, adding lots of debug output. Need to recompile
+// GDIDB.CPP with MODULEDBG defined to get output. Looks like problem with
+// Courier New font is a generic problem with logical fonts. I've bypassed
+// the crash by not deleting the problem fonts. Either our font memory is
+// getting trashed or the fonts are still selected into a DC at the time
+// of the delete, so the delete for our created fonts fails.
+// 
+// Also added a bit more safety checking to the toolbar code along with a
+// patch for the ZEdit so that we make sure the edit control is created
+// with our new buffer instead of forcing a SetHandle() and LimitText().
+// 
+// *****************  Version 18  *****************
+// User: Wilbur       Date: 5/04/95    Time: 7:49p
+// Updated in $/zmailsrc
+// 
+// User: Wilbur       Date: 5/04/95    Time: 7:36p
+// Updated in $/zmailsrc/CUSTOM/zcomm.cpp
+// Bring up a dialog box indicating Z-Mail is in the process of connecting
+// via serial dialup. The user may cancel.
+// 
+// User: Wilbur       Date: 5/04/95    Time: 7:38p
+// Updated in $/zmailsrc/WINGUI/prmptdlg[cpp,h]
+// Define a new dialog box to indicate Z-Mail is in the process of
+// connecting via serial dialup. The user may cancel at any time.
+// 
+// User: Wilbur       Date: 5/04/95    Time: 7:40p
+// Updated in $/zmailsrc/WINGUI/termwnd.h
+// Declare a member variable to store pointer to modeless "connecting..."
+// dialog box for serial dailup. This pointer allows us to close the
+// dialog box after successful connection.
+// 
+// User: Wilbur       Date: 5/04/95    Time: 7:42p
+// Updated in $/zmailsrc/WINGUI/zdlgs.[rc,h]
+// Add resources for serial dialup "connecting..." dialog box, letting
+// users know something is happening while Z-Mail attempts to connect via
+// modem.
+// 
+// *****************  Version 17  *****************
+// User: Jerry        Date: 5/04/95    Time: 6:36p
+// Updated in $/zmailsrc
+// wingui\pagerfr.cpp - Now strips EOL characters from the pager buffer
+// when printing.  Addresses PR #2651.
+// 
+// *****************  Version 16  *****************
+// User: Slater       Date: 5/04/95    Time: 4:56p
+// Updated in $/zmailsrc
+// Add in support for external string database. Get STRINGS project and
+// build it before running ZMAIL. You'll also need to move ZSTR16.DLL to
+// your Z-Mail directory (on your path otherwise).
+// 
+// *****************  Version 15  *****************
+// User: Wilbur       Date: 5/04/95    Time: 3:58p
+// Updated in $/zmailsrc
+// 
+//  User: Wilbur       Date: 5/04/95    Time: 3:25p
+// Updated in $/zmailsrc/CUSTOM/zcomm.[cpp,h]
+// Add the functions show_comm() and hide_comm() to serial communications
+// routines. These functions display and hide the comm terminal window
+// without deleting the comm object.
+// 
+// User: Wilbur       Date: 5/04/95    Time: 3:27p
+// Updated in $/zmailsrc/WINGUI/prmptdlg.cpp
+// Center the prompt dialog box on the screen when brought up during a
+// login script session.
+// 
+// User: Wilbur       Date: 5/04/95    Time: 3:37p
+// Updated in $/zmailsrc/WINGUI/zmapp.cpp
+// If serial connect has been selected, the comm object is instantiated
+// once for the duration of a zmapp instance, being deleted only at
+// ExitInstance() of zmapp. This allows multiple connection/disconnection
+// of serial sessions without the destabilizing effects of
+// creating/deleting a comm object for each connect/disconnect. Fixes bug
+// PR#5001/5151.
+// 
+// *****************  Version 14  *****************
+// User: Jerry        Date: 5/04/95    Time: 1:21p
+// Updated in $/zmailsrc
+// shell\commands.c - modified to actually change drives when a drive
+// letter is specified in the Z-Script 'cd' command.  Addresses PR #5129.
+// 
+// *****************  Version 13  *****************
+// User: Wilbur       Date: 5/02/95    Time: 5:52p
+// Updated in $/zmailsrc
+// 
+// User: Wilbur       Date: 5/02/95    Time: 5:49p
+// Updated in $/zmailsrc/WINGUI/zmapp.cpp
+// Fix bug so that serial connection can now be established from off-line
+// mode. Configuration object is instantiated at zmapp initInstance and
+// deleted at exitInstance, so that it can be used at any time to make a
+// serial connection if not already disconnected.  Note: still have
+// problem with connect/unconnect button toggling on/off.
+// 
+// *****************  Version 12  *****************
+// User: Jerry        Date: 5/01/95    Time: 5:47p
+// Updated in $/zmailsrc
+// shell\init.c - updated the search list for the user's mailbox for the
+// new Z-Win directory structure.
+// 
+// *****************  Version 11  *****************
+// User: Slater       Date: 5/01/95    Time: 5:08p
+// Updated in $/zmailsrc
+// Add in code to clean up as much memory as can be done safely when
+// closing a folder. Without a major investigation into message groups and
+// caching, this is as good as it gets.
+// 
+// *****************  Version 10  *****************
+// User: Wilbur       Date: 5/01/95    Time: 2:26p
+// Updated in $/zmailsrc
+// 
+// User: Wilbur       Date: 5/01/95    Time: 2:24p
+// Updated in $/zmailsrc/WINGUI/login.cpp
+// Initialize the m_bSerial flag before pop_check() function is performed
+// to alert it not to use network connect if serial connect has been
+// selected. This will allow ZMail to run on laptops via serial connect
+// where network connection is not available.
+// 
+// *****************  Version 9  *****************
+// User: Jerry        Date: 5/01/95    Time: 1:42p
+// Updated in $/zmailsrc
+// custom\mailserv.c
+// custom\poplib.c
+// 
+// Lobotomize the Delphi-requested logic to lock the Delphi-specific
+// client to the Delphi-specific server because Delphi is too lazy to
+// install the damn thing.
+// 
+// *****************  Version 8  *****************
+// User: Slater       Date: 5/01/95    Time: 1:41p
+// Updated in $/zmailsrc
+// Changed setopts.c so that if a variable is set, but equal to the empty
+// string "", boolean_val() will return 0. This fixes the problem with
+// Z-Mail coming up as Online, as CONNECTED="". Hopefully this won't break
+// anything else.
+// 
+// Altered compose.cpp to pass the full INI path to the speller in
+// ZSpell_Init.
+// 
+// Updated the speller so we use a default personal dictionary even if
+// there isn't one in user.ini (the code was already there, I just changed
+// the name of the dictionary to custom.dic).
+// 
+// *****************  Version 7  *****************
+// User: Wilbur       Date: 5/01/95    Time: 10:21a
+// Updated in $/zmailsrc
+// User: Wilbur       Date: 5/01/95    Time: 10:20a
+// Updated in $/zmailsrc/WINGUI/parent.cpp
+// Include the user name in the setup dialog title bar.
+// 
+// *****************  Version 6  *****************
+// User: Wilbur       Date: 5/01/95    Time: 9:59a
+// Updated in $/zmailsrc
+// User: Wilbur       Date: 4/28/95    Time: 7:25p
+// Updated in $/zmailsrc/WINGUI/zmapp.cpp
+// Modified get_user_ini() function to obtain ini path string from the
+// [users] section of zmail.ini. Only if it cannot find the user does it
+// created a default string based on user name and $USERSDIR.
+// 
+// User: Wilbur       Date: 4/28/95    Time: 7:21p
+// Updated in $/zmailsrc/WINGUI/confdata.[cpp,h]
+// Delete scriptlist object when dirty flag is FALSE,  to always clean up
+// objects even if no changes occur.
+// 
+// User: Wilbur       Date: 4/28/95    Time: 7:22p
+// Updated in $/zmailsrc/WINGUI/parent.cpp
+// Set ini file name to user name, not to directory name, though they
+// could be the same. 
+// 
+// 
+// 
+// *****************  Version 5  *****************
+// User: Jerry        Date: 4/28/95    Time: 5:19p
+// Updated in $/zmailsrc
+// shell\refresh.c:  pop_check_password() no longer forces a new mail
+// check.  Be advised that pop_init() and verify_mailserv_password will
+// subsequently no longer force one, either.
+// 
+// wingui\zmapp.cpp:  implemented POP_OPTIONS=init_check
+// 
+// *****************  Version 4  *****************
+// User: Slater       Date: 4/28/95    Time: 4:15p
+// Updated in $/zmailsrc
+// Added support for alternate Delphi login screen with a different
+// bitmap.
+// 
+// *****************  Version 3  *****************
+// User: Slater       Date: 4/28/95    Time: 1:17p
+// Updated in $/zmailsrc
+// Happy Birthday, Jason.
+
+

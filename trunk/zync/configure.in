@@ -1,0 +1,164 @@
+dnl -*- indented-text -*-
+dnl Process this file with autoheader to generate config.h.in
+dnl Process this file with autoconf to generate configure
+dnl Process configure with /bin/sh to generate config.h and Makefile
+AC_INIT(popper.h)
+AC_CONFIG_HEADER(config.h)
+
+AC_ENABLE(sockets,
+    [test "$enableval" = no && AC_DEFINE(SANS_SOCKETS)])
+AC_ENABLE(ultrixauthuser,
+    [test "$enableval" = yes && AC_DEFINE(USE_ULTRIX_AUTH_USER)])
+sentinel=
+AC_ENABLE(sentinel,
+	[if test "$enableval" = yes
+	 then
+	     sentinel=sentinel
+	 fi])
+AC_SUBST(sentinel)
+
+configdir=$srcdir/../config
+case $target in
+NONE) cat - $configdir/ostype_list <<EOF
+You must specify an ostype using --target=ostype
+
+possible ostype names are:
+EOF
+exit 1
+;;
+*) if grep $target $configdir/ostype_list >/dev/null; then :; else
+     echo 'invalid ostype'
+     echo
+     echo 'possible ostype names are:'; cat $configdir/ostype_list
+     echo '
+If this is a new ostype, add it to config/ostype_list, then rerun this
+script.'
+     exit 1
+   fi
+esac
+changequote({,})dnl
+OSTYPE=`echo $target | tr '[a-z]' '[A-Z]'`
+changequote([,])dnl
+AC_SUBST(OSTYPE)
+shift
+
+if test -f ../local.mk
+then
+  AC_CHECKING(../osmake.mk and ../local.mk for setting of COMPILER and CPP)
+  eval `awk -F= '/^COMPILER/ {compiler=$2} \
+                 /^CPP/ {cpp=$2} \
+                 END {print "CC=\"" compiler "\"; CPP=\"" cpp"\""}' \
+       ../osmake.mk ../local.mk`
+else
+  AC_CHECKING(../osmake.mk for setting of COMPILER and CPP)
+  eval `awk -F= '/^COMPILER/ {compiler=$2} \
+                 /^CPP/ {cpp=$2} \
+                 END {print "CC=\"" compiler "\"; CPP=\"" cpp"\""}' \
+       ../osmake.mk`
+fi
+test "x$CC" = "x" && CC=cc
+test "x$CPP" = "x" && CPP="cc -E"
+AC_VERBOSE(using CC=$CC)
+AC_VERBOSE(using CPP=$CPP)
+AC_SUBST(CC)
+AC_SUBST(CPP)
+
+AC_HAVE_LIBRARY(resolv)
+
+# Brain-dead sequent stuff
+AC_DYNIX_SEQ
+if echo $LIBS | grep '[[-]]lseq' >/dev/null
+then
+  AC_DEFINE(SANS_SOCKETS)
+  if test -d /usr/lib/posix
+  then
+    LIBS="$LIBS -L/usr/lib/posix"
+  fi
+fi
+
+AC_HAVE_LIBRARY(socket)
+AC_HAVE_LIBRARY(inet)
+AC_HAVE_LIBRARY(mail)
+AC_HAVE_LIBRARY(nsl)
+AC_HAVE_LIBRARY(sec)
+AC_HAVE_LIBRARY(security)
+AC_HAVE_LIBRARY(prot)
+AC_HAVE_LIBRARY(x)
+AC_HAVE_LIBRARY(crypt)
+
+AC_HAVE_HEADERS(arpa/inet.h)
+
+AC_HAVE_FUNCS(basename lockf flock getspnam getpwanam getprpwnam bigcrypt maillock strdup vsprintf)
+
+AC_COMPILE_CHECK(resolver state structure,[
+#include <stdio.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/nameser.h>
+#include <resolv.h>
+extern struct __res_state _res;],[],
+AC_DEFINE(RES_STATE,__res_state),
+AC_DEFINE(RES_STATE,state))
+
+AC_COMPILE_CHECK(BSD 4.3 syslog,[
+#include <syslog.h>],[openlog("foo", 0, LOG_LOCAL0);
+],AC_DEFINE(HAVE_SYSLOG_43))
+
+AC_PID_T
+
+AC_CHECKING(for realloc handling of null)
+AC_TEST_PROGRAM([
+#include <malloc.h>
+int main()
+{
+  return !realloc(0, 1);
+}],AC_DEFINE(REALLOC_NULL_OK))
+
+AC_CHECKING(for location of mail spool)
+if test -d /usr/mail
+then
+  AC_VERBOSE(using /usr/mail)
+  spool=/usr/mail
+else
+  AC_VERBOSE(using /usr/spool/mail)
+  spool=/usr/spool/mail
+fi
+AC_SUBST(spool)
+AC_CHECKING(for spool format options)
+if test -x /usr/lib/mail/execmail
+then
+  AC_VERBOSE([found /usr/lib/mail/execmail, setting spool-format=mmdf])
+  spool_format=mmdf
+  msg_sep=""
+else
+  if test -x /usr/mmdf/bin/submit
+  then
+    AC_VERBOSE([found /usr/mmdf/bin/submit, setting spool-format=mmdf])
+    spool_format=mmdf
+    msg_sep=""
+  else 
+    msg_sep="#"
+    AC_CHECKING(osconfig.h for BSD vs. SYSV)
+    cat <<EOF > test.in
+#include "../osconfig.h"
+#ifdef SYSV
+SYSV
+#endif
+EOF
+    dnl yeah i could get rid of the temporary file by doing $CPP <<EOF | grep
+    dnl but here documents in pipelines in if statements make me nervous.
+    if $CPP test.in | grep SYSV >/dev/null 2>&1
+    then
+      AC_VERBOSE([system seems to be SYSV, setting spool-format=content-length])
+      spool_format=content-length
+    else
+      AC_VERBOSE([system seems to be BSD, setting spool-format=none])
+      spool_format=none
+    fi
+    rm -f test.in
+  fi
+fi
+AC_SUBST(spool_format)
+AC_SUBST(msg_sep)
+
+AC_OUTPUT(Makefile zpop.config)

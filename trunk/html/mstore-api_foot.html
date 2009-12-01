@@ -1,0 +1,60 @@
+<HTML>
+<HEAD>
+<!-- This HTML file has been created by texi2html 1.35
+     from ../mstore/mstore-api.texi on 9 August 1996 -->
+
+<TITLE>Message Store API - Footnotes</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>Message Store API</H1>
+<H3><A NAME="FOOT1" HREF="mstore-api.html#FOOT1">(1)</A></H3>
+<P><CODE>char *</CODE> is a placeholder here for what is
+more likely to be an integral or enumerated type describing the bodypart
+hierarchy.  [No, I think <CODE>char *</CODE> is right.  We can get the
+benefits of using constants by making the strings live in global
+variables whose values can be compared (rather than calling
+<CODE>strcmp</CODE>). --bg]
+<H3><A NAME="FOOT2" HREF="mstore-api.html#FOOT2">(2)</A></H3>
+<P>This
+operation is expected to be useful mainly when composing new messages.
+See the description of the Mail Transport Agent object in the API
+Requirements document.
+<H3><A NAME="FOOT3" HREF="mstore-api.html#FOOT3">(3)</A></H3>
+<P>Are
+mmsg_RawData and friends necessary or even appropriate?  They're
+intended as a way to optimize the case where we want to copy a
+conventional mail message from one place to another without parsing it;
+but they violate the object-oriented view of messages and folders that
+the rest of the API presents.
+<H3><A NAME="FOOT4" HREF="mstore-api.html#FOOT4">(4)</A></H3>
+<P>Both
+<CODE>mmsg</CODE> and <CODE>bodypart</CODE> have raw data access functions.
+Perhaps they should share a superclass, which would be a sibling of
+folder and mstore?  [I agree; Ben was going to try to come up with a
+name for such a class, which as we know is the hardest part of the whole
+endeavor. --bg]
+<H3><A NAME="FOOT5" HREF="mstore-api.html#FOOT5">(5)</A></H3>
+<P>Is this wise?  Or
+might set/get be useful?
+<H3><A NAME="FOOT6" HREF="mstore-api.html#FOOT6">(6)</A></H3>
+<P>It's not yet clear what should happen to messages
+owned by the folder being closed, but which also appear in folders which
+are remaining open.
+<H3><A NAME="FOOT7" HREF="mstore-api.html#FOOT7">(7)</A></H3>
+<P>This limitation comes from the
+implementation difficulty of preserving the headers of message <VAR>x</VAR>
+somewhere while those of message <VAR>y</VAR> are replacing them, so that the
+preserved headers can then replace those in <VAR>y</VAR>.
+<H3><A NAME="FOOT8" HREF="mstore-api.html#FOOT8">(8)</A></H3>
+<P>This document assumes
+that entity names of various kinds can be represented as C strings.  It
+would be better, would it not, to have an abstract type for entity
+(e.g., folder and file) names which would map to C strings for, say,
+Unix files.  The Mac and Windows platforms may have something special to
+add on this subject.  However, such a generalization can wait until the
+rest of the API is stable and possibly even implemented.  Right?
+<H3><A NAME="FOOT9" HREF="mstore-api.html#FOOT9">(9)</A></H3>
+<P>As I've often said, naming is the hardest
+part of software design.---bobg
+</BODY>
+</HTML>

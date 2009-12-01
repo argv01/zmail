@@ -1,0 +1,71 @@
+#! /bin/sh
+#
+# Construct the attach.types file, and write it to stdout.
+#
+# Usage:
+#	buildat zmail.XXX	where XXX is a platform type
+#
+
+# Baseline attachment types, the same everywhere.
+cat attach.base
+echo ""
+cat attach.mim
+echo ""
+
+# Standard X11 attachment stuff.
+cat attach.X11
+echo ""
+
+# Z-Code specific stuff.
+cat attach.zfax
+echo ""
+
+cat video
+echo ""
+
+case $1 in
+*sun3)
+    cat attach.sun
+    echo ""
+	;;
+*sun4|*sol*)
+    cat attach.sun
+    echo ""
+    cat audio.zm
+    echo ""
+    cat audio.sun
+    echo ""
+	;;
+*sgi*|*irix*)
+    cat attach.sgi
+    echo ""
+    cat audio.zm
+    echo ""
+    cat audio.sgi
+    echo ""
+	;;
+*ult*|*dec)
+    cat audio.dec
+    cat video.dec
+    echo ""
+	;;
+*hp[78P]*)
+    cat audio.zm
+    echo ""
+	;;
+*)
+	;;
+esac
+
+# Backwards compatibility stuff
+cat compat
+echo ""
+cat compat.X11
+echo ""
+
+# Additional attachment examples.
+cat attach.more
+echo ""
+
+
+

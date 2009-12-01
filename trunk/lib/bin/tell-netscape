@@ -1,0 +1,34 @@
+:
+
+#
+# Send instructions to a running Netscape
+#
+#  If the Netscape action is "openFile" or "openURL", and no Netscape
+#  is running, a new one will be started.  All other commands must be
+#  sent to an alreay-active Netscape.
+#
+
+if [ $# -ge 1 ]; then
+
+  action="$1"
+  shift
+
+  fixhtml "$*"
+  
+  netscape -remote "$action($*)"
+  if [ $? -ne 0 ] && { [ "$action" = openURL ] || [ "$action" = openFile ]; }; then
+    echo "Starting netscape ..."
+    netscape "$*" &
+    exit 0
+  fi
+  if [ $? -ne 0 ]; then
+    echo "Unable to pass $action request to netscape"
+    exit 1
+  fi
+  
+else
+  
+  echo "Usage:  $0 <action> [ <arguments> ]"
+  exit 1
+  
+fi

@@ -1,0 +1,51 @@
+# when reading a message for the first time, validate the md4 checksum
+
+if !$?__md4_tmp
+  zmenu_set_tmpdir
+  set __md4_tmp = "$__tmpdir/zmail-md4-$$"
+endif
+
+function md_validate() {
+  if "x$[%?Status?]" !~ *R*
+    if "x$[%?X-Md4-Signature?]" != x
+      write -f "$__md4_tmp"
+      sh "{ echo X-Md4-Signature: $[%?X-Md4-Signature?]; echo; cat $__md4_tmp; } | checkmd4 -s"
+      set __md4_result = $status
+      remove -f "$__md4_tmp"
+      if $__md4_result == 0
+	echo "MD4 checksum ok."
+      else
+	if $__md4_result == 1
+	  error "\
+MD4 checksum invalid.  This message$(\n)\
+may have been corrupted in transit."
+	endif
+      endif
+    endif
+  endif
+}
+
+interpose -operation display md_validate
+
+
+# optionally add an md4 checksum header to outbound messages
+
+if $?i18n_mail_transport
+  if "$i18n_mail_transport" !~ '*maybe-md4*'
+    set i18n_mail_transport = "{ $i18n_mail_transport ; } | $ZMLIB/samples/bin/maybe-md4"
+  endif
+else
+  set i18n_mail_transport = 'maybe-md4'
+endif
+
+function md_toggle() {
+  if $?md4_send
+    setenv USE_MD4 true
+  else
+    unsetenv USE_MD4
+  endif
+}
+
+menu -B ComposeOptionsMenu
+menu -separator -name _sep_m4
+menu -sensitivity '$?compose_state:(active)' -value '$?md4_send' -name Checksum md_toggle

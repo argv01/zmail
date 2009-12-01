@@ -1,0 +1,1932 @@
+\input texinfo @c -*- texinfo -*-
+@c %**start of header
+@setfilename dynadt.info
+@settitle Dynamic Abstract Data Types
+@c @finalout
+@c @smallbook
+@c @setchapternewpage odd
+@footnotestyle separate
+@synindex cp fn
+@syncodeindex tp fn
+@c %**end of header
+
+@ifinfo
+This file describes Dynamic Abstract Data Types, a reusable software
+library providing dynamically-resizing data structures.
+
+Software and documentation Copyright 1993, 1994, 1995 Z-Code Software
+Corp., San Rafael, CA 94903.
+@end ifinfo
+
+@titlepage
+@title Dynamic Abstract Data Types
+@subtitle Reusable data structures for C programs
+@subtitle Manual version $Revision: 2.63 $
+@subtitle $Date: 1996/08/20 00:11:30 $
+@author Bob Glickstein
+@page
+@vskip 0pt plus 1filll
+This manual describes Dynamic Abstract Data Types, a reusable software
+library providing dynamically-resizing data structures.
+
+Software and documentation Copyright @copyright{} 1993 Z-Code Software Corp.,
+San Rafael, CA  94903
+@end titlepage
+
+@node Top, Glist, (dir), (dir)
+@unnumbered Introduction
+
+This manual describes Dynamic Abstract Data Types, a reusable software
+library providing dynamically-resizing data structures for use in C
+system and application programming.
+
+@ifinfo
+Manual version:  $Revision: 2.63 $ $Date: 1996/08/20 00:11:30 $
+@end ifinfo
+
+@menu
+* Glist::                       
+* Dlist::                       
+* Dynstr::                      
+* Intset::                      
+* Hashtab::                     
+* Sklist::                      
+* Prqueue::                     
+* Dpipe::                       
+* Miscellaneous::               
+* Compiling::                   
+* Index::                       
+@end menu
+
+@node Glist, Dlist, Top, Top
+@chapter Glist
+
+@cindex grow list
+A Glist is a @dfn{grow list}.  Like a stack, data can be added to and
+removed from the end.  Like an array, elements in the middle can be
+accessed and changed.  A Glist expands automatically to accommodate data
+as it is added.
+
+A single Glist holds elements of a single type.  It actually holds
+@emph{copies} of those elements.  When you hand a Glist a pointer to
+some data element, it copies that element according to the @code{sizeof}
+the data type into its private space.  The accessor functions
+@w{@code{glist_Nth}} and @w{@code{glist_Last}} return pointers to the private
+copies of the data.
+
+@cindex volatile pointer
+@cindex pointer relocation
+@cindex relocation of pointers
+It is important to note that the pointers returned by @w{@code{glist_Nth}}
+and @w{@code{glist_Last}} are volatile; their contents may relocate if a
+subsequent @w{@code{glist_Add}} or @w{@code{glist_Insert}} causes a
+@code{realloc} of the Glist's private memory, rendering the returned
+pointers useless.  Therefore, pointers into Glists should be used with
+care.  If in doubt, don't save the pointer value, save the index of the
+element you care about, and use repeated calls to @w{@code{glist_Nth}}.
+
+@tindex struct glist
+@deftypefn Function void glist_Init (@w{struct glist *@var{gl}}, @w{int @var{eltsize}}, @w{int @var{growsize}})
+Initialize the @code{struct glist} pointed to by @var{gl}.  The size of
+an element in the new Glist will be @var{eltsize}, and when the Glist is
+full, an attempt to add another element will cause the Glist to be
+expanded by @var{growsize} uninitialized entries.
+@end deftypefn
+
+@deftypefn Macro int glist_EmptyP (@w{struct glist *@var{gl}})
+Yields zero if @var{gl} is a non-empty Glist, non-zero otherwise.
+@end deftypefn
+
+@deftypefn Macro int glist_Length (@w{struct glist *@var{gl}})
+Yields the number of elements in @var{gl}.
+@end deftypefn
+
+@deftypefn Function int glist_Add (@w{struct glist *@var{gl}}, @w{const void *@var{elt}})
+Adds a new value to the end of @var{gl}.  The value is pointed to by
+@var{elt}, whose referent is copied into the Glist.  The number of bytes
+to copy was given as @var{eltsize} in @w{@code{glist_Init}}.  Returns
+the position of the newly-added element.  If @var{elt} is 0, an empty
+element is added and is initialized with @w{@code{bzero}}.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function void glist_Insert (@w{struct glist *@var{gl}}, @w{const void *@var{elt}}, @w{int @var{n}})
+Insert an element into @var{gl}.  The element to insert is pointed to by
+@var{elt}.  The newly-added element will be located at position @var{n}.
+The old elements occupying locations @var{n} and higher are shifted to
+the right, resulting in the Glist growing by one.  This is an O(@var{n})
+operation.  Legal values for @var{n} are in the range 0 to
+@w{@code{glist_Length(@var{gl})}} inclusive.  Note that
+
+@example
+@group
+glist_Insert(@var{gl}, @var{elt}, glist_Length(@var{gl}));
+@end group
+@end example
+
+@noindent
+is exactly equivalent to
+
+@example
+@group
+glist_Add(@var{gl}, @var{elt});
+@end group
+@end example
+
+Glists are not optimized for mid-list insertion.  If you find yourself
+using @w{@code{glist_Insert}} frequently, consider using a Dlist instead
+(@pxref{Dlist}).
+
+If @var{elt} is 0, an empty element is inserted and initialized with
+@w{@code{bzero}}.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function {void *} glist_Last (@w{struct glist *@var{gl}})
+Returns a pointer to the last element of @var{gl}.
+@end deftypefn
+
+@deftypefn Function {void *} glist_Nth (@w{struct glist *@var{gl}}, @w{int @var{n}})
+Returns a pointer to the element of @var{gl} whose position is @var{n},
+where @var{n} lies between 0 and @w{@code{glist_Length(@var{gl}) -
+1}}.
+@end deftypefn
+
+@deftypefn Macro int glist_Pop (@w{struct glist *@var{gl}})
+Shortens @var{gl} by one, discarding the last value in it.  Yields the
+new number of values in the Glist.  Do @emph{not} call this macro on an
+empty Glist!
+@end deftypefn
+
+@deftypefn Macro {void} glist_Truncate (@w{struct glist *@var{gl}}, @w{int @var{num}})
+Truncates @var{gl} to contain @var{num} entries (by discarding all but
+entries 0 through @w{@var{num} - 1}).  It is an error for @var{num} to
+be greater than @w{@code{glist_Length(@var{gl})}}.
+@end deftypefn
+
+@deftypefn Function void glist_Remove (@w{struct glist *@var{gl}}, @w{int @var{n}})
+Removes the element from @var{gl} whose position is @var{n}.  Elements
+in @var{gl} whose positions are higher than @var{n} are shifted to the
+left, shortening the Glist by one.  This is an O(@var{n}) operation.
+
+Glists are not optimized for mid-list removal.  If you find yourself
+using @w{@code{glist_Remove}} frequently, consider using a Dlist instead
+(@pxref{Dlist}).
+@end deftypefn
+
+@deftypefn Function void glist_Set (@w{struct glist *@var{gl}}, @w{int @var{n}}, @w{const void *@var{elt}})
+Destructively replace the element in @var{gl} at position @var{n} with
+the element pointed to by @var{elt}.  If @var{n} is larger than the
+largest index in @var{gl}, then @var{gl} will automatically be extended
+to be exactly @w{@code{@var{n} + 1}} entries long; however, any
+intervening entries added by extending @var{gl} in this way remain
+completely uninitialized and will initially contain random garbage.  If
+@var{elt} is 0, an empty element replaces the affected element and is
+initialized with @w{@code{bzero}}.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function void glist_Sort (@w{struct glist *@var{gl}}, @w{int (*@var{compare})(const void *, const void *)})
+Sort the elements of @var{gl} in place according to the sorting
+predicate @var{compare} which, as in @code{qsort}, is a function taking
+pointers to two elements and returns a value less than, equal to, or
+greater than zero depending on whether its first argument is to be
+considered less than, equal to, or greater than its second argument.
+@end deftypefn
+
+@deftypefn Function int glist_Bsearch (@w{struct glist *@var{gl}}, @w{const void *@var{probe}}, @w{int (*@var{compare})(const void *, const void *)})
+Perform binary search for an element of @var{gl} matching @var{probe},
+using the comparison predicate @var{compare}.  Finds a matching element
+in @w{@code{O(log @var{n})}} time.  The elements of @var{gl} must be
+sorted in ascending order with respect to the ordering implied by
+@var{compare}, which is a function taking pointers to two elements and
+returning a value less than, equal to, or greater than zero depending on
+whether its first argument is to be considered less than, equal to, or
+greater than its second argument.
+
+If a matching element is found, this function returns its index within
+@var{gl}; otherwise -1 is returned.
+@end deftypefn
+
+@deftypefn Function void glist_Swap (@w{struct glist *@var{gl}}, @w{int @var{m}}, @w{int @var{n}})
+Swaps the two elements in @var{gl} whose positions are @var{m} and @var{n}.
+@end deftypefn
+
+@deftypefn Macro {} glist_FOREACH (@w{struct glist *@var{gl}}, @w{@var{t}}, @w{@var{v}}, @w{@var{i}})
+Replaces the @w{@code{for (@dots{})}} at the beginning of a loop that
+traverses the elements of a Glist.  @var{gl} is a pointer to a Glist;
+@var{t} is the type of an element of the Glist; @var{v} is the name of a
+variable of type @w{@code{@var{t} *}}; and @var{i} is the name of an
+@code{int} variable.  Within the body of the loop, @var{i} iterates from
+0 through @w{@code{glist_Length(@var{gl}) - 1}}, and in each iteration,
+@var{v} points to the @var{i}th element of @var{gl}.  Example:
+
+@example
+@group
+int i;
+struct foo *f;
+
+glist_FOREACH(gl, struct foo, f, i) @{
+    printf("The bar field of element %d is %s\n", i, f->bar);
+@}
+@end group
+@end example
+@end deftypefn
+
+@deftypefn Function {void} glist_Map (@w{struct glist *@var{gl}}, @w{void (*@var{fn})(void *, void *)}, @w{void *@var{data}})
+For each element of @var{gl}, invoke @var{fn}, passing a pointer to the
+element and @var{data} as arguments.  The function @var{fn} should not
+alter @var{gl} (with respect to which elements are in it and in what
+order), but may alter the contents of individual elements.
+
+Elements of @var{gl} are traversed in order from 0 through
+@w{@code{glist_Length(@var{gl}) - 1}}.
+@end deftypefn
+
+@deftypefn Function void glist_Destroy (@w{struct glist *@var{gl}})
+Releases the memory associated with @var{gl}.  If the elements of
+@var{gl} have privately-allocated resources (such as memory or file
+descriptors), those resources should be released (presumably in a
+@w{@code{glist_FOREACH}} loop) prior to calling this function, or
+@w{@code{glist_CleanDestroy}} should be used.
+@end deftypefn
+
+@deftypefn Function {void} glist_CleanDestroy (@w{struct glist *@var{gl}}, @w{void (*@var{final})(void *)})
+Like @w{@code{glist_Destroy(@var{gl})}}, but first calls @var{final} on
+a pointer to each element of @var{gl} (presumably as a destructor).
+@end deftypefn
+
+@deftypefn Function {void *} glist_GiveUpList (@w{struct glist *@var{gl}})
+Like @w{@code{glist_Destroy}}, but returns @var{gl}'s private copy of
+the array of elements without destroying it.  No further Glist
+operations are possible on @var{gl}.  If @var{n} is the number of
+elements in @var{gl} and @var{s} is the size of an element (as given to
+@w{@code{glist_Init}}), then the returned array resides in a
+@code{malloc} block whose size is at least @w{@code{@var{n} * @var{s}}},
+and possibly larger.  This function may also return 0, indicating that
+@var{gl} is and always has been empty (no memory was ever allocated for
+it).
+@end deftypefn
+
+@node Dlist, Dynstr, Glist, Top
+@chapter Dlist
+
+@cindex doubly-linked list
+A Dlist is a doubly-linked list.  Like a Glist, a single Dlist holds
+elements of a single type.  In fact, Dlists are implemented as Glists
+with next and previous links added.  As such, many of the same rules and
+caveats apply: data elements are @emph{copied} into the Dlist's private
+space, and pointers into Dlists can become invalid if a Dlist-growing
+operation (@w{@code{dlist_Append}}, @w{@code{dlist_Prepend}},
+@w{@code{dlist_InsertBefore}}, or @w{@code{dlist_InsertAfter}}) causes a
+@code{realloc} of the Dlist's private memory.  @xref{Glist}.
+
+Note that Dlist elements are referred to by an integer index, but the
+value of the index does not reflect the element's position within
+doubly-linked list ordering.
+
+@tindex struct dlist
+@deftypefn Function void dlist_Init (@w{struct dlist *@var{dl}}, @w{int @var{eltsize}}, @w{int @var{growsize}})
+Initialize the @w{@code{struct dlist}} pointed to by @var{dl}.  The size of
+an element in the new Dlist will be @var{eltsize}, and when the Dlist is
+full, an attempt to add another element will cause the Dlist to be
+expanded by @var{growsize} uninitialized entries.
+@end deftypefn
+
+@deftypefn Macro int dlist_EmptyP (@w{struct dlist *@var{dl}})
+Yields zero if @var{dl} is non-empty, non-zero otherwise.
+@end deftypefn
+
+@deftypefn Macro int dlist_Head (@w{struct dlist *@var{dl}})
+Yields the index of the head element of @var{dl}, or -1 if the
+list is empty.
+@end deftypefn
+
+@deftypefn Macro int dlist_Tail (@w{struct dlist *@var{dl}})
+Yields the index of the tail element of @var{dl}, or -1 if the
+list is empty.
+@end deftypefn
+
+@deftypefn Function {void *} dlist_HeadElt (@w{struct dlist *@var{dl}})
+Yields the head element of @var{dl}.  This is exactly equivalent to
+
+@example
+dlist_Nth(@var{dl}, dlist_Head(@var{dl}))
+@end example
+
+The Dlist @var{dl} must not be empty.
+@end deftypefn
+
+@deftypefn Function {void *} dlist_TailElt (@w{struct dlist *@var{dl}})
+Yields the tail element of @var{dl}.  This is exactly equivalent to
+
+@example
+dlist_Nth(@var{dl}, dlist_Head(@var{dl}))
+@end example
+
+The Dlist @var{dl} must not be empty.
+@end deftypefn
+
+@deftypefn Macro int dlist_Length (@w{struct dlist *@var{dl}})
+Yields the number of elements in @var{dl}.
+@end deftypefn
+
+@deftypefn Macro {void *} dlist_Nth (@w{struct dlist *@var{dl}}, @w{int @var{i}})
+Yields a pointer to the element of @var{dl} whose index is @var{i}.
+@end deftypefn
+
+@deftypefn Macro int dlist_Next (@w{struct dlist *@var{dl}}, @w{int @var{i}})
+Yields the index of the element of @var{dl} that is next after element
+number @var{i}, or -1 if there is no next element.
+@end deftypefn
+
+@deftypefn Macro int dlist_Prev (@w{struct dlist *@var{dl}}, @w{int @var{i}})
+Yields the index of the elements of @var{dl} that is previous to element
+number @var{i}, or -1 if there is no previous element.
+@end deftypefn
+
+@deftypefn Function int dlist_Prepend (@w{struct dlist *@var{dl}}, @w{const void *@var{elt}})
+Prepend to @var{dl} the element pointed to by @var{elt}.  Returns the
+index of the newly-added element.  The new element becomes the new head
+of the Dlist.  It has no Prev element, and its Next element is the
+former head of the Dlist (if any).  If @var{elt} is 0, an empty element
+initialized with @w{@code{bzero}} is prepended.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function int dlist_Append (@w{struct dlist *@var{dl}}, @w{const void *@var{elt}})
+Append to @var{dl} the element pointed to by @var{elt}.  Returns the
+index of the newly-added element.  The new element becomes the new tail
+of the Dlist.  It has no Next element, and its Prev element is the
+former tail of the Dlist (if any).  If @var{elt} is 0, an empty element
+initialized with @w{@code{bzero}} is appended.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function int dlist_InsertAfter (@w{struct dlist *@var{dl}}, @w{int @var{after}}, @w{const void *@var{elt}})
+Insert into @var{dl}, after the element whose index is @var{after}, an
+element pointed to by @var{elt}.  Returns the index of the newly-added
+element.  The new element becomes the Next of the element at
+@var{after}, and becomes the Prev of @var{after}'s old Next.  If
+@var{elt} is 0, an empty element is inserted and initialized with
+@w{@code{bzero}}.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function int dlist_InsertBefore (@w{struct dlist *@var{dl}}, @w{int @var{before}}, @w{const void *@var{elt}})
+Insert into @var{dl}, before the element whose index is @var{before}, an
+element pointed to by @var{elt}.  Returns the index of the newly-added
+element.  The new element becomes the Prev of the element at
+@var{before}, and becomes the Next of @var{before}'s old Prev.  If
+@var{elt} is 0, an empty element is inserted and initialized with
+@w{@code{bzero}}.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function void dlist_Remove (@w{struct dlist *@var{dl}}, @w{int @var{i}})
+Remove from @var{dl} the element whose index is @var{i}.  The deleted
+element's old Prev and Next elements are made to point at each other.
+@end deftypefn
+
+@deftypefn Function void dlist_Replace (@w{struct dlist *@var{dl}}, @w{int @var{n}}, @w{const void *@var{elt}})
+Replaces the element of @var{dl} whose index is @var{n} with the element
+pointed to by @var{elt}.  If @var{elt} is 0, an empty element replaces
+the affected element, and is initialized with @w{@code{bzero}}.
+@end deftypefn
+
+@deftypefn Macro {} dlist_FOREACH (@w{struct dlist *@var{dl}}, @w{@var{t}}, @w{@var{v}}, @w{@var{i}})
+Replaces the @w{@code{for (@dots{})}} at the top of a loop that iterates
+over the elements of @var{dl} in order, from head to tail; @var{t} is
+the type of an element of the Dlist; @var{v} is the name of a variable
+of type @w{@code{@var{t} *}}, and @var{i} is the name of an integer variable
+which, each iteration through the loop, holds the value of the current
+index.  Within the body of the loop, @var{v} points to the current
+(@var{i}th) element of @var{dl}.  Example:
+
+@example
+@group
+int i;
+struct foo *f;
+
+dlist_FOREACH(dl, struct foo, f, i) @{
+    printf("bar field of next element is %s\n", f->bar);
+@}
+@end group
+@end example
+
+The expansion of this macro computes the next element in the Dlist from
+the current element at the end of each loop iteration.  This means that
+the loop body must not remove the current element from the Dlist;
+otherwise, the ``next'' computation will yield garbage.
+@end deftypefn
+
+@deftypefn Macro {} dlist_FOREACH2 (@w{struct dlist *@var{dl}}, @w{@var{t}}, @w{@var{v}}, @w{@var{i}}, @w{@var{j}})
+Like @w{@code{dlist_FOREACH}}, but allows the loop body to remove the
+current Dlist element.  The caller passes the name of an additional
+integer variable, @var{j}.  The ``next'' computation takes place at the
+@emph{top} of each loop and @var{j} holds the index of the next element.
+@end deftypefn
+
+@deftypefn Function {void} dlist_Map (@w{struct dlist *@var{dl}}, @w{void (*@var{fn})(void *, void *)}, @w{void *@var{data}})
+For each element of @var{dl}, invoke @var{fn}, passing a pointer to the
+element and @var{data} as arguments.  The function @var{fn} should not
+alter @var{dl} (with respect to which elements are in it and in what
+order), but may alter the contents of individual elements.
+
+Elements of @var{dl} are traversed in order from head to tail.
+@end deftypefn
+
+@deftypefn Function void dlist_Destroy (@w{struct dlist *@var{dl}})
+Releases the memory associated with @var{dl}.  If the elements if
+@var{dl} have privately-allocated resources (such as memory or file
+descriptors), those resources should be released (presumably in a
+@w{@code{dlist_FOREACH}} loop) prior to calling this function, or
+@w{@code{dlist_CleanDestroy}} should be used.
+@end deftypefn
+
+@deftypefn Function {void} dlist_CleanDestroy (@w{struct dlist *@var{dl}}, @w{void (*@var{final})(void *)})
+Like @w{@code{dlist_Destroy(@var{dl})}}, but first calls @var{final} on
+a pointer to each element of @var{dl} (presumably as a destructor).
+@end deftypefn
+
+@node Dynstr, Intset, Dlist, Top
+@chapter Dynstr
+
+@cindex dynamic string
+@cindex conventional string
+@cindex string
+A Dynstr is a dynamically-allocated string which grows and shrinks as
+necessary to accommodate the characters in it.  Dynstr strings are
+@code{NUL}-terminated like conventional C strings; in fact, the macro
+@w{@code{dynstr_Str}} yields the conventional string contained within a
+Dynstr.  However, that string should not be manipulated in certain ways
+without its containing Dynstr's knowledge.  In particular, its
+terminating @code{NUL} should not move, and the string should not be
+passed to @code{realloc} or @code{free} or the like.
+
+Since the string contained in a Dynstr may relocate (as the result of a
+@code{realloc}), the pointer returned by @w{@code{dynstr_Str}} may become
+invalid.  It is therefore preferable to use repeated calls to
+@w{@code{dynstr_Str}} than to squirrel away a copy of the pointer.
+
+@tindex struct dynstr
+@deftypefn Function void dynstr_Init (@w{struct dynstr *@var{d}})
+Initializes the @w{@code{struct dynstr}} pointed to by @var{d}.
+@end deftypefn
+
+@deftypefn Function void dynstr_InitFrom (@w{struct dynstr *@var{d}}, @w{char *@var{str}})
+Initializes @var{d} (which should not have been previously initialized)
+with the already-@code{malloc}'d string @var{str}.  This is equivalent
+to
+
+@example
+@group
+dynstr_Init(@var{d});
+dynstr_Set(@var{d}, @var{str});
+@end group
+@end example
+
+@noindent
+but doesn't create a new copy of the string.  Use this function when you
+have a string in a @code{malloc}-allocated piece of memory which you
+wish to place under Dynstr control.
+
+The amount of space @code{malloc}'d for @var{str} is presumed to be
+equal to @w{@code{1 + strlen(@var{str})}}.  After this function call,
+@var{str} becomes the ``property'' of @var{d}, in a sense; the caller
+should not attempt to @code{free} or @code{realloc} it, should
+@w{@code{dynstr_Destroy}} @var{d} normally when finished with it, and in
+general should obey the rules for @w{@code{dynstr_Str}} outlined above.
+@end deftypefn
+
+@deftypefn Macro int dynstr_EmptyP (@w{const struct dynstr *@var{d}})
+Yields zero if @var{d} is non-empty (@w{@code{dynstr_Length}} is greater
+than 0), non-zero otherwise.
+@end deftypefn
+
+@deftypefn Function int dynstr_Length (@w{const struct dynstr *@var{d}})
+Returns the number of characters in @var{d}.
+@end deftypefn
+
+@deftypefn Macro {char *} dynstr_Str (@w{const struct dynstr *@var{d}})
+Yields the character string contained in @var{d}.  The value returned is
+never 0 (this is a change from earlier versions of this software).
+@end deftypefn
+
+@deftypefn Function void dynstr_Set (@w{struct dynstr *@var{d}}, @w{const char *@var{str}})
+Sets the contents of @var{d} to be a copy of the string @var{str},
+erasing any old contents of @var{d}.  If @var{str} is 0, then any
+allocated memory associated with @var{d} is freed and the empty string
+is assigned to @var{d}.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function void dynstr_Append (@w{struct dynstr *@var{d}}, @w{const char *@var{str}})
+Appends to @var{d} a copy of the character string @var{str}.  Like
+@w{@code{strcat(dynstr_Str(@var{d}), @var{str})}} but without the
+memory-allocation hassle.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function void dynstr_AppendN (@w{struct dynstr *@var{d}}, @w{const char *@var{str}}, @w{int @var{n}})
+Appends to @var{d} a copy of the character string @var{str}, stopping after
+@var{n} characters are copied or at the end of @var{str}, whichever
+comes first.  This function is to @w{@code{dynstr_Append}} as @code{strncat}
+is to @code{strcat}.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function int dynstr_AppendChar (@w{struct dynstr *@var{d}}, @w{int @var{c}})
+Appends to @var{d} the single character @var{c} and returns the added
+character.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function int dynstr_Chop (@w{struct dynstr *@var{d}})
+Shortens @var{d} by one character by chopping it off the end.  Returns
+the chopped character.  Inspired by Perl.
+@end deftypefn
+
+@deftypefn Function int dynstr_ChopN (@w{struct dynstr *@var{d}}, @w{unsigned @var{n}})
+Shortens @var{d} by chopping @var{n} characters off the end.
+
+No range check is performed; @var{n} must not be greater than
+@w{@code{dynstr_Length(@var{d})}}.
+@end deftypefn
+
+@deftypefn Function int dynstr_KeepN (@w{struct dynstr *@var{d}}, @w{unsigned @var{n}})
+Shortens @var{d} by keeping only the leading @var{n} characters.
+@var{n} is a count, not a positional index; if @var{n} is zero, the
+dynstr will become empty.
+
+No range check is performed; @var{n} must not be greater than
+@w{@code{dynstr_Length(@var{d})}}.
+@end deftypefn
+
+@deftypefn Function void dynstr_Replace (@w{struct dynstr *@var{d}}, @w{int @var{start}}, @w{int @var{len}}, @w{const char *@var{str}})
+Replace a substring of @var{d} with a new string.  Characters beginning
+at position @var{start} (zero-based) and continuing for @var{len} bytes
+are replaced by the @code{NUL}-terminated string @var{str}, shortening
+or lengthening @var{d} as necessary.
+
+No range checks are performed; @var{start} and @w{@code{(@var{start} +
+@var{len})}} must both lie between 0 and
+@w{@code{dynstr_Length(@var{d})}}, inclusive.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function void dynstr_ReplaceN (@w{struct dynstr *@var{d}}, @w{int @var{start}}, @w{int @var{len}}, @w{const char *@var{str}}, @w{int @var{n}})
+Like @w{@code{dynstr_Replace}}, but replaces the substring of @var{d} with
+at most @var{n} characters from @var{str} (stopping earlier if @var{str}
+is shorter than @var{n} characters).
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function void dynstr_ReplaceChar (@w{struct dynstr *@var{d}}, @w{int @var{start}}, @w{int @var{len}}, @w{int @var{c}})
+Like @w{@code{dynstr_Replace}}, but replaces the substring of @var{d} with
+the single character @var{c}.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Macro void dynstr_Insert (@w{struct dynstr *@var{d}}, @w{int @var{pos}}, @w{const char *@var{str})}
+Insert into @var{d} at position @var{pos} the @code{NUL}-terminated
+string @var{str}.  This macro simply calls
+@code{@w{dynstr_Replace(@var{d},} @var{pos}, 0, @var{str})}.
+@end deftypefn
+
+@deftypefn Macro void dynstr_InsertN (@w{struct dynstr *@var{d}}, @w{int @var{pos}}, @w{const char *@var{str}}, @w{int @var{n}})
+Insert into @var{d} at position @var{pos} the string @var{str}, stopping
+after @var{n} bytes have been copied or upon reaching the end of
+@var{str}, whichever comes first.  This macro simply calls
+@code{@w{dynstr_ReplaceN(@var{d},} @var{pos}, 0, @var{str}, @var{n})}.
+@end deftypefn
+
+@deftypefn Macro void dynstr_InsertChar (@w{struct dynstr *@var{d}}, @w{int @var{pos}}, @w{int @var{c}})
+Insert into @var{d} at position @var{pos} the single character @var{c}.
+This macro simply calls @code{@w{dynstr_ReplaceChar(@var{d},} @var{pos},
+0, @var{c})}.
+@end deftypefn
+
+@deftypefn Macro void dynstr_Delete (@w{struct dynstr *@var{d}}, @w{int @var{pos}}, @w{int @var{len}})
+Delete from @var{d} a substring of characters beginning at position
+@var{pos} and continuing for @var{len} bytes.  This macro simply calls
+@code{@w{dynstr_Replace(@var{d},} @var{pos}, @var{len}, @w{"")}}.
+@end deftypefn
+
+@deftypefn Function void dynstr_Destroy (@w{struct dynstr *@var{d}})
+Releases the memory associated with @var{d}.
+@end deftypefn
+
+@deftypefn Function {char *} dynstr_GiveUpStr (@w{struct dynstr *@var{d}})
+Like @w{@code{dynstr_Destroy}}, but returns @var{d}'s private copy of the
+string (as in @w{@code{dynstr_Str(@var{d})}}) without destroying it.  No
+further Dynstr operations are possible on @var{d}.  The resulting string
+@var{str} always resides in a @code{malloc} block whose size is at least
+@w{@code{strlen(@var{str}) + 1}}, and possibly larger.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@node Intset, Hashtab, Dynstr, Top
+@chapter Intset
+
+@cindex integer set
+@cindex set of integers
+An Intset is a set of integers, implemented as a sorted Dlist of
+@dfn{parts}.  Each part is a bit vector of varying size which can
+represent a portion of the space of all integers.  When a value is added
+to the set, if no part exists to hold the value, then either an existing
+part is expanded to include the value, or a new part is linked into the
+Dlist, whichever is more space-efficient.
+
+@tindex struct intset
+@deftypefn Function void intset_Init (@w{struct intset *@var{iset}})
+Initializes the Intset pointed to by @var{iset}.
+@end deftypefn
+
+@deftypefn Macro int intset_EmptyP (@w{struct intset *@var{iset}})
+Yields zero if @var{iset} is non-empty, non-zero otherwise.
+@end deftypefn
+
+@deftypefn Macro {int} intset_Count (@w{struct intset *@var{iset}})
+Yields the number of elements in @var{iset}.
+@end deftypefn
+
+@deftypefn Function void intset_Add (@w{struct intset *@var{iset}}, @w{int @var{i}})
+Adds to the set @var{iset} the value @var{i}.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function void intset_AddRange (@w{struct intset *@var{iset}}, @w{int @var{start}}, @w{int @var{end}})
+Adds to the set @var{iset} every value in the range @var{start} through
+@var{end}, inclusive (@var{start} must not be greater than @var{end}).
+This function is equivalent to, but much more efficient than
+
+@example
+@group
+int i;
+
+for (i = @var{start}; i <= @var{end}; ++i)
+    intset_Add(@var{iset}, i);
+@end group
+@end example
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function void intset_Remove (@w{struct intset *@var{iset}}, @w{int @var{i}})
+Removes from @var{iset} the value @var{i}.  If @var{i} was not a member of
+@var{iset}, this function does nothing.  If this function produces an
+empty ``part'' (described above), then the part is deallocated.
+@end deftypefn
+
+@deftypefn Function void intset_Clear (@w{struct intset *@var{iset}})
+Removes all values from the set @var{iset}.
+@end deftypefn
+
+@deftypefn Function int intset_Contains (@w{struct intset *@var{iset}}, @w{int @var{i}})
+Tests whether @var{iset} contains the value @var{i}, returning zero if
+not, non-zero if so.
+@end deftypefn
+
+@deftypefn Function int intset_Min (@w{struct intset *@var{iset}})
+Returns the smallest member of @var{iset}.
+
+If @var{iset} is empty, this function will raise the
+@w{@code{strerror(EINVAL)}} exception.
+@end deftypefn
+
+@deftypefn Function int intset_Max (@w{struct intset *@var{iset}})
+Returns the largest member of @var{iset}.
+
+If @var{iset} is empty, this function will raise the
+@w{@code{strerror(EINVAL)}} exception.
+@end deftypefn
+
+@deftypefn Function int intset_Equal (@w{struct intset *@var{is1}}, @w{struct intset *@var{is2}})
+Tests whether @var{is1} contains exactly the same members as @var{is2}.
+Returns non-zero if they're equal, zero if non-equal.
+@end deftypefn
+
+@tindex struct intset_iterator
+@deftypefn Function void intset_InitIterator (@w{struct intset_iterator *@var{isi}})
+Initialize @var{isi} for subsequence use in calls to
+@w{@code{intset_Iterate}}.
+@end deftypefn
+
+@deftypefn Function {int *} intset_Iterate (@w{struct intset *@var{iset}}, @w{struct intset_iterator *@var{isi}})
+Iterates over the elements of @var{iset} using the iterator @var{isi},
+which has been initialized with @w{@code{intset_InitIterator}}.  Each call
+to this function returns a pointer to a static area containing the
+``next'' element of @var{isi} in numerical order (from
+@w{@code{intset_Min(@var{iset})}} to @w{@code{intset_Max(@var{iset})}}).  The
+iterator @var{isi} is used to record the current position in the
+traversal so that the next call to @w{@code{intset_Iterate}} will pick up
+from the correct spot.  Multiple concurrent traversals, each using a
+separate iterator, are possible.
+
+The contents of @var{isi} must not change during the traversal.  When no
+elements remain in a traversal, this function returns 0.  There is no
+requirement to complete a particular traversal, and an iterator may be
+re-initialized at any time to begin a new traversal.  There is no need
+to finalize an iterator.
+
+Example:
+
+@example
+@group
+struct intset_iterator isi;
+int *intptr;
+
+intset_InitIterator(&isi);
+while (intptr = intset_Iterate(@var{iset}, &isi)) @{
+    @r{code that uses the integer in @w{@code{*intptr}}}
+@}
+@end group
+@end example
+@end deftypefn
+
+@deftypefn Function void intset_Destroy (@w{struct intset *@var{iset}})
+Releases the memory associated with @var{iset}.
+@end deftypefn
+
+@node Hashtab, Sklist, Intset, Top
+@chapter Hashtab
+
+@cindex hash table
+@cindex open hash table
+@cindex bucket
+A Hashtab is a hash table, which is a fast-lookup array.  Hashtab
+implements an @dfn{open}-style hash table atop Glists and Dlists.  In an
+open hash table, a fixed number of @dfn{buckets} holds a variable number
+of table elements.  Finding the correct bucket is an O(1) operation;
+finding the element within the bucket is a simple linear search.  For
+this reason, it is desirable to choose a Hashtab configuration that will
+spread elements among buckets evenly, with no bucket getting too
+``deep''.
+
+@cindex hash value
+Given a hash table element, the correct bucket is found by taking the
+@dfn{hash value} of the element modulo the number of buckets in the
+Hashtab.  The hash value is determined by the table's @dfn{hash
+function}, which should attempt to map elements to as nearly unique
+integers as is feasible.  It is also customary practice to choose a
+prime number for the number of buckets in the hash table (so the hash
+value modulo the number of buckets is least likely to exhibit
+periodicity), though it is by no means necessary.
+
+Since Glists and Dlists are used, the same rules and caveats apply:  one
+data type per Hashtab; data elements are @emph{copied} into the
+Hashtab's private space; and pointers into Hashtabs can become invalid
+if a @w{@code{hashtab_Add}} causes a @code{realloc} of the Hashtab's private
+memory.  @xref{Glist}.
+
+@tindex struct hashtab
+@deftypefn Function void hashtab_Init (@w{struct hashtab *@var{ht}}, @w{unsigned int (*@var{hashfn})(const void *)}, @w{int (*@var{compare})(const void *, const void *)}, @w{int @var{eltsize}}, @w{int @var{nbuckets}})
+Initializes hash table @var{ht}.  The hash function to use on elements
+of the new table is @var{hashfn}, which takes a pointer to an element
+and returns an @w{@code{unsigned int}} hash value.  A predicate to compare
+pairs of elements, called the @dfn{comparison predicate}, is given as
+@var{compare}, which should take two pointers to elements and return
+zero if they are equal, non-zero otherwise.  The size of a data element
+is @var{eltsize}.  The number of buckets to create in the new table is
+@var{nbuckets}.
+
+If @var{compare} is 0, then @code{bcmp} (or @code{memcmp}, whichever is
+available) is used (along with @var{eltsize}).
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function void hashtab_Add (@w{struct hashtab *@var{ht}}, @w{const void *@var{elt}})
+Add to @var{ht} a copy of the element pointed to by @var{elt}.  The
+pointer is first passed to @var{ht}'s hash function to obtain a hash
+value.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function {void *} hashtab_Find (@w{struct hashtab *@var{ht}}, @w{const void *@var{probe}})
+Find the element of @var{ht} which matches @var{probe} and return a
+pointer to it.  Usually, @var{probe} is a pointer to a
+partially-filled-in version of the data structure being sought (for
+instance, if the elements of @var{ht} are key-value pairs, @var{probe}
+would be a pointer to a pair containing a valid key field but nothing in
+the value field).  The element is found using @var{ht}'s hash function
+and comparison predicate; this means that @var{probe} must hash the same
+as the target element would, and that the comparison predicate must
+consider @var{probe} and the target element equal.  If no matching
+element is found, 0 is returned.  If multiple matches exist, only the
+first one found is returned.  (There is no practical way to determine
+which matching element among several would be found first.)
+@end deftypefn
+
+@deftypefn Function void hashtab_Remove (@w{struct hashtab *@var{ht}}, @w{const void *@var{probe}})
+The element of @var{ht} matching @var{probe} is found (as described
+above in @w{@code{hashtab_Find}}) and removed.  If no matching element is
+found, this function silently does nothing.  If multiple matches exist,
+only the first one found is removed.  (There is no practical way to
+determine which matching element among several would be found first.)
+
+If @var{probe} is 0, then the last element of @var{ht} returned by a
+call to @w{@code{hashtab_Find}} or @w{@code{hashtab_Iterate}} is removed
+without performing a new search.  This special case performs no
+error-checking, so be sure that there @emph{has} been a successful
+@w{@code{hashtab_Find}} or @w{@code{hashtab_Iterate}} and that the
+resulting element has not already been removed before calling
+@w{@code{hashtab_Remove(@var{ht}, 0)}}.
+@end deftypefn
+
+@tindex struct hashtab_iterator
+@deftypefn Function void hashtab_InitIterator (@w{struct hashtab_iterator *@var{hti}})
+Initialize @var{hti} for subsequent use in calls to
+@w{@code{hashtab_Iterate}}.
+@end deftypefn
+
+@deftypefn Function {void *} hashtab_Iterate (@w{struct hashtab *@var{ht}}, @w{struct hashtab_iterator *@var{hti}})
+Iterates over the elements of @var{ht} using the iterator @var{hti},
+which has been initialized with @w{@code{hashtab_InitIterator}}.  Each call
+to this function returns a pointer to the ``next'' element of @var{ht}
+(according to an apparently-random traversal of @var{ht}).  The iterator
+@var{hti} is used to record the current position in the traversal so
+that the next call to @w{@code{hashtab_Iterate}} will pick up from the
+correct spot.  Multiple concurrent traversals, each using a separate
+iterator, are possible.
+
+Each traversal is guaranteed to reach each element of @var{ht} exactly
+once, but the contents of @var{ht} must not change during the traversal.
+(If an iterator is used without reinitializing @emph{after} the Hashtab
+is modified, the result isn't even guaranteed to be @emph{in} the
+Hashtab!)  When no elements remain in a traversal, this function returns
+0.  There is no requirement to complete a particular traversal, and an
+iterator may be re-initialized at any time to begin a new traversal.
+There is no need to finalize an iterator.
+
+Example:
+
+@example
+@group
+struct hashtab_iterator hti;
+struct foo *fooptr;
+
+hashtab_InitIterator(&hti);
+while (fooptr = (struct foo *) hashtab_Iterate(@var{ht}, &hti)) @{
+    @r{code that uses @code{fooptr}}
+@}
+@end group
+@end example
+@end deftypefn
+
+@deftypefn Function {unsigned int} hashtab_StringHash (@w{const char *@var{str}})
+Computes and returns a hash value for the @code{NUL}-terminated string
+@var{str}.  This function is provided as a convenience; it is quite a
+good hash function for short and medium-length strings, especially
+identifier names in programming languages.
+@end deftypefn
+
+@deftypefn Macro int hashtab_EmptyP (@w{struct hashtab *@var{ht}})
+Yields zero if @var{ht} is a non-empty Hashtab, non-zero otherwise.
+@end deftypefn
+
+@deftypefn Macro int hashtab_Length (@w{struct hashtab *@var{ht}})
+Yields the number of elements in @var{ht}.
+@end deftypefn
+
+@deftypefn Macro int hashtab_NumBuckets (@w{struct hashtab *@var{ht}})
+Yields the number of buckets in @var{ht}, which was given by the latest
+call to @w{@code{hashtab_Init}} or @w{@code{hashtab_Rehash}}.
+@end deftypefn
+
+@deftypefn Function void hashtab_Stats (@w{const struct hashtab *@var{ht}}, @w{double *@var{mean}}, @w{double *@var{variance}})
+Compute statistics about the distribution of elements among the buckets
+of @var{ht}.  The mean length of a bucket is placed in the @code{double}
+pointed to by @var{mean}, and the variance is placed in the
+@code{double} pointed to by @var{variance}.  (The square root of the
+variance is the @dfn{standard deviation}.)  Either @var{mean} or
+@var{variance} may be 0 if that value is not desired, but if the
+variance is desired but not the mean, be aware that the mean is computed
+internally anyway.
+@end deftypefn
+
+@deftypefn Function void hashtab_Rehash (@w{struct hashtab *@var{ht}}, @w{int @var{newbuckets}}, @w{unsigned int (*@var{newhash})(const void *)})
+Redistribute the elements of @var{ht} among a new number of buckets
+@var{newbuckets} and/or using a new hash function @var{newhash}.  To
+leave the number of buckets alone, @var{newbuckets} should be 0; to
+leave the hash function alone, @var{newhash} should be 0.  This function
+is typically used when @w{@code{hashtab_Stats}} reveals that the hash
+table has grown large or imperfectly (resulting in buckets that are too
+large, or in very uneven growth among the buckets), or when deletions
+have left the hash table sparse and fewer buckets are called for.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function {void} hashtab_Map (@w{struct hashtab *@var{ht}}, @w{void (*@var{fn})(void *, void *)}, @w{void *@var{data}})
+For each element of @var{ht}, invoke @var{fn}, passing a pointer to the
+element and @var{data} as arguments.  The function @var{fn} should not
+alter @var{ht} (with respect to which elements are in it), but may alter
+the contents of individual elements.
+
+Elements of @var{ht} are traversed in an apparently-random order.
+@end deftypefn
+
+@deftypefn Function void hashtab_Destroy (@w{struct hashtab *@var{ht}})
+Releases the memory associated with @var{ht}.  If the elements of
+@var{ht} have privately-allocated resources (such as memory or file
+descriptors), those resources should be released (presumably in a
+@w{@code{hashtab_Iterate}} traversal) prior to calling this function, or
+@w{@code{hashtab_CleanDestroy}} should be used.
+@end deftypefn
+
+@deftypefn Function {void} hashtab_CleanDestroy (@w{struct hashtab *@var{ht}}, @w{void (*@var{final})(void *)})
+Like @w{@code{hashtab_Destroy(@var{ht})}}, but first calls @var{final}
+on a pointer to each element of @var{ht} (presumably as a destructor).
+@end deftypefn
+
+@node Sklist, Prqueue, Hashtab, Top
+@chapter Sklist
+
+@cindex skip list
+A skip list is a special kind of linked list for keeping data in sorted
+order.  Its searching efficiency is comparable to that of a balanced
+binary tree, but the implementation is vastly simpler and the overhead
+is lower.
+
+In a skip list, each element is stored in a node of a randomly-chosen
+@dfn{level}.  A node of level @var{n} contains @w{@code{@var{n} + 1}}
+forward pointers, where the @var{k}th pointer points to the next node of
+level @var{k} or higher.
+
+When a new node is inserted in the skip list, its level is chosen based
+on @var{P}, the probability of choosing a higher level for the node.
+The probability that a node's level is higher than @var{L} is
+@w{@code{@var{P}^(@var{L} + 1)}}.  A skip list's value of @var{P} is
+specified as a ratio (numerator, denominator) in a call to
+@w{@code{sklist_Init}}.  An empirically good value for @var{P} is
+@w{1/4}.
+
+@findex Srandom
+Because the random-number generator is used in creating skip list nodes,
+it is a good idea for the application to initialize the random-number
+generator some time before skip list insertions begin happening.  Some C
+libraries provide the function @code{srand} for this purpose; others
+provide @code{srandom}.  The macro @w{@code{Srandom(@var{seed})}} invokes
+the correct variant for your platform.@footnote{You should always use
+@code{Srandom} rather than calling @code{srand} or @code{srandom}
+directly.  If your platform supplies both @code{srand} and
+@code{srandom}, there is no good way to tell which random-number
+generator will be used by Sklist, but @code{Srandom} will always
+initialize the right one.}
+
+Skip lists were described in the June 1990 issue of @cite{Communications
+of the ACM} (volume 33, number 6), in ``Skip Lists:  A Probabilistic
+Alternative to Balanced Trees'' by William Pugh.
+
+@tindex struct sklist
+@deftypefn Function void sklist_Init (@w{struct sklist *@var{skl}}, @w{int @var{eltsize}}, @w{int (*@var{cmp})(const void *, const void *)}, @w{int @var{numerator}}, @w{int @var{denominator}})
+Initialize the skip list pointed to by @var{skl}.  The size of an
+element in the new skip list is @var{eltsize}; @var{cmp} is a pointer to
+a @dfn{comparison function}, an @code{int}-returning function which
+takes as arguments two pointers to skip list elements and compares them
+in the style of @code{strcmp}; and @var{numerator} and @var{denominator}
+form the ratio @var{P} described above (the recommended values are 1 and
+4).
+
+If @var{cmp} is 0, then @code{bcmp} (or @code{memcmp}, whichever is
+available) is used (along with @var{eltsize}).
+@end deftypefn
+
+@deftypefn Macro int sklist_Length (@w{struct sklist *@var{skl}})
+Yields the number of elements in @var{skl}.
+@end deftypefn
+
+@deftypefn Macro int sklist_Empty (@w{struct sklist *@var{skl}})
+Yields zero if @var{skl} is non-empty, non-zero otherwise.
+@end deftypefn
+
+@deftypefn Function {void *} sklist_Insert (@w{struct sklist *@var{skl}}, @w{const void *@var{elt}})
+Insert into @var{skl} the element pointed to by @var{elt}.  The referent
+of @var{elt} is copied into the skip list.  The number of bytes to copy
+was given as @var{eltsize} when the skip list was initialized with
+@w{@code{sklist_Init}}.  Returns a pointer to the new node in the skip list.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function {void *} sklist_Find (@w{struct sklist *@var{skl}}, @w{const void *@var{probe}}, @w{int @var{record}})
+Find in @var{skl} a data element which matches @var{probe} (according to
+the comparison function given in the call to @w{@code{sklist_Init}}).
+Return that element if found, or 0 if not.  The @var{record} parameter
+controls whether the skip list records the path to the found item.  If
+non-zero, the path will be recorded internally and can be used to speed
+a subsequent @w{@code{sklist_Remove}} or @w{@code{sklist_CleanRemove}}
+operation (@i{q.v.}).  If @var{record} is zero, the path will not be
+recorded and this function will run slightly faster.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception (but only
+if @var{record} is non-zero).
+@end deftypefn
+
+@deftypefn Function void sklist_Remove (@w{struct sklist *@var{skl}}, @w{const void *@var{probe}})
+Remove from @var{skl} the element which matches @var{probe} (according
+to the comparison function given in the call to @w{@code{sklist_Init}}).
+If @var{skl} contains multiple matches for @var{probe} only one is
+removed.  (There is no practical way to determine which matching element
+among several would be found first.)  If no matching element is found,
+this function silently does nothing.  The storage containing the
+affected element is freed, making the removed element inaccessible after
+this call; if it contains private data that needs finalizing, use
+@w{@code{sklist_CleanRemove}} instead.
+
+If @var{probe} is 0, then the last element found by a call to
+@w{@code{sklist_Find}} is removed, but only if the @var{record}
+parameter was non-zero in that call, and only if no other operation
+involving a skip list search has intervened.  (That includes
+@w{@code{sklist_Insert}}, @w{@code{sklist_Remove}},
+@w{@code{sklist_CleanRemove}}, and @w{@code{sklist_Find}}.)  Note that a
+call to such a function on @emph{any} skip list invalidates the
+``recorded'' information for @emph{all} skip lists.  Note that this
+common idiom is fine:
+
+@example
+@group
+if (sklist_Find(skl, probe, 1)) @{
+    sklist_Remove(skl, 0);
+@} else @{
+    @r{@dots{}not found@dots{}}
+@}
+@end group
+@end example
+@end deftypefn
+
+@deftypefn Function {void} sklist_CleanRemove (@w{struct sklist *@var{skl}}, @w{void *@var{probe}}, @w{void (*@var{final})(void *)})
+Like @w{@code{sklist_Remove(@var{skl}, @var{probe})}}, but first
+@var{final} is called on a pointer to the element to be removed, if one
+is found.  Presumably @var{final} is a destructor.
+@end deftypefn
+
+@deftypefn Function {void *} sklist_LastMiss (@w{struct sklist *@var{skl}})
+Returns the @dfn{last miss} element from the previous search operation
+in @var{skl}.  The last miss is the element immediately ``to the left''
+of an element sought in the previous search, regardless of whether that
+search succeeded.  If there is no such element in @var{skl}, this
+function returns 0.
+
+As when using @w{@code{sklist_Remove(@var{skl}, 0)}}, this function may
+only be called after a call to @w{@code{sklist_Find}} in which the
+@var{record} was non-zero, and there must have been no intervening skip
+list search operations (@w{@code{sklist_Insert}},
+@w{@code{sklist_Remove}}, @w{@code{sklist_CleanRemove}}, and
+@w{@code{sklist_Find}}).  Note that a call to such a function on
+@emph{any} skip list invalidates the ``recorded'' information for
+@emph{all} skip lists.
+@end deftypefn
+
+@deftypefn Function {void *} sklist_First (@w{struct sklist *@var{skl}})
+Returns the first element of @var{skl}, or 0 if @var{skl} is empty.
+@end deftypefn
+
+@deftypefn Function {void *} sklist_Next (@w{struct sklist *@var{skl}}, @w{const void *@var{elt}})
+Returns the next element in @var{skl} after @var{elt} (which must be a
+non-zero pointer obtained earlier from @var{skl}).
+@end deftypefn
+
+@deftypefn Macro {} sklist_FOREACH (@w{struct sklist *@var{skl}}, @w{@var{t}}, @w{@var{v}})
+Replaces the @w{@code{for (@dots{})}} at the top of a loop that iterates
+over the elements of @var{skl} in order; @var{t} is the type of an
+element in the Sklist; and @var{v} is the name of a variable of type
+@w{@code{@var{t} *}}.  Example:
+
+@example
+@group
+struct foo *f;
+
+sklist_FOREACH(skl, struct foo, f) @{
+    printf("bar field of next element is %s\n", f->bar);
+@}
+@end group
+@end example
+
+The expansion of this macro computes the next element in the Sklist from
+the current element at the end of each loop iteration.  This means that
+the loop body must not remove the current element from the Sklist;
+otherwise, the ``next'' computation will yield garbage.
+@end deftypefn
+
+@deftypefn Macro {} sklist_FOREACH2 (@w{struct sklist *@var{skl}}, @w{@var{t}}, @w{@var{v}}, @w{@var{w}})
+Like @w{@code{sklist_FOREACH}}, but allows the loop body to remove the
+current Sklist element.  The caller passes the name of an additional
+variable of type @w{@code{@var{t} *}}, @var{w}.  The ``next''
+computation takes place at the @emph{top} of each loop and @var{w} holds
+a pointer to the next element.
+@end deftypefn
+
+@deftypefn Function {void} sklist_Map (@w{struct sklist *@var{skl}}, @w{void (*@var{fn})(void *, void *)}, @w{void *@var{data}})
+For each element of @var{skl}, invoke @var{fn}, passing a pointer to the
+element and @var{data} as arguments.  The function @var{fn} should not
+alter @var{skl} (with respect to which elements are in it), but may
+alter the contents of individual elements.
+
+Elements of @var{skl} are traversed in order from first to last.
+@end deftypefn
+
+@deftypefn Function void sklist_Destroy (@w{struct sklist *@var{skl}})
+Releases the memory associated with @var{skl}.  If the elements of
+@var{skl} have privately-allocated resources, those resources should be
+released prior to calling this function (presumably in a
+@w{@code{sklist_FOREACH}} loop), or @w{@code{sklist_CleanDestroy}}
+should be used.
+@end deftypefn
+
+@deftypefn Function {void} sklist_CleanDestroy (@w{struct sklist *@var{skl}}, @w{void (*@var{final})(void *)})
+Like @w{@code{sklist_Destroy(@var{skl})}}, but first calls @var{final}
+on a pointer to each element of @var{skl} (presumably as a destructor).
+@end deftypefn
+
+@node Prqueue, Dpipe, Sklist, Top
+@chapter Prqueue
+
+@cindex priority queue
+A Prqueue is a priority queue, implemented as a @dfn{heap}-style binary
+tree atop a Glist.  As such, many of the same rules and caveats as in
+Glists and Dlists apply:  one data type per Prqueue; data elements are
+@emph{copied} into the Prqueue's private space; and pointers into
+Prqueues can become invalid if a @w{@code{prqueue_Add}} causes a
+@code{realloc} of the Prqueue's private memory.  @xref{Glist}.
+
+@cindex comparison operator
+@cindex ordering
+When a Prqueue is set up, it is given a pointer to an int-returning
+function that orders the Prqueue's elements according to some criterion.
+The element that is ``lightest'' in this ordering ``bubbles up'' to be
+the @dfn{head} of the Prqueue.  Only the head of a Prqueue can be
+accessed, but it can always be found in constant time.  Adding and
+removing elements from a Prqueue are O(log @var{n}) operations, where
+@var{n} is the number of elements in in Prqueue.
+
+@tindex struct prqueue
+@deftypefn Function void prqueue_Init (@w{struct prqueue *@var{p}}, @w{int (*@var{compare})(void *, void *)}, @w{int @var{eltsize}}, @w{int @var{growsize}})
+Initializes the @w{@code{struct prqueue}} pointed to by @var{p}.  The
+comparison function @var{compare} will be used to compare pairs of
+elements when adding or removing, and should return an integer less
+than, equal to, or greater than zero depending on whether its first
+argument is to be considered heavier than, equal to, or lighter than its
+second argument.  (The element that compares @emph{lightest} according
+to this function will bubble up to the head of the Prqueue.)  The size
+of an element of the Prqueue is @var{eltsize}, and when the Prqueue is
+full, an attempt to add another element will cause the Prqueue to be
+expanded by @var{growsize} uninitialized entries.
+@end deftypefn
+
+@deftypefn Macro int prqueue_EmptyP (@w{struct prqueue *@var{p}})
+Yields zero if @var{p} is non-empty, non-zero otherwise.
+@end deftypefn
+
+@deftypefn Macro {void *} prqueue_Head (@w{struct prqueue *@var{p}})
+Yields a pointer to the top element of @var{p}.
+@end deftypefn
+
+@deftypefn Function void prqueue_Add (@w{struct prqueue *@var{p}}, @w{void *@var{elt}})
+Adds to @var{p} the element pointed to by @var{elt}.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function void prqueue_Remove (@w{struct prqueue *@var{p}})
+Removes the head element from @var{p}.  The next lightest element
+(according to the comparison @var{compare} provided to
+@w{@code{prqueue_Init}}) becomes the new head of the Prqueue.
+@end deftypefn
+
+@deftypefn Function void prqueue_Destroy (@w{struct prqueue *@var{p}})
+Releases the memory associated with @var{p}.  If the elements of @var{p}
+have privately-allocated resources (such as memory or file descriptors),
+those resources should be released (presumably by repeatedly calling
+@w{@code{prqueue_Head}} and @w{@code{prqueue_Remove}} to get at each element
+until the Prqueue is empty) prior to calling this function, or
+@w{@code{prqueue_CleanDestroy}} should be used.
+@end deftypefn
+
+@deftypefn Function {void} prqueue_CleanDestroy (@w{struct prqueue *@var{p}}, @w{void (*@var{final})(void *)})
+Like @w{@code{prqueue_Destroy(@var{p})}}, but first calls @var{final} on
+a pointer to each element of @var{p} (presumably as a destructor).
+@end deftypefn
+
+@node Dpipe, Miscellaneous, Prqueue, Top
+@chapter Dpipe
+
+@cindex data pipe
+@cindex pipe
+A Dpipe is a buffered data pipe (a @sc{Fifo}) at one ``end'' of which
+bytes are written and from the other ``end'' of which the bytes can be
+read.  Unlike a Unix interprocess pipe, reading and writing cannot occur
+in parallel, so every write must be buffered before the written data can
+be read back out.  The internal buffer of a Dpipe grows dynamically, so
+no write on a Dpipe will ever block.
+
+@cindex writer
+@cindex reader
+@cindex autoflushing
+A Dpipe can have associated with it a @dfn{reader}, a @dfn{writer},
+both, or neither.  The reader is a function which will read bytes from a
+Dpipe upon demand, emptying its internal buffer.  The writer is a
+function that will supply bytes to a Dpipe upon demand.  The reader is
+invoked by the function @w{@code{dpipe_Flush}} and also by
+@w{@code{dpipe_Write}}, @w{@code{dpipe_Put}}, and
+@w{@code{dpipe_Putchar}} if @dfn{autoflushing} is enabled (to prevent
+the internal buffer from growing too large).  The writer is invoked by
+@w{@code{dpipe_Read}} and also by @w{@code{dpipe_Get}} and
+@w{@code{dpipe_Getchar}} when too few bytes are available in the buffer
+to satisfy the pending read request.
+
+The association of a reader or a writer with a Dpipe does not prevent
+other callers from writing to or reading from the Dpipe.
+
+Dpipes can be used to abstract stream-based communication, including
+between processes.  However, it is not possible for two processes to
+manipulate a Dpipe directly, due to the lack of a locking mechanism to
+prevent simultaneous accesses from clobbering the data structure.
+Instead, isolate the interprocess communication at one end of the Dpipe,
+for example by having the Dpipe's reader or writer communicate through
+an ordinary Unix pipe with a subprocess.
+
+@menu
+* Basic Dpipe functions::       
+* Dpipe block operations::      
+* Dpipelines::                  
+@end menu
+
+@node Basic Dpipe functions, Dpipe block operations, Dpipe, Dpipe
+@section Basic Dpipe functions
+
+@tindex struct dpipe
+@deftypefn Function void dpipe_Init (@w{struct dpipe *@var{dp}}, @w{void (*@var{rd})(struct dpipe *, void *)}, @w{void *@var{rddata}}, @w{void (*@var{wr})(struct dpipe *, void *)}, @w{void *@var{wrdata}}, @w{int @var{autoflush}})
+Initializes the @w{@code{struct dpipe}} pointed to by @var{dp}.  The
+function @var{rd} is the Dpipe's reader, and @var{rddata} is its callback
+data.  The function @var{wr} is the Dpipe's writer, and @var{wrdata} is
+its callback data.  Finally, @var{autoflush} controls whether
+autoflushing is enabled for this Dpipe.
+
+When @w{@code{dpipe_Read}} or @w{@code{dpipe_Getchar}} is called on the
+Dpipe and the Dpipe's buffer is empty, then if @var{wr} is non-zero, it
+is invoked with @var{dp} as its first argument and @var{wrdata} as its
+second.  It is expected to write some bytes into @var{dp} (using
+@w{@code{dpipe_Write}}, @w{@code{dpipe_Putchar}}, or
+@w{@code{dpipe_Put}}) or to close it (using @w{@code{dpipe_Close}}).
+Unlike prior versions of the Dpipe library, writer functions are no
+longer required to perform one of these actions on every call.  Instead,
+the Dpipe code will automatically repeat calls to @var{wr} until one of
+the conditions is satisfied.
+
+When @w{@code{dpipe_Read}} or @w{@code{dpipe_Getchar}} is called on the
+Dpipe and the Dpipe's buffer is empty, and if @var{wr} is 0, then the
+exception @w{@code{dpipe_err_NoWriter}} is raised.
+
+When @w{@code{dpipe_Flush}} is called on the Dpipe and @var{rd} is
+non-zero, it is invoked repeatedly with @var{dp} as its first
+argument and @var{rddata} as its second, until no bytes remain in the
+Dpipe's buffer.  Each call to @var{rd} is expected to read one or more
+bytes out of the Dpipe.@footnote{When @w{@code{dpipe_Flush}} is called
+on the Dpipe and @var{rd} @emph{is} 0, then the exception
+@w{@code{dpipe_err_NoReader}} is raised.}  See @w{@code{dpipe_Flush}}
+for an important recommendation concerning reader functions.
+
+The equivalent of a @w{@code{dpipe_Flush}} also occurs when writing to a
+Dpipe if @var{autoflush} is non-zero; in that case, the flush occurs
+each time the Dpipe's internal buffer reaches a certain fixed limit.
+(If @var{rd} is 0, @var{autoflush} is ignored.)
+
+@tindex dpipe_Callback_t
+The convenience type @w{@code{dpipe_Callback_t}}, defined as
+
+@example
+@group
+typedef void (*dpipe_Callback_t)(struct dpipe *,
+                                 void *);
+@end group
+@end example
+
+@noindent
+corresponds to the type of the callbacks @var{wr} and @var{rd}.
+@end deftypefn
+
+@cindex end of file
+@findex dpipe_err_NoWriter
+@deftypefn Function int dpipe_Read (@w{struct dpipe *@var{dp}}, @w{char *@var{buf}}, @w{int @var{n}})
+Read from @var{dp} into @var{buf} at most @var{n} bytes.  Returns the
+actual number of bytes read, which will only be less than @var{n} if
+end-of-file is reached.  End-of-file is reached when all bytes written
+to the Dpipe have been read, and the Dpipe has been closed with
+@w{@code{dpipe_Close}}.
+
+If @var{n} is greater than the number of bytes in the Dpipe's buffer,
+necessitating a call to the Dpipe's writer, and the Dpipe has no writer,
+then no bytes are read and the exception @w{@code{dpipe_err_NoWriter}}
+is raised.  Note, however, that in this case, portions of @var{buf} may
+still have been overwritten.  This function may also raise the
+@w{@code{strerror(ENOMEM)}} exception (in the case that an attempt to
+read causes a writer function to be called).
+@end deftypefn
+
+@findex dpipe_err_Closed
+@deftypefn Function void dpipe_Write (@w{struct dpipe *@var{dp}}, @w{const char *@var{buf}}, @w{int @var{n}})
+Write to @var{dp} from @var{buf} exactly @var{n} bytes.  If autoflushing
+is enabled for the Dpipe, then the Dpipe's reader may be called every so
+often to keep the internal buffer below a certain fixed limit.
+Otherwise, all @var{n} bytes are buffered.  Dpipe buffering is dynamic,
+so @var{n} is limited only by your platform's memory capacity, or your
+good sense, whichever comes first.  Attempting to write data to a Dpipe
+on which @w{@code{dpipe_Close}} has been called raises the
+@w{@code{dpipe_err_Closed}} exception.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@findex dpipe_EOF
+@deftypefn Function int dpipe_Getchar (@w{struct dpipe *@var{dp}})
+Read and return the next character from @var{dp}.  If @var{dp} is at
+end-of-file, return the constant @w{@code{dpipe_EOF}}.
+
+This function may raise the @w{@code{dpipe_err_NoWriter}} exception.
+This function may also raise the @w{@code{strerror(ENOMEM)}} exception
+(in the case that an attempt to read causes a writer function to be
+called).
+@end deftypefn
+
+@deftypefn Function void dpipe_Putchar (@w{struct dpipe *@var{dp}}, @w{int @var{ch}})
+Write to @var{dp} the single character @var{ch}.  It is an error to
+write data to a Dpipe on which @w{@code{dpipe_Close}} has been called.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function void dpipe_Unread (@w{struct dpipe *@var{dp}}, @w{const char *@var{buf}}, @w{int @var{n}})
+Pushes back onto @var{dp} from @var{buf} @var{n} bytes, as if they
+hadn't been read in the first place.  It is possible to unread data on a
+closed Dpipe or one that is at end-of-file.
+
+Note that
+
+@example
+@group
+dpipe_Unread(dp, "abcd", 4);
+@end group
+@end example
+
+@noindent
+is the same as
+
+@example
+@group
+dpipe_Unread(dp, "cd", 2);
+dpipe_Unread(dp, "ab", 2);
+@end group
+@end example
+
+@noindent
+and that the next four bytes read from the Dpipe will be @w{@code{"abcd"}}.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function void dpipe_Ungetchar (@w{struct dpipe *@var{dp}}, @w{int @var{ch}})
+Pushes back onto @var{dp} the single character @var{ch}.  It is possible
+to unread data on a closed Dpipe or one that is at end-of-file.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function {int} dpipe_Peekchar (@w{struct dpipe *@var{dp}})
+Read and return the next character from @var{dp} without removing it
+from the stream.  If @var{dp} is at end-of-file, return the constant
+@w{@code{dpipe_EOF}}.
+
+This function may raise the @w{@code{dpipe_err_NoWriter}} exception.
+This function may also raise the @w{@code{strerror(ENOMEM)}} exception
+(in the case that an attempt to peek ahead causes a writer function to
+be called).
+@end deftypefn
+
+@deftypefn Macro int dpipe_Ready (@w{const struct dpipe *@var{dp}})
+Returns the number of bytes already buffered for reading in @var{dp}.
+Put another way, this is the number of bytes that can be read without
+necessitating a call to the Dpipe's writer.  This is a lower bound on
+the number of bytes ready for reading; the actual number of readable
+bytes remaining in the Dpipe may be (much) higher, since a call to the
+Dpipe's writer (if it has one) may produce more data.
+@end deftypefn
+
+@deftypefn Function {int} dpipe_Eof (@w{struct dpipe *@var{dp}})
+Returns non-zero when @var{dp} is at end-of-file, zero otherwise.
+
+@strong{Warning.}  This function may yield a ``false negative'' in some
+cases; that is, it may return 0 when @var{dp} really is at end-of-file.
+The ambiguous case is described under @w{@code{dpipe_StrictEof}}
+(@i{q.v.}), which is like @w{@code{dpipe_Eof}} but takes a different
+approach to addressing the ambiguity.  In short, the ambiguity arises
+when @var{dp} is empty and not yet closed.  If a writer function exists,
+it can be called to see whether @var{dp} is about to close, and that's
+what @w{@code{dpipe_Eof}} does (using @w{@code{dpipe_Peekchar}}).
+
+Since this function may force a call to the writer, this function may
+raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function int dpipe_StrictEof (@w{struct dpipe *@var{dp}})
+Returns non-zero when @var{dp} is at end-of-file, zero otherwise.
+
+@strong{Warning.}  This function may raise the
+@w{@code{dpipe_err_NoWriter}} exception.  Here's why: A Dpipe is
+definitely at end-of-file when no bytes remain in its buffer and when
+its internal ``closed'' flag is set (by a prior call to
+@w{@code{dpipe_Close}}).  Similarly, a Dpipe is definitely @emph{not} at
+end-of-file when any bytes remain in its buffer.  But suppose its buffer
+is empty and the ``closed'' flag isn't set; is the Dpipe at end-of-file
+or not?  If the Dpipe has a writer function, the next call to it might
+close the Dpipe without adding any more bytes; in that case, the answer
+is ``yes,'' the Dpipe is at end-of-file.  But the writer might also
+supply some bytes, in which case the answer is ``no,'' and there's no
+way to tell until a call to the writer has been forced.  Now suppose
+that the buffer is empty @emph{and} the ``closed'' flag isn't set
+@emph{and} the Dpipe has no writer function: is the Dpipe at
+end-of-file?  (In this case, @w{@code{dpipe_Eof}} simply says ``no'' and
+risks a false negative.)  There is literally no way for
+@w{@code{dpipe_StrictEof}} to know; so by raising an exception,
+@w{@code{dpipe_StrictEof}} effectively says, ``I don't know, do you?''
+Note that this exception can never be raised when @var{dp} has a writer
+function.
+
+Since this function forces a call to the writer (in the case described
+above) using @w{@code{dpipe_Peekchar}}, this function may also raise the
+@w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@findex dpipe_err_NoReader
+@deftypefn Function void dpipe_Flush (@w{struct dpipe *@var{dp}})
+Flush @var{dp}.  Repeatedly calls the Dpipe's reader until no bytes
+remain in the Dpipe's internal buffer.  If the Dpipe has no reader, raises
+the exception @w{@code{dpipe_err_NoReader}}.  It is possible to flush a
+Dpipe that has been closed.
+
+When a Dpipe has both a reader and a writer, calling
+@w{@code{dpipe_Flush}} will call the reader which might wind up invoking
+the writer as well (via @w{@code{dpipe_Read}}, @w{@code{dpipe_Get}}, or
+@w{@code{dpipe_Getchar}}).  Since the goal of @w{@code{dpipe_Flush}} is
+to empty the Dpipe's buffer, it is undesirable for the reader to attempt
+to read so many bytes that the writer is invoked, which will simply
+place more bytes in the Dpipe's buffer.  For that reason, the reader
+might want to limit itself to reading no more than
+@w{@code{dpipe_Ready(@var{dp})}} bytes; but it must read at least one
+byte (unless @var{dp} is at end of file [which sometimes can't be known,
+see @w{@code{dpipe_Eof}}]), and @w{@code{dpipe_Ready}} could return 0.
+The consequence of reading more than @w{@code{dpipe_Ready}} bytes
+(forcing a call to the writer) is simply that the size of the internal
+buffer will fluctuate before emptying.
+
+Note that Dpipes contain a preventive mechanism without which
+@w{@code{dpipe_Flush}} could invoke the reader, which could invoke the
+writer, which could (if autoflushing is enabled) invoke
+@w{@code{dpipe_Flush}} and the reader recursively.  The mechanism simply
+makes @w{@code{dpipe_Flush}} a no-op any time a read is in progress.
+@end deftypefn
+
+@deftypefn Function void dpipe_Pump (@w{struct dpipe *@var{dp}})
+Pump all the data through @var{dp}.  This function is only for Dpipes
+that have both a reader and a writer function.  It works by repeatedly
+calling @w{@code{dpipe_Get}} (to get data from the writer function),
+then @w{@code{dpipe_Unget}} (to put the newly-read data back into the
+Dpipe), then @w{@code{dpipe_Flush}} (to send the data to the reader
+function).  This cycle repeats until end-of-file is reached on the
+Dpipe.
+
+This function may raise the @w{@code{dpipe_err_NoWriter}} or
+@w{@code{dpipe_err_NoReader}} exceptions if called on a Dpipe without
+both a reader and a writer function.  This function may also raise the
+@w{@code{strerror(ENOMEM)}} exceptionor.
+@end deftypefn
+
+@deftypefn Function void dpipe_Close (@w{struct dpipe *@var{dp}})
+Close @var{dp}.  Called to indicate that the writer has no more data to
+write to the Dpipe.  When the reader has exhausted the reading buffer
+after a Dpipe has been closed, the writer is not called to add data to
+the Dpipe; instead, the Dpipe is said to be at end-of-file.
+
+If autoflush is enabled for @var{dp} and @var{dp} has a reader function,
+then @w{@code{dpipe_Close}} flushes @var{dp} via a call to
+@w{@code{dpipe_Flush}}.
+@end deftypefn
+
+@deftypefn Macro {void *} dpipe_wrdata (@w{struct dpipe *@var{dp}})
+Yields the callback data for @var{dp}'s writer function (e.g., to
+finalize it prior to a @w{@code{dpipe_Destroy}}), which was specified in
+@w{@code{dpipe_Init}}.
+@end deftypefn
+
+@deftypefn Macro {void *} dpipe_rddata (@w{struct dpipe *@var{dp}})
+Yields the callback data for @var{dp}'s reader function (e.g., to
+finalize it prior to a @w{@code{dpipe_Destroy}}), which was specified in
+@w{@code{dpipe_Init}}.
+@end deftypefn
+
+@deftypefn Function void dpipe_Destroy (@w{struct dpipe *@var{dp}})
+Releases the memory associated with @var{dp}.  It is not necessary to
+close @var{dp} before destroying it.
+@end deftypefn
+
+@node Dpipe block operations, Dpipelines, Basic Dpipe functions, Dpipe
+@section Dpipe block operations
+
+@cindex donate
+When writing normally to a Dpipe, data is copied from the caller's
+buffer into the Dpipe's internal storage.  Internally, the Dpipe places
+the copied data into a block of memory allocated by @code{malloc}.  It
+can be much more efficient if the caller is able to @dfn{donate} such a
+block containing the data to be written.  Donating a block means the
+caller relinquishes control over the buffer containing the data to be
+written; that buffer must have been created with @code{malloc}.  The
+Dpipe then uses that block directly, with the data already in it, as its
+internal storage rather than create more storage of its own, then have
+to copy the data into it.
+
+When reading from a Dpipe, a similar optimization is available.  If the
+caller is able to accept a pointer to a Dpipe-internal @code{malloc}
+block (whose size cannot be known in advance), there is no need for
+copying data out of the Dpipe, then destroying the block with
+@code{free}.
+
+@deftypefn Function {void} dpipe_Put (@w{struct dpipe *@var{dp}}, @w{char *@var{buf}}, @w{int @var{n}})
+Like @w{@code{dpipe_Write}}, but avoids copying by linking @var{buf}
+directly into the internal storage of @var{dp}.  The buffer @var{buf}
+must be a @code{malloc}-allocated block of at least @var{n} bytes, and
+@var{n} must be at least 1.  The caller relinquishes ownership of
+@var{buf} and must perform no further operations with it (including
+@code{free}---the Dpipe will take care of disposing of the space at the
+proper time).
+
+Like @w{@code{dpipe_Write}}, if autoflushing is enabled for @var{dp},
+then the Dpipe's reader may be called via @w{@code{dpipe_Flush}}; also,
+this function can raise the @w{@code{dpipe_err_Closed}} and
+@w{@code{strerror(ENOMEM)}} exceptions.
+@end deftypefn
+
+@deftypefn Function {int} dpipe_Get (@w{struct dpipe *@var{dp}}, @w{char **@var{bufp}})
+Like @w{@code{dpipe_Read}}, but assigns to @w{@code{*@var{bufp}}} the
+address of a @code{malloc}-allocated block containing one or more bytes
+from @var{dp}'s internal storage.  Return value is the number of bytes
+contained in @w{@code{*@var{bufp}}}.  If @var{dp} is at end-of-file,
+0 is returned and @w{@code{*@var{bufp}}} will also be 0.  If @var{dp}'s
+internal buffer is empty but it has not yet been closed with
+@w{@code{dpipe_Close}}, then the writer is called to supply one or more
+bytes, but if @var{dp} has no writer, then the exception
+@w{@code{dpipe_err_NoWriter}} is raised.
+
+The Dpipe relinquishes its ownership of the @code{malloc} block it
+returns, meaning, among other things, that the caller must be prepared
+to dispose of it at some point using @code{free} (or donate it to a
+future @w{@code{dpipe_Put}}, or possibly @w{@code{dynstr_InitFrom}}
+[@pxref{Dynstr}]).
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception (in
+the case that an attempt to read causes a writer function to be called).
+@end deftypefn
+
+@deftypefn Function {void} dpipe_Unget (@w{struct dpipe *@var{dp}}, @w{char *@var{buf}}, @w{int @var{n}})
+Like @w{@code{dpipe_Unread}}, but @var{buf} must be a @code{malloc}
+block of at least @var{n} bytes which the caller relinquishes.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@node Dpipelines,  , Dpipe block operations, Dpipe
+@section Dpipelines
+
+@cindex dpipeline
+@cindex filter
+This section discusses @dfn{Dpipelines}, a convenience facility using
+Dpipes.  A Dpipeline is a sequence of Dpipes, each feeding its output
+into the next one's input, via a @dfn{filter} function.  The filter
+functions in a Dpipeline are called on demand.  Each time one is
+invoked, it is required to read at least one byte from its source Dpipe
+@emph{or} write at least one byte to its destination Dpipe @emph{or}
+close its destination Dpipe.
+
+@cindex reading end
+@cindex writing end
+Every non-empty Dpipeline has an ordinary Dpipe at its source, or
+@dfn{writing end}, and an ordinary Dpipe at its destination, or
+@dfn{reading end}.  Callers are free to obtain handles to these Dpipes
+(via @w{@code{dpipeline_wrEnd}} and @w{@code{dpipeline_rdEnd}}) and use them in
+an ordinary way.@footnote{Care is only required in calling
+@w{@code{dpipe_Close}}.  A filter function should close its destination
+Dpipe when it is out of data to write.  Apart from that,
+@w{@code{dpipe_Close}} should only be called on the writing end.}
+
+@tindex struct dpipeline
+@deftypefn Function void dpipeline_Init (@w{struct dpipeline *@var{dpl}}, @w{void (*@var{rd})(struct dpipe *, void *)}, @w{void *@var{rddata}}, @w{void (*@var{wr})(struct dpipe *, void *)}, @w{void *@var{wrdata}})
+Initializes the Dpipeline pointed to by @var{dpl}.  The reader function
+for the rightmost Dpipe is @var{rd}, and its callback data is
+@var{rddata}.  The writer function for the leftmost Dpipe is @var{wr},
+and its callback data is @var{wrdata}.  Each of @var{rd} and @var{wr}
+may be 0.  If @var{rd} is non-zero, autoflush is enabled for all Dpipes
+in the Dpipeline.
+
+A newly-initialized Dpipeline is empty and contains no filters, no
+reading end, and no writing end.
+@end deftypefn
+
+@findex dpipe_err_Pipeline
+@deftypefn Function void dpipeline_Prepend (@w{struct dpipeline *@var{dpl}}, @w{void (*@var{filter})(struct dpipe *, struct dpipe *, void *)}, @w{void *@var{filterdata}}, @w{void (*@var{finalize})(dpipeline_Filter_t, void *)})
+Prepend a filter to @var{dpl}.  The new filter function is @var{filter}
+which, when invoked, is passed a source Dpipe, a destination Dpipe, and
+@var{filterdata}.  The function @var{finalize}, if non-zero, is invoked
+during @w{@code{dpipeline_Destroy}} and is passed @var{filter} and
+@var{filterdata} (for cleanup, if necessary).  There must not be a
+``foreign'' Dpipe prepended to @var{dpl} (see
+@w{@code{dpipeline_PrependDpipe}}, below); if there is, the exception
+@w{@code{dpipe_err_Pipeline}} is raised.
+
+The source Dpipe is newly created and becomes the writing end of the
+Dpipeline; its writer is @var{wr} as passed to @w{@code{dpipeline_Init}}
+(with @var{wrdata} as its callback data).  The destination Dpipe is the
+former writing end of the Dpipeline, or is newly created (and becomes
+the reading end of the Dpipeline, with @var{rd} and @var{rddata}, as
+passed to @w{@code{dpipeline_Init}}, as its reader and callback data) if the
+Dpipeline was empty.
+
+@tindex dpipeline_Filter_t
+The convenience type @w{@code{dpipeline_Filter_t}}, defined as
+
+@example
+typedef void (*dpipeline_Filter_t)(struct dpipe *,
+                                   struct dpipe *,
+                                   void *);
+@end example
+
+@noindent
+corresponds to the type of the filter function @var{filter}.
+
+@tindex dpipeline_Finalize_t
+The convenience type @w{@code{dpipeline_Finalize_t}}, defined as
+
+@example
+@group
+typedef void (*dpipeline_Finalize_t)(dpipeline_Filter_t,
+                                     void *);
+@end group
+@end example
+
+@noindent
+corresponds to the type of the finalizing function @var{finalize}.
+@end deftypefn
+
+@deftypefn Function void dpipeline_Append (@w{struct dpipeline *@var{dpl}}, @w{void (*@var{filter})(struct dpipe *, struct dpipe *, void *)}, @w{void *@var{filterdata}}, @w{void (*@var{finalize})(dpipeline_Filter_t, void *)})
+Append a filter to @var{dpl}.  The new filter function is @var{filter}
+which, when invoked, is passed a source Dpipe, a destination Dpipe, and
+@var{filterdata}.  The function @var{finalize}, if non-zero, is invoked
+during @w{@code{dpipeline_Destroy}} and is passed @var{filter} and
+@var{filterdata} (for cleanup, if necessary).  There must not be a
+``foreign'' Dpipe appended to @var{dpl} (see
+@w{@code{dpipeline_AppendDpipe}}, below); if there is, the exception
+@w{@code{dpipe_err_Pipeline}} is raised.
+
+The destination Dpipe is newly created and becomes the reading end of
+the Dpipeline; its reader is @var{rd} as passed to @w{@code{dpipeline_Init}}
+(with @var{rddata} as its callback data).  The source Dpipe is the
+former reading end of the Dpipeline, or is newly created (and becomes
+the writing end of the Dpipeline, with @var{wr} and @var{wrdata}, as
+passed to @w{@code{dpipeline_Init}}, as its writer and callback data) if the
+Dpipeline was empty.
+
+The convenience type @w{@code{dpipeline_Filter_t}}, defined as
+
+@example
+typedef void (*dpipeline_Filter_t)(struct dpipe *,
+                                   struct dpipe *,
+                                   void *);
+@end example
+
+@noindent
+corresponds to the type of the filter function @var{filter}.
+
+The convenience type @w{@code{dpipeline_Finalize_t}}, defined as
+
+@example
+typedef void (*dpipeline_Finalize_t)(dpipeline_Filter_t, void *);
+@end example
+
+@noindent
+corresponds to the type of the finalizing function @var{finalize}.
+@end deftypefn
+
+@deftypefn Macro int dpipeline_Length (@w{struct dpipeline *@var{dpl}})
+Yields the number of filters in @var{dpl}.
+@end deftypefn
+
+@deftypefn Function void dpipeline_PrependDpipe (@w{struct dpipeline *@var{dpl}}, @w{struct dpipe *@var{dp}})
+Prepend to the Dpipeline @var{dpl} the Dpipe @var{dp}, making @var{dp}
+the new writing end.  There must be at least one filter in @var{dpl}; if
+there isn't, the exception @w{@code{dpipe_err_Pipeline}} is raised.  If
+@var{dp} has a reader and reader data, they are cached and overwritten
+(to be restored to the Dpipe upon @w{@code{dpipeline_UnprependDpipe}} or
+@w{@code{dpipeline_Destroy}}).  If @var{dpl} has a writer, it is superseded,
+and its writer data is not used (but can still be accessed with
+@w{@code{dpipeline_wrdata(@var{dpl})}}).  The autoflush status of @var{dp}
+does not change, though it will not affect the autoflush status of the
+other Dpipes in @var{dpl}.  While @var{dp} is attached to @var{dpl}, do
+not use @w{@code{dpipe_rddata(@var{dp})}}, since it will contain
+pipeline-private data.
+
+@cindex foreign dpipe
+The new writing end is termed a @dfn{foreign Dpipe}.  When @var{dpl} is
+destroyed (with @w{@code{dpipeline_Destroy}}), @var{dp} will @emph{not} be
+automatically destroyed.  Note that the reader and reader data of
+@var{dp}, if any, are inaccessible while @var{dp} is attached to
+@var{dpl}.
+
+It is not possible to call @w{@code{dpipeline_Prepend}} on a Dpipeline to
+which a foreign Dpipe has been prepended.  The prepended Dpipe must
+remain the writing end of the Dpipeline.
+
+It @emph{is} possible to call @w{@code{dpipeline_PrependDpipe}} more than
+once on a given Dpipeline.  Each call @emph{replaces} the previous
+writing end with the new Dpipe.  The previous writing end has its reader
+and reader data restored, but it is not returned or saved anywhere, so
+if necessary, a pointer to it should be obtained (with
+@w{@code{dpipeline_wrEnd}}) prior to replacing it.  (If the writing end of a
+Dpipeline is not foreign, then the Dpipeline will manage that Dpipe
+itself.  Foreign writing ends, however, are the responsibility of the
+caller.)
+
+It is possible to connect two Dpipelines like this:
+
+@example
+dpipeline_PrependDpipe(@var{dpl2}, dpipeline_rdEnd(@var{dpl1}));
+@end example
+
+@noindent
+which will cause @var{dpl1} to feed into @var{dpl2}.  Remember, though,
+that this causes the reader and reader data of
+@w{@code{dpipeline_rdEnd(@var{dpl1})}} to be hidden, and that
+@w{@code{dpipeline_Destroy(@var{dpl2})}} will not reclaim
+@w{@code{dpipeline_rdEnd(@var{dpl1})}} (nor would you want it to).
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function void dpipeline_AppendDpipe (@w{struct dpipeline *@var{dpl}}, @w{struct dpipe *@var{dp}})
+Append to the Dpipeline @var{dpl} the Dpipe @var{dp}, making @var{dp}
+the new reading end.  There must be at least one filter in @var{dpl}; if
+there isn't, the exception @w{@code{dpipe_err_Pipeline}} is raised.  If
+@var{dp} has a writer and writer data, they are cached and overwritten
+(to be restored to the Dpipe upon @w{@code{dpipeline_UnappendDpipe}} or
+@w{@code{dpipeline_Destroy}}).  If @var{dpl} has a reader, it is superseded,
+and its reader data is not used (but can still be accessed with
+@w{@code{dpipeline_rddata(@var{dpl})}}).  The autoflush status of @var{dp}
+does not change, though it will not affect the autoflush status of the
+other Dpipes in @var{dpl}.  While @var{dp} is attached to @var{dpl}, do
+not use @w{@code{dpipe_wrdata(@var{dp})}}, since it will contain
+pipeline-private data.
+
+The new reading end is termed a @dfn{foreign Dpipe}.  When @var{dpl} is
+destroyed (with @w{@code{dpipeline_Destroy}}), @var{dp} will @emph{not} be
+automatically destroyed.  Note that the writer and writer data of
+@var{dp}, if any, are inaccessible while @var{dp} is attached to
+@var{dpl}.
+
+It is not possible to call @w{@code{dpipeline_Append}} on a Dpipeline to
+which a foreign Dpipe has been appended.  The appended Dpipe must remain
+the reading end of the Dpipeline.
+
+It @emph{is} possible to call @w{@code{dpipeline_AppendDpipe}} more than
+once on a given Dpipeline.  Each call @emph{replaces} the previous
+reading end with the new Dpipe.  The previous reading end has its writer
+and writer data restored, but it is not returned or saved anywhere, so
+if necessary, a pointer to it should be obtained (with
+@w{@code{dpipeline_rdEnd}}) prior to replacing it.  (If the reading end of a
+Dpipeline is not foreign, then the Dpipeline will manage that Dpipe
+itself.  Foreign reading ends, however, are the responsibility of the
+caller.)
+
+It is possible to connect two Dpipelines like this:
+
+@example
+dpipeline_AppendDpipe(@var{dpl1}, dpipeline_wrEnd(@var{dpl2}));
+@end example
+
+@noindent
+which will cause @var{dpl1} to feed into @var{dpl2}.  Remember, though,
+that this causes the writer and writer data of
+@w{@code{dpipeline_wrEnd(@var{dpl2})}} to be forgotten, and that
+@w{@code{dpipeline_Destroy(@var{dpl1})}} will not reclaim
+@w{@code{dpipeline_wrEnd(@var{dpl2})}} (nor would you want it to).
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function {struct dpipe *} dpipeline_UnprependDpipe (@w{struct dpipeline *@var{dpl}})
+Removes and returns the foreign Dpipe from @var{dpl} that was prepended
+by @w{@code{dpipeline_PrependDpipe}}.  If the writing end of @var{dpl} is
+not foreign, the exception @w{@code{dpipe_err_Pipeline}} is raised.
+
+The foreign Dpipe has its reader and reader data restored, and the
+Dpipeline has its writer and writer data restored.  The foreign Dpipe is
+replaced (in the Dpipeline) with a new non-foreign Dpipe.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function {struct dpipe *} dpipeline_UnappendDpipe (@w{struct dpipeline *@var{dpl}})
+Removes and returns the foreign Dpipe from @var{dpl} that was appended
+by @w{@code{dpipeline_AppendDpipe}}.  If the reading end of @var{dpl} is not
+foreign, the exception @w{@code{dpipe_err_Pipeline}} is raised.
+
+The foreign Dpipe has its writer and writer data restored, and the
+Dpipeline has its reader and reader data restored.  The foreign Dpipe is
+replaced (in the Dpipeline) with a new non-foreign Dpipe.
+
+This function may raise the @w{@code{strerror(ENOMEM)}} exception.
+@end deftypefn
+
+@deftypefn Function {struct dpipe *} dpipeline_wrEnd (@w{struct dpipeline *@var{dpl}})
+Returns the Dpipe at the ``writing end'' of @var{dpl}.
+@end deftypefn
+
+@deftypefn Function {struct dpipe *} dpipeline_rdEnd (@w{struct dpipeline *@var{dpl}})
+Returns the Dpipe at the ``reading end'' of @var{dpl}.
+
+If a Dpipeline has both a reader function and a writer function, it is
+possible to ``pump'' all the data through it by calling
+@w{@code{dpipe_Pump(dpipeline_rdEnd(@var{dpl}))}}.
+@end deftypefn
+
+@deftypefn Macro {void *} dpipeline_wrdata (@w{struct dpipeline *@var{dpl}})
+Yields the writer callback data specified in @w{@code{dpipeline_Init}}.
+This is the same as @w{@code{dpipe_wrdata(dpipeline_wrEnd(@var{dpl}))}},
+unless a foreign Dpipe has been prepended with
+@w{@code{dpipeline_PrependDpipe}}.
+@end deftypefn
+
+@deftypefn Macro {void *} dpipeline_rddata (@w{struct dpipeline *@var{dpl}})
+Yields the reader callback data specified in @w{@code{dpipeline_Init}}.
+This is the same as @w{@code{dpipe_rddata(dpipeline_rdEnd(@var{dpl}))}},
+unless a foreign Dpipe has been appended with
+@w{@code{dpipeline_AppendDpipe}}.
+@end deftypefn
+
+@deftypefn Function void dpipeline_Destroy (@w{struct dpipeline *@var{dpl}})
+Releases all the memory associated with @var{dpl} (including destroying
+all the Dpipes it contains), except for foreign Dpipes.  If the writing
+end of @var{dpl} is foreign, its reader and reader data are restored.
+If the reading end of @var{dpl} is foreign, its writer and writer data
+are restored.
+@end deftypefn
+
+@node Miscellaneous, Compiling, Dpipe, Top
+@chapter Miscellaneous
+
+@deftypefn Function void safe_bcopy (@w{void *@var{src}}, @w{void *@var{dest}}, @w{int @var{n}})
+Copies @var{n} bytes from @var{src} to @var{dest}, correctly handling
+overlapping blocks of memory.  This function should only be called when
+it is known that the blocks at @var{src} and @var{dest} can overlap (if
+@var{src} and @var{dest} point to two separate @code{malloc} blocks, for
+example, or if they point inside two seperately-declared structures or
+arrays, they @emph{cannot} overlap, so @w{@code{safe_bcopy}} should not be
+used).  This function only gets defined if the native @code{bcopy}
+cannot handle overlaps.  If it can, then @w{@code{safe_bcopy}} is defined as
+a macro in terms of the native @code{bcopy}.  (The macro will use
+@code{memcpy} if @code{bcopy} is not available.)
+@end deftypefn
+
+@node Compiling, Index, Miscellaneous, Top
+@chapter Compiling
+
+To use @sc{Dynadt} in your application, link with the library
+@file{libdynadt.a}, and also with @file{libexcept.a}, on which
+@sc{Dynadt} depends.  Include one or more of the following header files
+depending on which subsystems of @sc{Dynadt} you are using:
+@file{glist.h}; @file{dlist.h}; @file{dynstr.h}; @file{intset.h};
+@file{hashtab.h}; @file{sklist.h}; @file{prqueue.h}; @file{dpipe.h}.
+
+@node Index,  , Compiling, Top
+@unnumbered Index
+
+@printindex fn
+
+@contents
+
+@bye

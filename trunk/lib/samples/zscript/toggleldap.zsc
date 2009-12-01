@@ -1,0 +1,18 @@
+#
+# Put this script in your zmail resources file if you wish to have a way
+# to switch between LDAP and the old way of looking up addresses using
+# a menu.  Change lookup.all to some other address lookup script if you
+# wish.
+#
+menu -B MainComposeMenu
+menu -n -name mcm_toggle -mnemonic L -value $?use_ldap  -label 'Use LDAP' toggle_ldap
+ 
+function toggle_ldap() {
+  if $?use_ldap
+    unset use_ldap
+    set address_book = "$ZMLIB/bin/lookup.all"
+  else
+    set use_ldap
+    set address_book = "$ZMLIB/bin/lookup.ldap"
+  endif
+}

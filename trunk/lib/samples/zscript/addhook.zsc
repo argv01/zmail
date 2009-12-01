@@ -1,0 +1,105 @@
+#
+# EMACS-like hook function management
+#
+
+if $?__addhook
+    return
+endif
+
+# In this example, we are making use of a special property of Z-Script
+# command shortcuts (cmd), functions and builtins.
+#
+# For example, "echo" is a Z-Script builtin command.  Given these
+# definitions:
+#
+#   cmd echo 'error'		# Force echoes into error dialogs
+#   function echo () {
+#       set last_echo = "$*"	# Stores string in last_echo,
+#       builtin echo "$*"	# then displays it with echo
+#   }
+#
+# Then echo can be executed in the following three ways:
+#
+#   echo This goes into a dialog via error	# cmd used
+#   \echo This gets stored in last_echo		# cmd skipped, function used
+#   builtin echo This echoes directly		# builtin is forced
+#
+# The add_hook function creates a cmd which forces call_hook to be used.
+# The call_hook function uses the leading backslash to bypass the cmd,
+# thus causing the function to be called.  There is no built-in command
+# corresponding to any of the hooks, so bypassing the cmd with "builtin" 
+# would produce an error.
+
+function call_hook () {
+    eval '\'$1
+    eval set __set = '$?'__${1}_list
+    if $?__set
+	eval "foreach __hook ("'$'"__${1}_list) '"'$'"__hook'"
+    endif
+}
+
+function add_hook () {
+#%
+#      add_hook hookfunction newfunction
+#
+# Calling add_hook arranges to cause newfunction to be called whenever the
+# hookfunction is called, without removing any existing definition of the
+# original hookfunction.  For example:
+#
+#    add_hook startup_hook lite_startup_hook
+#
+# If this command appears in ~/.zmailrc, then at startup time, Z-Mail runs
+# first the existing startup_hook, if any, and then lite_startup_hook.
+#%
+    if $# < 2
+	error "usage: add_hook hookfunction newfunction"
+    endif
+    __init_hook $1
+    if X$1 != X$2
+	# remove_hook $1 $2
+	set __${1}_list += " $2"
+	cmd $1 "call_hook $1"
+    endif
+}
+
+# For Z-Mail 3.3.x, on UNIX only, we can pull this off.  Set up any
+# requested hook functions that aren't already set.
+
+if "$version" =~ *({4.*,3.3*})
+    if $is_mac
+	function __init_hook() {
+	}
+	return
+    endif
+    if $is_mswin
+	function __init_hook() {
+	}
+	return
+    endif
+    set __hook_tmp __hook_counter = 0
+    function __init_hook() {
+	function -q $1		# Fails noisily on old Z-Mail versions
+	if $status != 0		# but this test is safe on any version
+	    return 0		# to protect hooks that already exist
+	endif
+	if $?tmpdir
+	    set __hook_tmp = "$tmpdir"
+	endif
+	if X"$__hook_tmp" == X
+	    set __hook_tmp = /tmp
+	endif
+	arith __hook_counter += 1
+	set __hook_file = "$__hook_tmp/$$.$__hook_counter"
+	# Can't function within a function, so use "source"
+	builtin echo -file "$__hook_file" "function $1 () {"
+	builtin echo -file "$__hook_file" "    $2"
+	builtin echo -file "$__hook_file" "}"
+	builtin source "$__hook_file"
+	builtin remove -f "$__hook_file"
+    }
+else
+    function __init_hook() {
+    }
+endif
+
+set __addhook

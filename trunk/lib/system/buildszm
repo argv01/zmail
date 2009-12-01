@@ -1,0 +1,30 @@
+#! /bin/sh
+#
+# Construct the attach.types file, and write it to stdout.
+#
+# Usage:
+#	buildat zmail.XXX	where XXX is a platform type
+#
+
+# Baseline system.zmailrc stuff, the same everywhere.
+cat zmailrc.base
+echo ""
+
+# Additional zmail settings and examples.
+cat zmailrc.more
+echo ""
+
+case $1 in
+*sun3)
+	;;
+*sun4)
+	;;
+*sgi|*irix)
+	;;
+*ult*|*dec)
+	;;
+*hp[78]*)
+	;;
+*)
+	;;
+esac

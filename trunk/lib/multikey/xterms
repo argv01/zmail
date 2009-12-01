@@ -1,0 +1,7 @@
+# xterms
+# bobg, swebster 3/15/93
+# Z-Code Software Corp.
+#
+# the 'xterms' terminal is merely a small 'xterm'
+
+source $ZMLIB/multikey/xterm

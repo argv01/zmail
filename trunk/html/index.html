@@ -1,0 +1,232 @@
+<HTML>
+<HEAD>
+<TITLE>Z-Mail Developer Documentation - Table of Contents</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>Z-Mail Developer Documentation</H1>
+<P>
+Bart Schaefer
+<P>
+<I>Caveat:</I> This summary reflects my knowledge of the UNIX source tree
+and of general engineering practice at Z-Code.  I have never been intimately
+familiar with the structure of the source tree under the Macintosh- and
+Windows-specific subsections, nor with Macintosh or Windows build procedures.
+<P>
+<UL>
+<LI><A HREF="zarch.html">Z-Mail Architecture Overview</A>
+<LI><A HREF="#builds">Source Code Management and Build Procedures</A>
+<LI><A HREF="#source">A Guide to the Z-Mail Source Code</A>
+<LI><A HREF="#faqs">Assorted Z-Mail User FAQs</A>
+<LI><A HREF="#other">Other Sources of Information</A>
+</UL>
+<P>
+<H2><A NAME="builds">Source Code Management and Build Procedures</A></H2>
+<UL>
+<LI><A HREF="zmintl.html">Internationalization and Localization</A>
+<LI><A HREF="zmscm.html">UNIX Source Code Management</A>
+<UL>
+<LI><A HREF="zmscm.html#checkout">Check Out All Z-Mail Source Files</A>
+<LI><A HREF="zmscm.html#cvsupdate">Get Changes Made By Other Developers</A>
+<LI><A HREF="zmscm.html#newsource">Add New Source Files</A>
+<LI><A HREF="zmscm.html#newplatform">Add A New Platform</A>
+<LI><A HREF="zmscm.html#newdoc">Add New Documentation</A>
+<LI><A HREF="zmscm.html#updatedoc">Update Documentation for a New Release</A>
+</UL>
+<LI><A HREF="zmconfig.html">UNIX Platform Configuration Management</A>
+<LI><A HREF="#buildsummary">Summary of UNIX Build Procedure</A>
+<UL>
+<LI><A HREF="checklist.html">Quick Build Checklist</A> 
+</UL>
+<LI><A HREF="zmbuild.html">Detailed UNIX Build Procedure</A>
+<UL>
+<LI><A HREF="nightlybuild.html">Nightly Builds on Zeppelin</A>
+<LI><A HREF="symlinks.html">Symbolic Link Trees</A>
+<LI><A HREF="zmbuild.html#problems">In Case of Problems ...</A>
+</UL>
+<LI><A HREF="#buildzpop">Summary of Z-POP Server Build Procedure</A>
+<LI><A HREF="zmbuild.html#buildzpop">Detailed Z-POP Server Build Procedure</A>
+<LI><A HREF="zmbuild.html#buildnotes">Version and Platform Build Notes</A>
+</UL>
+<P>
+<H3><A NAME="buildsummary">Z-Mail UNIX Build Procedure (Summary)</A></H3>
+<P>
+<OL>
+<LI><A HREF="zmbuild.html#buildco">Check out source</A> from <A HREF="cvs-primer.html">CVS</A>.
+<LI>If building a distribution, <A HREF="zmbuild.html#doc">check out doc from DocRep</A>.
+<LI><A HREF="zmbuild.html#config">Configure for platform and user interface</A>.
+<LI><I>(Optional)</I> <A HREF="zmbuild.html#depend">Set up <tt>make</tt> dependencies</A>.
+<LI><A HREF="zmbuild.html#make"><tt>make</tt></A>
+<LI>If building a distribution, <A HREF="zmbuild.html#metamail">build <tt>metamail</tt></A>.
+<LI>If building a distribution, <A HREF="zmbuild.html#dist"><tt>make distribution</tt></A>.
+</OL>
+<P>
+<H3><A NAME="buildzpop">Z-POP Server Build Procedure (Summary)</A></H3>
+<OL>
+<LI><A HREF="zmbuild.html#buildco">Check out <tt>zmail</tt> source</A> as
+usual (you don't need <tt>mp</tt> or <tt>metamail</tt>).
+<LI>Do top level <A HREF="zmbuild.html#zpop0"><tt>configure</tt> and
+<tt>mkmakes</tt></A> <B>as if for Z-Mail Lite</B> on the same platform.
+<LI><A HREF="zmbuild.html#zpop1">Build <tt>zmail</tt> components</A> used by <tt>zpopd</tt><br>
+<I>Alternatively, <A HREF="#buildsummary">build Z-Mail Lite</A> to
+generate these components as a side-effect.</I>
+<LI><A HREF="zmbuild.html#zpop2">Build the server</A>
+<LI><A HREF="zmbuild.html#zpop3">Pack up <tt>zpoplib</tt> with <tt>tar</tt></A>
+so that it extracts to <tt>zpoplib/</tt>.
+</OL>
+<P>
+<!--
+<UL>
+<LI>Using GNATS
+<UL>
+<LI><A HREF="gnats-emacs.html">From Inside Emacs</A>
+<LI><A HREF="gnats-mail.html">By Mailing in Bugs</A>
+</UL>
+</UL>
+<P>
+-->
+<H2><A NAME="source">A Guide to the Z-Mail Source Code</A></H2>
+<P>
+Before examining the Z-Mail source code in detail, you should become
+familiar with the <A HREF="zarch.html">overall Z-Mail architecture</A>.
+<P>
+Conventions used in this index (not necessarily used in other documents
+referenced by this index):
+<DL>
+<DT><LI>Bulleted item</DT>
+<DD>Represents a logical division in the source code.  These do not always
+correspond to a single directory in the source tree, so there may be subsidiary
+items indented below any item.</DD>
+<DT><tt>Typewriter Font</tt></DT>
+<DD>Indicates the name of a file or directory.  As the first word of a bulleted
+item, always a directory relative to the top-level Z-Mail source directory.</DD>
+<DT><I>Italic Font</I></DT>
+<DD>Provides additional information about the immediately preceding bulleted
+item.</DD>
+<DT><A HREF="index.html">Hypertext Link</A></DT>
+<DD>Jumps to detailed documentation about a source component.</DD>
+</DL>
+<P>
+<H3>Z-Mail Source Code Index</H3>
+<UL>
+<LI><tt>doc</tt> - Published Documentation (via <tt>doc.sh</tt>)
+<LI><tt>include</tt> - Assorted Header Files
+<LI><tt>license</tt> - Client Licensing and `Z-Code Network License Server' (ZCNLS)
+<LI>Cross-Platform `Core' Functionality
+<UL>
+<LI><tt>custom</tt> - Special Builds or Circumstances
+<br><I><B>Note:</B> Most of the code in the</I> <tt>custom</tt> <I>directory is
+now used in all builds, and resides here for historical reasons.</I>
+<LI><tt>general</tt> - Data Type Libraries
+<UL>
+<LI><tt>general/c3</tt> - Character Class Conversion Library
+<LI><A HREF="dynadt_toc.html">Dynamic Abstract Data Types</A>
+<LI><A HREF="except_toc.html">Exception Handling</A>
+<LI><A HREF="regexpr_toc.html">Regular Expression Processing</A>
+</UL>
+<LI><tt>msgs</tt> - Folder and Message Processing
+<UL>
+<LI><TT>msgs/autotype</TT> - attachment file automated identification<BR>
+<I>Includes SGI-specific code added for MediaMail.</I>
+<LI><TT>msgs/encode</TT> - MIME and related encoding/decoding<BR>
+<I>Much of this is used only by ZM-Mac and ZM-Win; UNIX relies on external processes to decode
+body parts, except for header encoding/decoding and inline display of quoted-printable text.</I>
+</UL>
+<LI><tt>shell</tt> - Memory and File Handling, Z-Script Interpreter
+<LI><tt>spoor</tt> - <A HREF="spoor_toc.html">Object-oriented Runtime</A> used by Z-Mail Lite and ZPOP clients
+<LI><tt>uisupp</tt> - <A HREF="uisupp_toc.html">UI Support Routines</A>
+</UL>
+<LI>Z-Mail for UNIX
+<UL>
+<LI>`Core' Functionality
+<UL>
+<LI><tt>config</tt> - Platform Configuration
+<LI><tt>child</tt> - Child Process Management
+<LI>End-User and Administrative Materials
+<UL>
+<LI><tt>install</tt> - Installation Shell Scripts<BR>
+<I><B>Note:</B>  The</I> <TT>work</TT> <I>subdirectory was originally intended to be a temporary area
+for development of improved installation scripts.  Unfortunately, the original import of the
+source tree into CVS overlapped with this effort, and</I> <TT>work</TT> <I>became a
+permanent fixture as a result.</I>
+<LI><tt>lib</tt> - Z-Mail Run-Time Library
+<UL>
+<LI><TT>lib/locale</TT> - Localization Data (includes <TT>catsup</TT> source)
+</UL>
+<LI><tt>util</tt> - Source of Some <tt>lib/bin</tt> Binaries
+</UL>
+</UL>
+<LI>Z-Mail for Motif
+<UL>
+<LI><tt>bitmaps</tt> - B&amp;W Icons (compiled in; cf. <tt>lib/bitmaps</tt>)
+<LI><tt>gui</tt> - Toolkit-Independent X11 UI Routines
+<LI><tt>motif</tt> - Motif-Dependent X11 UI Routines
+<UL>
+	<LI><TT>motif/addressArea</TT> - compose window addressing UI
+	<LI><TT>motif/attach</TT> - message and compose attachment UI
+	<LI><TT>motif/ixi</TT> - <I>(obsolete)</I> IXI desktop integration
+	<LI><TT>motif/server</TT> - <TT>libRemoteMail</TT> and related items
+	<LI><TT>motif/xm</TT> - repairs and extensions to OSF Motif
+</UL>
+<LI><tt>xt</tt> - Xt-Dependent Routines and Xt Bug Workarounds
+</UL>
+<LI><tt>zmlite</tt> - Z-Mail Lite (requires <tt>spoor</tt>)
+</UL>
+<LI><tt>mac</tt> - Z-Mail for Macintosh
+<UL>
+<LI><tt>mac/lib</tt> - Z-Mail Run-Time Library
+</UL>
+<LI>Z-Mail for Windows
+<br><I><B>Note:</B> The source code for Z-Mail for Windows has been maintained
+in a separate SourceSafe repository on an NT machine since approximately
+October of 1994.  The UNIX-based CVS repository has been synchronized with the
+SourceSafe repository only for cross-platform code, <B>not</B> for code in the
+Windows-specific directories described here.  Refer to the SourceSafe
+repository for all ZM-Win sources.</I>
+<UL>
+<LI><tt>dos</tt> - Unix C run-time emulation for DOS
+<br><I><B>Note:</B></I> <tt>dos</tt> <I>is now mostly, if not entirely, unused.</I>
+<LI><tt>mapi</tt> - Simple MAPI calls
+<LI><tt>mapi16</tt> - 16-bit MAPI DLL
+<LI><tt>wingui</tt> - <A HREF="wingui_toc.html">Windows GUI</A>
+<br><I><B>Warning:</B></I> <tt>wingui</tt> <I>documentation dates from Z-Mail 3.2.1.  Many changes have been made since then that are not reflected in the `Windows GUI' document.</I>
+<UL>
+<LI><tt>wingui/lib</tt> - Z-Mail Run-Time Library
+</UL>
+<LI><tt>winspell</tt> - Windows Spell Checker
+<LI><tt>wintext</tt> - Windows Text Object
+</UL>
+<LI><A HREF="zpop-spec_toc.html">ZPOP</A> Server and Client
+<UL>
+<LI><tt>mstore</tt> - Partial <A HREF="mstore_toc.html">Message Store</A> Implementation (requires <tt>spoor</tt>)
+<UL>
+<LI><A HREF="mime_toc.html">MIME Message Parsing Library</A> used by ZPOP server and clients
+<LI><A HREF="mstore-api_toc.html">Message Store Objects and API</A> used by ZPOP clients
+</UL>
+<LI><tt>zync</tt> - ZPOP server <I>(formerly called Zync)</I>
+</UL>
+<LI>Specifications and Future Work
+<UL>
+<LI><A HREF="new-typing.html">Cross-Platform MIME Type Resolution</A>
+<LI><A HREF="charset.html">Character Set User Interface</A>
+<LI><A HREF="mstore_toc.html">Message Store Requirements</A>
+<LI>ZPOP
+<UL>
+<LI><A HREF="sync-design.html">Original Folder Synchronization Design</A>
+<LI><A HREF="zpop-spec_toc.html">ZPOP Operational Specification</A>
+<LI><A HREF="newsync.html">ZPOP Synchronization User Interface</A>
+<LI><A HREF="quicksync.html">ZPOP ``Quick'' Synchronization</A>
+</UL>
+<LI><tt>richtext</tt> - <A HREF="rt-api_toc.html">Rich Text Editing/Display Requirements</A>
+<LI><A HREF="directions_toc.html">Z-Mail for the Future</A>
+</UL>
+</UL>
+<P>
+<H2><A NAME="faqs">Assorted Z-Mail User FAQs</A></H2>
+<P>
+<UL>
+<LI><A HREF="zmw40faq.html">Z-Win 4.0 FAQs</A>
+<LI><A HREF="zmw4faq1.html">Z-Win 4.0 FAQs (in another format)</A>
+<LI><A HREF="zpop1faq.html">ZPOP FAQs</A>
+</UL>
+</BODY>
+</HTML>

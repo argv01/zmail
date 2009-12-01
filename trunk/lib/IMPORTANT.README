@@ -1,0 +1,6 @@
+IMPORTANT
+
+The structure of this directory does NOT correspond to the "lib" directory
+in a Z-Mail distribution.  This directory contains files used to construct
+the files that appear in the distribution, plus additional files that should
+remain only in the source tree.

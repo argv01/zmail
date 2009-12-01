@@ -1,0 +1,1505 @@
+<HTML>
+<HEAD>
+<!-- This HTML file has been created by texi2html 1.35
+     from ../spoor/spoor.texinfo on 9 August 1996 -->
+
+<TITLE>SPOOR</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>SPOOR</H1>
+
+
+<H1><A NAME="SEC1" HREF="spoor_toc.html#SEC1">Introduction</A></H1>
+
+<P>
+This manual describes SPOOR, the Simple, Poor-man's Object-Oriented
+Run-time, which is a library package for C programs that provides
+object-oriented extensions to the language.
+
+</P>
+
+
+
+<H1><A NAME="SEC2" HREF="spoor_toc.html#SEC2">Overview</A></H1>
+
+<P>
+SPOOR is a set of functions, macros, variables, types, and
+programming conventions which provide a totally portable object-oriented
+programming environment with polymorphism and single inheritance of data
+and methods.
+
+</P>
+<P>
+A discussion of object-oriented programming is beyond the scope of this
+manual, but this chapter discusses the broad concepts in SPOOR.
+
+</P>
+<P>
+<A NAME="IDX1"></A>
+<A NAME="IDX2"></A>
+<A NAME="IDX3"></A>
+A <STRONG>class</STRONG> is a data type consisting of a structure with a set of
+fields and a set of <STRONG>methods</STRONG>.  The class's methods are functions
+that operate on <STRONG>instances</STRONG> of the class.  Methods are distinguished
+from ordinary functions because of inheritance and polymorphism.
+
+</P>
+
+
+
+<H2><A NAME="SEC3" HREF="spoor_toc.html#SEC3">Inheritance</A></H2>
+
+<P>
+<A NAME="IDX4"></A>
+<A NAME="IDX5"></A>
+<A NAME="IDX6"></A>
+<A NAME="IDX7"></A>
+Every SPOOR class is a <STRONG>subclass</STRONG> of some other class, forming
+a hierarchy of <STRONG>inheritance</STRONG>.  (One class, the <STRONG>root class</STRONG>,
+does not inherit from any other class; see section <A HREF="spoor.html#SEC28">The root class</A>.)
+Inheritance means that the data structure contains all the fields of the
+superclass plus whatever the new class adds (<STRONG>inheritance of data</STRONG>);
+and the class has all the methods of the superclass plus whatever the
+new class adds (<STRONG>inheritance of methods</STRONG>).  Furthermore, an
+inherited method may be <STRONG>overridden</STRONG>, replacing the inherited
+function with a new one.
+
+</P>
+
+
+<H2><A NAME="SEC4" HREF="spoor_toc.html#SEC4">Polymorphism</A></H2>
+
+<P>
+<A NAME="IDX8"></A>
+<STRONG>Polymorphism</STRONG> refers to the fact that an instance of a class can be
+treated as an instance of its superclass.  Method invocation works
+properly on an instance even when it's being handled polymorphically.
+For instance, suppose class <VAR>foo</VAR> is a subclass of class <VAR>bar</VAR>,
+and that <VAR>f</VAR> is an instance of <VAR>foo</VAR>.  Now suppose <VAR>f</VAR> is
+(polymorphically) passed to a function that expects an instance of
+<VAR>bar</VAR>.  If that function now invokes a <VAR>bar</VAR> method on <VAR>f</VAR>
+and <VAR>foo</VAR> overrides that method, then the override in class
+<VAR>foo</VAR> will (correctly) be called, even though the caller doesn't
+know that <VAR>f</VAR> is an instance of <VAR>foo</VAR>.
+
+</P>
+<P>
+Unfortunately, the C language has no concept of polymorphism.
+Therefore, if you pass a <CODE>struct <VAR>foo</VAR> *</CODE> where a
+<CODE>struct <VAR>bar</VAR> *</CODE> is expected, a strict type-checking C
+compiler will complain about a type mismatch, even though you and I know
+that class <VAR>foo</VAR> inherits from <VAR>bar</VAR>.  The solution to this
+problem is to typecast the pointer before passing it, or to declare the
+recipient as taking a <CODE>void *</CODE> rather than a <CODE>struct
+<VAR>bar</VAR> *</CODE>.  Both solutions throw away useful type information; this
+is SPOOR's greatest drawback.
+
+</P>
+
+
+<H1><A NAME="SEC5" HREF="spoor_toc.html#SEC5">Fundamentals</A></H1>
+
+<P>
+A call to <CODE>spoor_Initialize</CODE> must precede any other SPOOR
+function calls.
+
+</P>
+<P>
+<U>Function:</U> void <B>spoor_Initialize</B> <I>()</I><P>
+<A NAME="IDX9"></A>
+Initialize SPOOR.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+After the first call to <CODE>spoor_Initialize</CODE>, subsequent calls
+are no-ops.
+
+</P>
+<P>
+All SPOOR classes ultimately inherit from the root class, which is
+named <CODE>spoor</CODE> (see section <A HREF="spoor.html#SEC28">The root class</A>).  Because of polymorphism,
+any instance of any class may be referred to as a <CODE>struct spoor
+*</CODE>, and that is how this document indicates a function or some other
+context where an instance of any class is expected.
+
+</P>
+
+
+
+<H2><A NAME="SEC6" HREF="spoor_toc.html#SEC6">Class name</A></H2>
+
+<P>
+Every SPOOR class has a name, and by convention it is used in the
+following places:
+
+</P>
+
+<UL>
+<LI>
+
+It is the "struct tag" for the data structure corresponding to the
+class (see section <A HREF="spoor.html#SEC11">The data structure</A>);
+
+<LI>
+
+It is the human-readable <VAR>name</VAR> passed to <CODE>spoor_CreateClass</CODE>
+(see section <A HREF="spoor.html#SEC23">Creating the class descriptor</A>);
+
+<LI>
+
+It is the prefix of accessor macro names for the class
+(see section <A HREF="spoor.html#SEC12">Accessors</A>);
+
+<LI>
+
+It is the middle part of method selector variable names
+(see section <A HREF="spoor.html#SEC8">Invoking a method</A>);
+
+<LI>
+
+It is the prefix of the new-instance-obtaining macro (see section <A HREF="spoor.html#SEC14">Other declarations</A>);
+
+<LI>
+
+It is the prefix of the class descriptor variable name (see section <A HREF="spoor.html#SEC17">The class descriptor</A>);
+
+<LI>
+
+It is the prefix of the class-initializing function name (see section <A HREF="spoor.html#SEC22">Class initializer</A>);
+
+<LI>
+
+It is also helpful if the header file containing declarations for a
+class named <VAR>foo</VAR> is named <TT>`<VAR>foo</VAR>.h'</TT>, allowing modules that
+use that class to anticipate the name needed for the <CODE>#include</CODE>
+directive.
+</UL>
+
+<P>
+Much of the workings of SPOOR depends on following these
+conventions.
+
+</P>
+
+
+<H2><A NAME="SEC7" HREF="spoor_toc.html#SEC7">Obtaining an instance</A></H2>
+
+<P>
+A new instance can be allocated (via <CODE>malloc</CODE>) using
+<CODE>spoor_NewInstance</CODE>.
+
+</P>
+<P>
+<U>Macro:</U> struct spoor * <B>spoor_NewInstance</B> <I>(struct spClass *<VAR>class</VAR>)</I><P>
+<A NAME="IDX10"></A>
+Allocate, initialize, and return a new instance of <VAR>class</VAR>.
+Allocation is performed with <CODE>malloc</CODE>; initialization is performed
+with <CODE>spoor_InitializeInstance</CODE> (q.v.).
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+By convention, each class supplies a macro for allocating instances of
+itself.  In class <VAR>foo</VAR>, for instance, the macro
+<CODE><VAR>foo</VAR>_NEW()</CODE> is equivalent to
+<CODE>spoor_NewInstance(<VAR>foo</VAR>_class)</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>spoor_DestroyInstance</B> <I>(struct spoor *<VAR>obj</VAR>)</I><P>
+<A NAME="IDX11"></A>
+Finalize and deallocate <VAR>obj</VAR>, which is an instance previously
+obtained with <CODE>spoor_NewInstance</CODE>.  Finalizing is performed with
+<CODE>spoor_FinalizeInstance</CODE> (q.v.); deallocation is performed with
+<CODE>free</CODE>.
+
+</P>
+<P>
+It is not necessary to rely on SPOOR to allocate and deallocate
+individual instances.  The caller may provide storage for instances
+itself; in which case it is necessary to initialize and finalize the
+storage using <CODE>spoor_InitializeInstance</CODE> and
+<CODE>spoor_FinalizeInstance</CODE>.
+
+</P>
+<P>
+<U>Macro:</U> void <B>spoor_InitializeInstance</B> <I>(struct spClass *<VAR>class</VAR>, struct spoor *<VAR>obj</VAR>)</I><P>
+<A NAME="IDX12"></A>
+Initialize <VAR>obj</VAR> as an instance of class <VAR>class</VAR>.  Recursively
+calls the constructors for the superclasses of <VAR>class</VAR>, then calls
+the constructor for <VAR>class</VAR>, if one exists.  See section <A HREF="spoor.html#SEC18">Constructor and destructor</A>.
+
+</P>
+<P>
+<U>Macro:</U> void <B>spoor_FinalizeInstance</B> <I>(struct spoor *<VAR>obj</VAR>)</I><P>
+<A NAME="IDX13"></A>
+Finalize <VAR>obj</VAR>, which is an instance that was previously initialized
+with <CODE>spoor_InitializeInstance</CODE>.  Calls the destructor (if one
+exists) for the class to which <VAR>obj</VAR> belongs; then recursively calls
+the destructors for the superclasses of <VAR>obj</VAR>.
+
+</P>
+
+
+<H2><A NAME="SEC8" HREF="spoor_toc.html#SEC8">Invoking a method</A></H2>
+
+<P>
+<A NAME="IDX14"></A>
+<A NAME="IDX15"></A>
+Every method in a particular class has a <STRONG>selector</STRONG>.  A selector is
+an integer which is used in the method table lookup.  By convention, the
+selector for each method is held in a global variable of type <CODE>int</CODE>
+whose name is <CODE>m_<VAR>foo</VAR>_<VAR>fum</VAR></CODE>, where <VAR>foo</VAR> is the name
+of the class which defines the method and <VAR>fum</VAR> is the name of the
+method.
+
+</P>
+<P>
+If class <VAR>foo</VAR> inherits method <VAR>gronk</VAR> from its superclass,
+<VAR>bar</VAR>, then the selector will be in
+<CODE>m_<VAR>bar</VAR>_<VAR>gronk</VAR></CODE>---even if <VAR>foo</VAR> overrides <VAR>gronk</VAR>
+with its own version.  The class name in the method selector variable is
+the class that <EM>adds</EM> the method (via <CODE>spoor_AddMethod</CODE>), not
+any class that inherits or overrides the method.
+
+</P>
+<P>
+<A NAME="IDX16"></A>
+To invoke a method on a particular instance, you <STRONG>send</STRONG> it the
+appropriate selector, plus any additional arguments that are required,
+with <CODE>spSend</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>spSend</B> <I>(struct spoor *<VAR>obj</VAR>, int <VAR>selector</VAR>, ...)</I><P>
+<A NAME="IDX17"></A>
+Invoke the method on <VAR>obj</VAR> whose selector is <VAR>selector</VAR>.
+Remaining arguments, if any, are passed to the method.
+
+</P>
+<P>
+The method-selecting function <CODE>spSend</CODE> can only be used to invoke
+<CODE>void</CODE>-returning methods, because it is of type <CODE>void</CODE> itself.
+A family of <CODE>spSend</CODE> variants exists, with one version for each
+possible scalar return type.  All are called in the same way.
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>spSend_c</CODE>
+<DD>
+<A NAME="IDX18"></A>
+ 
+Returns <CODE>char</CODE>.
+<A NAME="IDX19"></A>
+<DT><CODE>spSend_d</CODE>
+<DD>
+Returns <CODE>double</CODE>.
+<A NAME="IDX20"></A>
+<DT><CODE>spSend_f</CODE>
+<DD>
+Returns <CODE>float</CODE>.
+<A NAME="IDX21"></A>
+<DT><CODE>spSend_i</CODE>
+<DD>
+Returns <CODE>int</CODE>.
+<A NAME="IDX22"></A>
+<DT><CODE>spSend_l</CODE>
+<DD>
+Returns <CODE>long</CODE>.
+<A NAME="IDX23"></A>
+<DT><CODE>spSend_p</CODE>
+<DD>
+Returns <CODE>void *</CODE>.
+<A NAME="IDX24"></A>
+<DT><CODE>spSend_s</CODE>
+<DD>
+Returns <CODE>short</CODE>.
+<A NAME="IDX25"></A>
+<DT><CODE>spSend_uc</CODE>
+<DD>
+Returns <CODE>unsigned char</CODE>.
+<A NAME="IDX26"></A>
+<DT><CODE>spSend_ui</CODE>
+<DD>
+Returns <CODE>unsigned int</CODE>.
+<A NAME="IDX27"></A>
+<DT><CODE>spSend_ul</CODE>
+<DD>
+Returns <CODE>unsigned long</CODE>.
+<A NAME="IDX28"></A>
+<DT><CODE>spSend_us</CODE>
+<DD>
+Returns <CODE>unsigned short</CODE>.
+</DL>
+
+
+
+<H1><A NAME="SEC9" HREF="spoor_toc.html#SEC9">The .h file</A></H1>
+
+<P>
+This chapter describes how to construct the <TT>`.h'</TT> file when defining a
+new SPOOR class.  It is intended to be used as a "recipe."  If
+you do the steps described in each of the following sections, you should
+end up with a complete SPOOR <TT>`.h'</TT> file.
+
+</P>
+
+
+
+<H2><A NAME="SEC10" HREF="spoor_toc.html#SEC10">The .h prelude</A></H2>
+
+<P>
+<A NAME="IDX29"></A>
+First, it's wise to wrap the entire <TT>`.h'</TT> file in a <STRONG>condom</STRONG> to
+protect it against multiple inclusions:
+
+</P>
+
+<PRE>
+#ifndef FOO_H
+# define FOO_H
+...everything in the file...
+#endif /* FOO_H */
+</PRE>
+
+<P>
+Inside the condom, the file should first <CODE>#include &#60;spoor.h&#62;</CODE>,
+then <CODE>#include</CODE> the <TT>`.h'</TT> file for this class's superclass.
+
+</P>
+
+
+<H2><A NAME="SEC11" HREF="spoor_toc.html#SEC11">The data structure</A></H2>
+
+<P>
+The data structure for a SPOOR class must be a <CODE>struct</CODE> and
+must begin like this:
+
+</P>
+
+<PRE>
+struct <VAR>foo</VAR> {
+    SUPERCLASS(<VAR>bar</VAR>);
+    ...
+</PRE>
+
+<P>
+The <CODE>SUPERCLASS</CODE> macro inserts inheritance information into the
+data structure; its argument is the name of the superclass.<A NAME="FOOT1" HREF="spoor_foot.html#FOOT1">(1)</A>
+
+</P>
+<P>
+The remainder of the <CODE>struct</CODE> definition may contain anything at
+all.
+
+</P>
+
+
+<H2><A NAME="SEC12" HREF="spoor_toc.html#SEC12">Accessors</A></H2>
+
+<P>
+Suppose class <VAR>foo</VAR> inherits from class <VAR>bar</VAR>.  Suppose that
+instances of <VAR>bar</VAR> have a field named <VAR>b</VAR>.  Unfortunately, it is
+not possible to write:
+
+</P>
+
+<PRE>
+struct <VAR>foo</VAR> *f;
+
+...
+x = f-&#62;b;
+...
+</PRE>
+
+<P>
+because <CODE>struct <VAR>foo</VAR></CODE> does not have a field named <VAR>b</VAR>,
+and the C compiler doesn't know to use the inherited field.
+
+</P>
+<P>
+<A NAME="IDX30"></A>
+To get around this problem in SPOOR, there is a convention of
+writing <STRONG>accessors</STRONG> for each field in a class's data structure.  An
+accessor is a macro that takes a pointer to an instance, casts it to the
+appropriate type, then dereferences a field.  Example:
+
+</P>
+
+<PRE>
+struct <VAR>bar</VAR> {
+    SUPERCLASS(...);
+    ...
+    int <VAR>b</VAR>;
+    ...
+};
+
+#define <VAR>bar</VAR>_<VAR>b</VAR>(x) (((struct <VAR>bar</VAR> *) (<VAR>x</VAR>))-&#62;b)
+</PRE>
+
+<P>
+With this accessor, it is now possible to rewrite the earlier example
+as:
+
+</P>
+
+<PRE>
+struct <VAR>foo</VAR> *f;
+
+...
+x = <VAR>bar</VAR>_<VAR>b</VAR>(f);
+...
+</PRE>
+
+<P>
+Notice that the accessor can be used as an lvalue<A NAME="FOOT2" HREF="spoor_foot.html#FOOT2">(2)</A> as well as a value.  By convention, the name for
+an accessor of field <VAR>f</VAR> in class <VAR>c</VAR> is
+<CODE><VAR>c</VAR>_<VAR>f</VAR></CODE>.
+
+</P>
+<P>
+Accessors may be a workaround for an annoying problem, but they do have
+one serendipitous benefit:  <EM>not</EM> providing an accessor for a
+certain field is akin to making that field "private" in the C++ sense.
+
+</P>
+
+
+<H2><A NAME="SEC13" HREF="spoor_toc.html#SEC13">Declaring selectors</A></H2>
+
+<P>
+The <TT>`.h'</TT> file should declare the global variables in which method
+selectors will be held (see section <A HREF="spoor.html#SEC8">Invoking a method</A>).  For instance, if
+class <VAR>foo</VAR> has methods <VAR>a</VAR>, <VAR>b</VAR>, and <VAR>c</VAR>, the <TT>`.h'</TT>
+file should contain:
+
+</P>
+
+<PRE>
+extern int m_<VAR>foo</VAR>_<VAR>a</VAR>;
+extern int m_<VAR>foo</VAR>_<VAR>b</VAR>;
+extern int m_<VAR>foo</VAR>_<VAR>c</VAR>;
+</PRE>
+
+<P>
+Only methods newly added in this class need to have new selectors
+declared.  Declararations for selectors for inherited and overridden
+methods are obtained by including the superclass's <TT>`.h'</TT> file.
+
+</P>
+
+
+<H2><A NAME="SEC14" HREF="spoor_toc.html#SEC14">Other declarations</A></H2>
+
+<P>
+<A NAME="IDX31"></A>
+The global class descriptor for the class needs to be declared.  For a
+class named <VAR>foo</VAR>, it should be named <CODE><VAR>foo</VAR>_class</CODE>,
+and is of type <CODE>struct spClass *</CODE>:
+
+</P>
+
+<PRE>
+extern struct spClass *<VAR>foo</VAR>_class;
+</PRE>
+
+<P>
+The class initializer needs to be declared.  For a class named
+<VAR>foo</VAR>, it should be named <CODE><VAR>foo</VAR>_InitializeClass</CODE>:
+
+</P>
+
+<PRE>
+extern void <VAR>foo</VAR>_InitializeClass();
+</PRE>
+
+<P>
+A macro for allocating instances of the class should be defined.  For a
+class named <VAR>foo</VAR>, it should be named <CODE><VAR>foo</VAR>_NEW</CODE>, and
+should look like this:
+
+</P>
+
+<PRE>
+#define <VAR>foo</VAR>_NEW() \
+    ((struct <VAR>foo</VAR> *) spoor_NewInstance(<VAR>foo</VAR>_class))
+</PRE>
+
+
+
+<H1><A NAME="SEC15" HREF="spoor_toc.html#SEC15">The .c file</A></H1>
+
+<P>
+This chapter describes how to construct the <TT>`.c'</TT> file when defining
+a new SPOOR class.  It is intended to be used as a "recipe."  If
+you do the steps described in each of the following sections, you should
+end up with a complete SPOOR <TT>`.c'</TT> file.
+
+</P>
+
+
+
+<H2><A NAME="SEC16" HREF="spoor_toc.html#SEC16">The .c prelude</A></H2>
+
+<P>
+The <TT>`.c'</TT> file should first include its corresponding <TT>`.h'</TT>
+file.
+
+</P>
+
+
+<H2><A NAME="SEC17" HREF="spoor_toc.html#SEC17">The class descriptor</A></H2>
+
+<P>
+First, the global class descriptor variable should be defined and
+initialized to 0.  For a class named <VAR>foo</VAR>, it should be named
+<CODE><VAR>foo</VAR>_class</CODE>:
+
+</P>
+
+<PRE>
+struct spClass *<VAR>foo</VAR>_class = 0;
+</PRE>
+
+<P>
+Initializing <CODE><VAR>foo</VAR>_class</CODE> to 0 allows other modules to
+test whether this one has been initialized yet; this is important in the
+class initializer (see section <A HREF="spoor.html#SEC22">Class initializer</A>).
+
+</P>
+
+
+<H2><A NAME="SEC18" HREF="spoor_toc.html#SEC18">Constructor and destructor</A></H2>
+
+<P>
+Next, you may wish to define a constructor function and/or a destructor
+function.  These should be declared <CODE>static</CODE>.  The addresses of
+these functions will be passed to <CODE>spoor_CreateClass</CODE> in the
+class initializer (see section <A HREF="spoor.html#SEC22">Class initializer</A>).
+
+</P>
+<P>
+The constructor/destructor functions are both <CODE>void</CODE> and both take
+a single argument, an instance of the class.  The constructor may assume
+that the superclass portion of the instance is already initialized, and
+should initialize the portion of the instance specific to the current
+class.  The destructor should finalize the portion of the instance
+specific to the current class.
+
+</P>
+<P>
+As an example, suppose class <VAR>foo</VAR> has the following data structure:
+
+</P>
+
+<PRE>
+struct <VAR>foo</VAR> {
+    SUPERCLASS(<VAR>bar</VAR>);
+    struct dynstr d;
+};
+</PRE>
+
+<P>
+Then the constructor and destructor might look like this:
+
+</P>
+
+<PRE>
+static void
+<VAR>foo</VAR>_initialize(self)
+    struct <VAR>foo</VAR> *self;
+{
+    dynstr_Init(&#38;(self-&#62;d));
+}
+
+static void
+<VAR>foo</VAR>_finalize(self)
+    struct <VAR>foo</VAR> *self;
+{
+    dynstr_Destroy(&#38;(self-&#62;d));
+}
+</PRE>
+
+
+
+<H2><A NAME="SEC19" HREF="spoor_toc.html#SEC19">Methods</A></H2>
+
+<P>
+Each new method and override is its own function in the <TT>`.c'</TT> file.
+Each such function should be declared <CODE>static</CODE>.  The addresses of
+these functions will be passed to <CODE>spoor_AddMethod</CODE> or
+<CODE>spoor_AddOverride</CODE> in the class initializer (see section <A HREF="spoor.html#SEC22">Class initializer</A>).
+
+</P>
+<P>
+<A NAME="IDX32"></A>
+Each function should be declared to take two arguments.  The first
+argument is an instance of the current class.  The second argument is of
+type <CODE>spArgList_t</CODE> and is an encapsulation of the method's
+"real" arguments.
+
+</P>
+
+
+
+<H3><A NAME="SEC20" HREF="spoor_toc.html#SEC20">Unpacking arguments</A></H3>
+
+<P>
+<A NAME="IDX33"></A>
+<A NAME="IDX34"></A>
+The first thing a method implementation should do is to <STRONG>unpack</STRONG> its
+arguments.  Arguments to SPOOR methods are packaged up in an object
+of type <CODE>spArgList_t</CODE> and must be extracted in a varargs-like
+way.  Unlike varargs, no initialization or finalizing of the
+argument-list object is required, and only a single pass over the
+arguments is permitted.  The macro for extracting the next argument from
+the argument list object is called <CODE>spArg</CODE>.
+
+</P>
+<P>
+<U>Macro:</U>  <B>spArg</B> <I>(spArgList_t <VAR>arglist</VAR>, <VAR>type</VAR>)</I><P>
+<A NAME="IDX35"></A>
+Extract from the argument list object <VAR>arglist</VAR> the next argument,
+which is of type <VAR>type</VAR>.  This macro is used exactly like
+<CODE>va_arg</CODE>.
+
+</P>
+<P>
+Therefore, a method that takes an <CODE>int</CODE> and a string as arguments
+and returns a string should begin something like this:
+
+</P>
+
+<PRE>
+static char *
+<VAR>foo</VAR>_SomeMethod(self, arg)
+    struct <VAR>foo</VAR> *self;
+    spArgList_t arg;
+{
+    int i = spArg(arg, int);
+    char *str = spArg(arg, char *);
+    ...
+</PRE>
+
+
+
+<H3><A NAME="SEC21" HREF="spoor_toc.html#SEC21">Super calls</A></H3>
+
+<P>
+<A NAME="IDX36"></A>
+In the implementation of a method which overrides an inherited version
+of itself, it is possible to invoke the overridden version using
+<CODE>spSuper</CODE>.  A <STRONG>super call</STRONG> looks like a normal method
+invocation, except that the class descriptor is included as an argument.
+
+</P>
+<P>
+<U>Function:</U> void <B>spSuper</B> <I>(struct spClass *<VAR>class</VAR>, struct spoor *<VAR>obj</VAR>, int <VAR>selector</VAR>, ...)</I><P>
+<A NAME="IDX37"></A>
+Invoke the implementation of method <VAR>selector</VAR> which is hidden by
+the override in class <VAR>class</VAR>, acting on <VAR>obj</VAR>.  Remaining
+arguments, if any, are passed to the method.
+
+</P>
+<P>
+Like <CODE>spSend</CODE>, there are different versions of <CODE>spSuper</CODE> to
+call based on the return type of the method being invoked.
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>spSuper_c</CODE>
+<DD>
+<A NAME="IDX38"></A>
+ 
+Returns <CODE>char</CODE>.
+<A NAME="IDX39"></A>
+<DT><CODE>spSuper_d</CODE>
+<DD>
+Returns <CODE>double</CODE>.
+<A NAME="IDX40"></A>
+<DT><CODE>spSuper_f</CODE>
+<DD>
+Returns <CODE>float</CODE>.
+<A NAME="IDX41"></A>
+<DT><CODE>spSuper_i</CODE>
+<DD>
+Returns <CODE>int</CODE>.
+<A NAME="IDX42"></A>
+<DT><CODE>spSuper_l</CODE>
+<DD>
+Returns <CODE>long</CODE>.
+<A NAME="IDX43"></A>
+<DT><CODE>spSuper_p</CODE>
+<DD>
+Returns <CODE>void *</CODE>.
+<A NAME="IDX44"></A>
+<DT><CODE>spSuper_s</CODE>
+<DD>
+Returns <CODE>short</CODE>.
+<A NAME="IDX45"></A>
+<DT><CODE>spSuper_uc</CODE>
+<DD>
+Returns <CODE>unsigned char</CODE>.
+<A NAME="IDX46"></A>
+<DT><CODE>spSuper_ui</CODE>
+<DD>
+Returns <CODE>unsigned int</CODE>.
+<A NAME="IDX47"></A>
+<DT><CODE>spSuper_ul</CODE>
+<DD>
+Returns <CODE>unsigned long</CODE>.
+<A NAME="IDX48"></A>
+<DT><CODE>spSuper_us</CODE>
+<DD>
+Returns <CODE>unsigned short</CODE>.
+</DL>
+
+
+
+<H2><A NAME="SEC22" HREF="spoor_toc.html#SEC22">Class initializer</A></H2>
+
+<P>
+The class initializer is a <CODE>void</CODE> function of no arguments which
+sets up the run-time information about the class.  It creates the class
+descriptor, linking it to its superclass.  It fills in the class's
+method table with inherited methods, overrides, and new methods.  In
+other words, it does all the things that a real object-oriented language
+does as compile-time.
+
+</P>
+<P>
+The name of the class initializer for a class <VAR>foo</VAR> should be
+<CODE><VAR>foo</VAR>_InitializeClass</CODE>.
+
+</P>
+
+
+
+<H3><A NAME="SEC23" HREF="spoor_toc.html#SEC23">Creating the class descriptor</A></H3>
+
+<P>
+First, the class initializer should make sure that the superclass is
+already fully initialized.  Suppose class <VAR>foo</VAR> inherits from class
+<VAR>bar</VAR>:
+
+</P>
+
+<PRE>
+if (!<VAR>bar</VAR>_class)
+    <VAR>bar</VAR>_InitializeClass();
+</PRE>
+
+<P>
+This works because of the convention of assigning <CODE>NULL</CODE> to the
+class descriptor before it's initialized.
+
+</P>
+<P>
+Next, the class initializer should abort if its class is already
+initialized:
+
+</P>
+
+<PRE>
+if (<VAR>foo</VAR>_class)
+    return;
+</PRE>
+
+<P>
+Next, the class descriptor should be created using
+<CODE>spoor_CreateClass</CODE>.
+
+</P>
+<P>
+<U>Function:</U> struct spClass * <B>spoor_CreateClass</B> <I>(char *<VAR>name</VAR>, char *<VAR>doc</VAR>, struct spClass *<VAR>super</VAR>, int <VAR>size</VAR>, void (*<VAR>init</VAR>)(struct spoor *), void (*<VAR>final</VAR>)(struct spoor *))</I><P>
+<A NAME="IDX49"></A>
+Create a new class named <VAR>name</VAR>.  A brief, human-readable
+description of the class is in <VAR>doc</VAR>.<A NAME="FOOT3" HREF="spoor_foot.html#FOOT3">(3)</A>  The class inherits from <VAR>super</VAR>.  The size of an
+instance of the class is <VAR>size</VAR>.  The functions <VAR>init</VAR> and
+<VAR>final</VAR> are a constructor and a destructor, respectively, for
+instances of the class.  All of <VAR>doc</VAR>, <VAR>init</VAR>, and <VAR>final</VAR>
+may be <CODE>NULL</CODE>.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+To continue the example:
+
+</P>
+
+<PRE>
+<VAR>foo</VAR>_class = spoor_CreateClass("<VAR>foo</VAR>", "a fooish class",
+    <VAR>bar</VAR>_class, sizeof (struct <VAR>foo</VAR>),
+    <VAR>foo</VAR>_initialize, <VAR>foo</VAR>_finalize);
+</PRE>
+
+
+
+<H3><A NAME="SEC24" HREF="spoor_toc.html#SEC24">Overriding inherited methods</A></H3>
+
+<P>
+The class initializer should next call <CODE>spoor_AddOverride</CODE> on
+any methods that the class has inherited and wishes to override.
+
+</P>
+<P>
+<A NAME="IDX50"></A>
+<U>Macro:</U> void <B>spoor_AddOverride</B> <I>(struct spClass *<VAR>class</VAR>, int <VAR>selector</VAR>, char *<VAR>doc</VAR>, spoor_method_t <VAR>fn</VAR>)</I><P>
+<A NAME="IDX51"></A>
+Override the method inherited by <VAR>class</VAR> whose selector is
+<VAR>selector</VAR>, using <VAR>doc</VAR> as the new human-readable documentation
+string and <VAR>fn</VAR> as the new implementation.  The type of <VAR>fn</VAR>,
+which is <CODE>spoor_method_t</CODE>, is "function returning any type, taking
+a SPOOR instance and a <CODE>spArgList_t</CODE> as arguments."  If
+<VAR>doc</VAR> is <CODE>NULL</CODE>, then the inherited documentation string is
+used.  The function <VAR>fn</VAR> may return any scalar type.  If <VAR>fn</VAR> is
+<CODE>NULL</CODE>, then the method is overridden to become an abstract method
+(see section <A HREF="spoor.html#SEC25">Adding new methods</A>).
+
+</P>
+
+
+<H3><A NAME="SEC25" HREF="spoor_toc.html#SEC25">Adding new methods</A></H3>
+
+<P>
+The class initializer should next call <CODE>spoor_AddMethod</CODE> to add
+any new methods and to initialize the method selector variables.
+
+</P>
+<P>
+<U>Macro:</U> int <B>spoor_AddMethod</B> <I>(struct spClass *<VAR>class</VAR>, char *<VAR>name</VAR>, char *<VAR>doc</VAR>, spoor_method_t <VAR>fn</VAR>)</I><P>
+<A NAME="IDX52"></A>
+Add a new method to <VAR>class</VAR> named <VAR>name</VAR>, with human-readable
+documentation string <VAR>doc</VAR> and implementation <VAR>fn</VAR>.  Return
+value is the selector for this method, which should be assigned to a
+global variable whose name is <CODE>m_<VAR>foo</VAR>_<VAR>name</VAR></CODE>, for a
+class named <VAR>foo</VAR>.
+
+</P>
+<P>
+<A NAME="IDX53"></A>
+If <VAR>fn</VAR> is <CODE>NULL</CODE>, then the newly-added method is called an
+<STRONG>abstract method</STRONG>.  An abstract method is one which has no
+implementation in a particular class but which is generally expected to
+be overridden with real implementations in subclasses.
+
+</P>
+<P>
+<A NAME="IDX54"></A>
+Invoking a method on an object in whose class that method is abstract
+causes the invocation on the same object of the method
+<CODE>subclassResponsibility</CODE>, which is inherited from the root
+class (see section <A HREF="spoor.html#SEC28">The root class</A>).  The default action of this method is to
+raise the exception <CODE>spoor_SubclassResponsibility</CODE>.  Naturally,
+that method may be overridden.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+
+
+<H3><A NAME="SEC26" HREF="spoor_toc.html#SEC26">Other class initializer code</A></H3>
+
+<P>
+After all new methods have been added, the class initializer should call
+the class initializers of any other classes on which it depends.  For
+instance, if class <VAR>foo</VAR> uses class <VAR>other</VAR> somewhere in its
+implementation, it should call <CODE><VAR>other</VAR>_InitializeClass()</CODE>
+after <VAR>foo</VAR> is fully initialized.  This may result in many calls to
+<CODE><VAR>other</VAR>_InitializeClass</CODE> as all the dependent classes call
+it; but if it follows the conventions set forth here, any but the first
+call should be an inexpensive no-op.
+
+</P>
+<P>
+Finally, the class initializer should initialize any class-specific
+data; that is, any data shared by all instances of the class.  For
+instance, a text widget class would initialize a clipboard buffer shared
+by all text widgets.
+
+</P>
+
+
+<H1><A NAME="SEC27" HREF="spoor_toc.html#SEC27">Miscellaneous</A></H1>
+
+<P>
+This chapter describes other facilities of SPOOR.
+
+</P>
+
+
+
+<H2><A NAME="SEC28" HREF="spoor_toc.html#SEC28">The root class</A></H2>
+
+<P>
+<A NAME="IDX55"></A>
+<A NAME="IDX56"></A>
+The root class is the predefined SPOOR class from which all other
+classes ultimately derive.  Its name is <CODE>spoor</CODE>, hence pointers to
+instances are of type <CODE>struct spoor *</CODE>.  The class descriptor
+for the <CODE>spoor</CODE> class is in the global variable
+<CODE>spoor_class</CODE>.  The <CODE>spoor</CODE> class provides two methods for
+all other classes to inherit.
+
+</P>
+<P>
+<A NAME="IDX57"></A>
+<U>{Method:</U> on <B><CODE>spoor</CODE>}</B> <I>{void} subclassResponsibility (char *<VAR>class</VAR>, char *<VAR>method</VAR>)</I><P>
+<A NAME="IDX58"></A>
+Automatically invoked by <CODE>spSend</CODE> and <CODE>spSuper</CODE> (and
+variously-typed variants) when attempting to invoke an abstract method
+(see section <A HREF="spoor.html#SEC25">Adding new methods</A>).  Arguments are <VAR>class</VAR>, the name of
+the class from which the error arose; and <VAR>method</VAR>, the name of the
+abstract method whose invocation was attempted.  The action of the
+default version of this method is to raise the exception
+<CODE>spoor_SubclassResponsibility</CODE>, with the "exception value"
+set to the string <CODE>"<VAR>class</VAR>:<VAR>method</VAR>"</CODE> (suitable for
+retrieval with <CODE>except_GetExceptionValue</CODE>).
+
+</P>
+<P>
+<A NAME="IDX59"></A>
+The selector for this method is in the global variable
+<CODE>m_spoor_subclassResponsibility</CODE>.
+
+</P>
+<P>
+<A NAME="IDX60"></A>
+<A NAME="IDX61"></A>
+<A NAME="IDX62"></A>
+<U>{Method:</U> on <B><CODE>spoor</CODE>}</B> <I>{void} setInstanceName (char *<VAR>name</VAR>)</I><P>
+<A NAME="IDX63"></A>
+Sets the name of an object to <VAR>name</VAR>.  SPOOR maintains a
+registry of named objects and allows object lookup by name using
+<CODE>spoor_FindInstance</CODE> (see section <A HREF="spoor.html#SEC29">Auxiliary functions</A>).  If
+<VAR>name</VAR> is <CODE>NULL</CODE>, then any name associated with the object is
+removed and the object is removed from the registry (if it was in it).
+
+</P>
+<P>
+<A NAME="IDX64"></A>
+The variable <CODE>spoor_InstanceRegistry</CODE> is of type
+<CODE>struct hashtab *</CODE> and contains the registry.  Callers may wish
+to iterate over its contents using <CODE>hashtab_Iterate</CODE> or obtain
+its size using <CODE>hashtab_Length</CODE>.  Elements in this hash table
+have type <CODE>struct spoor_RegistryElt</CODE>, which is defined in
+<TT>`spoor.h'</TT> like so:
+
+</P>
+
+<PRE>
+struct spoor_RegistryElt {
+    char *name;
+    struct spoor *obj;
+};
+</PRE>
+
+<P>
+<A NAME="IDX65"></A>
+The selector for this method is in the global variable
+<CODE>m_spoor_setInstanceName</CODE>.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+The <CODE>spoor</CODE> class also provides these accessors:
+
+</P>
+<P>
+<U>Accessor:</U> struct spClass * <B>spoor_Class</B> <I>(struct spoor *<VAR>obj</VAR>)</I><P>
+<A NAME="IDX66"></A>
+Accessor for the class to which <VAR>obj</VAR> belongs.  This accessor should
+never be assigned to!
+
+</P>
+<P>
+<U>Accessor:</U> char * <B>spoor_InstanceName</B> <I>(struct spoor *<VAR>obj</VAR>)</I><P>
+<A NAME="IDX67"></A>
+Accessor for the name of <VAR>obj</VAR> as set by <CODE>setInstanceName</CODE>.
+This accessor should not be assigned to directly, since
+<CODE>setInstanceName</CODE> performs the additional step of placing the
+object in the named-instance registry.
+
+</P>
+<P>
+Finally, the <CODE>spoor</CODE> class defines a macro for allocating new
+instances of itself, per convention:
+
+</P>
+<P>
+<U>Macro:</U> struct spoor * <B>spoor_NEW</B> <I>()</I><P>
+<A NAME="IDX68"></A>
+Allocate, initialize, and return a new instance of the <CODE>spoor</CODE>
+class.  Equivalent to calling <CODE>spoor_NewInstance(spoor_class)</CODE>.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+
+
+<H2><A NAME="SEC29" HREF="spoor_toc.html#SEC29">Auxiliary functions</A></H2>
+
+<P>
+<U>Function:</U> int <B>spoor_IsClassMember</B> <I>(struct spoor *<VAR>obj</VAR>, struct spClass *<VAR>class</VAR>)</I><P>
+<A NAME="IDX69"></A>
+Returns non-zero if <VAR>obj</VAR> is a member of <VAR>class</VAR> or some class
+that inherits from <VAR>class</VAR>; zero otherwise.  This function calls
+<CODE>spoor_NumberClasses</CODE> (q.v.) if classes have not yet been
+numbered or if the creation of a new class has invalidated an old class
+numbering.  The class numbering scheme makes
+<CODE>spoor_IsClassMember</CODE> a fast constant-time operation.
+
+</P>
+<P>
+<U>Function:</U> void <B>spoor_NumberClasses</B> <I>()</I><P>
+<A NAME="IDX70"></A>
+Numbers all existing SPOOR classes according to a depth-first
+traversal of the inheritance hierarchy.  This operation is linear in the
+number of classes that exist, but it makes
+<CODE>spoor_IsClassMember</CODE> a nearly-instantaneous operation.  In
+fact, <CODE>spoor_IsClassMember</CODE> will call
+<CODE>spoor_NumberClasses</CODE> automatically if necessary; however, the
+caller may wish to call this function itself if it wants precise control
+over when the O(n) overhead occurs.
+
+</P>
+<P>
+<U>Function:</U> struct spoor * <B>spoor_FindInstance</B> <I>(char *<VAR>name</VAR>)</I><P>
+<A NAME="IDX71"></A>
+Find the instance named <VAR>name</VAR> and return it, or <CODE>NULL</CODE> if no
+such instance was found.  The instance must have been named using the
+<CODE>setInstanceName</CODE> method (see section <A HREF="spoor.html#SEC28">The root class</A>).  If two or more
+instances have the same name, there is no way to know which one will be
+returned from this function.
+
+</P>
+<P>
+<U>Function:</U> void <B>spClass_setup</B> <I>(struct spClass *<VAR>class</VAR>, char *<VAR>name</VAR>, char *<VAR>doc</VAR>, struct spClass *<VAR>super</VAR>, int <VAR>size</VAR>, void (*<VAR>init</VAR>)(struct spoor *), void (*<VAR>final</VAR>)(struct spoor *))</I><P>
+<A NAME="IDX72"></A>
+Like <CODE>spoor_CreateClass</CODE> (q.v.), but used when initializing a
+class descriptor, <VAR>class</VAR>, already obtained separately.  In fact,
+<CODE>spoor_CreateClass</CODE> calls this function to initialize the class
+after allocating it.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> struct spClass * <B>spoor_FindClass</B> <I>(char *<VAR>name</VAR>)</I><P>
+<A NAME="IDX73"></A>
+Find the SPOOR class named <VAR>name</VAR> and return its descriptor, or
+<CODE>NULL</CODE> if no such class was found.
+
+</P>
+<P>
+<U>Macro:</U> int <B>spoor_FindMethod</B> <I>(struct spClass *<VAR>class</VAR>, char *<VAR>name</VAR>)</I><P>
+<A NAME="IDX74"></A>
+Find the method in <VAR>class</VAR> named <VAR>name</VAR> and return its selector.
+The method may be one added or inherited by <VAR>class</VAR>.  Return value
+is less than zero if no such method was found.
+
+</P>
+<P>
+<U>Macro:</U> char * <B>spoor_MethodDescription</B> <I>(struct spClass *<VAR>class</VAR>, int <VAR>selector</VAR>)</I><P>
+<A NAME="IDX75"></A>
+Returns the documentation string (as given to <CODE>spoor_AddMethod</CODE>
+or <CODE>spoor_AddOverride</CODE>) for the method in <VAR>class</VAR> whose
+selector is <VAR>selector</VAR>.
+
+</P>
+
+
+<H2><A NAME="SEC30" HREF="spoor_toc.html#SEC30">The class class</A></H2>
+
+<P>
+The type of SPOOR class descriptors, <CODE>spClass</CODE>, is itself a
+SPOOR class!  In fact, many SPOOR operations are actually
+implemented as methods in the <CODE>spClass</CODE> class.
+
+</P>
+<P>
+<A NAME="IDX76"></A>
+<A NAME="IDX77"></A>
+The class descriptor for the <CODE>spClass</CODE> class is in the global
+variable <CODE>spClass_class</CODE>.  The superclass for <CODE>spClass</CODE> is
+<CODE>spoor</CODE>.  An allocator, <CODE>spClass_NEW()</CODE>, is defined.
+
+</P>
+<P>
+No instance of <CODE>spClass</CODE> should ever be finalized or deallocated.
+
+</P>
+<P>
+<A NAME="IDX78"></A>
+<A NAME="IDX79"></A>
+<A NAME="IDX80"></A>
+<A NAME="IDX81"></A>
+<A NAME="IDX82"></A>
+<A NAME="IDX83"></A>
+<A NAME="IDX84"></A>
+<A NAME="IDX85"></A>
+<A NAME="IDX86"></A>
+<A NAME="IDX87"></A>
+<A NAME="IDX88"></A>
+<A NAME="IDX89"></A>
+The macros <CODE>spoor_AddMethod</CODE>, <CODE>spoor_AddOverride</CODE>,
+<CODE>spoor_FindMethod</CODE>, <CODE>spoor_MethodDescription</CODE>,
+<CODE>spoor_InitializeInstance</CODE>, and <CODE>spoor_NewInstance</CODE>
+are all implemented in terms of methods on the <CODE>spClass</CODE> class.
+The corresponding selectors are <CODE>m_spClass_addMethod</CODE>,
+<CODE>m_spClass_addOverride</CODE>, <CODE>m_spClass_findMethod</CODE>,
+<CODE>m_spClass_methodDescription</CODE>,
+<CODE>m_spClass_initializeInstance</CODE>, and
+<CODE>m_spClass_newInstance</CODE>.
+
+</P>
+<P>
+The <CODE>spClass</CODE> class defines these accessors:
+
+</P>
+<P>
+<U>Accessor:</U> char * <B>spClass_Name</B> <I>(struct spClass *<VAR>class</VAR>)</I><P>
+<A NAME="IDX90"></A>
+Accessor for the name of the class described by <VAR>class</VAR>.  This
+accessor should not be assigned to.
+
+</P>
+<P>
+<U>Accessor:</U> struct spClass * <B>spClass_superClass</B> <I>(struct spClass *<VAR>class</VAR>)</I><P>
+<A NAME="IDX91"></A>
+Accessor for the descriptor of the superclass for the class described by
+<VAR>class</VAR>.  If <VAR>class</VAR> is <CODE>spoor_class</CODE>, the result will be
+<CODE>NULL</CODE>.  This accessor should not be assigned to.
+
+</P>
+
+
+<H1><A NAME="SEC31" HREF="spoor_toc.html#SEC31">Subsystems</A></H1>
+
+<P>
+This chapter describes the subsystems used by SPOOR.
+
+</P>
+
+
+
+<H2><A NAME="SEC32" HREF="spoor_toc.html#SEC32">Except</A></H2>
+
+<P>
+EXCEPT is a portable package of functions and macros permitting an
+exception-handling programming style.  Functions in SPOOR which
+fail do not return error codes, they raise exceptions.
+
+</P>
+
+
+<H2><A NAME="SEC33" HREF="spoor_toc.html#SEC33">Dynadt</A></H2>
+
+<P>
+DYNADT is a portable library of several reusable,
+dynamically-resizing, container-style data types, including an array
+type (used in SPOOR in the implementation of method tables) and a
+hash table (used in SPOOR in the implementation of the named
+instance registry).
+
+</P>
+
+
+<H1><A NAME="SEC34" HREF="spoor_toc.html#SEC34">Shortcomings</A></H1>
+
+<P>
+SPOOR has some known shortcomings.
+
+</P>
+<DL COMPACT>
+
+<DT>weak type-checking
+<DD>
+Object-oriented programming entails polymorphism, but C doesn't know
+what polymorphism is.  As a result, it is necessary to typecast often or
+to use <CODE>void *</CODE> when you mean some more specific type.
+See section <A HREF="spoor.html#SEC4">Polymorphism</A>.
+</DL>
+
+
+
+<H1><A NAME="SEC35" HREF="spoor_toc.html#SEC35">Glossary</A></H1>
+
+<DL COMPACT>
+
+<DT>abstract method
+<DD>
+A <STRONG>method</STRONG> with no implementation.  The purpose of such a method is
+to provide a common entrypoint for <STRONG>subclasses</STRONG> to <STRONG>inherit</STRONG>.
+The subclasses <STRONG>override</STRONG> the missing method implementation with
+implementations of their own.
+
+<DT>accessor
+<DD>
+A macro for referring to the fields of a SPOOR class's data
+structure.  Accessors are needed because the C compiler won't
+automatically cast pointers to allow you to refer to <STRONG>inherited</STRONG>
+fields.
+
+<DT>argument unpacking
+<DD>
+See "unpacking."
+
+<DT>class
+<DD>
+A data structure and a set of <STRONG>methods</STRONG>.  The basis for the data
+structure and for the set of methods are <STRONG>inherited</STRONG> from the
+<STRONG>superclass</STRONG>.
+
+<DT>condom
+<DD>
+A preprocessor-based convention for protecting a header file against
+multiple inclusions.
+
+<DT>inheritance
+<DD>
+The copying of data fields and methods from a <STRONG>superclass</STRONG> to a
+<STRONG>subclass</STRONG>.  The subclass usually augments or overrides the
+inherited behavior.
+
+<DT>instance
+<DD>
+An object belonging to some <STRONG>class</STRONG>.  "Belonging" in this case
+means that the object's type is that of the class's data structure, and
+that the class's methods can operate on the object.
+
+<DT>instance name
+<DD>
+See "named instance."
+
+<DT>method
+<DD>
+A function belonging to a <STRONG>class</STRONG> and <STRONG>inherited</STRONG> (and possibly
+<STRONG>overridden</STRONG>) by <STRONG>subclasses</STRONG>.  Each method operates on an
+<STRONG>instance</STRONG> of the class and any needed additional arguments.
+
+<DT>method selector
+<DD>
+See "selector."
+
+<DT>named instance
+<DD>
+An <STRONG>instance</STRONG> which has had a name associated with it via the
+<STRONG>root class</STRONG> <STRONG>method</STRONG> <CODE>setInstanceName</CODE>.  Such instances
+can be retrieved by name from a global instance <STRONG>registry</STRONG>.
+
+<DT>override
+<DD>
+To replace the <STRONG>inherited</STRONG> implementation of a <STRONG>method</STRONG> with a
+different function.
+
+<DT>polymorphism
+<DD>
+The property that allows <STRONG>instances</STRONG> of some <STRONG>class</STRONG> to be
+handled as instances of the <STRONG>superclass</STRONG> but still behave like
+instances of the correct class (for purposes including <STRONG>method</STRONG>
+invocation).
+
+<DT>registry
+<DD>
+A global table of <STRONG>named instances</STRONG> which can be accessed with the
+function <CODE>spoor_FindInstance</CODE>.
+
+<DT>root class
+<DD>
+The <STRONG>class</STRONG> which does not <STRONG>inherit</STRONG> from any other and forms
+the root of the inheritance hierarchy.
+
+<DT>selector
+<DD>
+An integer representing a <STRONG>method</STRONG>.  Used in calls to <CODE>spSend</CODE>
+and <CODE>spSuper</CODE> to select the method to invoke on an <STRONG>instance</STRONG>.
+
+<DT>send
+<DD>
+To invoke a <STRONG>method</STRONG> on an <STRONG>instance</STRONG>.  The method
+<STRONG>selector</STRONG> is said to be "sent" to the instance.
+
+<DT>subclass
+<DD>
+A <STRONG>class</STRONG> which <STRONG>inherits</STRONG> from another.
+
+<DT>subclass responsibility
+<DD>
+The error in attempting to invoke an <STRONG>abstract method</STRONG> (rather than
+a concrete <STRONG>override</STRONG> in some <STRONG>subclass</STRONG>).  It is the subclass's
+responsibility to provide an implementation for the requested method.
+
+<DT>super call
+<DD>
+In an <STRONG>override</STRONG>, a call (using <CODE>spSuper</CODE>) to the overridden
+version of the method.
+
+<DT>superclass
+<DD>
+A <STRONG>class</STRONG> from which another <STRONG>inherits</STRONG>.
+
+<DT>unpacking
+<DD>
+The process of extracting arguments to a SPOOR <STRONG>method</STRONG> one at
+a time using a varargs-like macro, <CODE>spArg</CODE>.
+
+<DT>virtual function
+<DD>
+See "abstract method".
+</DL>
+
+
+
+<H1><A NAME="SEC36" HREF="spoor_toc.html#SEC36">Index</A></H1>
+
+<P>
+<H2>a</H2>
+<DIR>
+<LI><A HREF="spoor.html#IDX53">abstract method</A>
+<LI><A HREF="spoor.html#IDX30">accessor</A>
+<LI><A HREF="spoor.html#IDX78">addMethod</A>
+<LI><A HREF="spoor.html#IDX82">addOverride</A>
+<LI><A HREF="spoor.html#IDX34">argument unpacking</A>
+</DIR>
+<H2>c</H2>
+<DIR>
+<LI><A HREF="spoor.html#IDX1">class</A>
+<LI><A HREF="spoor.html#IDX29">condom</A>
+</DIR>
+<H2>f</H2>
+<DIR>
+<LI><A HREF="spoor.html#IDX80">findMethod</A>
+</DIR>
+<H2>i</H2>
+<DIR>
+<LI><A HREF="spoor.html#IDX4">inheritance</A>
+<LI><A HREF="spoor.html#IDX86">initializeInstance</A>
+<LI><A HREF="spoor.html#IDX3">instance</A>
+<LI><A HREF="spoor.html#IDX60">instance name</A>
+</DIR>
+<H2>m</H2>
+<DIR>
+<LI><A HREF="spoor.html#IDX79">m_spClass_addMethod</A>
+<LI><A HREF="spoor.html#IDX83">m_spClass_addOverride</A>
+<LI><A HREF="spoor.html#IDX81">m_spClass_findMethod</A>
+<LI><A HREF="spoor.html#IDX87">m_spClass_initializeInstance</A>
+<LI><A HREF="spoor.html#IDX85">m_spClass_methodDescription</A>
+<LI><A HREF="spoor.html#IDX89">m_spClass_newInstance</A>
+<LI><A HREF="spoor.html#IDX65">m_spoor_setInstanceName</A>
+<LI><A HREF="spoor.html#IDX59">m_spoor_subclassResponsibility</A>
+<LI><A HREF="spoor.html#IDX2">method</A>
+<LI><A HREF="spoor.html#IDX15">method selector</A>
+<LI><A HREF="spoor.html#IDX84">methodDescription</A>
+</DIR>
+<H2>n</H2>
+<DIR>
+<LI><A HREF="spoor.html#IDX61">named instance</A>
+<LI><A HREF="spoor.html#IDX88">newInstance</A>
+</DIR>
+<H2>o</H2>
+<DIR>
+<LI><A HREF="spoor.html#IDX7">override</A>
+</DIR>
+<H2>p</H2>
+<DIR>
+<LI><A HREF="spoor.html#IDX8">polymorphism</A>
+</DIR>
+<H2>r</H2>
+<DIR>
+<LI><A HREF="spoor.html#IDX62">registry</A>
+<LI><A HREF="spoor.html#IDX6">root class</A>
+</DIR>
+<H2>s</H2>
+<DIR>
+<LI><A HREF="spoor.html#IDX14">selector</A>
+<LI><A HREF="spoor.html#IDX16">send</A>
+<LI><A HREF="spoor.html#IDX35">spArg</A>
+<LI><A HREF="spoor.html#IDX32">spArgList_t</A>
+<LI><A HREF="spoor.html#IDX31">spClass</A>
+<LI><A HREF="spoor.html#IDX76">spClass_class</A>
+<LI><A HREF="spoor.html#IDX90">spClass_Name</A>
+<LI><A HREF="spoor.html#IDX77">spClass_NEW</A>
+<LI><A HREF="spoor.html#IDX72">spClass_setup</A>
+<LI><A HREF="spoor.html#IDX91">spClass_superClass</A>
+<LI><A HREF="spoor.html#IDX55">spoor</A>
+<LI><A HREF="spoor.html#IDX52">spoor_AddMethod</A>
+<LI><A HREF="spoor.html#IDX51">spoor_AddOverride</A>
+<LI><A HREF="spoor.html#IDX56">spoor_class</A>
+<LI><A HREF="spoor.html#IDX66">spoor_Class</A>
+<LI><A HREF="spoor.html#IDX49">spoor_CreateClass</A>
+<LI><A HREF="spoor.html#IDX11">spoor_DestroyInstance</A>
+<LI><A HREF="spoor.html#IDX13">spoor_FinalizeInstance</A>
+<LI><A HREF="spoor.html#IDX73">spoor_FindClass</A>
+<LI><A HREF="spoor.html#IDX71">spoor_FindInstance</A>
+<LI><A HREF="spoor.html#IDX74">spoor_FindMethod</A>
+<LI><A HREF="spoor.html#IDX9">spoor_Initialize</A>
+<LI><A HREF="spoor.html#IDX12">spoor_InitializeInstance</A>
+<LI><A HREF="spoor.html#IDX67">spoor_InstanceName</A>
+<LI><A HREF="spoor.html#IDX64">spoor_InstanceRegistry</A>
+<LI><A HREF="spoor.html#IDX69">spoor_IsClassMember</A>
+<LI><A HREF="spoor.html#IDX50">spoor_method_t</A>
+<LI><A HREF="spoor.html#IDX75">spoor_MethodDescription</A>
+<LI><A HREF="spoor.html#IDX68">spoor_NEW</A>
+<LI><A HREF="spoor.html#IDX10">spoor_NewInstance</A>
+<LI><A HREF="spoor.html#IDX70">spoor_NumberClasses</A>
+<LI><A HREF="spoor.html#IDX57">spoor_SubclassResponsibility</A>
+<LI><A HREF="spoor.html#IDX63"><CODE>spoor</CODE>}</A>
+<LI><A HREF="spoor.html#IDX17">spSend</A>
+<LI><A HREF="spoor.html#IDX18">spSend_c</A>
+<LI><A HREF="spoor.html#IDX19">spSend_d</A>
+<LI><A HREF="spoor.html#IDX20">spSend_f</A>
+<LI><A HREF="spoor.html#IDX21">spSend_i</A>
+<LI><A HREF="spoor.html#IDX22">spSend_l</A>
+<LI><A HREF="spoor.html#IDX23">spSend_p</A>
+<LI><A HREF="spoor.html#IDX24">spSend_s</A>
+<LI><A HREF="spoor.html#IDX25">spSend_uc</A>
+<LI><A HREF="spoor.html#IDX26">spSend_ui</A>
+<LI><A HREF="spoor.html#IDX27">spSend_ul</A>
+<LI><A HREF="spoor.html#IDX28">spSend_us</A>
+<LI><A HREF="spoor.html#IDX37">spSuper</A>
+<LI><A HREF="spoor.html#IDX38">spSuper_c</A>
+<LI><A HREF="spoor.html#IDX39">spSuper_d</A>
+<LI><A HREF="spoor.html#IDX40">spSuper_f</A>
+<LI><A HREF="spoor.html#IDX41">spSuper_i</A>
+<LI><A HREF="spoor.html#IDX42">spSuper_l</A>
+<LI><A HREF="spoor.html#IDX43">spSuper_p</A>
+<LI><A HREF="spoor.html#IDX44">spSuper_s</A>
+<LI><A HREF="spoor.html#IDX45">spSuper_uc</A>
+<LI><A HREF="spoor.html#IDX46">spSuper_ui</A>
+<LI><A HREF="spoor.html#IDX47">spSuper_ul</A>
+<LI><A HREF="spoor.html#IDX48">spSuper_us</A>
+<LI><A HREF="spoor.html#IDX5">subclass</A>
+<LI><A HREF="spoor.html#IDX54">subclass responsibility</A>
+<LI><A HREF="spoor.html#IDX36">super call</A>
+</DIR>
+<H2>u</H2>
+<DIR>
+<LI><A HREF="spoor.html#IDX33">unpacking arguments</A>
+</DIR>
+
+</P>
+
+</BODY>
+</HTML>

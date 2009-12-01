@@ -1,0 +1,90 @@
+README.apollo - modifications to allow mush to operate smoothly in an Apollo
+		environment.
+
+Author:
+	Mike Pelletier
+------------
+
+Several changes have been made to make mush interact more smoothly with
+several aspects of the Apollo operating and display system.  The changes
+include modified versions of open(), fopen(), and flock(), a check for
+the height of the screen using the Display Manager "pad" interfaces,
+and a change to make input and output in a pad operate more cleanly.
+
+NEW OPEN() ROUTINES:
+
+  The default operation of the Apollo filesystem closely mimics the
+  UNIX OS -- any number of processes can have a file open for reading or
+  writing at any given time, and writing is essentially on a last come,
+  first served basis -- the last update to the file is what sticks.
+  This mode is called FILE_$COWRITERS.  However, this only works correctly
+  when all the processes in question are running on the same machine.
+  If a process on another machine tries to open() the file, it will fail
+  completely no matter what access mode it wants, saying "Text file busy."
+  In the case of mail, it's very common to have a mail transfer agent
+  on one central machine, and a user on another machine, and if the COWRITERS
+  lock mode were used, one or the other would fail to access the file
+  if they both tried at the same time, even if the user just wanted to
+  read the mailbox, not update it.
+  
+  The Apollo filesystem has another locking mode that works for
+  processes on multiple nodes, with the caveat that only one
+  process at a time may have write access to the file.  This is
+  called FILE_$NR_XOR_1W mode.  In this case, if a MTA opened a users
+  mailbox for writing to deliver new mail, the user could still open
+  and read the mailbox at the start of a mail session, and vice-versa
+  for the end of a mail session.
+  
+  The open() replacements in apollo_file.c simply change the default
+  concurrency control mode from FILE_$COWRITERS to FILE_$NR_XOR_1W,
+  and can stall for a certain amount of time if the attempt to open
+  the file fails for concurrency reasons, say if an MTA was updating
+  the mailbox at the same time that a user wanted to end a mail session.
+  The stall and frequency of checking can be set with setdeadtime() and
+  setintervaltime() according to the needs of the application.  A user-
+  agent would want a longer stall with more frequent checks than a
+  transfer agent, since the transfer agent can always queue the request
+  and try again later whereas a user gets upset if he or she gets a
+  "can't update system mailbox" error.
+
+  Since only one routine can have a file open for reading at a time, the
+  flock() command is essentially useless.  In order to release a lock,
+  the application must close the file.
+
+  These routines are #define-level compatible with their UNIX counterparts.
+  I.e., #define open apollo_open, #define fopen apollo_fopen,
+  #define flock apollo_flock may be put in the application header file,
+  surrounded with "#ifdef apollo .. #endif".
+
+DISPLAY MANAGER PAD ROUTINES:
+
+  The foremost routine in apollo_pad.c is apollo_ispad().  This simply
+  returns the logical truth value of the question "Is the standard output
+  stream a display manager pad?"
+
+  Based on this, the screen height for mush may be set according to the
+  number of lines in the pad, using the apollo_padheight() function.  This
+  is handled in init.c.
+
+  Other special cases to note if the output stream is a pad include the
+  fact that cbreak and echo mode should not be changed.  If this is done,
+  the pad will switch into vt100 mode, which is essentially a different
+  window from the pad.  The switch is visually unpleasant, interrupting
+  the flow of text, and any transcript is lost once the vt100 window exits.
+
+  Also, pagers should not be used in DM pads.  Since they switch into
+  cbreak mode, the previous problem comes up, and besides, the DM pad
+  has a large number of commands available for quick scrolling and
+  searching within the pad, as well as the HOLD key, so pagers aren't
+  even really necessary.
+
+  All these changes are transparent to someone using mush from a terminal.
+  These only apply when someone is sitting at the display console of an
+  Apollo workstation.
+
+------------------------
+
+		Many thanks to Paul Killey 
+		for his invaluable assistance in making these modifications.
+
+			Mike Pelletier

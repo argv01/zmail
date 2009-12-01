@@ -1,0 +1,5356 @@
+<HTML>
+<HEAD>
+<!-- This HTML file has been created by texi2html 1.35
+     from ../wingui/wingui.texinfo on 9 August 1996 -->
+
+<TITLE>Windows UI</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>Windows UI</H1>
+
+
+<H1><A NAME="SEC1" HREF="wingui_toc.html#SEC1">About wingui</A></H1>
+
+<P>
+This manual describes wingui, the Windows UI code.
+
+</P>
+
+
+
+<H1><A NAME="SEC2" HREF="wingui_toc.html#SEC2">Objects</A></H1>
+
+
+
+<H1><A NAME="SEC3" HREF="wingui_toc.html#SEC3">Files</A></H1>
+
+
+
+<H1><A NAME="SEC4" HREF="wingui_toc.html#SEC4">CmdActionTable</A></H1>
+
+<P>
+The command action table is a database used to dynamically allocate
+command IDs for use by dynamically created UI items.  For example,
+when a button or toolbar item is created, we need a command ID for it;
+this has to be generated at run time, since the buttons and toolbar items
+are user-configurable.  So, we allocate one from the command action table.
+When we get a <CODE>WM_COMMAND</CODE> with a certain command ID, we look it up
+in the table to see what routine to execute.
+
+</P>
+<P>
+<CODE>button_cmd_table</CODE> is the sole instance of this object in
+the program.
+
+</P>
+<P>
+<U>Function:</U>  <B>CmdActionTable</B> <I>(int <VAR>low</VAR>, int <VAR>high</VAR>)</I><P>
+<A NAME="IDX1"></A>
+Construct a <CODE>CmdActionTable</CODE> which can allocate command ID's
+in the range from <VAR>low</VAR> to <VAR>high</VAR>.
+
+</P>
+<P>
+<U>Function:</U> int <B>AllocId</B> <I>(action_rtn <VAR>rtn</VAR>, void *<VAR>data</VAR>)</I><P>
+<A NAME="IDX2"></A>
+Allocates a command ID; associates the handler routine <VAR>rtn</VAR> and the
+data <VAR>data</VAR> with it.  Returns <CODE>-1</CODE> if there are no available
+command IDs.
+
+</P>
+<P>
+<U>Function:</U> CmdAction * <B>LookupId</B> <I>(int <VAR>id</VAR>)</I><P>
+<A NAME="IDX3"></A>
+Looks up <VAR>id</VAR> in the table; returns a pointer to its
+<CODE>CmdAction</CODE> if successful.  The <CODE>CmdAction</CODE> structure
+has two elements: <CODE>action</CODE> and <CODE>data</CODE>, which contain
+the <VAR>rtn</VAR> and <VAR>data</VAR> specified when <CODE>AllocId()</CODE> was called.
+
+</P>
+<P>
+<U>Function:</U> CmdAction * <B>FreeId</B> <I>(int <VAR>id</VAR>)</I><P>
+<A NAME="IDX4"></A>
+Releases <VAR>id</VAR>, allowing it to be allocated with <CODE>AllocId()</CODE>.
+Returns a pointer to its <CODE>CmdAction</CODE>; the <CODE>data</CODE> field is
+still valid, but <CODE>action</CODE> is <CODE>NULL</CODE>.  This pointer can be
+safely ignored.
+
+</P>
+
+
+<H1><A NAME="SEC5" HREF="wingui_toc.html#SEC5">ResourceData</A></H1>
+
+<P>
+The <CODE>ResourceData</CODE> structure is associated with a given item in
+the windows UI.  All items in the UI
+(such as the "Alias Name:" field in the aliases dialog, or the
+"Help" button on the sort dialog) have resource data associated with them.
+There is only one <CODE>ResourceData</CODE> structure for a given UI item in
+a dialog; for example, there is a <CODE>ResourceData</CODE> structure associated
+with the message body edit control in the message window, but
+if there are two
+message windows up, there is only one <CODE>ResourceData</CODE> structure
+for the two edit controls.
+
+</P>
+<P>
+Resource data includes things like the number of rows and columns
+requested for an item, the colors, the translation table, and various flags.
+A given <CODE>ResourceData</CODE> may contain any of this information,
+or it may leave certain pieces of information unspecified.
+
+</P>
+<P>
+The resource data for fixed items in the UI is generated at startup,
+in <CODE>ZmailApp::InitInstance</CODE>.  This data is read from the
+<CODE>ResourceData</CODE> section of the <CODE>.INI</CODE> files.  Resource data
+for dynamic UI items is created when the items are created.
+
+</P>
+<P>
+<U>Function:</U>  <B>ResourceData</B> <I>()</I><P>
+<A NAME="IDX5"></A>
+Construct a <CODE>ResourceData</CODE> object.
+
+</P>
+<P>
+<U>Function:</U>  <B>ResourceData</B> <I>(const ResourceData &#38; <VAR>rd</VAR>)</I><P>
+<A NAME="IDX6"></A>
+Construct a <CODE>ResourceData</CODE> object, identical to <VAR>rd</VAR>.
+
+</P>
+<P>
+<U>Function:</U> int <B>HasRows</B> <I>()</I><P>
+<A NAME="IDX7"></A>
+Returns true if <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies
+a number of rows.
+
+</P>
+<P>
+<U>Function:</U> int <B>HasCols</B> <I>()</I><P>
+<A NAME="IDX8"></A>
+Returns true if <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies
+a number of columns.
+
+</P>
+<P>
+<U>Function:</U> int <B>HasFg</B> <I>()</I><P>
+<A NAME="IDX9"></A>
+Returns true if <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies
+a foreground color.
+
+</P>
+<P>
+<U>Function:</U> int <B>HasBg</B> <I>()</I><P>
+<A NAME="IDX10"></A>
+Returns true if <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies
+a background color.
+
+</P>
+<P>
+<U>Function:</U> int <B>HasFont</B> <I>()</I><P>
+<A NAME="IDX11"></A>
+Returns true if <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies a font.
+
+</P>
+<P>
+<U>Function:</U> int <B>HasIcon</B> <I>()</I><P>
+<A NAME="IDX12"></A>
+Returns true if <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies an icon
+(only makes sense for a <CODE>ZFrame</CODE>).
+
+</P>
+<P>
+<U>Function:</U> int <B>HasTransTab</B> <I>()</I><P>
+<A NAME="IDX13"></A>
+Returns true if <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies a
+translation table
+(only makes sense for a <CODE>ZEdit</CODE>).
+
+</P>
+<P>
+<U>Function:</U> int <B>HasMenu</B> <I>()</I><P>
+<A NAME="IDX14"></A>
+Returns true if <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies a
+menu name
+(only makes sense for a <CODE>ZFrame</CODE>).
+
+</P>
+<P>
+<U>Function:</U> int <B>HasMenu</B> <I>()</I><P>
+<A NAME="IDX15"></A>
+Returns true if <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies a
+modality/non-modality preference
+(only makes sense for a <CODE>ZFrame</CODE>).
+
+</P>
+<P>
+<U>Function:</U> int <B>HasVertical</B> <I>()</I><P>
+<A NAME="IDX16"></A>
+Returns true if <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies a
+vertical/horizontal preference
+(only makes sense for a <CODE>ZActionArea</CODE>).
+
+</P>
+<P>
+<U>Function:</U> int <B>HasText</B> <I>()</I><P>
+<A NAME="IDX17"></A>
+Returns true if <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies
+window text.
+
+</P>
+<P>
+<U>Function:</U> int <B>HasUseSashes</B> <I>()</I><P>
+<A NAME="IDX18"></A>
+Returns true if <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies
+whether or not to use sashes (only makes sense for a <CODE>ZPanedW</CODE>.
+
+</P>
+<P>
+<U>Function:</U> int <B>HasGreyed</B> <I>()</I><P>
+<A NAME="IDX19"></A>
+Returns true if <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies
+whether or not this item is greyed.
+
+</P>
+<P>
+<U>Function:</U> int <B>GetShadowThickness</B> <I>()</I><P>
+<A NAME="IDX20"></A>
+If <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies a shadow thickness value,
+returns that value.  Otherwise, returns a reasonable default value.
+
+</P>
+<P>
+<U>Function:</U> void <B>AllocColors</B> <I>(ZFrame *<VAR>fr</VAR>)</I><P>
+<A NAME="IDX21"></A>
+Allocates <CODE>this</CODE>'s colors from the color database.  This must
+be called for an item's <CODE>ResourceData</CODE> (passing the items frame
+in <VAR>fr</VAR>) before displaying that item,
+or the colors will be wrong.  (<VAR>fr</VAR> is currently ignored.)
+
+</P>
+<P>
+<U>Function:</U> void <B>GenShadowColors</B> <I>()</I><P>
+<A NAME="IDX22"></A>
+Takes <CODE>this</CODE>'s foreground and background colors and sets the
+top and bottom shadow colors appropriately.  This must be called
+before calling <CODE>AllocColors()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> CFont * <B>GetCFont</B> <I>()</I><P>
+<A NAME="IDX23"></A>
+Returns a pointer to a <CODE>CFont</CODE> structure which matches the
+font specified by <CODE>this</CODE>.  If <CODE>this</CODE> does not specify a font,
+returns <CODE>NULL</CODE>.
+
+</P>
+<P>
+<U>Function:</U> COLORREF <B>GetFg</B> <I>()</I><P>
+<A NAME="IDX24"></A>
+Returns a pointer to a <CODE>COLORREF</CODE> which describes the
+foreground color specified by <CODE>this</CODE>.
+Returns garbage if none is specified.
+
+</P>
+<P>
+<U>Function:</U> COLORREF <B>GetBg</B> <I>()</I><P>
+<A NAME="IDX25"></A>
+Returns a pointer to a <CODE>COLORREF</CODE> which describes the
+background color specified by <CODE>this</CODE>.
+Returns garbage if none is specified.
+
+</P>
+<P>
+<U>Function:</U> COLORREF <B>GetTopShadow</B> <I>()</I><P>
+<A NAME="IDX26"></A>
+Returns a pointer to a <CODE>COLORREF</CODE> which describes the
+top shadow color specified by <CODE>this</CODE>.
+Returns garbage if none is specified.
+The top shadow color is the lighter color used to draw the top and
+left edges of items which have a raised 3D look, and to draw the
+bottom and right edges of items which are inset.
+
+</P>
+<P>
+<U>Function:</U> COLORREF <B>GetBotShadow</B> <I>()</I><P>
+<A NAME="IDX27"></A>
+Returns a pointer to a <CODE>COLORREF</CODE> which describes the
+bottom shadow color specified by <CODE>this</CODE>.
+Returns garbage if none is specified.
+The bottom shadow color is the lighter color used to draw the bottom and
+right edges of items which have a raised 3D look, and to draw the
+top and left edges of items which are inset.
+
+</P>
+<P>
+<U>Function:</U> CBrush * <B>GetBgBrush</B> <I>()</I><P>
+<A NAME="IDX28"></A>
+Returns a pointer to a <CODE>CBrush *</CODE> which matches the
+background brush color specified by <CODE>this</CODE>.
+Returns <CODE>NULL</CODE> if none is specified.
+
+</P>
+<P>
+<U>Function:</U> CBrush * <B>GetBgBrush</B> <I>()</I><P>
+<A NAME="IDX29"></A>
+Returns a pointer to a <CODE>CBrush *</CODE> which matches the
+background brush color specified by <CODE>this</CODE>.
+Returns <CODE>NULL</CODE> if none is specified.
+
+</P>
+<P>
+<U>Function:</U> int <B>IsModal</B> <I>()</I><P>
+<A NAME="IDX30"></A>
+Returns ctrue if <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies a modal frame.
+
+</P>
+<P>
+<U>Function:</U> int <B>IsVertical</B> <I>()</I><P>
+<A NAME="IDX31"></A>
+Returns ctrue if <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies a
+action area with vertically arranged buttons.
+
+</P>
+<P>
+<U>Function:</U> int <B>UseSashes</B> <I>()</I><P>
+<A NAME="IDX32"></A>
+Returns ctrue if <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies a
+paned window with sashes instead of splitters.
+
+</P>
+<P>
+<U>Function:</U> int <B>IsGreyed</B> <I>()</I><P>
+<A NAME="IDX33"></A>
+Returns ctrue if <CODE>this</CODE> is non-<CODE>NULL</CODE> and specifies a
+greyed item.
+
+</P>
+
+
+<H1><A NAME="SEC6" HREF="wingui_toc.html#SEC6">ZAcceleratorTable</A></H1>
+
+<P>
+This object is used to maintain a list of accelerators, and to translate
+them in the message loop.  Each <CODE>ZFrame</CODE> has its own accelerator
+table used to keep track of accelerators defined for that window.
+
+</P>
+<P>
+<U>Function:</U> void <B>Add</B> <I>(const char *<VAR>str</VAR>, int <VAR>id</VAR>)</I><P>
+<A NAME="IDX34"></A>
+Add an accelerator described by <CODE>str</CODE>.  The command identifier
+<VAR>id</VAR> is associated with this accelerator.  <CODE>str</CODE> contains
+any number of modifiers followed by a key description; the modifiers
+and key description may be separated by any non-alphanumeric character.
+Modifiers must be one of <CODE>alt</CODE>, <CODE>meta</CODE>, <CODE>ctrl</CODE>, and
+<CODE>shift</CODE>; key descriptions can be any letter or number,
+a function key (e.g. <CODE>F1</CODE>), or a special key like <CODE>PageUp</CODE>.
+Case is not significant.
+Examples of valid accelerator strings are
+<CODE>Ctrl-Shift-F</CODE> and <CODE>Meta+Enter</CODE>.  This string is
+the same as the string which is displayed to the user in menu items.
+After adding one or more accelerators, the <CODE>Update</CODE> routine should
+be called to recompute the accelerator table.
+
+</P>
+<P>
+<U>Function:</U> void <B>Remove</B> <I>(int <VAR>id</VAR>)</I><P>
+<A NAME="IDX35"></A>
+Remove the accelerator associated with <VAR>id</VAR>.  (The first one?
+All of them?  Who knows?  It's not implemented anyway.)
+
+</P>
+<P>
+<U>Function:</U> void <B>Update</B> <I>()</I><P>
+<A NAME="IDX36"></A>
+Recompute the acclerator table to prepare it for accelerator translation.
+This should be called after adding one or more accelerators.
+(This is a no-op at the moment.)
+
+</P>
+<P>
+<U>Function:</U> int <B>Translate</B> <I>(CWnd *<VAR>wnd</VAR>, MSG *<VAR>msg</VAR>)</I><P>
+<A NAME="IDX37"></A>
+Check the message <CODE>msg</CODE> to see if it contains an accelerator.
+If not, returns cfalse.  Otherwise, sends a <CODE>WM_COMMAND</CODE>
+message to <CODE>wnd</CODE> containing the appropriate command ID, and returns
+ctrue.  This routine is meant to be a replacement for
+the Windows API function <CODE>TranslateAccelerator()</CODE>, since
+<CODE>TranslateAccelerator()</CODE> provides no public facilities for
+dynamic accelerator table maintainance.
+
+</P>
+
+
+<H1><A NAME="SEC7" HREF="wingui_toc.html#SEC7">ZButtonItems</A></H1>
+<P>
+A button item is an instance of a dynamically created item in a
+button panel, toolbar, or toolbox.  For each <CODE>ZmButton</CODE> structure,
+there can be one or more <CODE>ZButtonItem</CODE> structures; one for each instance.
+(Since a <CODE>ZmButtonList</CODE> can be installed in more than one place, and since
+there can be multiple instances of a window with dynamically created buttons
+on it, there can be more than one instance of a given <CODE>ZmButton</CODE>.)
+<CODE>ZButtonItem</CODE> is an abstract class; when a <CODE>ZmButton</CODE> is
+instantiated, an instance of one of its derived classes will be created.
+The <CODE>ZmButton</CODE>'s <CODE>ButtonType</CODE> member will determine which
+derived class will be used.
+
+</P>
+<P>
+Note that no <CODE>ZButtonItem</CODE> is created for <CODE>ZmButton</CODE>s
+in a menu or menu bar.  Only button panels derived from
+<CODE>ZManagedButtonPanel</CODE> will create <CODE>ZButtonItem</CODE> structures.
+
+</P>
+
+
+
+<H1><A NAME="SEC8" HREF="wingui_toc.html#SEC8">ZButtonItem</A></H1>
+<P>
+An abstract ZButtonItem has the following virtual methods:
+
+</P>
+<P>
+<U>Function:</U> virtual ZWinItem * <B>Create</B> <I>(ZmButton <VAR>b</VAR>, ZManager *<VAR>mgr</VAR>, int <VAR>id</VAR>)</I><P>
+<A NAME="IDX38"></A>
+Called to create a instance of the button <CODE>b</CODE>, in the manager
+<CODE>mgr</CODE>, using <CODE>id</CODE> as the command identifier.
+Must return a pointer to the <CODE>ZWinItem</CODE> created.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>Refresh</B> <I>(ZmButton <VAR>b</VAR>, ZWinItem *<VAR>zb</VAR>)</I><P>
+<A NAME="IDX39"></A>
+Called to refresh <CODE>zb</CODE>, an instance of the button <CODE>b</CODE>.
+The <CODE>ZButtonItem</CODE> class implementation of this method enables
+or disables <CODE>zb</CODE> depending on the sensitivity condition.
+
+</P>
+<P>
+<U>Function:</U> virtual int <B>GetCmdId</B> <I>(ZmButton <VAR>b</VAR>)</I><P>
+<A NAME="IDX40"></A>
+Called to allocate a command identifier to associated with <CODE>b</CODE>.
+This is passed to the <CODE>Create</CODE> method.
+The <CODE>ZButtonItem</CODE> class implementation of this method simply
+returns 0.
+
+</P>
+<P>
+<U>Function:</U> virtual const char * <B>GetText</B> <I>(ZmButton <VAR>b</VAR>)</I><P>
+<A NAME="IDX41"></A>
+Called to get the text associated with <CODE>b</CODE>.
+This string is passed to the <CODE>SetText</CODE> routine.
+The <CODE>ZButtonItem</CODE> class implementation of this method returns
+the button label, or the button name if there is no label.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>SetText</B> <I>(ZmButton <VAR>b</VAR>, ZWinItem *<VAR>wi</VAR>, const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX42"></A>
+Called to set the text for <VAR>wi</VAR> (and instance of <VAR>b</VAR>) to <VAR>str</VAR>.
+This is used to set the button's label.
+
+</P>
+<P>
+<U>Function:</U> virtual ZButton * <B>GetZButton</B> <I>(ZWinItem *<VAR>wi</VAR>)</I><P>
+<A NAME="IDX43"></A>
+Called to get a pointer to the <CODE>ZButton</CODE> structure associated with
+<CODE>wi</CODE>, if any.
+The <CODE>ZButtonItem</CODE> class implementation of this method simply
+returns <CODE>NULL</CODE>.
+
+</P>
+
+
+<H1><A NAME="SEC9" HREF="wingui_toc.html#SEC9">ZPushButtonItem</A></H1>
+<P>
+A <CODE>ZPushButtonItem</CODE> structure is allocated to keep track of an
+instance of a push button created from a <CODE>ZmButton</CODE>.
+(To create a push button, use the <CODE>button</CODE> command; this will
+create a <CODE>ZmButton</CODE> and tell the UI to create the associated
+<CODE>ZPushButtonItem</CODE>.)
+This class is derived from <CODE>ZButtonItem</CODE>, and implements
+the following methods:
+
+</P>
+<P>
+<U>Function:</U> virtual ZWinItem * <B>Create</B> <I>(ZmButton <VAR>b</VAR>, ZManager *<VAR>mgr</VAR>, int <VAR>id</VAR>)</I><P>
+<A NAME="IDX44"></A>
+Creates a push button (<CODE>ZButton</CODE>) in the manager <CODE>mgr</CODE>.
+This button is an instance of <CODE>b</CODE>, and has the command identifier
+<CODE>id</CODE>.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>Refresh</B> <I>(ZmButton <VAR>b</VAR>, ZWinItem *<VAR>zb</VAR>)</I><P>
+<A NAME="IDX45"></A>
+Refreshes <CODE>zb</CODE>.  In addition to calling the base class method,
+this routine gives keyboard focus to <CODE>zb</CODE> if the focus condition
+becomes true.
+
+</P>
+<P>
+<U>Function:</U> virtual int <B>GetCmdId</B> <I>(ZmButton <VAR>b</VAR>)</I><P>
+<A NAME="IDX46"></A>
+Allocates a command identifier for <CODE>b</CODE>.  This is done by
+allocating an identifier from the <CODE>button_cmd_table</CODE>, with
+the action routine set to <CODE>ZFrame::ExecButton()</CODE>.
+Overrides the base class method.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>SetText</B> <I>(ZmButton <VAR>b</VAR>, ZWinItem *<VAR>wi</VAR>, const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX47"></A>
+Sets the button text of <CODE>wi</CODE> to <CODE>str</CODE>.  This is done by
+adding an <CODE>&#38;</CODE> in the appropriate place (if <CODE>b</CODE> specifies
+a mnemonic) and calling <CODE>CWnd::SetWindowText()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> virtual ZButton * <B>GetZButton</B> <I>(ZWinItem *<VAR>wi</VAR>)</I><P>
+<A NAME="IDX48"></A>
+Called to get a pointer to the <CODE>ZButton</CODE> structure associated with
+<CODE>wi</CODE>.  This routine simply returns <CODE>wi</CODE>; since <CODE>this</CODE>
+is a pointer to a <CODE>ZPushButtonItem</CODE>, <CODE>wi</CODE>
+is guaranteed to be a pointer to a <CODE>ZButton</CODE>.
+Overrides the base class method.
+
+</P>
+
+
+<H1><A NAME="SEC10" HREF="wingui_toc.html#SEC10">ZToggleButtonItem</A></H1>
+
+<P>
+A <CODE>ZToggleButtonItem</CODE> structure is allocated to keep track of an
+instance of a toggle button created from a <CODE>ZmButton</CODE>.
+(To create a toggle button, use the <CODE>button</CODE> command with
+the <CODE>-value</CODE> option or the <CODE>-type toggle</CODE> option; this will
+create a <CODE>ZmButton</CODE> and tell the UI to create the associated
+<CODE>ZToggleButtonItem</CODE>.)
+This class is derived from <CODE>ZPushButtonItem</CODE>, and implements
+the following methods:
+
+</P>
+<P>
+<U>Function:</U> void <B>Refresh</B> <I>(ZmButton <VAR>b</VAR>, ZWinItem *<VAR>zb</VAR>)</I><P>
+<A NAME="IDX49"></A>
+Refreshes <CODE>zb</CODE>.  In addition to calling the base class method,
+this routine sets the checked state of <CODE>zb</CODE> to whatever the
+<CODE>ButtonValueCond</CODE> specifies.
+
+</P>
+<P>
+<U>Function:</U> ZWinItem * <B>Create(ZmButton b, ZManager *mgr, int id)</B><P>
+<A NAME="IDX50"></A>
+Creates a toggle button (<CODE>ZToggleButton</CODE>) in the manager <CODE>mgr</CODE>.
+This button is an instance of <CODE>b</CODE>, and has the command identifier
+<CODE>id</CODE>.  Overrides the base class method.
+
+</P>
+
+
+<H1><A NAME="SEC11" HREF="wingui_toc.html#SEC11">ZIconButtonItem</A></H1>
+
+<P>
+A <CODE>ZIconButtonItem</CODE> structure is allocated to keep track of an
+instance of a icon button created from a <CODE>ZmButton</CODE>.
+(To create a icon button, use the <CODE>button</CODE> command with
+the <CODE>-icon</CODE> option; this will
+create a <CODE>ZmButton</CODE> and tell the UI to create the associated
+<CODE>ZIconButtonItem</CODE>.)
+This class is derived from <CODE>ZPushButtonItem</CODE>, and implements
+the following methods:
+
+</P>
+<P>
+<U>Function:</U> ZWinItem * <B>Create</B> <I>(ZmButton b, ZManager *mgr, int id)</I><P>
+<A NAME="IDX51"></A>
+Creates a toggle button (<CODE>ZIconButton</CODE>) in the manager <CODE>mgr</CODE>.
+This button is an instance of <CODE>b</CODE>, and has the command identifier
+<CODE>id</CODE>.  Overrides the base class method.
+
+</P>
+<P>
+<U>Function:</U> const char * <B>GetText</B> <I>(ZmButton b)</I><P>
+<A NAME="IDX52"></A>
+Called to get the text associated with <CODE>b</CODE>.
+This string is passed to the <CODE>SetText</CODE> routine.
+This returns the button label, or the empty string if there is on
+label.  Overrides <CODE>ZButtonItem</CODE>'s implementation.
+
+</P>
+
+
+<H1><A NAME="SEC12" HREF="wingui_toc.html#SEC12">Other ZButtonItems</A></H1>
+
+<P>
+At the moment, are three other classes derived from <CODE>ZButtonItem</CODE>.
+They are <CODE>ZCommandLineButtonItem</CODE>, <CODE>ZFolderSelectorButtonItem</CODE>,
+and <CODE>ZPrioritySelectorButtonItem</CODE>.  Each one implements
+<CODE>Create()</CODE> to create the item, and <CODE>SetText()</CODE> to put the
+text in the right place; <CODE>ZFolderSelectorButtonItem()</CODE> also
+implements <CODE>GetText()</CODE> to set the text to an empty string
+if there is no label.
+
+</P>
+<P>
+To create a command line button, use the <CODE>-type command-line</CODE>
+option to the <CODE>button</CODE> command.  To create a folder selector,
+use <CODE>-type folder-popup</CODE>; to create a priority selector,
+use <CODE>-type priority-popup</CODE>.
+
+</P>
+
+
+<H1><A NAME="SEC13" HREF="wingui_toc.html#SEC13">ZButtonListData</A></H1>
+
+<P>
+Each code <CODE>ZmButtonList</CODE> structure has a pointer to a
+<CODE>ZButtonListData</CODE> object; the <CODE>ZButtonListData</CODE> can be used
+to keep track of UI-specific information.  At present, this object
+is used to store a list of pointers to all the <CODE>ZAbstractButtonPanel</CODE>
+objects where the <CODE>ZmButtonList</CODE> is instantiated.
+(An <CODE>ZAbstractButtonPanel</CODE> is a location where
+<CODE>ZmButton</CODE>s can be placed, like a menu bar or an action area.)
+
+</P>
+<P>
+For example,
+if the <CODE>PriorityMenu</CODE> button list is in the main menu and the
+message menu, and there are two message windows open,
+then the <CODE>ZmButtonList</CODE> structure for
+<CODE>PriorityMenu</CODE> will have a pointer to a <CODE>ZButtonListData</CODE>
+structure, which will have a list with these elements.  The
+first element will be a pointer to the main priority menu's
+<CODE>ZSubmenuPanel</CODE> structure, and the second and third elements
+will be a pointer to a <CODE>ZSubmenuPanel</CODE> structure for the two message
+windows' priority menus.
+
+</P>
+<P>
+The <CODE>ZButtonListData</CODE> class has a number of methods for maintaining
+the list of button panels.
+
+</P>
+<P>
+<U>Function:</U> void <B>AddPanel</B> <I>(ZAbstractButtonPanel *<VAR>bp</VAR>)</I><P>
+<A NAME="IDX53"></A>
+Add <VAR>bp</VAR> to the list of button panels.  This is done when a
+window is created.
+
+</P>
+<P>
+<U>Function:</U> void <B>RemovePanel</B> <I>(ZAbstractButtonPanel *<VAR>bp</VAR>)</I><P>
+<A NAME="IDX54"></A>
+Remove <VAR>bp</VAR> from the list of button panels.  This is done when a
+window is destroyed.
+
+</P>
+<P>
+<U>Function:</U> void <B>Update</B> <I>(ZmButton <VAR>b</VAR>, ZmButton <VAR>oldb</VAR>)</I><P>
+<A NAME="IDX55"></A>
+Notify all the button panels that <VAR>b</VAR>'s attributes have changed.
+<VAR>oldb</VAR> is a pointer to some old information before <VAR>b</VAR>
+changed.  This is called when <CODE>gui_update_button()</CODE> is called.
+This is implemented by simply looping through all the button panels
+and calling their <CODE>Update()</CODE> methods.
+
+</P>
+<P>
+<U>Function:</U> void <B>Refresh</B> <I>(ZmButton <VAR>b</VAR>)</I><P>
+<A NAME="IDX56"></A>
+Refresh <CODE>b</CODE> in all the button panels.
+This routine called when <CODE>gui_update_button()</CODE> is called.
+This is implemented by simply looping through all the button panels
+and calling their <CODE>Refresh()</CODE> methods.
+
+</P>
+<P>
+<U>Function:</U> void <B>Install</B> <I>(ZmButton <VAR>b</VAR>, ZmButtonList <VAR>bl</VAR>)</I><P>
+<A NAME="IDX57"></A>
+Install <VAR>b</VAR> in this button panel.  <VAR>bl</VAR> is a pointer to
+this panel's button list.  This is called by <CODE>gui_install_button()</CODE>
+when a new button is created.
+This is implemented by simply looping through all the button panels
+and calling their <CODE>Install()</CODE> methods.
+
+</P>
+<P>
+<U>Function:</U> void <B>Remove</B> <I>(ZmButton <VAR>b</VAR>)</I><P>
+<A NAME="IDX58"></A>
+Remove <VAR>b</VAR> from this button panel.  <VAR>bl</VAR> is a pointer to
+this panel's button list.  Ths is called by <CODE>gui_remove_button()</CODE>
+when the <CODE>unbutton</CODE> command is executed.
+This is implemented by simply looping through all the button panels
+and calling their <CODE>Remove()</CODE> methods.
+
+</P>
+<P>
+<U>Function:</U> void <B>Reinstall</B> <I>(ZmButtonList <VAR>bl</VAR>, int <VAR>slot</VAR>)</I><P>
+<A NAME="IDX59"></A>
+Notify the UI that <VAR>bl</VAR> has been installed in <VAR>slot</VAR>.
+When a new button list is installed in a button panel (e.g. by typing
+the command <CODE>"button -w main -b MyMainButtons"</CODE>), then
+this routine is called with <VAR>slot</VAR> pointing to the slot number of
+the button panel (e.g. <CODE>MAIN_WINDOW_BUTTONS</CODE>), and with
+<CODE>bl</CODE> pointing to the new button list being installed there.
+This is implemented by finding all the button panels in the list
+which have the same slot number as <VAR>slot</VAR>, and calling their
+<CODE>DeinstallList()</CODE> and <CODE>InstallList()</CODE> methods.
+
+</P>
+
+
+<H1><A NAME="SEC14" HREF="wingui_toc.html#SEC14">ZCmdTarget</A></H1>
+
+<P>
+This is a command target class, derived from the MFC class
+<CODE>CCmdTarget</CODE>.  It is used as a base class for <CODE>ZFrame</CODE> and
+<CODE>ZFrameItem</CODE>, since both of those objects can receive command
+messages, but neither one is derived from <CODE>CWnd</CODE>.
+If a class is derived from <CODE>ZCmdTarget</CODE>, it can have a working message
+map; otherwise, it can't.
+
+</P>
+<P>
+<U>Function:</U> virtual afx_msg BOOL <B>OnCommand</B> <I>(WPARAM <VAR>wp</VAR>, LPARAM <VAR>lp</VAR>)</I><P>
+<A NAME="IDX60"></A>
+Process the <CODE>WM_COMMAND</CODE> message contained in <VAR>wp</VAR> and
+<VAR>lp</VAR>.  This is called by <CODE>ZFrameWnd::OnCommand</CODE>
+when the MFC framework calls it, or by <CODE>ZFrame::OnCommand</CODE>
+when <CODE>ZFrameWnd::OnCommand</CODE> calls it.
+This routine basically just calls <CODE>OnCmdMsg()</CODE>,
+which does the actual message map lookup.
+
+</P>
+<P>
+<U>Function:</U> void <B>RestrictToHwnd</B> <I>(HWND <VAR>wnd</VAR>)</I><P>
+<A NAME="IDX61"></A>
+Restrict this <CODE>ZCmdTarget</CODE> so that it can only receive messages
+from <VAR>wnd</VAR>.  Messages from other windows are ignored.
+This is a hack, but a useful one; it allows a <CODE>ZFrameItem</CODE>
+to have a message map which specifies handler functions for a certain
+control, even if the command ID is not unique to that window.
+For example, let's say that you have two priority selectors in a window;
+each priority selector has a combo box with a certain command ID.
+The command ID is the same for both priority selectors, since it
+has to be a constant value in order to install a handler for it in the
+message map.  If we manipulate the combo box associated with the
+first priority selector, we want the first priority selector to get
+the message, not the second one; so, the first priority selector
+can restrict the messages it receives to messages from its
+combo box.  This scheme doesn't work if a <CODE>ZFrameItem</CODE> wants
+to receive messages from two different controls, of course.
+
+</P>
+
+
+<H1><A NAME="SEC15" HREF="wingui_toc.html#SEC15">ZColorDatabase</A></H1>
+
+<P>
+This database is used to keep track of colors used in the program.
+It was created to keep track of brushes, to make sure they all get
+deleted when the program exits, and to manage the palette
+when we need to draw something in a color which is not in the
+standard VGA palette.
+
+</P>
+<P>
+<CODE>ColorDB</CODE> is the sole instance of this object in the program.
+
+</P>
+<P>
+<U>Function:</U> void <B>Init()</B><P>
+<A NAME="IDX62"></A>
+Initialize the color database.  This installs the stock brushes
+and standard colors.
+
+</P>
+<P>
+<U>Function:</U> ZColorId <B>Alloc</B> <I>(COLORREF <VAR>c</VAR>)</I><P>
+<A NAME="IDX63"></A>
+Allocate and return a color id for the color <VAR>c</VAR>.
+If <VAR>c</VAR> is already in the database, it returns the existing
+color id for it.
+
+</P>
+<P>
+<U>Function:</U> COLORREF <B>GetColor</B> <I>(ZColorId <VAR>c</VAR>)</I><P>
+<A NAME="IDX64"></A>
+Return a color associated with <VAR>c</VAR>.
+This may be a color specification, or it may be
+a code generated by <CODE>PALETTEINDEX()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> COLORREF <B>GetColorSpec</B> <I>(ZColorId <VAR>c</VAR>)</I><P>
+<A NAME="IDX65"></A>
+Return the color specification associated with <VAR>c</VAR>.
+
+</P>
+<P>
+<U>Function:</U> CBrush * <B>GetBrush</B> <I>(ZColorId <VAR>c</VAR>)</I><P>
+<A NAME="IDX66"></A>
+Return a solid brush which has the color associated with <VAR>c</VAR>.
+You do not have to delete this brush.
+
+</P>
+
+
+<H1><A NAME="SEC16" HREF="wingui_toc.html#SEC16">ZConversionBuffer</A></H1>
+<P>
+This class is used to convert a block of text from LF-terminated
+to CRLF-terminated.  It is used, for example, to fill up the message
+window edit control with the message text (which is a UNIXy LF-terminated
+text data stream).
+
+</P>
+<P>
+<U>Function:</U> void <B>Add</B> <I>(const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX67"></A>
+Add some text to the buffer, after converting LF's to CR-LF's.
+
+</P>
+<P>
+<U>Function:</U> void <B>AddRaw</B> <I>(const char *<VAR>str</VAR>, int <VAR>start</VAR> = 0, int <VAR>len</VAR> = -1)</I><P>
+<A NAME="IDX68"></A>
+Add the text <VAR>str</VAR> to the buffer, after skipping the first <VAR>start</VAR>
+characters of <VAR>str</VAR>.  If <VAR>len</VAR> is not -1, then add only
+<VAR>len</VAR> characters.
+
+</P>
+<P>
+<U>Function:</U> void <B>CopyFrom</B> <I>(ZEdit *<VAR>ed</VAR>)</I><P>
+<A NAME="IDX69"></A>
+Replace the contents of this buffer (if any) with the contents of
+the edit control <VAR>ed</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>CopyTo</B> <I>(ZEdit *<VAR>ed</VAR>)</I><P>
+<A NAME="IDX70"></A>
+Copy the contents of this buffer to the edit control <VAR>ed</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>Empty</B> <I>()</I><P>
+<A NAME="IDX71"></A>
+Empty the contents of the buffer.
+
+</P>
+<P>
+<U>Function:</U> void <B>Init</B> <I>(int <VAR>len</VAR> = 64)</I><P>
+<A NAME="IDX72"></A>
+Initialize the buffer.  If <VAR>len</VAR> is specified, preallocate
+that many bytes.
+
+</P>
+<P>
+<U>Function:</U> int <B>GetLength</B> <I>()</I><P>
+<A NAME="IDX73"></A>
+Get the length of the text in the buffer (including CR's).
+
+</P>
+<P>
+<U>Function:</U> int <B>GetLineCount</B> <I>()</I><P>
+<A NAME="IDX74"></A>
+Get the number of lines in the buffer.
+
+</P>
+<P>
+<U>Function:</U> void <B>Truncate</B> <I>(int <VAR>newlen</VAR>)</I><P>
+<A NAME="IDX75"></A>
+Truncate the buffer text to <VAR>newlen</VAR> characters, including
+CR's.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetMaxSize</B> <I>(int <VAR>sz</VAR>)</I><P>
+<A NAME="IDX76"></A>
+Set the maximum size of the data in the buffer.  This affects
+<CODE>CopyTo()</CODE>.  If there is more than <VAR>sz</VAR> characters in the
+buffer when copying to the edit control, the text will be truncated
+first.
+
+</P>
+
+
+<H1><A NAME="SEC17" HREF="wingui_toc.html#SEC17">ZCurrentFrameSaver</A></H1>
+<P>
+This object is a convenience provided to make it easy to save and
+restore the current frame.  When this object is constructed,
+it saves the current frame (and optionally sets it).  When this
+object is destructed, it restores it.  So, when you declare a
+<CODE>ZCurrentFrameSaver</CODE>, the current frame is saved; and when the
+program exits the scope where the <CODE>ZCurrentFrameSaver</CODE> was
+declared, the current frame is restored.  Example:
+
+</P>
+
+<PRE>
+ZFrame *fr1, *fr2, *fr3;
+
+...
+fr1-&#62;SetCurrentFrame();
+/* now fr1 is current */
+if (fr2) {
+    ZCurrentFrameSaver(fr2);
+    /* now fr2 is current */
+    fr3-&#62;SetCurrentFrame();
+    /* now fr3 is current */
+    ...
+}
+/* now fr1 is current */
+</PRE>
+
+<P>
+<U>Function:</U>  <B>ZCurrentFrameSaver</B> <I>()</I><P>
+<A NAME="IDX77"></A>
+Constructs a <CODE>ZCurrentFrameSaver</CODE>, saving the current frame.
+
+</P>
+<P>
+<U>Function:</U>  <B>ZCurrentFrameSaver</B> <I>(ZFrame *<VAR>fr</VAR>)</I><P>
+<A NAME="IDX78"></A>
+Constructs a <CODE>ZCurrentFrameSaver</CODE>, saving the current frame,
+then sets the current frame to <VAR>fr</VAR> using
+<CODE>ZFrame::SetCurrentFrame()</CODE>.
+
+</P>
+
+
+<H1><A NAME="SEC18" HREF="wingui_toc.html#SEC18">ZFolderDatabase</A></H1>
+<P>
+This is a database of UI-specific information related to folders.
+Since the core folder structure has no "client data" field (which we
+could point to a structure containing UI-specific data), we have to
+maintain a separate folder list.
+
+</P>
+<P>
+<U>Function:</U> void <B>FlushHeaders</B> <I>(msg_folder *<VAR>fldr</VAR>, struct mgroup *<VAR>grp</VAR>)</I><P>
+<A NAME="IDX79"></A>
+Throw away the cached message summaries for all the messages in the
+folder <VAR>fldr</VAR> and in the message group <VAR>grp</VAR>.  The summaries
+will be regenerated the next time they are need in the message summary list.
+
+</P>
+<P>
+<U>Function:</U> void <B>FlushAllHeaders</B> <I>(msg_folder *<VAR>fldr</VAR>)</I><P>
+<A NAME="IDX80"></A>
+Throw away the cached message summaries for all messages in folder
+<VAR>fldr</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>FlushAllHeaders</B> <I>()</I><P>
+<A NAME="IDX81"></A>
+Throw away the cached message summaries for all messages in all folders.
+
+</P>
+<P>
+<U>Function:</U> void <B>UpdateMailinfo</B> <I>(msg_folder *<VAR>fldr</VAR>)</I><P>
+<A NAME="IDX82"></A>
+Make sure mailinfo stucture (which contains the new, unread, and
+deleted counts) for the given folder is up-to-date.
+
+</P>
+<P>
+<U>Function:</U> const char * <B>GetHeader</B> <I>(msg_folder *<VAR>fldr</VAR>, int <VAR>num</VAR>)</I><P>
+<A NAME="IDX83"></A>
+Retrieve the message summary for message <VAR>num</VAR> from folder <VAR>fldr</VAR>.
+Get the summary from the cache if possible.
+
+</P>
+<P>
+<U>Function:</U> ZMessageGroup * <B>GetRedrawGroup</B> <I>(msg_folder *<VAR>fldr</VAR>)</I><P>
+<A NAME="IDX84"></A>
+Get a pointer to the redraw group for folder <VAR>fldr</VAR>.  The redraw group
+is the message group which specifies which messages need their summaries
+redrawn.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetRefresh</B> <I>(msg_folder *<VAR>fldr</VAR>)</I><P>
+<A NAME="IDX85"></A>
+Set the refresh flag for <VAR>fldr</VAR>.  This flag is set whenever
+<CODE>gui_refresh()</CODE> is called with <VAR>fldr</VAR> is the first argument.
+It means <VAR>fldr</VAR> has changed in some way, and needs to be refreshed.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetReset</B> <I>(msg_folder *<VAR>fldr</VAR>)</I><P>
+<A NAME="IDX86"></A>
+Set the reset flag for <VAR>fldr</VAR>, and flush all the headers.  This flag
+means that the folder has been updated or reloaded.
+
+</P>
+<P>
+<U>Function:</U> void <B>ClearRefresh</B> <I>()</I><P>
+<A NAME="IDX87"></A>
+Clear the refresh flags for all folders.
+
+</P>
+<P>
+<U>Function:</U> int <B>NeedsRefresh</B> <I>(msg_folder *<VAR>fldr</VAR>)</I><P>
+<A NAME="IDX88"></A>
+Returns ctrue if <VAR>fldr</VAR> needs to be refreshed.
+
+</P>
+<P>
+<U>Function:</U> int <B>NeedsRefresh</B> <I>()</I><P>
+<A NAME="IDX89"></A>
+Returns ctrue if any folder needs to be refreshed.
+
+</P>
+<P>
+<U>Function:</U> int <B>WasReset</B> <I>(msg_folder *<VAR>fldr</VAR>)</I><P>
+<A NAME="IDX90"></A>
+Returns ctrue if <VAR>fldr</VAR> was reset.
+
+</P>
+<P>
+<U>Function:</U> void <B>UpdateHidden</B> <I>(msg_folder *<VAR>fldr</VAR>)</I><P>
+<A NAME="IDX91"></A>
+Update the hidden group (<CODE>mf_hidden</CODE>) for <VAR>fldr</VAR>.
+
+</P>
+<P>
+<U>Function:</U> int <B>ListToMsg</B> <I>(msg_folder *<VAR>fldr</VAR>, int <VAR>num</VAR>)</I><P>
+<A NAME="IDX92"></A>
+Return the position of message <VAR>num</VAR> in the summary list, while
+taking hidden messages into account.
+
+</P>
+<P>
+<U>Function:</U> int <B>MsgToList</B> <I>(msg_folder *<VAR>fldr</VAR>, int <VAR>num</VAR>)</I><P>
+<A NAME="IDX93"></A>
+Return the message number of the <VAR>num</VAR>th entry in the summary list.
+
+</P>
+
+
+<H1><A NAME="SEC19" HREF="wingui_toc.html#SEC19">ZFontDatabase</A></H1>
+
+<P>
+This database is used to keep track of fonts used in the program.
+It was created to make sure all the fonts get
+deleted when the program exits, and to make sure that fonts are not
+created unnecessarily.
+
+</P>
+<P>
+<U>Function:</U> ZFontId <B>Alloc</B> <I>(const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX94"></A>
+Allocate a font id corresponding to the font description <VAR>str</VAR>.
+The font description must be a face name, optionally followed by a dot
+and a point size or options.  For example, <CODE>Courier.9b</CODE>
+specifies a bold courier font with a point size of 9.
+
+</P>
+<P>
+<U>Function:</U> CFont * <B>GetFont</B> <I>(ZFontId <VAR>fontid</VAR>)</I><P>
+<A NAME="IDX95"></A>
+Return a <CODE>CFont</CODE> corresponding to <VAR>fontid</VAR>.  You do not
+have to delete this.
+
+</P>
+
+
+<H1><A NAME="SEC20" HREF="wingui_toc.html#SEC20">ZFrame</A></H1>
+<P>
+A <CODE>ZFrame</CODE> object contains high-level information on a window or
+dialog.  All the information which Z-Mail needs to know about a window,
+like its current folder or message list, is contained in this object;
+all the information which does not change when a window is pinned up
+should be in this object.
+All low-level information, like the window handle, which does change
+when a window is pinned up should be in the <CODE>ZFrameWindowRec</CODE>.
+
+</P>
+<P>
+<U>Function:</U>  <B>ZFrame</B> <I>(FrameTypeName <VAR>type</VAR>, int <VAR>objid</VAR>)</I><P>
+<A NAME="IDX96"></A>
+Construct a new frame, with type <VAR>type</VAR> and object ID <VAR>objid</VAR>.
+The <VAR>type</VAR> is the type of window or dialog, using the values
+in <TT>`frtype.h'</TT>; for example, the main window has type
+<CODE>FrameMain</CODE>, and the aliases dialog has type <CODE>FrameAlias</CODE>.
+The <VAR>objid</VAR> also identifies the type of window or dialog; it is used
+to find this frame's <CODE>ResourceData</CODE> structure.
+
+</P>
+<P>
+<U>Function:</U> void <B>CreateFrameItems</B> <I>(long <VAR>items</VAR>, int <VAR>flags</VAR> = 0)</I><P>
+<A NAME="IDX97"></A>
+Create standard items in the frame.  This is usually used to create the
+folder pane and the icon.  The <VAR>flags</VAR> are the <CODE>ZManager</CODE> flags.
+The <VAR>items</VAR> is a bitmask of items you want
+created.  Possible items are:
+<DL COMPACT>
+
+<DT><CODE>FR_ITEM_NEW_MAIL_TOGGLE</CODE>
+<DD>
+A new arrivals button.
+<DT><CODE>FR_ITEM_FOLDER_LABEL</CODE>
+<DD>
+A folder label.
+<DT><CODE>FR_ITEM_FOLDER_SELECTOR</CODE>
+<DD>
+A folder drop-down list.
+<DT><CODE>FR_ITEM_MESSAGE_LIST_FIELD</CODE>
+<DD>
+An editable message list field.
+<DT><CODE>FR_ITEM_MESSAGE_LIST_LABEL</CODE>
+<DD>
+A message list label.
+<DT><CODE>FR_ITEM_ICON</CODE>
+<DD>
+An icon in the upper right.
+<DT><CODE>FR_ITEM_DIRECTIONS</CODE>
+<DD>
+A directions label.
+<DT><CODE>FR_ITEM_FRAMED_DIRECTIONS</CODE>
+<DD>
+A directions label with a frame around it.
+</DL>
+<P>
+
+<U>Function:</U> void <B>CreateFrameButtons</B> <I>(int <VAR>count</VAR>, int <VAR>start</VAR> = 0)</I><P>
+<A NAME="IDX98"></A>
+Create the frame's button panel, which may be horizontal or vertical,
+depending on the action area's <CODE>ResourceData</CODE>.  This creates
+<VAR>count</VAR> buttons,
+starting at the object ID <VAR>start</VAR>, or starting at the current
+object ID counter if <VAR>start</VAR> is zero.
+
+</P>
+<P>
+<U>Function:</U> ZPanedW * <B>CreateFrameManagers</B> <I>()</I><P>
+<A NAME="IDX99"></A>
+Create a <CODE>ZFrameManager</CODE> for a frame, and create a <CODE>ZPanedW</CODE>
+inside it.  Return a pointer to the <CODE>ZPanedW</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>CreateStatusBar</B> <I>(const char *<VAR>prefix</VAR> = NULL)</I><P>
+<A NAME="IDX100"></A>
+Create a status bar for this frame.  The variable which specifies
+the format of this status bar will be <CODE>status_bar_fmt</CODE> if
+<VAR>prefix</VAR> is <CODE>NULL</CODE>; otherwise, it will be <VAR>prefix</VAR>
+with <CODE>_status_bar_fmt</CODE> tacked on the end.
+
+</P>
+<P>
+<U>Function:</U> int <B>DoCmdLine</B> <I>(const char *<VAR>cmdstr</VAR>, int <VAR>flags</VAR> = 0)</I><P>
+<A NAME="IDX101"></A>
+Execute the Z-script command <VAR>cmdstr</VAR> in the context of the current
+frame.  <VAR>flags</VAR> may be one or more of the following bitflags:
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>FRDCL_NO_UPDATE</CODE>
+<DD>
+Don't call <CODE>FrameDB.Refresh()</CODE> afterwards.
+<DT><CODE>FRDCL_ALLOW_EMPTY_MGROUP</CODE>
+<DD>
+Set the frame's current message group to the resulting message group of
+the command,
+even if it is empty.
+</DL>
+<P>
+
+<U>Function:</U> void <B>Create</B> <I>()</I><P>
+<A NAME="IDX102"></A>
+Create this frame's <CODE>ZFrameWindowRec</CODE>, set the object ID counter,
+and add this frame to the frame database.
+Call this routine during the <CODE>Build()</CODE> method of a derived class
+before doing anything.
+
+</P>
+<P>
+<U>Function:</U> void <B>Popup</B> <I>()</I><P>
+<A NAME="IDX103"></A>
+Make this frame visible; build it, if necessary.
+
+</P>
+<P>
+<U>Function:</U> void <B>Iconify</B> <I>()</I><P>
+<A NAME="IDX104"></A>
+Iconify this frame.  If this frame is an MDI child, the frame is closed,
+but is still available in the <CODE>Windows</CODE> menu.
+Also, child frames are always closed instead of iconified.
+
+</P>
+<P>
+<U>Function:</U> void <B>Autodismiss</B> <I>(char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX105"></A>
+Check <CODE>$autoiconify</CODE> for the subvalue <VAR>str</VAR>; if it is set,
+then iconify this frame.  Otherwise, check <CODE>$autodismiss</CODE> for
+the subvalue <VAR>str</VAR>; if it is set, then close this frame.
+
+</P>
+<P>
+<U>Function:</U> void <B>AddAccel</B> <I>(const char *<VAR>str</VAR>, int <VAR>id</VAR>)</I><P>
+<A NAME="IDX106"></A>
+Add <VAR>str</VAR> to this frame's accelerator table, using the command
+identifier <VAR>id</VAR>
+(see section <A HREF="wingui.html#SEC6">ZAcceleratorTable</A>).
+
+</P>
+<P>
+<U>Function:</U> void <B>RemAccel</B> <I>(int <VAR>id</VAR>)</I><P>
+<A NAME="IDX107"></A>
+Remove the accelerator corresponding to command identifier <VAR>id</VAR>
+from this frame's accelerator table.
+
+</P>
+<P>
+<U>Function:</U> void <B>ClearRefresh</B> <I>()</I><P>
+<A NAME="IDX108"></A>
+Clear the refresh flags for this frame.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetRefresh</B> <I>(long <VAR>f</VAR>)</I><P>
+<A NAME="IDX109"></A>
+Set the refresh flags <VAR>f</VAR> for this frame.  This is used to
+specify things
+that need to be refreshed the next time <CODE>FrameDB.Refresh()</CODE>
+is called.
+Valid flags include:
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>FREF_MESSAGE_LIST</CODE>
+<DD>
+The message list has changed.
+<DT><CODE>FREF_FOLDER_DATA</CODE>
+<DD>
+The folder data (i.e. the number of new, unread, and deleted messages)
+has changed.
+<DT><CODE>FREF_FULL</CODE>
+<DD>
+Refresh everything.
+<DT><CODE>FREF_RELAYOUT</CODE>
+<DD>
+This frame's top-level manager needs to have its <CODE>Layout()</CODE> method
+called; this happens when a <CODE>ZWinItem</CODE> is added or removed from
+a manager in this frame, or when a <CODE>ZWinItem</CODE>'s size changes.
+<DT><CODE>FREF_ALIASES</CODE>
+<DD>
+The aliases list has changed.
+<DT><CODE>FREF_IGNORE_HEADERS</CODE>
+<DD>
+The list of ignored and retained headers has changed.
+<DT><CODE>FREF_MY_HEADERS</CODE>
+<DD>
+The list of custom headers has changed.
+<DT><CODE>FREF_EXIT</CODE>
+<DD>
+We're going to exit the program.
+<DT><CODE>FREF_MENU_REDRAW</CODE>
+<DD>
+The menu bar needs to be redrawn.
+<DT><CODE>FREF_FOLDER_COUNT</CODE>
+<DD>
+The number of open folders has changed.
+<DT><CODE>FREF_COMMAND</CODE>
+<DD>
+A Z-script command has been executed.
+<DT><CODE>FREF_ATTACHMENTS</CODE>
+<DD>
+One of the attachment lists has been changed.
+</DL>
+<P>
+
+<U>Function:</U> void <B>PropagateSelection</B> <I>(const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX110"></A>
+This method is called when the selection in the main summary list changes.
+The default implementation sets the frame's message list string to <VAR>str</VAR>,
+unless this frame has the <CODE>FR_IGNORE_MAIN_MSG_LIST</CODE> flag set.
+
+</P>
+<P>
+<U>Function:</U> void <B>ExecButton</B> <I>(void *<VAR>bt</VAR>)</I><P>
+<A NAME="IDX111"></A>
+This method is called by by <CODE>ZFrame::OnCommand</CODE> when a
+<CODE>ZmButton</CODE> is activated.  When a button item is created,
+a command ID is allocated
+from <CODE>button_cmd_table</CODE> using this routine as the handler routine.
+<VAR>bt</VAR> is a pointer to this button's <CODE>ZmButton</CODE> structure.
+
+</P>
+<P>
+This routine toggles the button's value if necessary, and then executes
+its associated Z-Script.
+
+</P>
+<P>
+<U>Function:</U> void <B>AddFrameItem</B> <I>(ZFrameItem *<VAR>it</VAR>)</I><P>
+<A NAME="IDX112"></A>
+Add <VAR>it</VAR> to this frame's list of frame items.  Called when
+a class derived from <CODE>ZFrameItem</CODE> is created.
+
+</P>
+<P>
+<U>Function:</U> void <B>RemoveFrameItem</B> <I>(ZFrameItem *<VAR>it</VAR>)</I><P>
+<A NAME="IDX113"></A>
+Remove <VAR>it</VAR> from this frame's list of frame items.  Called when
+a class derived from <CODE>ZFrameItem</CODE> is destroyed.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetTitle</B> <I>(const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX114"></A>
+Set this frame's title in <VAR>str</VAR>.  The title is shown in the title
+bar; for MDI children, the string <CODE>"Z-Mail - "</CODE> is prepended first.
+
+</P>
+<P>
+<U>Function:</U> ModalValue <B>DoModal</B> <I>()</I><P>
+<A NAME="IDX115"></A>
+Allow the user to interact with this dialog in a modal fashion.
+This function prevents the user from interacting with any other dialogs
+(unless any other modal dialogs are brought up), and does not return
+until this frame is closed, or until <CODE>StopModalLoop()</CODE> is called.
+The return value of <CODE>GetModalValue()</CODE> is returned.
+
+</P>
+<P>
+<U>Function:</U> void <B>Layout</B> <I>()</I><P>
+<A NAME="IDX116"></A>
+Calls the <CODE>Layout()</CODE> method of this frame's top-level manager,
+and resizes the window if necessary.,
+
+</P>
+<P>
+<U>Function:</U> void <B>BuildFrame</B> <I>()</I><P>
+<A NAME="IDX117"></A>
+Call this frame's <CODE>Build()</CODE> method, if this has not already been done,
+and lay it out.
+
+</P>
+<P>
+<U>Function:</U> void <B>UnbuildFrame</B> <I>()</I><P>
+<A NAME="IDX118"></A>
+Destroy this frame's frame items, manager, and <CODE>ZFrameWindowRec</CODE>.
+This is called from the destructor.  It is also called if a call to
+<CODE>BuildFrame()</CODE> fails.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetMenuBar</B> <I>(CMenu *<VAR>hm</VAR>)</I><P>
+<A NAME="IDX119"></A>
+Set this frame's menu bar to the menu <VAR>hm</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>ExecWindowMenu</B> <I>(void *<VAR>fr</VAR>)</I><P>
+<A NAME="IDX120"></A>
+This method is called by by <CODE>ZFrame::OnCommand</CODE> when an
+item in <CODE>this</CODE>'s <CODE>Windows</CODE> menu is selected.
+When an item is added to the <CODE>Windows</CODE> menu,
+a command ID is allocated
+from <CODE>button_cmd_table</CODE> using this routine as the handler routine.
+<CODE>fr</CODE> is a pointer to the <CODE>ZFrame</CODE> corresponding to 
+the <CODE>Windows</CODE> menu item that was selected.  This routine
+simply calls <CODE>fr-&#62;Popup()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>ExecPinup</B> <I>(void *)</I><P>
+<A NAME="IDX121"></A>
+This method is called by by <CODE>ZFrame::OnCommand</CODE> when the
+<CODE>Pinup</CODE> or <CODE>Pindown</CODE>
+item in <CODE>this</CODE>'s <CODE>Windows</CODE> menu is selected.
+When one of these items is added to the <CODE>Windows</CODE> menu,
+a command ID is allocated
+from <CODE>button_cmd_table</CODE> using this routine as the handler routine.
+This routine simply calls <CODE>Pinup()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>DoInitMenuPopup</B> <I>(CMenu *<VAR>pop</VAR>, UINT, BOOL)</I><P>
+<A NAME="IDX122"></A>
+This routine is called in response to a
+<CODE>WM_INITMENUPOPUP</CODE> message, when one of the menus for this frame
+is popped up.  It simply fixes the <CODE>Windows</CODE> menu so that the
+proper items are greyed out, and so that the <CODE>Pinup</CODE> item is labeled
+<CODE>Pindown</CODE> if necessary.
+
+</P>
+<P>
+<U>Function:</U> void <B>Destroy</B> <I>()</I><P>
+<A NAME="IDX123"></A>
+Destroy this frame, and create a deferred action to <CODE>delete</CODE> it.
+
+</P>
+<P>
+<U>Function:</U> void <B>DestroyChildren</B> <I>()</I><P>
+<A NAME="IDX124"></A>
+Destroy all the child frames of this frame.
+
+</P>
+<P>
+<U>Function:</U> int <B>OptsSave</B> <I>()</I><P>
+<A NAME="IDX125"></A>
+Call <CODE>uiprefs_Save()</CODE> in the context of this frame.
+
+</P>
+<P>
+<U>Function:</U> int <B>OptsLoad</B> <I>()</I><P>
+<A NAME="IDX126"></A>
+Call <CODE>uiprefs_Load()</CODE> in the context of this frame.
+
+</P>
+<P>
+<U>Function:</U> void <B>AddToMenu</B> <I>()</I><P>
+<A NAME="IDX127"></A>
+Add this frame to the <CODE>Windows</CODE> menu in all the frames which have one.
+
+</P>
+<P>
+<U>Function:</U> void <B>RemoveFromMenu</B> <I>()</I><P>
+<A NAME="IDX128"></A>
+Remove this frame from the <CODE>Windows</CODE> menu in all the
+frames which have one.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetStatusLine</B> <I>(const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX129"></A>
+Put the string <VAR>str</VAR> in the status bar of this frame, if it has
+one (actually, it
+puts <VAR>str</VAR> in the <CODE>s</CODE> field of the status bar, if it has one).
+
+</P>
+<P>
+<U>Function:</U> void <B>FetchWindowText</B> <I>(CString &#38; <VAR>str</VAR>)</I><P>
+<A NAME="IDX130"></A>
+Fetch the window text for this frame, and put it in <VAR>str</VAR>.
+This text is used for the title bar.
+
+</P>
+<P>
+<U>Function:</U> void <B>ClearSavedFocus</B> <I>()</I><P>
+<A NAME="IDX131"></A>
+Clear the saved focus item for this frame.  When a frame is deactivated,
+the item that had focus is saved; this item is given focus when the
+frame is later reactivated, unless <CODE>ClearSavedFocus()</CODE> is called
+in the meantime.
+
+</P>
+<P>
+<U>Function:</U> void <B>StopModalLoop</B> <I>()</I><P>
+<A NAME="IDX132"></A>
+Terminate the outermost modal dialog loop.  This causes the most recent
+call to <CODE>ZFrame::DoModal</CODE> to return immediately, without waiting
+for the frame to pop down.
+
+</P>
+<P>
+<U>Function:</U> int <B>GetObjId</B> <I>()</I><P>
+<A NAME="IDX133"></A>
+Get this frame's object ID.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetObjId</B> <I>(int <VAR>id</VAR>)</I><P>
+<A NAME="IDX134"></A>
+Set this frame's object ID to <VAR>id</VAR>.
+
+</P>
+<P>
+<U>Function:</U> CWnd * <B>GetWnd</B> <I>()</I><P>
+<A NAME="IDX135"></A>
+Get a pointer to the <CODE>CWnd</CODE> structure associated with this frame.
+This may be a <CODE>CFrameWnd</CODE> or a <CODE>CMDIChildWnd</CODE>.
+
+</P>
+<P>
+<U>Function:</U> FrameTypeName <B>GetType</B> <I>()</I><P>
+<A NAME="IDX136"></A>
+Get this frame's type.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetMessageStr</B> <I>(const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX137"></A>
+Set the message list of this frame to the message list string <VAR>str</VAR>.
+
+</P>
+<P>
+<U>Function:</U> const char * <B>GetMessageStr</B> <I>()</I><P>
+<A NAME="IDX138"></A>
+Returns the message list of thus frame in a string format.
+Copy this if you want it to persist.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetMessageGroup</B> <I>(ZMessageGroup &#38; <VAR>grp</VAR>)</I><P>
+<A NAME="IDX139"></A>
+Set the message list of this frame to the message group <VAR>grp</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetFolder</B> <I>(msg_folder *<VAR>fldr</VAR>)</I><P>
+<A NAME="IDX140"></A>
+Set this frame's folder to <VAR>fldr</VAR>.
+
+</P>
+<P>
+<U>Function:</U> msg_folder * <B>GetFolder</B> <I>(void)</I><P>
+<A NAME="IDX141"></A>
+Get this frame's folder.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetMessageGroup</B> <I>(int <VAR>no</VAR>)</I><P>
+<A NAME="IDX142"></A>
+Set the message list of this frame to a group containing the single
+message <VAR>no</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>GetMessageGroup</B> <I>(ZMessageGroup &#38; <VAR>grp</VAR>)</I><P>
+<A NAME="IDX143"></A>
+Copy the message group of this frame into <VAR>grp</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetManager</B> <I>(ZManager *<VAR>m</VAR>)</I><P>
+<A NAME="IDX144"></A>
+Set this frame's top-level manager to <VAR>m</VAR>.
+Normally, this is either a <CODE>ZPanedW</CODE>,
+or a <CODE>ZFrameManager</CODE> containing a <CODE>ZPanedW</CODE>.
+
+</P>
+<P>
+<U>Function:</U> ZManager * <B>GetManager</B> <I>()</I><P>
+<A NAME="IDX145"></A>
+Get this frame's top-level manager.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetPaneManager</B> <I>(ZManager *<VAR>m</VAR>)</I><P>
+<A NAME="IDX146"></A>
+Set this frame's top-level <CODE>ZPanedW</CODE> to <VAR>m</VAR>.
+
+</P>
+<P>
+<U>Function:</U> ZManager * <B>GetPaneManager</B> <I>()</I><P>
+<A NAME="IDX147"></A>
+Get this frame's top-level <CODE>ZPanedW</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetModalValue</B> <I>(ModalValue <VAR>v</VAR>)</I><P>
+<A NAME="IDX148"></A>
+Set the modal value for this frame to <VAR>v</VAR>.  This is done in a modal
+dialog, to notify the caller of <CODE>ZFrame::DoModal()</CODE> (if any)
+what has happened (i.e. which button was used to dismiss the dialog).
+This information may be later retrived using <CODE>GetModalValue()</CODE>,
+or by checking the return value of <CODE>DoModal()</CODE>.
+If <CODE>DoModal()</CODE> is called by <CODE>Popup()</CODE> because a frame
+has the <CODE>FR_MODAL</CODE>
+bit set, then the modal value is ignored.
+Valid values of <VAR>v</VAR> include:
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>MV_Ok</CODE>
+<DD>
+The user clicked "OK".
+<DT><CODE>MV_Cancel</CODE>
+<DD>
+The user clicked "Cancel".
+<DT><CODE>MV_Retry</CODE>
+<DD>
+The user clicked the "Retry" button.
+<DT><CODE>MV_Omit</CODE>
+<DD>
+The user clicked the "Omit" button.
+<DT><CODE>MV_Search</CODE>
+<DD>
+The user clicked the "Search" button.
+<DT><CODE>MV_Edit</CODE>
+<DD>
+The user clicked the "Edit" button.
+</DL>
+<P>
+
+<U>Function:</U> ModalValue <B>GetModalValue</B> <I>()</I><P>
+<A NAME="IDX149"></A>
+Gets the modal value set by a prior call to <CODE>SetModalValue()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetFlags</B> <I>(long <VAR>fl</VAR>)</I><P>
+<A NAME="IDX150"></A>
+This routine sets various frame flags.  Most of these define attributes
+of a frame (like resizability and modality), but a few define the state
+of a frame (like whether or not it is pinned up).  Classes
+derived from <CODE>ZFrame</CODE> should set the frame attributes with a call
+to <CODE>SetFlags()</CODE> in the constructor.
+
+</P>
+<P>
+The following flags may be set:
+<DL COMPACT>
+
+<DT><CODE>FR_CANNOT_SHRINK_H</CODE>
+<DD>
+The user can't resize this frame smaller horizontally.
+<DT><CODE>FR_CANNOT_SHRINK_V</CODE>
+<DD>
+The user can't resize this frame smaller vertically.
+<DT><CODE>FR_CANNOT_SHRINK</CODE>
+<DD>
+The user can't resize this frame smaller.
+<DT><CODE>FR_CACHE_ON_CLOSE</CODE>
+<DD>
+When <CODE>Close()</CODE> is called on this frame, it should be hidden rather
+than destroyed.
+<DT><CODE>FR_IGNORE_MAIN_MSG_LIST</CODE>
+<DD>
+When the selection in the main summary list changes, most frames
+change their message lists to match (by means of the
+<CODE>PropagateSelection()</CODE> method), unless this flag is set.
+<DT><CODE>FR_CANNOT_GROW_H</CODE>
+<DD>
+The user can't resize this frame larger horizontally.
+<DT><CODE>FR_CANNOT_GROW_V</CODE>
+<DD>
+The user can't resize this frame larger vertically.
+<DT><CODE>FR_CANNOT_GROW</CODE>
+<DD>
+The user can't resize this frame larger.
+<DT><CODE>FR_CANNOT_RESIZE</CODE>
+<DD>
+The user can't resize this frame, period.
+<DT><CODE>FR_OPEN</CODE>
+<DD>
+This frame is open (<CODE>Close()</CODE> has not been called on it).
+<DT><CODE>FR_MDI_CHILD</CODE>
+<DD>
+This frame is an MDI child; it has not been pinned up.
+<DT><CODE>FR_MODAL</CODE>
+<DD>
+This frame is modal.
+<DT><CODE>FR_BUILT</CODE>
+<DD>
+The <CODE>BuildFrame()</CODE> method has been called successfully for this frame.
+<DT><CODE>FR_IGNORE_MAIN_FOLDER</CODE>
+<DD>
+When the main window's current folder changes, most frames change
+their current folder to match, unless this flag is set.
+<DT><CODE>FR_CENTER_ON_SCREEN</CODE>
+<DD>
+This frame should be centered on the screen.
+<DT><CODE>FR_TOPMOST</CODE>
+<DD>
+This frame's window should be positioned above all other windows.
+<DT><CODE>FR_STOP_MODAL_LOOP</CODE>
+<DD>
+<CODE>StopModalLoop()</CODE> has been called for this frame.
+(<CODE>DoModal()</CODE> exits its loop if this flag is set.)
+</DL>
+<P>
+
+<U>Function:</U> ZStatic * <B>GetDirectionsItem</B> <I>()</I><P>
+<A NAME="IDX151"></A>
+Get a pointer to the <CODE>ZStatic</CODE> that was created by a call
+to <CODE>CreateFrameItems()</CODE> with the <CODE>FR_ITEM_DIRECTIONS</CODE>
+or <CODE>FR_ITEM_FRAMED_DIRECTIONS</CODE> flag set.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetParentFrame</B> <I>(ZFrame *<VAR>fr</VAR>)</I><P>
+<A NAME="IDX152"></A>
+Set this frame's parent.
+
+</P>
+<P>
+<U>Function:</U> ZFrame * <B>GetParentFrame</B> <I>()</I><P>
+<A NAME="IDX153"></A>
+Get this frame's parent.
+
+</P>
+<P>
+<U>Function:</U> ZStatic * <B>GetIcon</B> <I>()</I><P>
+<A NAME="IDX154"></A>
+Get a pointer to the <CODE>ZStatic</CODE> that was created by a call
+to <CODE>CreateFrameItems()</CODE> with the <CODE>FR_ITEM_ICON</CODE> set.
+
+</P>
+<P>
+<U>Function:</U> ZWinItem * <B>GetMessageListFieldItem</B> <I>()</I><P>
+<A NAME="IDX155"></A>
+Return a pointer to the <CODE>ZWinItem</CODE> used for
+the message list field.  This is useful for setting the default focus.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetDefaultFocusItem</B> <I>(ZWinItem *<VAR>w</VAR>)</I><P>
+<A NAME="IDX156"></A>
+Sets the default focus item.  When a frame is activated, this item
+receives keyboard focus (unless there is an old item which had
+the keyboard focus when the frame was deactivated).  This should
+be done in <CODE>BuildFrame()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> ZWinItem * <B>GetDefaultFocusItem</B> <I>()</I><P>
+<A NAME="IDX157"></A>
+Returns the default focus item.
+
+</P>
+<P>
+<U>Function:</U> ZmailStatusBar * <B>GetStatusBar</B> <I>()</I><P>
+<A NAME="IDX158"></A>
+Returns a pointer to this frame's status bar, if it has one.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetPaneDescriptors</B> <I>(ZPaneDescriptor *<VAR>pd</VAR>)</I><P>
+<A NAME="IDX159"></A>
+Returns a pointer to the pane descriptor array.  This is used to
+implement things like <CODE>$message_panes</CODE>.
+
+</P>
+<P>
+In order to implement
+a panes variable for a window, create a static array of <CODE>ZPaneDescriptor</CODE>
+structures.  Each one must have a <CODE>name</CODE> field which contains
+the name of the pane (e.g. <CODE>action_area</CODE>), and a <CODE>obj_id</CODE>
+field which contains the object identifier for that pane (e.g.
+<CODE>WID_MESSAGE_AA</CODE>).  The "pane" does not have to be a child of a
+paned window; it can be any UI object in the frame.
+The last structure in the array should have the <CODE>name</CODE> field
+set to <CODE>NULL</CODE>.
+
+</P>
+<P>
+In the frame's constructor, call <CODE>SetPaneDescriptors()</CODE> with a
+pointer to this array.  Then, at the end of <CODE>BuildFrame()</CODE>, or
+whenever the pane variable changes, call <CODE>SetPanes()</CODE> with the
+value of the variable.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetPanes</B> <I>(const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX160"></A>
+Turn panes on and off to match the pane configuration specified
+by the string <VAR>str</VAR>.
+<VAR>str</VAR> must be a comma or space separated list of the names
+of the panes
+which should be on.  The names must match the <CODE>name</CODE> field of
+the pane descriptors.
+This only works for frames which have
+called <CODE>SetPaneDescriptors()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetPaneOrder</B> <I>(const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX161"></A>
+Rearrange the panes so that they match the order specified in <VAR>str</VAR>.
+<VAR>str</VAR> must be a comma or space separated list of pane names;
+the names must match the <CODE>name</CODE> field of the pane descriptors.
+This only works for panes which have a common parent.  Panes not
+mentioned in <VAR>str</VAR> are left alone.
+
+</P>
+<P>
+<U>Function:</U> afx_msg void <B>AfxDoClose</B> <I>()</I><P>
+<A NAME="IDX162"></A>
+Same as <CODE>Close()</CODE>.  Since this routine has the <CODE>afx_msg</CODE>
+tag, it can be used in a message map (as if the <CODE>afx_msg</CODE>
+really mattered).
+
+</P>
+<P>
+<U>Function:</U> afx_msg void <B>AfxDoSave</B> <I>()</I><P>
+<A NAME="IDX163"></A>
+Same as <CODE>OptsSave()</CODE>.  Since this routine has the <CODE>afx_msg</CODE>
+tag, it can be used in a message map (as if the <CODE>afx_msg</CODE>
+really mattered).
+
+</P>
+<P>
+<U>Function:</U> afx_msg void <B>AfxDoLoad</B> <I>()</I><P>
+<A NAME="IDX164"></A>
+Same as <CODE>OptsLoad()</CODE>.  Since this routine has the <CODE>afx_msg</CODE>
+tag, it can be used in a message map (as if the <CODE>afx_msg</CODE>
+really mattered).
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>IsModal</B> <I>()</I><P>
+<A NAME="IDX165"></A>
+Returns ctrue if this frame is modal.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>FolderChanged</B> <I>()</I><P>
+<A NAME="IDX166"></A>
+Returns ctrue if this frame's folder has changed since the last time
+its <CODE>ClearRefresh()</CODE> method was called.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>IsMDIChild</B> <I>()</I><P>
+<A NAME="IDX167"></A>
+Returns ctrue if this frame is an MDI child (i.e. is pinned down).
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>IsOpen</B> <I>()</I><P>
+<A NAME="IDX168"></A>
+Returns ctrue if this frame is open.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>IgnoresMainFolder</B> <I>()</I><P>
+<A NAME="IDX169"></A>
+When the main window's current folder changes, most frames change
+their current folder to match, unless the <CODE>FR_IGNORE_MAIN_FOLDER</CODE>
+flag is set.  This routine returns ctrue if it is set.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>IsActive</B> <I>()</I><P>
+<A NAME="IDX170"></A>
+Returns ctrue if this frame's window is activated.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>Refresh</B> <I>(long <VAR>rflags</VAR>)</I><P>
+<A NAME="IDX171"></A>
+Refreshes this frame, using the refresh flags specified in <VAR>rflags</VAR>.
+See <CODE>SetRefresh()</CODE> for a description of the refresh flags.
+This method should not be called directly; call <CODE>FrameDB.Refresh()</CODE>
+instead.  Be sure to call
+the base class implementation of this method if you override it in
+a derived class.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>SetCurrentFrame</B> <I>()</I><P>
+<A NAME="IDX172"></A>
+Makes this frame the current frame, from the core's point of view.
+When the user clicks on a button, or interacts with the UI in other ways,
+the frame containing the button is made current before calling any
+core routines.  This ensures that the right <CODE>Compose</CODE> structure is
+used for core routines, and that calls to <CODE>read</CODE> will put the
+message text in the right window.
+
+</P>
+<P>
+<U>Function:</U> virtual int <B>GetState</B> <I>(int <VAR>item</VAR>)</I><P>
+<A NAME="IDX173"></A>
+Returns the bit of GUI state specified by <VAR>item</VAR>.  This is used
+by <CODE>gui_get_state()</CODE> to provide the core with UI state information.
+Possible values of <VAR>item</VAR> are:
+<DL COMPACT>
+
+<DT><CODE>GSTATE_IS_NEXT</CODE>
+<DD>
+Returns ctrue if the current message for this window has a valid
+"next message" after it.  Call <CODE>next_msg()</CODE> to verify this.
+<DT><CODE>GSTATE_IS_PREV</CODE>
+<DD>
+Returns ctrue if the current message for this window has a valid
+"previous message" before it.  Call <CODE>next_msg()</CODE> to verify this.
+<DT><CODE>GSTATE_PINUP</CODE>
+<DD>
+Returns ctrue if this is a pinup message window.
+<DT><CODE>GSTATE_ATTACHMENTS</CODE>
+<DD>
+Returns ctrue if the message or composition in this window has attachments.
+<DT><CODE>GSTATE_ACTIVE_COMP</CODE>
+<DD>
+Returns ctrue if there is an active composition in this window.
+</DL>
+<P>
+
+<U>Function:</U> virtual void <B>Close</B> <I>()</I><P>
+<A NAME="IDX174"></A>
+Close this frame.  If <CODE>FR_CACHE_ON_CLOSE</CODE> is set, the frame
+is destroyed; otherwise, it is hidden.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>Build</B> <I>()</I><P>
+<A NAME="IDX175"></A>
+Build this frame.  Classes derived from <CODE>ZFrame</CODE> should implement
+this to create this frame's <CODE>ZWinItem</CODE>s.
+
+</P>
+<P>
+<U>Function:</U> virtual BOOL <B>Pinup</B> <I>(BOOL <VAR>up</VAR>)</I><P>
+<A NAME="IDX176"></A>
+Pin this frame up, if <VAR>up</VAR> is ctrue; otherwise, pin it down.
+
+</P>
+<P>
+<U>Function:</U> virtual BOOL <B>ValidParent</B> <I>(FrameTypeName <VAR>type</VAR>)</I><P>
+<A NAME="IDX177"></A>
+Returns ctrue if <VAR>this</VAR> is a valid parent for a frame of type
+<VAR>type</VAR>.  For example, any frame can have a <CODE>FrameAskInput</CODE>
+frame (an <CODE>ask -i</CODE> dialog) as a child, so <CODE>ZFrame::ValidParent()</CODE>
+returns ctrue for that frame type.
+However, only compose windows can have a <CODE>FrameCompOpts</CODE>
+(a compose options dialog) as a child, so only
+<CODE>ZComposeFrame::ValidParent()</CODE> returns ctrue for that
+frame type.
+When a frame is created, the current frame's <CODE>ValidParent()</CODE>
+is called to see if it can be the new frame's parent;
+if so, then the new frame's parent is set to the current frame.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>OnPrePopup</B> <I>()</I><P>
+<A NAME="IDX178"></A>
+This routine is called just before the frame is popped up.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>NotifyReset</B> <I>()</I><P>
+<A NAME="IDX179"></A>
+This routine is called when this frame's folder is reset.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>OnCommand</B> <I>(WPARAM <VAR>wp</VAR>, LPARAM <VAR>lp</VAR>)</I><P>
+<A NAME="IDX180"></A>
+This routine is called when a frame gets a <CODE>WM_COMMAND</CODE> message.
+<VAR>wp</VAR> and <VAR>lp</VAR> are the two parameters of the message.
+The base class implementation looks the command ID up in
+<CODE>button_cmd_table</CODE>, and calls the handler routine if it finds one;
+then, it forwards the message to all the
+frame items, and finally searches this frame's message map.
+Derived classes can override this method, if necessary (though it's
+better to use a message map when possible); be sure to call the
+base class implementation if you don't handle the message.
+
+</P>
+
+
+<H1><A NAME="SEC21" HREF="wingui_toc.html#SEC21">ZFrameDatabase</A></H1>
+
+<P>
+<U>Function:</U> ZFrame * <B>Get</B> <I>(FrameTypeName <VAR>type</VAR>, ZFrame *<VAR>parent</VAR> = 0)</I><P>
+<A NAME="IDX181"></A>
+Get a pointer to the first frame of type <VAR>type</VAR>, if one exists;
+otherwise, return <CODE>NULL</CODE>.  If <VAR>parent</VAR> is non-<CODE>NULL</CODE>,
+then the returned frame must be a child of <VAR>parent</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>Add</B> <I>(FrameTypeName <VAR>type</VAR>, ZFrame *<VAR>fr</VAR>)</I><P>
+<A NAME="IDX182"></A>
+Add the frame <VAR>fr</VAR> to the database.  <VAR>fr</VAR> is of type <VAR>type</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetCurrentFolder</B> <I>(msg_folder *<VAR>mf</VAR>)</I><P>
+<A NAME="IDX183"></A>
+Sets the main current folder to <VAR>mf</VAR>.  All frames which do not
+have the <CODE>FR_IGNORE_MAIN_FOLDER</CODE> flag set will have their current
+folder set to <VAR>mf</VAR> just before a refresh happens.  This function
+is currently called only when a command which changes the current
+folder is executed in the context of
+the main frame.
+
+</P>
+<P>
+Warning: the concept of "current folder", and when it changes,
+is rather fuzzy in the core,
+and unfortunately, this is reflected in the windows UI code.
+
+</P>
+<P>
+<U>Function:</U> void <B>Remove</B> <I>(ZFrame *<VAR>fr</VAR>)</I><P>
+<A NAME="IDX184"></A>
+Remove the frame <VAR>fr</VAR> from the database.  This is usually done
+when a frame is closed.
+
+</P>
+<P>
+<U>Function:</U> void <B>Open</B> <I>(FrameTypeName <VAR>type</VAR>)</I><P>
+<A NAME="IDX185"></A>
+Open a frame of type <VAR>type</VAR>.  If there is already a closed frame
+of type <VAR>type</VAR>, it will be opened; otherwise, a new frame will be
+created.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetRefresh</B> <I>(long <VAR>flags</VAR>, msg_folder *<VAR>fldr</VAR> = 0)</I><P>
+<A NAME="IDX186"></A>
+Set the refresh flags <VAR>flags</VAR> for all frames.
+Also calls <CODE>SetCurrentFolder(fldr)</CODE>, even though it probably shouldn't.
+Again, the concept of current folder is not clear.
+
+</P>
+<P>
+<U>Function:</U> void <B>Refresh</B> <I>(long <VAR>flags</VAR> = 0)</I><P>
+<A NAME="IDX187"></A>
+Sets the refresh flags <VAR>flags</VAR> for all frames, and then refresh all
+frames.  If this function is called recursively, it sets a flag which
+causes the refresh loop to restart from scratch.
+
+</P>
+<P>
+<U>Function:</U> void <B>PropagateSelection</B> <I>(ZFrame *<VAR>from</VAR>, const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX188"></A>
+Propagates a message selection to all frames except <VAR>from</VAR>.
+This is used when the main message list changes.  This routine calls
+the <CODE>PropagateSelection</CODE> methods of all frames except <VAR>from</VAR>
+to make sure that most frames have the same message list.
+
+</P>
+<P>
+<U>Function:</U> void <B>NotifyReset</B> <I>(msg_folder *<VAR>fldr</VAR>)</I><P>
+<A NAME="IDX189"></A>
+Notify all frames that the folder <VAR>fldr</VAR> has been reset.
+Each frame which has <VAR>fldr</VAR> as the current folder will have its
+<CODE>NotifyReset</CODE> method called.
+
+</P>
+<P>
+<U>Function:</U> void <B>Destroy</B> <I>()</I><P>
+<A NAME="IDX190"></A>
+Destroy all frames.
+
+</P>
+<P>
+<U>Function:</U> void <B>DestroyOld</B> <I>(ZFrame *<VAR>fr</VAR> = 0)</I><P>
+<A NAME="IDX191"></A>
+Destroy all closed frames except <VAR>fr</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>RedoRefresh</B> <I>()</I><P>
+<A NAME="IDX192"></A>
+When called from a frame's <CODE>Refresh</CODE> method, causes the refresh
+loop to restart.  This is done when a <CODE>Refresh</CODE> method which
+requires a general refresh to be done.
+
+</P>
+<P>
+<U>Function:</U> void <B>RedrawAll</B> <I>()</I><P>
+<A NAME="IDX193"></A>
+Cause all frames to be redrawn by calling <CODE>Invalidate()</CODE> on their windows.
+
+</P>
+<P>
+<U>Function:</U> ZWinItem * <B>FindItem</B> <I>(int <VAR>obj_id</VAR>)</I><P>
+<A NAME="IDX194"></A>
+Find the item <VAR>obj_id</VAR> by searching all frames in the frame
+list.  The current frame will
+be checked first, by calling its <CODE>FindItem()</CODE> method; if it
+fails, then all other frames will be checked.
+
+</P>
+<P>
+<U>Function:</U> FrameTypeName <B>LookupName</B> <I>(const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX195"></A>
+Look up the name <VAR>str</VAR>, returning its corresponding <CODE>FrameTypeName</CODE>.
+For example, <CODE>"Aliases"</CODE> maps to <CODE>FrameAlias</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>GetQualifiedName</B> <I>(CString &#38; <VAR>ret</VAR>, ZFrame *<VAR>fr</VAR>)</I><P>
+<A NAME="IDX196"></A>
+Get the qualified name of <VAR>fr</VAR>, and put it in <VAR>ret</VAR>.
+The qualified name is the same
+as the frame name, disambiguated if there are more frames of the this type.
+For example, if <CODE>fr</CODE> is a composition frame, <VAR>ret</VAR> might be set
+to <CODE>"Compose"</CODE> if there is no other compose frame; otherwise,
+<VAR>ret</VAR> might be something like <CODE>"Compose &#60;2&#62;"</CODE>.
+
+</P>
+
+
+<H1><A NAME="SEC22" HREF="wingui_toc.html#SEC22">ZFrameWindowRec</A></H1>
+
+<P>
+This class is the abstract base class for any low-level window class.
+<CODE>ZFrameWnd</CODE> and <CODE>ZMDIChildWnd</CODE> both inherit from this class
+using multiple inheritance.
+
+</P>
+<P>
+A <CODE>ZFrameWnd</CODE> is a class derived from this class
+and <CODE>CFrameWnd</CODE>.  It is used for pinned-up windows.
+A <CODE>ZMDIChildWnd</CODE> is a class derived from <CODE>ZFrameWindowRec</CODE>
+and <CODE>CFrameWnd</CODE>.  It is used for MDI children.  Neither of these
+derived classes should have additional public members; they should only
+be accessed through the interface defined by <CODE>ZFrameWindowRec</CODE>
+(and only by the methods of <CODE>ZFrame</CODE>); most code should not care
+if a frame is pinned up or not.
+
+</P>
+<P>
+<U>Function:</U> enum ModalValue <B>DoModal</B> <I>()</I><P>
+<A NAME="IDX197"></A>
+Process messages in this window modally (without permitting user
+interaction in other windows) until this window's frame either closes
+or gets the <CODE>FR_STOP_MODAL_LOOP</CODE> flag set.
+
+</P>
+<P>
+<U>Function:</U> void <B>Layout</B> <I>()</I><P>
+<A NAME="IDX198"></A>
+Lay out the manager hierarchy for this frame, and resize the window
+to accomodate it.
+
+</P>
+<P>
+<U>Function:</U> ZFrame * <B>GetFrame</B> <I>()</I><P>
+<A NAME="IDX199"></A>
+Return a pointer to this window's <CODE>ZFrame</CODE>.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>Create</B> <I>(ZFrame *<VAR>fr</VAR>)</I><P>
+<A NAME="IDX200"></A>
+Create a window corresponding to the frame <VAR>fr</VAR>.
+This function is unimplemented by the base class.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>Popup</B> <I>()</I><P>
+<A NAME="IDX201"></A>
+Pop up this window; make it visible to the user.
+This function is unimplemented by the base class.
+
+</P>
+<P>
+<U>Function:</U> virtual BOOL <B>IsMaximized</B> <I>()</I><P>
+<A NAME="IDX202"></A>
+Returns <CODE>True</CODE> if this window is maximized.
+This function is unimplemented by the base class.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>SetMenuBar</B> <I>(CMenu *<VAR>menu</VAR>)</I><P>
+<A NAME="IDX203"></A>
+Set this window's menu bar to <VAR>menu</VAR>.
+This function is unimplemented by the base class.
+
+</P>
+<P>
+<U>Function:</U> virtual CMenu * <B>GetMenuBar</B> <I>()</I><P>
+<A NAME="IDX204"></A>
+Get a pointer to this window's menu bar.
+This function is unimplemented by the base class.
+
+</P>
+<P>
+<U>Function:</U> virtual CFrameWnd * <B>GetWnd</B> <I>()</I><P>
+<A NAME="IDX205"></A>
+Get a pointer to this window's <CODE>CFrameWnd</CODE> structure.
+This function is unimplemented by the base class.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>Destroy</B> <I>()</I><P>
+<A NAME="IDX206"></A>
+Destroy the window.
+This function is unimplemented by the base class.
+
+</P>
+<P>
+<U>Function:</U> virtual <B>void</B> <I>SetTitle (const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX207"></A>
+Set the window's title to <VAR>str</VAR>.
+This function is unimplemented by the base class.
+In MDI children, the string <CODE>"Z-Mail - "</CODE> is prepended before
+this title is presented to the user.
+
+</P>
+<P>
+<U>Function:</U> virtual BOOL <B>IsActive</B> <I>()</I><P>
+<A NAME="IDX208"></A>
+Returns <CODE>True</CODE> if this window is the active window.
+This function is unimplemented by the base class.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>ClearSavedFocus</B> <I>()</I><P>
+<A NAME="IDX209"></A>
+Clear the saved focus item for this window.  When a window is deactivated,
+the item that had focus is saved; this item is given focus when the
+window is later reactivated, unless <CODE>ClearSavedFocus()</CODE> is called
+in the meantime.
+
+</P>
+<P>
+<U>Function:</U> void <B>DoSize</B> <I>(UINT <VAR>type</VAR>, int <VAR>cx</VAR>, int <VAR>cx</VAR>)</I><P>
+<A NAME="IDX210"></A>
+Handle a <CODE>WM_SIZE</CODE> message by resizing the top-level manager
+of this frame
+and causing it to be layed out again.
+
+</P>
+<P>
+<U>Function:</U> void <B>DoGetMinMaxInfo</B> <I>(MINMAXINFO FAR *<VAR>mmi</VAR>)</I><P>
+<A NAME="IDX211"></A>
+Handle a <CODE>WM_GETMINMAXINFO</CODE> message by setting the appropriate
+fields of <VAR>mmi</VAR>.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>DoSetCursor</B> <I>(CWnd *<VAR>wnd</VAR>, UINT <VAR>hittest</VAR>, UINT <VAR>msg</VAR>)</I><P>
+<A NAME="IDX212"></A>
+Handle a <CODE>WM_SETCURSOR</CODE> message by setting the cursor to a timeout
+cursor or a do-not-enter cursor, as appropriate.
+
+</P>
+<P>
+<U>Function:</U> void <B>DoDropFiles</B> <I>(HDROP <VAR>hDrop</VAR>)</I><P>
+<A NAME="IDX213"></A>
+Handle a <CODE>WM_DROPFILES</CODE> message.
+
+</P>
+<P>
+<U>Function:</U> void <B>DoDestroy</B> <I>()</I><P>
+<A NAME="IDX214"></A>
+Handle a <CODE>WM_DESTROY</CODE> message.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>DoClose</B> <I>()</I><P>
+<A NAME="IDX215"></A>
+Handle a <CODE>WM_CLOSE</CODE> message by quitting the program (for the
+main frame), or by closing the frame (for other frames).
+
+</P>
+<P>
+<U>Function:</U> afx_msg BOOL <B>OnCommand</B> <I>(WPARAM <VAR>wp</VAR>, LPARAM <VAR>lp</VAR>)</I><P>
+<A NAME="IDX216"></A>
+Handle a <CODE>WM_COMMAND</CODE> message by forwarding it to this
+window's <CODE>ZFrame</CODE> object.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>PreTranslateMessage</B> <I>(MSG *<VAR>pMsg</VAR>)</I><P>
+<A NAME="IDX217"></A>
+Do pre-<CODE>TranslateMessage()</CODE> processing on a message;
+translate accelerators and mnemonics.
+
+</P>
+
+
+<H1><A NAME="SEC23" HREF="wingui_toc.html#SEC23">ZIntVector</A></H1>
+<P>
+This is a simple class to hold vectors of integers.  At present, it is
+mostly used to hold the selected items vector returned by
+<CODE>CListBox::GetSelItems()</CODE>.  (Oh, if only we had templates!  <CODE>:-)</CODE>)
+
+</P>
+<P>
+Example:
+
+<PRE>
+CListBox *addr_list;
+
+ZIntVector selvec(addr_list-&#62;GetSelCount());
+addr_list-&#62;GetSelItems(selvec.Size(), selvec);
+for (i = 0; i &#60; selvec.Size(); i++)
+    printf("item #%d is selected\n", selvec[i]);
+</PRE>
+
+<P>
+<U>Function:</U>  <B>ZIntVector</B> <I>(int <VAR>s</VAR>)</I><P>
+<A NAME="IDX218"></A>
+Construct a vector of <VAR>s</VAR> integers.
+
+</P>
+<P>
+<U>Function:</U> int <B>Size</B> <I>()</I><P>
+<A NAME="IDX219"></A>
+Return the size of the vector (i.e. the number of integers).
+
+</P>
+<P>
+<U>Function:</U> int <B>First</B> <I>()</I><P>
+<A NAME="IDX220"></A>
+Return the first integer in the vector.
+
+</P>
+<P>
+<U>Function:</U> int <B>Last</B> <I>()</I><P>
+<A NAME="IDX221"></A>
+Return the last integer in the vector.
+
+</P>
+<P>
+<U>Function:</U> int <B>operator[]</B> <I>(int <VAR>i</VAR>)</I><P>
+<A NAME="IDX222"></A>
+Return element <VAR>i</VAR> of the vector.
+
+</P>
+
+
+<H1><A NAME="SEC24" HREF="wingui_toc.html#SEC24">ZMessageGroup</A></H1>
+
+<P>
+This class is a C++ front end to the core message group structure.
+You can create this class from a pointer to an existing message group,
+or have it create a new message group.  This isn't the best way to do it;
+I should have derived a class from <CODE>struct mgroup</CODE> with all the C++
+methods I needed, but I don't know any better at the time.
+
+</P>
+<P>
+<U>Function:</U>  <B>ZMessageGroup</B> <I>(int <VAR>size</VAR> = 0)</I><P>
+<A NAME="IDX223"></A>
+Create a new message group of initial size <VAR>size</VAR>.
+
+</P>
+<P>
+<U>Function:</U>  <B>ZMessageGroup</B> <I>(msg_group *<VAR>gp</VAR>)</I><P>
+<A NAME="IDX224"></A>
+Construct a new <CODE>ZMessageGroup</CODE> object, which refers to the existing
+message group <VAR>gp</VAR>.
+
+</P>
+<P>
+<U>Function:</U> operator msg_group * <B></B> <I>()</I><P>
+<A NAME="IDX225"></A>
+Return a pointer to the <CODE>msg_group</CODE> structure for this object.
+This method allows a <CODE>ZMessageGroup</CODE> to be treated as a
+<CODE>msg_group *</CODE>.
+
+</P>
+<P>
+<U>Function:</U> int <B>Member</B> <I>(int <VAR>n</VAR>)</I><P>
+<A NAME="IDX226"></A>
+Returns <CODE>True</CODE> if message number <VAR>n</VAR> is a member of this group.
+
+</P>
+<P>
+<U>Function:</U> void <B>Add</B> <I>(int <VAR>n</VAR>)</I><P>
+<A NAME="IDX227"></A>
+Adds message number <VAR>n</VAR> to this group.
+
+</P>
+<P>
+<U>Function:</U> void <B>Add</B> <I>(msg_group *<VAR>mgrp2</VAR>)</I><P>
+<A NAME="IDX228"></A>
+Adds all the messages in <VAR>mgrp2</VAR> to this group.
+
+</P>
+<P>
+<U>Function:</U> void <B>Remove</B> <I>(int <VAR>n</VAR>)</I><P>
+<A NAME="IDX229"></A>
+Removes message <VAR>n</VAR> from this group.
+
+</P>
+<P>
+<U>Function:</U> void <B>Remove</B> <I>(msg_group *<VAR>mgrp2</VAR>)</I><P>
+<A NAME="IDX230"></A>
+Remove all messages in <VAR>mgrp2</VAR> from this group.
+
+</P>
+<P>
+<U>Function:</U> void <B>Copy</B> <I>(msg_group *<VAR>mgrp2</VAR>)</I><P>
+<A NAME="IDX231"></A>
+Copy <VAR>mgrp2</VAR> to this group; all messages in <VAR>mgrp2</VAR> will be
+added to <CODE>this</CODE>, and all messages not in <VAR>mgrp2</VAR> will be
+removed from <CODE>this</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>Set</B> <I>(const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX232"></A>
+Set this message group to match the message group description string
+<VAR>str</VAR>.  For example, if <VAR>str</VAR> is <CODE>"1-3,5"</CODE>, then 
+messages 0, 1, 2, and 4 will be added to this group, and all other
+messages will be removed.  ("Message 1", as it is presented to the user
+is internally represented as message 0.  All methods of this class
+which take a message number should use the zero-based system, not
+the user-visible one-based system.)
+
+</P>
+<P>
+<U>Function:</U> void <B>Invert</B> <I>(msg_group *<VAR>mgrp2</VAR>)</I><P>
+<A NAME="IDX233"></A>
+Add all messages not in <VAR>mgrp2</VAR> to this group.
+Remove all messages in <VAR>mgrp2</VAR> from this group.
+
+</P>
+<P>
+<U>Function:</U> void <B>Clear</B> <I>()</I><P>
+<A NAME="IDX234"></A>
+Remove all messages from this group.
+
+</P>
+<P>
+<U>Function:</U> int <B>First</B> <I>()</I><P>
+<A NAME="IDX235"></A>
+Return the first message number in this group, or <CODE>-1</CODE>
+if this group is empty.
+
+</P>
+<P>
+<U>Function:</U> int <B>Next</B> <I>(int <VAR>n</VAR>)</I><P>
+<A NAME="IDX236"></A>
+Return the next message in this group after <VAR>n</VAR>, or <CODE>-1</CODE>
+if <VAR>n</VAR> is the last message in this group.  If <VAR>n</VAR> is <CODE>-1</CODE>,
+then the this method is the same as <CODE>First()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>GetString</B> <I>(CString &#38; <VAR>s</VAR>)</I><P>
+<A NAME="IDX237"></A>
+Convert the message list to a string, and put it in <VAR>s</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetAll</B> <I>()</I><P>
+<A NAME="IDX238"></A>
+Add all messages to this group.
+
+</P>
+<P>
+<U>Function:</U> int <B>IsEmpty</B> <I>()</I><P>
+<A NAME="IDX239"></A>
+Returns <CODE>True</CODE> if this group is empty.
+
+</P>
+<P>
+<U>Function:</U> int <B>Count</B> <I>()</I><P>
+<A NAME="IDX240"></A>
+Returns the number of messages in this group.
+
+</P>
+
+
+<H1><A NAME="SEC25" HREF="wingui_toc.html#SEC25">ZPalette</A></H1>
+
+<P>
+<U>Function:</U> void <B>SelectIn</B> <I>(CDC *<VAR>dc</VAR>)</I><P>
+<A NAME="IDX241"></A>
+Select this palette in <VAR>dc</VAR>.  This function also ensures that
+this palette is up-to-date with respect to the colors database.
+
+</P>
+
+
+<H1><A NAME="SEC26" HREF="wingui_toc.html#SEC26">ZRect</A></H1>
+
+<P>
+This class is derived from <CODE>CRect</CODE>, and implements a few extra
+convenience functions to manipulate rectangles.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetRect</B> <I>(CPoint <VAR>pt</VAR>, CSize <VAR>sz</VAR>)</I><P>
+<A NAME="IDX242"></A>
+Set this object to be the rectangle with upper-left corner at
+<VAR>pt</VAR> and with size <VAR>sz</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetRect</B> <I>(CSize <VAR>pt</VAR>, CSize <VAR>sz</VAR>)</I><P>
+<A NAME="IDX243"></A>
+Set this object to be the rectangle with upper-left corner at
+<VAR>pt</VAR> and with size <VAR>sz</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetRect</B> <I>(CRect <VAR>rect</VAR>)</I><P>
+<A NAME="IDX244"></A>
+Set this object to be the rectangle defined by <VAR>rect</VAR>.
+
+</P>
+<P>
+<U>Function:</U>  <B>ZRect</B> <I>(int <VAR>a</VAR>, int <VAR>b</VAR>, int <VAR>c</VAR>, int <VAR>d</VAR>)</I><P>
+<A NAME="IDX245"></A>
+Set this object to be the rectangle with its upper-left corner
+at <CODE>(a,b)</CODE>, and its lower-right corner at <CODE>(c,d)</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>CenterInRect</B> <I>(CRect &#38; <VAR>rect</VAR>, CSize <VAR>sz</VAR>)</I><P>
+<A NAME="IDX246"></A>
+Sets this object to be a rectangle of size <VAR>sz</VAR> centered inside
+<VAR>rect</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>InflateRect</B> <I>(int <VAR>sz</VAR>)</I><P>
+<A NAME="IDX247"></A>
+Inflate this rectangle by <VAR>sz</VAR> in all directions.
+
+</P>
+<P>
+<U>Function:</U> void <B>OffsetRect</B> <I>(int <VAR>sz</VAR>)</I><P>
+<A NAME="IDX248"></A>
+Offset this rectangle by <VAR>sz</VAR> vertically and horizontally.
+
+</P>
+<P>
+<U>Function:</U> void <B>OffsetRect</B> <I>(CSize &#38; <VAR>sz</VAR>)</I><P>
+<A NAME="IDX249"></A>
+Offset this rectangle by <VAR>sz</VAR>.
+
+</P>
+
+
+<H1><A NAME="SEC27" HREF="wingui_toc.html#SEC27">ZResourceDatabase</A></H1>
+
+<P>
+<U>Function:</U> ResourceData * <B>Create</B> <I>(int <VAR>key</VAR>)</I><P>
+<A NAME="IDX250"></A>
+Create a new resource data item, corresponding to the object identifier
+<VAR>key</VAR>.  If there already is a data item for that identifier, return
+it.  Otherwise, create a new one and return a pointer to it.
+
+</P>
+<P>
+<U>Function:</U> ResourceData * <B>Get</B> <I>(int <VAR>key</VAR>)</I><P>
+<A NAME="IDX251"></A>
+Get the resource data for the object identifier <VAR>key</VAR>.
+Returns <CODE>NULL</CODE> if there isn't any.
+
+</P>
+<P>
+<U>Function:</U> void <B>Set</B> <I>(int <VAR>key</VAR>, ResourceData *<VAR>rd</VAR>)</I><P>
+<A NAME="IDX252"></A>
+Set the resource data for object identifier <VAR>key</VAR> to <VAR>rd</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>Free</B> <I>(int <VAR>key</VAR>)</I><P>
+<A NAME="IDX253"></A>
+Free the resource data associated with <VAR>key</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>Merge</B> <I>(int <VAR>key</VAR>, int <VAR>parent_key</VAR>, int <VAR>classid</VAR> = -1)</I><P>
+<A NAME="IDX254"></A>
+Create the resource data associated with <VAR>key</VAR> by merging the
+parent's resource data with any resource data associated with
+the class <VAR>classid</VAR> and its base classes.
+This is done when creating a <CODE>ZWinItem</CODE>.
+
+</P>
+<P>
+<U>Function:</U> int <B>LookupName</B> <I>(const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX255"></A>
+Look up an item name, returning its object identifier.
+For example, looking up <CODE>"alias-sort-tg"</CODE> will return
+<CODE>WID_ALIAS_SORT_TG</CODE>.  This returns -1 if unsuccessful.
+
+</P>
+<P>
+<U>Function:</U> void <B>RecalcColors</B> <I>()</I><P>
+<A NAME="IDX256"></A>
+React to a <CODE>WM_SYSCOLORCHANGE</CODE>.  Find all resource data items
+whose colors are based on a system color, and update the colors to match
+the new system colors.  Also, regenerate the shadow colors for those
+items.
+
+</P>
+
+
+<H1><A NAME="SEC28" HREF="wingui_toc.html#SEC28">ZTranslationTable</A></H1>
+<P>
+A translation table is a list of actions to perform in response
+to various keypresses or events; it's a set of key bindings.
+At the moment, it can only be used in edit controls, to know what
+action to perform for a given keystroke.  If the edit control doesn't
+have a translation for a given action, it just passes it to the edit
+control window procedure; otherwise, it performs the action.
+
+</P>
+<P>
+<U>Function:</U> ZTranslation * <B>LookupChar</B> <I>(int <VAR>ch</VAR>)</I><P>
+<A NAME="IDX257"></A>
+Look up the character <VAR>ch</VAR>, and returns its translation, if any.
+This function calls <CODE>GetKeyState()</CODE> to find out which modifier
+bits to use in the lookup; it probably shouldn't.  Also, there is no
+way to look up a virtual key code.
+
+</P>
+<P>
+<U>Function:</U> void <B>Install</B> <I>(const ZTranslation &#38; <VAR>tr</VAR>, int <VAR>ch</VAR>, int <VAR>mods</VAR>)</I><P>
+<A NAME="IDX258"></A>
+Install the translation <VAR>tr</VAR> in the translation table, corresponding
+to the character <VAR>ch</VAR> with the modifiers <VAR>mods</VAR>.
+The <VAR>mods</VAR> can be one or more of the following:
+<DL COMPACT>
+
+<DT><CODE>TT_MOD_ALT</CODE>
+<DD>
+This translation is only used when the Alt key is pressed.
+<DT><CODE>TT_MOD_SHIFT</CODE>
+<DD>
+This translation is only used when the Shift key is pressed.
+<DT><CODE>TT_MOD_CTRL</CODE>
+<DD>
+This translation is only used when the Control key is pressed.
+</DL>
+<P>
+The translation <VAR>tr</VAR> must have the <CODE>action</CODE> field filled in
+with one of the values from <CODE>enum ZTrAction</CODE>.  For example,
+if this translation should perform the <CODE>text-beginning-of-line</CODE>,
+then the <CODE>action</CODE> field must be <CODE>ActTextBeginningOfLine</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>Merge</B> <I>(ZTranslationTable *<VAR>src</VAR>)</I><P>
+<A NAME="IDX259"></A>
+Merge the translation table <VAR>src</VAR> with this one; take all translations
+in <VAR>src</VAR> and install them in <CODE>this</CODE>.
+
+</P>
+
+
+<H1><A NAME="SEC29" HREF="wingui_toc.html#SEC29">ZWinItems</A></H1>
+
+<P>
+A <CODE>ZWinItem</CODE> is an object in a window.  It is usually a child window,
+but doesn't have to be.  The <CODE>ZWinItem</CODE> is the basic unit in a
+manager hierarchy; every item in the hierarchy is a <CODE>ZWinItem</CODE>,
+and all non-leaf nodes in the tree are <CODE>ZManager</CODE> classes as well.
+(The <CODE>ZManager</CODE> class is derived from <CODE>ZWinItem</CODE>.)
+
+</P>
+
+
+
+<H1><A NAME="SEC30" HREF="wingui_toc.html#SEC30">ZWinItem</A></H1>
+
+<P>
+<U>Function:</U> void <B>GetTextMetrics</B> <I>(TEXTMETRIC &#38; <VAR>tm</VAR>)</I><P>
+<A NAME="IDX260"></A>
+Get the text metrics for <CODE>this</CODE>.  That is, get the font specified
+for this object in the resource database, and get the <CODE>TEXTMETRIC</CODE>
+structure for that font.  Returns the metrics in <VAR>tm</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetManaged</B> <I>(int <VAR>m</VAR>)</I><P>
+<A NAME="IDX261"></A>
+Specify whether this item is managed or not.  If an item is managed,
+then its manager tries to allocate screen space for it using the
+geometry management routines.  Otherwise, it doesn't.
+If an item is not managed, it is not visible.
+Items are managed by default, but you can unmanage them by calling
+this routine with <VAR>m</VAR> set to <CODE>False</CODE>.
+Note that some managers may not properly handle unmanaged children.
+This action does not take affect until the next time the manager's
+<CODE>Layout()</CODE> method is called (that is, the next time
+a <CODE>Refresh()</CODE> happens).
+
+</P>
+<P>
+<U>Function:</U> void <B>SetVisible</B> <I>(int <VAR>v</VAR>)</I><P>
+<A NAME="IDX262"></A>
+Specify whether this item is visible to the user or not.  If an item
+is managed but not visible, then it leaves behind an empty space on the
+screen; if it is neither managed nor visible, then it does not take up
+any space on the screen.
+Items are visible by default, but you can make them invisible by calling
+this routine with <VAR>v</VAR> set to <CODE>False</CODE>.
+Note that some managers may not properly handle invisible children.
+This action does not take affect until the next time the manager's
+<CODE>Layout()</CODE> method is called (that is, the next time
+a <CODE>Refresh()</CODE> happens).
+
+</P>
+<P>
+<U>Function:</U> void <B>SetVisible</B> <I>(int <VAR>v</VAR>, int <VAR>m</VAR>)</I><P>
+<A NAME="IDX263"></A>
+Specify both the visible and managed flags for the item in one step.
+
+</P>
+<P>
+<U>Function:</U> int <B>IsVisible</B> <I>()</I><P>
+<A NAME="IDX264"></A>
+Returns <CODE>True</CODE> if this item is visible.
+
+</P>
+<P>
+<U>Function:</U> int <B>IsManaged</B> <I>()</I><P>
+<A NAME="IDX265"></A>
+Returns <CODE>True</CODE> if this item is managed.
+
+</P>
+<P>
+<U>Function:</U> void <B>AddShadow</B> <I>()</I><P>
+<A NAME="IDX266"></A>
+Adds a shadow to this item.  A shadow is a border drawn around an item
+by the manager to make it look like the item is inset (or raised),
+for a nice 3-D look.
+To make an item look inset, the manager draws a border around the bottom
+and right edges of the item using the top shadow color, and paints
+the top and left edges using the bottom shadow color.
+Items which look good with a shadow (like edit controls, list boxes,
+etc.) should call this routine from
+their constructors.
+
+</P>
+<P>
+<U>Function:</U> void <B>AddOutShadow</B> <I>()</I><P>
+<A NAME="IDX267"></A>
+Same as <CODE>AddShadow()</CODE>, except that it makes the item look raised
+instead of inset.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetShadowThickness</B> <I>(int <VAR>sh</VAR>)</I><P>
+<A NAME="IDX268"></A>
+Sets the thickness of this item's shadow to <VAR>sh</VAR>.
+
+</P>
+<P>
+<U>Function:</U> int <B>GetShadowThickness</B> <I>()</I><P>
+<A NAME="IDX269"></A>
+Returns the thickness of this item's shadow.
+
+</P>
+<P>
+<U>Function:</U> void <B>AddMargin</B> <I>(int <VAR>x</VAR>, int <VAR>y</VAR>)</I><P>
+<A NAME="IDX270"></A>
+Add <VAR>x</VAR> pixels to the left and right margins of this item,
+and add <VAR>y</VAR> pixels to the top and bottom margins.
+The margins are used to add extra space between child items in a manager.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetMargin</B> <I>(int <VAR>x</VAR>, int <VAR>y</VAR>)</I><P>
+<A NAME="IDX271"></A>
+Set the left and right margins of this item to <VAR>x</VAR>,
+and set the top and bottom margins to <VAR>y</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetMinimumSize</B> <I>(CSize &#38; <VAR>sz</VAR>)</I><P>
+<A NAME="IDX272"></A>
+Sets the minimum size for this item to <VAR>sz</VAR>.  A manager can never
+make this item smaller than <VAR>sz</VAR> if this is called.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetMinimumHeight</B> <I>()</I><P>
+<A NAME="IDX273"></A>
+Sets the minimum height for this item to its current height.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetMinimumWidth</B> <I>()</I><P>
+<A NAME="IDX274"></A>
+Sets the minimum width for this item to its current width.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetWiFlags</B> <I>(int <VAR>fl</VAR>)</I><P>
+<A NAME="IDX275"></A>
+Sets <VAR>fl</VAR> in the <CODE>ZWinItem</CODE> flags for this item.
+
+</P>
+<P>
+<U>Function:</U> void <B>ClearWiFlags</B> <I>(int <VAR>fl</VAR>)</I><P>
+<A NAME="IDX276"></A>
+Clears <VAR>fl</VAR> in the <CODE>ZWinItem</CODE> flags for this item.
+
+</P>
+<P>
+<U>Function:</U> int <B>GetWiFlags</B> <I>()</I><P>
+<A NAME="IDX277"></A>
+Returns the <CODE>ZWinItem</CODE> flags for this item.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>GetGeometry</B> <I>(GeometryInfo &#38; <VAR>gi</VAR>)</I><P>
+<A NAME="IDX278"></A>
+Returns geometry information for this item.  This is done by calling
+<CODE>ComputeGeometry()</CODE> and making sure the result is not less than
+the minimum size.  Then it caches the result so that it can be used
+next time without calling <CODE>ComputeGeometry()</CODE> again.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>ComputeGeometry</B> <I>(GeometryInfo &#38; <VAR>gi</VAR>)</I><P>
+<A NAME="IDX279"></A>
+Returns geometry information for this item.  This is unimplemented
+by <CODE>ZWinItem</CODE>; derived classes must implement this in order for
+managers to properly lay them out in a manager window.
+The <CODE>GeometryInfo</CODE> structure has two fields:
+<DL COMPACT>
+
+<DT><CODE>size</CODE>
+<DD>
+The caller fills this in with the maximum size allowed for this item.
+If there are no size restrictions on the item, then both elements
+of the size will be equal to <CODE>DIM_INFINITY</CODE>.
+The implementation of <CODE>ComputeGeometry()</CODE> must fill this in with
+the size of the item.
+<DT><CODE>flags</CODE>
+<DD>
+Various flags passed in by the caller.
+</DL>
+<P>
+The flags can be one or more of the following:
+<DL COMPACT>
+
+<DT><CODE>GEO_MINIMUM_H</CODE>
+<DD>
+When this is set, the child should return a size whose width is as
+small as possible.
+<DT><CODE>GEO_MINIMUM_V</CODE>
+<DD>
+When this is set, the child should return a size whose height is as
+small as possible.
+<DT><CODE>GEO_RESET</CODE>
+<DD>
+When this is set, the child should ignore any cached information,
+and compute the geometry from scratch.
+</DL>
+<P>
+For example, a simple <CODE>ZWinItem</CODE> like an edit control might just get the
+number of columns and rows from the resource database, multiply them
+by the font metrics, add in space for the scroll bars and margins,
+and return the result.
+A complicated <CODE>ZWinItem</CODE> like a paned window would have to
+get the geometry information for all its children and compute how
+much space it would need to lay them all out.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>MoveItem</B> <I>(const CRect &#38; <VAR>r</VAR>)</I><P>
+<A NAME="IDX280"></A>
+Move the item so that it takes up the rectangle specified by <VAR>r</VAR>,
+relative to the manager's upper-left-hand corner.  This is unimplemented
+by <CODE>ZWinItem()</CODE>, and must be filled in for each derived class.
+For a class derived from <CODE>CWnd</CODE>, this is usually just
+<CODE>MoveWindow(MarginIndent(r))</CODE>, which moves this item's window
+to the given rectangle, after taking the margin into account.
+(That is, the rectangle <VAR>r</VAR> includes the margin.  In order to
+properly position the item's window, the margin must be subtracted out.)
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>ShowItem</B> <I>(int <VAR>s</VAR>)</I><P>
+<A NAME="IDX281"></A>
+Calls <CODE>ShowWindow(s)</CODE> on this item's window.
+This is unimplemented by <CODE>ZWinItem</CODE>, and must be done for
+all derived classes.  For any item derived from <CODE>CWnd</CODE>,
+this is implemented by simply calling <CODE>ShowWindow(s)</CODE>.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>Enable</B> <I>(BOOL <VAR>on</VAR>)</I><P>
+<A NAME="IDX282"></A>
+Enable or disable this window.  If <VAR>on</VAR> is <CODE>True</CODE>,
+and this item's resource database entry does not specify that it is
+greyed, then the window is enabled; otherwise, it is disabled.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>FocusOn</B> <I>()</I><P>
+<A NAME="IDX283"></A>
+Set keyboard focus on this item.
+
+</P>
+<P>
+<U>Function:</U> virtual CWnd * <B>GetWnd</B> <I>()</I><P>
+<A NAME="IDX284"></A>
+Returns a pointer to the <CODE>CWnd</CODE> object associated with this
+item, if any.
+This is unimplemented by <CODE>ZWinItem</CODE>, and must be done for
+all derived classes.
+Usually it just returns <CODE>this</CODE>.
+
+</P>
+<P>
+<U>Function:</U> ZWinItem * <B>GetFocus</B> <I>()</I><P>
+<A NAME="IDX285"></A>
+Returns the pointer to the <CODE>ZWinItem</CODE> in this frame
+which has keyboard focus, or <CODE>NULL</CODE> if the focus isn't anywhere.
+This routine doesn't use <CODE>this</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>FetchWindowText</B> <I>(CString &#38; <VAR>s</VAR>)</I><P>
+<A NAME="IDX286"></A>
+Fetches the window text for this item out of the resource
+database or the string table, and puts it in <VAR>s</VAR>.
+If the resource database entry for this item's object identifier
+has text associated with it, that is returned; otherwise, the
+string table entry corresponding to this item's object identifier
+is returned.
+
+</P>
+<P>
+<U>Function:</U> void <B>MergeRes</B> <I>(ZWinItem *<VAR>parent</VAR>, int <VAR>classid</VAR> = -1)</I><P>
+<A NAME="IDX287"></A>
+Creates the resource data associated with this item's object identifier
+by merging the parent's resource data with any resource data associated
+with the class <VAR>classid</VAR> and its base classes.
+This is done by calling <CODE>ZResourceDatabase::Merge()</CODE>.
+Then <CODE>AllocColors()</CODE> is called to make sure this item
+can be drawn properly.
+
+</P>
+<P>
+<U>Function:</U> ResourceData * <B>GetRes</B> <I>()</I><P>
+<A NAME="IDX288"></A>
+Get the resource data entry associated with this item.
+
+</P>
+<P>
+<U>Function:</U> int <B>GetObjId</B> <I>()</I><P>
+<A NAME="IDX289"></A>
+Get this item's object identifier.
+
+</P>
+<P>
+<U>Function:</U> int <B>GetClassID</B> <I>()</I><P>
+<A NAME="IDX290"></A>
+Get the class identifier associated with this item.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetObjId</B> <I>(int <VAR>i</VAR>)</I><P>
+<A NAME="IDX291"></A>
+Set this item's object identifier to <VAR>i</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetObjId</B> <I>()</I><P>
+<A NAME="IDX292"></A>
+Set this item's object identifier to the next available identifier.
+
+</P>
+<P>
+<U>Function:</U> void <B>RecalcGeometry</B> <I>()</I><P>
+<A NAME="IDX293"></A>
+Recalculate this item's geometry.  The next time
+<CODE>GetGeometry()</CODE> is called for this item, the geometry
+will be recomputed from scratch rather than using the cached
+information.
+
+</P>
+<P>
+<U>Function:</U> virtual int <B>DoAction</B> <I>(ZActionInfo *<VAR>act</VAR>)</I><P>
+<A NAME="IDX294"></A>
+Perform the action specified by <VAR>act</VAR>.
+XXX
+
+</P>
+<P>
+<U>Function:</U> CRect <B>MarginIndent</B> <I>(const CRect <VAR>r</VAR>)</I><P>
+<A NAME="IDX295"></A>
+Add this item's margin to the rectangle <VAR>r</VAR> and return the
+result.
+
+</P>
+<P>
+<U>Function:</U> CWnd * <B>ParentWindow</B> <I>()</I><P>
+<A NAME="IDX296"></A>
+Return this item's parent window.  Currently, this is always the manager's
+window, but we may want to change that someday.
+
+</P>
+<P>
+<U>Function:</U> ZManager * <B>GetManager</B> <I>()</I><P>
+<A NAME="IDX297"></A>
+Get this item's manager.  (Its parent, that is.)
+
+</P>
+<P>
+<U>Function:</U> ZFrame * <B>GetFrame</B> <I>()</I><P>
+<A NAME="IDX298"></A>
+Get this item's frame.
+
+</P>
+<P>
+<U>Function:</U> CWnd * <B>GetParentWnd</B> <I>()</I><P>
+<A NAME="IDX299"></A>
+Same as <CODE>ParentWindow()</CODE>, apparently.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetParentWnd</B> <I>(CWnd *<VAR>cw</VAR>)</I><P>
+<A NAME="IDX300"></A>
+Set this item's parent window to <VAR>cw</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetFrame</B> <I>(ZFrame *<VAR>fr</VAR>)</I><P>
+<A NAME="IDX301"></A>
+Set this item's frame to <VAR>fr</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetManager</B> <I>(ZManager *<VAR>mg</VAR>)</I><P>
+<A NAME="IDX302"></A>
+Set this item's manager to <VAR>mg</VAR>.
+
+</P>
+<P>
+<U>Function:</U> virtual BOOL <B>IsManager</B> <I>()</I><P>
+<A NAME="IDX303"></A>
+Returns <CODE>True</CODE> if this item is a manager.
+
+</P>
+<P>
+<U>Function:</U> void <B>AllocColors</B> <I>()</I><P>
+<A NAME="IDX304"></A>
+Allocate this item's colors, by calling <CODE>AllocColors()</CODE> in its
+resource data entry.
+
+</P>
+
+
+<H1><A NAME="SEC31" HREF="wingui_toc.html#SEC31">ZAddressListBox</A></H1>
+<P>
+The address list box was used in the compose window and aliases
+dialog to manipulate a list of addresses.  In the compose window,
+it has been replaced by the new header prompts.  It should eventually
+go away in the aliases dialog, too, I think, for consistency.
+
+</P>
+<P>
+<U>Function:</U>  <B>ZAddressListBox</B> <I>(ZManager *<VAR>parent</VAR>, DWORD <VAR>dw</VAR> = DEF_LISTBOX_STYLE, UINT <VAR>id</VAR> = 0, int <VAR>flags</VAR> = 0)</I><P>
+<A NAME="IDX305"></A>
+Create an address list box with the specified parent, style, object id,
+and manager flags.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetSorted</B> <I>(BOOL <VAR>flag</VAR>)</I><P>
+<A NAME="IDX306"></A>
+Set the sorted flag to <VAR>flag</VAR>.  If this flag is set, then
+the address list will be maintained in sorted order.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetExpand</B> <I>(BOOL <VAR>flag</VAR>)</I><P>
+<A NAME="IDX307"></A>
+Set the alias expansion flag to <VAR>flag</VAR>.  If this is set, then
+addresses have alias expansion performed on them before being added to
+the address list.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetDirCheck</B> <I>(BOOL <VAR>flag</VAR>)</I><P>
+<A NAME="IDX308"></A>
+Set the directory check flag to <VAR>flag</VAR>.  If this is set, then
+addresses will be looked up in the directory before being added to
+the address list.
+
+</P>
+<P>
+<U>Function:</U> void <B>Add</B> <I>(const CString &#38; <VAR>str</VAR>)</I><P>
+<A NAME="IDX309"></A>
+Perform directory lookup
+or address expansion on <VAR>str</VAR> as necessary, and then
+add it to the list box (in sorted order, if necessary).
+
+</P>
+<P>
+<U>Function:</U> void <B>Add</B> <I>(class ZLabeledText *<VAR>edit</VAR>)</I><P>
+<A NAME="IDX310"></A>
+Add the contents of the edit control <VAR>edit</VAR> to the list box.
+Then, clear the contents of the edit control.
+
+</P>
+<P>
+<U>Function:</U> void <B>Get</B> <I>(CString &#38; <VAR>str</VAR>)</I><P>
+<A NAME="IDX311"></A>
+Remove the selected addresses from the list box and put them in <VAR>str</VAR>,
+in a comma-separated list.
+
+</P>
+<P>
+<U>Function:</U> void <B>Get</B> <I>(class ZLabeledText *<VAR>edit</VAR>)</I><P>
+<A NAME="IDX312"></A>
+Remove the selected addresses from the list box and put them in <VAR>edit</VAR>,
+in a comma-separated list.  Any addresses that were already in <VAR>edit</VAR>
+will be moved to the address list first.
+
+</P>
+<P>
+<U>Function:</U> void <B>Remove</B> <I>()</I><P>
+<A NAME="IDX313"></A>
+Remove all selected addresses from the list box.
+
+</P>
+<P>
+<U>Function:</U> void <B>Expand</B> <I>(CString &#38; <VAR>str</VAR>)</I><P>
+<A NAME="IDX314"></A>
+Alias-expand the selected addresses (performing directory checks
+on them if necessary), and return them as a comma-separated list in <VAR>str</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>Expand</B> <I>(class ZLabeledText *<VAR>edit</VAR>)</I><P>
+<A NAME="IDX315"></A>
+Alias-expand the selected addresses (performing directory checks
+on them if necessary), and put them in a comma-separated list in <VAR>edit</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>GetAll</B> <I>(CString &#38; <VAR>str</VAR>, class ZLabeledText *<VAR>edit</VAR>)</I><P>
+<A NAME="IDX316"></A>
+Add the addresses in <VAR>edit</VAR> to the list box, then get all the addresses
+in the address list and put them in <VAR>str</VAR>, in a comma-separated list.
+
+</P>
+<P>
+<U>Function:</U> char ** <B>GetAllVec</B> <I>(class ZLabeledText *<VAR>edit</VAR> = 0)</I><P>
+<A NAME="IDX317"></A>
+Add the addresses in <VAR>edit</VAR> to the list box (if <VAR>edit</VAR> is
+non-<CODE>NULL</CODE>), then get all the addresses
+in the address list and return them in a string vector (which must be
+freed with <CODE>free_vec()</CODE>.
+
+</P>
+
+
+<H1><A NAME="SEC32" HREF="wingui_toc.html#SEC32">ZBitmap</A></H1>
+
+<P>
+<U>Function:</U>  <B>ZBitmap</B> <I>(ZManager *<VAR>p</VAR>, UINT <VAR>id</VAR> = 0, int <VAR>flags</VAR> = 0)</I><P>
+<A NAME="IDX318"></A>
+Create a bitmap with parent <VAR>p</VAR>, object identifier <VAR>id</VAR>, and manager
+flags <VAR>flags</VAR>.  The bitmap is automatically loaded from the resource
+table; its resource name is given in
+this object's window text,
+as specified in <CODE>guiitems.txt</CODE>;
+i.e. the string table entry corresponding
+to this item's object identifier (or this item's <CODE>text</CODE> resource
+in the <CODE>ResourceData</CODE> section of the <CODE>.INI</CODE> file)
+gives the same of the resource to use as the bitmap.
+
+</P>
+<P>
+<U>Function:</U> void <B>ComputeGeometry</B> <I>(GeometryInfo &#38; <VAR>gi</VAR>)</I><P>
+<A NAME="IDX319"></A>
+Computes the size of this item based on the size of the bitmap.
+
+</P>
+
+
+<H1><A NAME="SEC33" HREF="wingui_toc.html#SEC33">ZButton</A></H1>
+
+<P>
+The <CODE>ZButton</CODE> class is used for push buttons.  Classes are derived
+from it to implement toggle buttons, radio buttons, and icon buttons.
+Push buttons, toggle buttons, and radio buttons have the same interface,
+which is described here; a few extra methods are available for icon buttons.
+
+</P>
+<P>
+<U>Function:</U>  <B>ZButton</B> <I>(ZManager *<VAR>p</VAR>, DWORD <VAR>s</VAR> = 0, UINT <VAR>id</VAR> = 0, int <VAR>f</VAR> = 0)</I><P>
+<A NAME="IDX320"></A>
+Create a pushbutton with parent <VAR>p</VAR>, style <VAR>s</VAR>, object identifier
+<VAR>id</VAR>, and manager flags <VAR>f</VAR>.
+
+</P>
+<P>
+<U>Function:</U>  <B>ZToggleButton</B> <I>(ZManager *<VAR>p</VAR>, DWORD <VAR>s</VAR> = 0, UINT <VAR>id</VAR> = 0, int <VAR>f</VAR> = 0)</I><P>
+<A NAME="IDX321"></A>
+Create a toggle button with parent <VAR>p</VAR>, style <VAR>s</VAR>, object identifier
+<VAR>id</VAR>, and manager flags <VAR>f</VAR>.
+
+</P>
+<P>
+<U>Function:</U>  <B>ZRadioButton</B> <I>(ZManager *<VAR>p</VAR>, DWORD <VAR>s</VAR> = 0, UINT <VAR>id</VAR> = 0, int <VAR>f</VAR> = 0)</I><P>
+<A NAME="IDX322"></A>
+Create a radio button with parent <VAR>p</VAR>, style <VAR>s</VAR>, object identifier
+<VAR>id</VAR>, and manager flags <VAR>f</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetInnerSpacing</B> <I>(CSize &#38; <VAR>sz</VAR>)</I><P>
+<A NAME="IDX323"></A>
+Set the inner spacing to <VAR>sz</VAR>.  The inner spacing specifies the
+amount of blank space inside the button, between the text and the edge
+of the button.
+
+</P>
+<P>
+<U>Function:</U> void <B>DrawItem</B> <I>(LPDRAWITEMSTRUCT <VAR>dis</VAR>)</I><P>
+<A NAME="IDX324"></A>
+Called by MFC when this item should be drawn.  This function is implemented
+in a different way for each class derived from <CODE>ZButton</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetNoFocus</B> <I>()</I><P>
+<A NAME="IDX325"></A>
+Causes this button to not display a focus indicator.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>NeedFocus</B> <I>()</I><P>
+<A NAME="IDX326"></A>
+Returns <CODE>True</CODE> if this button should display a focus indicator.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetThickBotShadow</B> <I>()</I><P>
+<A NAME="IDX327"></A>
+Causes this button to have a slightly thicker bottom shadow.
+Icon buttons use this.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>NeedThickBotShadow</B> <I>()</I><P>
+<A NAME="IDX328"></A>
+Returns <CODE>True</CODE> if this button should have a slightly thicker
+bottom shadow.
+
+</P>
+<P>
+<U>Function:</U> int <B>GetCheck</B> <I>()</I><P>
+<A NAME="IDX329"></A>
+Returns <CODE>True</CODE> if this button is checked.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetCheck</B> <I>(int <VAR>ck</VAR>)</I><P>
+<A NAME="IDX330"></A>
+Sets this button's checked state to <VAR>ck</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>ToggleCheck</B> <I>()</I><P>
+<A NAME="IDX331"></A>
+Toggle this button's checked state.
+
+</P>
+<P>
+<U>Function:</U> virtual <B>int</B> <I>IsRadio ()</I><P>
+<A NAME="IDX332"></A>
+Returns <CODE>True</CODE> if this button is a radio button.
+
+</P>
+<P>
+<U>Function:</U> virtual <B>int</B> <I>IsToggle ()</I><P>
+<A NAME="IDX333"></A>
+Returns <CODE>True</CODE> if this button is a toggle button.
+
+</P>
+<P>
+<U>Function:</U> int <B>IsToggleRadio</B> <I>()</I><P>
+<A NAME="IDX334"></A>
+Returns <CODE>True</CODE> if this button is a toggle or radio button.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>get_label_size</B> <I>(CSize &#38; <VAR>sz</VAR>, CDC &#38; <VAR>dc</VAR>)</I><P>
+<A NAME="IDX335"></A>
+This protected function is used to compute the size of the button label.
+Classes derived from <CODE>ZButton</CODE> may call it to get the button label
+size,
+or may override it to specify a different size (as <CODE>ZIconButton</CODE> does).
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>draw_label</B> <I>(CRect *<VAR>r</VAR>, CDC *<VAR>dc</VAR>, ResourceData *<VAR>rd</VAR>)</I><P>
+<A NAME="IDX336"></A>
+This protected function is used to draw the button label in the rectangle
+<VAR>r</VAR>, in the device context <VAR>dc</VAR>.  This object's resource data
+is provided in <VAR>rd</VAR>.
+Classes derived from <CODE>ZButton</CODE> may call this to draw the button label,
+or may override it to draw the label differently (as <CODE>ZIconButton</CODE> does).
+
+</P>
+
+
+<H1><A NAME="SEC34" HREF="wingui_toc.html#SEC34">ZComboBox</A></H1>
+
+<P>
+This class is derived from <CODE>CComboBox</CODE> and <CODE>ZWinItem</CODE>.  It
+provides all the functionality of <CODE>CComboBox</CODE>, with a few added
+methods to support the geometry management hierarchy.
+
+</P>
+<P>
+<U>Function:</U>  <B>ZComboBox</B> <I>(ZManager *<VAR>p</VAR>, DWORD <VAR>s</VAR> = CBS_DROPDOWNLIST, UINT <VAR>id</VAR> = 0, int <VAR>f</VAR> = 0)</I><P>
+<A NAME="IDX337"></A>
+Create a combobox with parent <VAR>p</VAR>, style <VAR>s</VAR>, object identifier
+<VAR>id</VAR>, and manager flags <VAR>f</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>AdjustHeight</B> <I>()</I><P>
+<A NAME="IDX338"></A>
+Adjust the height of this combobox to match the number of items in it.
+After this method is called, when the combobox's list box is popped down,
+it will be just the right size to contain all the items in the list box
+(unless this item's rows resource entry is smaller than the number of
+items).  Call this routine after adding or removing one or more items
+from the list box.
+
+</P>
+<P>
+<U>Function:</U> void <B>AddStrings</B> <I>(char **<VAR>v</VAR>)</I><P>
+<A NAME="IDX339"></A>
+Adds the strings in the string vector <VAR>v</VAR> to this combobox.
+
+</P>
+<P>
+<U>Function:</U> int <B>FindItem</B> <I>(const char *<VAR>s</VAR>)</I><P>
+<A NAME="IDX340"></A>
+Finds the string <VAR>s</VAR> in the list box, by looking for an exact
+match, and returns its index.
+Returns <CODE>CB_ERR</CODE> if the string could not be found.
+Use this instead of <CODE>FindStringExact()</CODE>, because it's clearer
+than saying <CODE>FindStringExact(-1, s)</CODE>, and because
+we've had problems with Win32s's implementation of <CODE>FindStringExact()</CODE>,
+and we may have to stop using it sometime if we find more problems with it.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>GetSelectedText</B> <I>(CString &#38; <VAR>str</VAR>)</I><P>
+<A NAME="IDX341"></A>
+Returns the text of the selected item in <VAR>str</VAR>.  Returns
+<CODE>True</CODE> if successful, or <CODE>False</CODE> if there was no item selected.
+
+</P>
+
+
+<H1><A NAME="SEC35" HREF="wingui_toc.html#SEC35">ZEdit</A></H1>
+
+<P>
+<U>Function:</U> void <B>FocusOn</B> <I>()</I><P>
+<A NAME="IDX342"></A>
+Sets focus on this edit control, and selects all the text in it.
+Overrides the base class implementation of <CODE>FocusOn()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>GetSelectedText</B> <I>(CString &#38; <VAR>str</VAR>)</I><P>
+<A NAME="IDX343"></A>
+Puts the selected text in <VAR>str</VAR>, if there is any selection.
+
+</P>
+<P>
+<U>Function:</U> int <B>GetNumColumns</B> <I>()</I><P>
+<A NAME="IDX344"></A>
+Get the number of columns assigned to this edit control in the
+resource database, or 0 if there is no number assigned.
+
+</P>
+<P>
+<U>Function:</U> int <B>DoAction</B> <I>(struct ZActionInfo *<VAR>act</VAR>)</I><P>
+<A NAME="IDX345"></A>
+Perform the action specified by <VAR>act</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>ClearText</B> <I>()</I><P>
+<A NAME="IDX346"></A>
+Delete all the text in the edit control.
+
+</P>
+<P>
+<U>Function:</U> void <B>GetText</B> <I>(CString &#38; <VAR>cs</VAR>)</I><P>
+<A NAME="IDX347"></A>
+Gets all the text in the edit control, and puts it in <VAR>cs</VAR>.
+Equivalent to <CODE>GetWindowText()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> int <B>GetRows</B> <I>()</I><P>
+<A NAME="IDX348"></A>
+Get the number of rows which this edit control has.  It does this
+by measuring the height of the window and dividing by the font height.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetRows</B> <I>(int <VAR>r</VAR>)</I><P>
+<A NAME="IDX349"></A>
+Set the requested number of rows to <VAR>r</VAR>.
+
+</P>
+<P>
+<U>Function:</U> int <B>GetColumns</B> <I>()</I><P>
+<A NAME="IDX350"></A>
+Get the number of columns which this edit control has.  It does this
+by measuring the height of the window and dividing by the average
+character width.  If the window is not visible, then this routine simply
+returns the number of columns requested by <CODE>SetColumns()</CODE> or specified
+in the resource database.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetColumns</B> <I>(int <VAR>c</VAR>)</I><P>
+<A NAME="IDX351"></A>
+Set the requested number of columns to <VAR>c</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetText</B> <I>(const char *<VAR>cs</VAR>)</I><P>
+<A NAME="IDX352"></A>
+Sets the edit control's text to <VAR>cs</VAR>.  Equivalent
+to <CODE>SetWindowText()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SelectAll</B> <I>()</I><P>
+<A NAME="IDX353"></A>
+Selects all the text in the edit control.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetFlags</B> <I>(int fl)</I><P>
+<A NAME="IDX354"></A>
+
+</P>
+<P>
+<U>Function:</U> void <B>SetNoEcho</B> <I>(BOOL <VAR>f</VAR>)</I><P>
+<A NAME="IDX355"></A>
+Turn on or off no-echo mode, as specified by <VAR>f</VAR>.
+Turning on no-echo is useful to input a password from the user.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetAutoformat</B> <I>(BOOL <VAR>f</VAR>)</I><P>
+<A NAME="IDX356"></A>
+Turn on or off autoformat, as specified by <VAR>f</VAR>.
+
+</P>
+<P>
+<U>Function:</U> LoadStatus <B>LoadFile</B> <I>(const char *<VAR>filename</VAR>, int <VAR>insert</VAR> = 0)</I><P>
+<A NAME="IDX357"></A>
+Load the contents of the text file <CODE>filename</CODE> (which is a regular
+DOS text file)
+into the edit control.  If <VAR>insert</VAR>
+is <CODE>False</CODE>, replaces the old contents; otherwise, inserts the new
+contents into the buffer at the cursor position, without changing
+the old contents.
+Returns one of three values: <CODE>LS_Succeeded</CODE>, <CODE>LS_Failed</CODE>,
+or <CODE>LS_Truncated</CODE>; the latter value means that there was not
+enough memory (or room in the edit control) to load the contents of the
+file.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>SaveFile</B> <I>(const char *<VAR>filename</VAR>)</I><P>
+<A NAME="IDX358"></A>
+Write the contents of the edit control to the text file <CODE>filename</CODE>.
+Performs line wrapping if necessary.  Returns <CODE>True</CODE> if successful.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>IsEditable</B> <I>()</I><P>
+<A NAME="IDX359"></A>
+Returns <CODE>True</CODE> if the edit control is not readonly.
+
+</P>
+<P>
+<U>Function:</U> afx_msg <B>void</B> <I>OnChar (UINT <VAR>ch</VAR>, UINT <VAR>repcnt</VAR>, UINT <VAR>flags</VAR>)</I><P>
+<A NAME="IDX360"></A>
+This method is called by MFC whenever a character is entered into
+the edit control.  The <CODE>ZEdit</CODE> class handles this by looking up
+the character in its translation table; if the character is mapped
+to something, it performs the action it's mapped to.  Also, this routine
+sends the <CODE>ZEM_RETURN</CODE> message to its parent if the
+<CODE>ZEF_WANT_RETURN</CODE> flag is set.
+
+</P>
+<P>
+<U>Function:</U> afx_msg <B>void</B> <I>OnSetFocus (CWnd *<VAR>oldwnd</VAR>)</I><P>
+<A NAME="IDX361"></A>
+This method is called by MFC whenever this control gets focus.
+If the <CODE>ZEF_WANT_FOCUS</CODE> flag is set, this method sends the
+<CODE>ZEM_FOCUS</CODE> message to its parent; otherwise, it does nothing.
+
+</P>
+
+
+<H1><A NAME="SEC36" HREF="wingui_toc.html#SEC36">ZFaceIcon</A></H1>
+<P>
+This class is just a <CODE>ZBitmap</CODE>, with an additional method to set
+the bitmap to a xface string.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>SetFaceData</B> <I>(const char *<VAR>data</VAR>)</I><P>
+<A NAME="IDX362"></A>
+This routine decodes the face data contained in <VAR>data</VAR>.
+This data is usually the body of an <CODE>X-Face:</CODE> header.
+The decoded face data is put into this item's bitmap.
+
+</P>
+
+
+<H1><A NAME="SEC37" HREF="wingui_toc.html#SEC37">ZIconButton</A></H1>
+
+<P>
+This class is used for push buttons labeled with an icon as well as
+(optional) text.
+This class is derived from <CODE>ZButton</CODE>, and has all the same methods,
+with a few additional methods to control what icon is used.
+
+</P>
+<P>
+<U>Function:</U>  <B>ZIconButton</B> <I>(ZManager *<VAR>p</VAR>, DWORD <VAR>s</VAR> = 0, UINT <VAR>id</VAR> = 0, int <VAR>f</VAR> = 0)</I><P>
+<A NAME="IDX363"></A>
+Create an icon button with parent <VAR>p</VAR>, style <VAR>s</VAR>, object identifier
+<VAR>id</VAR>, and manager flags <VAR>f</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetIcon</B> <I>(const char *<VAR>s</VAR>)</I><P>
+<A NAME="IDX364"></A>
+Sets the this item's icon to the item named <VAR>s</VAR> in the resource table.
+If <VAR>s</VAR> starts with with the string <CODE>"sm_"</CODE>, then this icon
+is assumed to be 16 by 15; otherwise, it is assumed to be 32 by 32.
+The <CODE>SetSize()</CODE> method may be used to override this.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetSize</B> <I>(int <VAR>w</VAR>, int <VAR>h</VAR>)</I><P>
+<A NAME="IDX365"></A>
+Sets the width of the icon to <VAR>w</VAR>, and the height to <VAR>h</VAR>.
+Since Windows does not provide a way for an application to get the
+size of an icon, this function may be necessary for
+<CODE>ZIconButton::ComputeGeometry</CODE> to return the right size for the button.
+
+</P>
+
+
+
+<H1><A NAME="SEC38" HREF="wingui_toc.html#SEC38">ZListBox</A></H1>
+
+<P>
+<U>Function:</U> int <B>GetColumns</B> <I>()</I><P>
+<A NAME="IDX366"></A>
+Get the number of columns currently being displayed in this listbox.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetColumns</B> <I>(int <VAR>c</VAR>)</I><P>
+<A NAME="IDX367"></A>
+Set the number of columns in this listbox to <VAR>c</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>ComputeGeometry</B> <I>(GeometryInfo &#38; <VAR>gi</VAR>)</I><P>
+<A NAME="IDX368"></A>
+Computes the size of this item based on the number of rows and
+columns requested.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>GetSelectedText</B> <I>(CString &#38; <VAR>str</VAR>)</I><P>
+<A NAME="IDX369"></A>
+Gets the text of the selected item in this edit control and puts it in
+<VAR>str</VAR>.  Returns <CODE>True</CODE> if successful (and if there is any
+selected item).
+This routine works whether or not this list box has the
+<CODE>LBS_EXTENDEDSEL</CODE> style.
+
+</P>
+<P>
+<U>Function:</U> int <B>GetFirstSelected</B> <I>()</I><P>
+<A NAME="IDX370"></A>
+Gets the first selected item in this list box, and returns its index.
+Returns <CODE>LB_ERR</CODE> if there is no selected item.
+This routine works whether or not this list box has the
+<CODE>LBS_EXTENDEDSEL</CODE> style.
+
+</P>
+<P>
+<U>Function:</U> int <B>FindItem</B> <I>(const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX371"></A>
+Finds the string <VAR>s</VAR> in the list box, by looking for an exact
+match, and returns its index.
+Returns <CODE>LB_ERR</CODE> if the string could not be found.
+Use this instead of <CODE>FindStringExact()</CODE>, because it's clearer
+than saying <CODE>FindStringExact(-1, s)</CODE>, and because
+we've had problems with Win32s's implementation of <CODE>FindStringExact()</CODE>,
+and we may have to stop using it sometime if we find more problems with it.
+
+</P>
+<P>
+<U>Function:</U> void <B>ScrollTo</B> <I>(int <VAR>n</VAR>)</I><P>
+<A NAME="IDX372"></A>
+Scroll the list box so that item <VAR>n</VAR> is visible.
+
+</P>
+<P>
+<U>Function:</U> void <B>ScrollTo</B> <I>(int <VAR>f</VAR>, int <VAR>l</VAR>)</I><P>
+<A NAME="IDX373"></A>
+Scroll the list box so that at least one of the items between
+<VAR>f</VAR> and <VAR>l</VAR> is visible.
+
+</P>
+<P>
+<U>Function:</U> void <B>DeselectAll</B> <I>()</I><P>
+<A NAME="IDX374"></A>
+Deselect all the items in the list box.
+
+</P>
+<P>
+<U>Function:</U> void <B>ListFiles</B> <I>(const char *<VAR>pat</VAR>)</I><P>
+<A NAME="IDX375"></A>
+List the files matching <VAR>pat</VAR> and put their names in the
+list box.  There was a bug in win32s which prevented us from calling
+<CODE>Dir(0, pat)</CODE>, so we use this instead.
+
+</P>
+<P>
+<U>Function:</U> void <B>ListDirs</B> <I>()</I><P>
+<A NAME="IDX376"></A>
+List the directories in the current directory and put their names in the
+list box.  There was a bug in win32s which prevented us from calling
+<CODE>Dir(DDL_EXCLUSIVE|DDL_DIRECTORY, "*.*")</CODE>, so we use this instead.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetSelection</B> <I>(int <VAR>s</VAR>)</I><P>
+<A NAME="IDX377"></A>
+Set the selected item to <VAR>s</VAR> (and nothing else).
+This routine works whether or not this list box has the
+<CODE>LBS_EXTENDEDSEL</CODE> style.
+
+</P>
+<P>
+<U>Function:</U> void <B>AddStrings</B> <I>(char **<VAR>vec</VAR>)</I><P>
+<A NAME="IDX378"></A>
+Add all the strings in the string vector <VAR>vec</VAR> to this list box.
+
+</P>
+
+
+<H1><A NAME="SEC39" HREF="wingui_toc.html#SEC39">ZManagers</A></H1>
+
+<P>
+A <CODE>ZManager</CODE> is a geometry manager, used to lay out other UI items
+in a nice arrangement.  There are several kinds of managers; each one
+derives from the <CODE>ZManager</CODE> class.
+
+</P>
+
+
+
+<H1><A NAME="SEC40" HREF="wingui_toc.html#SEC40">ZManager</A></H1>
+
+<P>
+<U>Function:</U> virtual void <B>Layout</B> <I>()</I><P>
+<A NAME="IDX379"></A>
+Lay out all the children of this manager.  When this routine is called,
+all the child positions and sizes are calculated, and the children are
+moved to that position.  Also, each invisible child is hidden,
+and each visible child is unhidden (by calling <CODE>ShowItem(SW_SHOW)</CODE>.
+Each manager overrides this method to provide its own manner of laying
+things out.  The derived class <CODE>Layout()</CODE> method should call the
+base class method before doing anything.
+
+</P>
+<P>
+<U>Function:</U> virtual void <B>AddChild</B> <I>(ZWinItem *<VAR>c</VAR>, long <VAR>fl</VAR>)</I><P>
+<A NAME="IDX380"></A>
+Add a child to this manager.  The child <VAR>c</VAR> is added to the end
+of the child list, and the flags <VAR>fl</VAR> are associated with it.
+<CODE>ZManager::AddChild()</CODE> ignores these flags, but derived classes'
+methods may do something with them.  Derived classes may override this
+method to special processing when a child is added, but the base
+class method must be called at some point.  This method does not
+redraw anything; it simply sets the relayout flag.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetRelayout</B> <I>()</I><P>
+<A NAME="IDX381"></A>
+Sets the relayout flag.  This causes this manager to be layed out
+again the next time a refresh happens.  This is done by setting the
+frame's <CODE>FREF_RELAYOUT</CODE> flag, and by calling
+<CODE>RecalcGeometry()</CODE> for this manager and all its parents.
+
+</P>
+<P>
+<U>Function:</U> void <B>RemoveChild</B> <I>(ZWinItem *<VAR>c</VAR>)</I><P>
+<A NAME="IDX382"></A>
+Remove the child <VAR>c</VAR> from this manager.
+
+</P>
+<P>
+<U>Function:</U> void <B>RemoveChild</B> <I>(int <VAR>n</VAR>)</I><P>
+<A NAME="IDX383"></A>
+Remove the <VAR>n</VAR>th child from this manager.
+
+</P>
+<P>
+<U>Function:</U> void <B>RemoveChildren</B> <I>()</I><P>
+<A NAME="IDX384"></A>
+Remove all children from this manager.
+
+</P>
+<P>
+<U>Function:</U> void <B>DeleteChildren</B> <I>()</I><P>
+<A NAME="IDX385"></A>
+Delete all this manager's children.
+
+</P>
+<P>
+<U>Function:</U> void <B>MoveItem</B> <I>(const CRect &#38; <VAR>rect</VAR>)</I><P>
+<A NAME="IDX386"></A>
+Move this manager to the rectangle <VAR>rect</VAR>, calling
+<CODE>Layout()</CODE> if necessary.
+
+</P>
+<P>
+<U>Function:</U> void <B>CreateButtons</B> <I>(int <VAR>count</VAR>)</I><P>
+<A NAME="IDX387"></A>
+Create <VAR>count</VAR> <CODE>ZButton</CODE>s as children of this manager.
+This is useful for building action areas.
+
+</P>
+<P>
+<U>Function:</U> void <B>GreyItems</B> <I>()</I><P>
+<A NAME="IDX388"></A>
+Recursively grey all items in this manager tree that need to be
+greyed.  Each item's resource data is checked; if its
+<CODE>IsGreyed()</CODE> method returns true, then the item is greyed
+(by calling <CODE>Enable(False)</CODE>.
+
+</P>
+<P>
+<U>Function:</U>  <B>ZManager</B> <I>()</I><P>
+<A NAME="IDX389"></A>
+Construct a manager.
+
+</P>
+<P>
+<U>Function:</U>  <B>~ZManager</B> <I>()</I><P>
+<A NAME="IDX390"></A>
+Destruct a manager, and delete all its children.
+
+</P>
+<P>
+<U>Function:</U> ZWinItem * <B>GetChild</B> <I>(int <VAR>n</VAR>)</I><P>
+<A NAME="IDX391"></A>
+Return a pointer to the <VAR>n</VAR>th child.
+
+</P>
+<P>
+<U>Function:</U> int <B>GetChildCount</B> <I>()</I><P>
+<A NAME="IDX392"></A>
+Return the number of children.
+
+</P>
+<P>
+<U>Function:</U> ZWinItem * <B>GetManagedChild</B> <I>(int <VAR>n</VAR>)</I><P>
+<A NAME="IDX393"></A>
+Return a pointer to the <VAR>n</VAR>th child, ignoring unmanaged
+children.  Using this routine instead of <CODE>GetChild()</CODE> is
+an easy (if inefficient) way of stepping through all managed
+children in a <CODE>Layout()</CODE> method.
+
+</P>
+<P>
+<U>Function:</U> int <B>GetManagedChildCount</B> <I>()</I><P>
+<A NAME="IDX394"></A>
+Return the number of managed children.
+
+</P>
+<P>
+<U>Function:</U> int <B>GetChildNum</B> <I>(ZWinItem *<VAR>c</VAR>)</I><P>
+<A NAME="IDX395"></A>
+Return the zero-based index of <VAR>c</VAR> in the child list, or
+-1 if it's not there.
+
+</P>
+<P>
+<U>Function:</U> int <B>GetChildNum</B> <I>(CWnd *<VAR>wi</VAR>)</I><P>
+<A NAME="IDX396"></A>
+Return the zero-based index of the child whose window is <VAR>wi</VAR>.
+Returns -1 if there is no such child.
+
+</P>
+<P>
+<U>Function:</U> ZWinItem * <B>FindItem</B> <I>(int <VAR>id</VAR>)</I><P>
+<A NAME="IDX397"></A>
+Find the item in this manager tree
+with object id <VAR>id</VAR>, and return a pointer to it.
+Returns <CODE>NULL</CODE> if no such item was found.
+
+</P>
+<P>
+<U>Function:</U> void <B>MoveChild</B> <I>(ZWinItem *<VAR>c</VAR>, int <VAR>where</VAR>)</I><P>
+<A NAME="IDX398"></A>
+Move the child <VAR>c</VAR> to position <VAR>where</VAR> in the child list.
+It does this by remove it from its current position and inserting it
+at the new position.
+
+</P>
+<P>
+<U>Function:</U> void <B>Enable</B> <I>(BOOL <VAR>on</VAR>)</I><P>
+<A NAME="IDX399"></A>
+Enables (or disables, of <VAR>on</VAR> is <CODE>False</CODE>)
+this item and all its child items.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>OnCommand</B> <I>(WPARAM <VAR>wp</VAR>, LPARAM <VAR>lp</VAR>)</I><P>
+<A NAME="IDX400"></A>
+Handle a <CODE>WM_COMMAND</CODE> message by passing it to its parent window.
+
+</P>
+<P>
+<U>Function:</U> afx_msg HBRUSH <B>OnCtlColor</B> <I>(CDC *<VAR>cdc</VAR>, CWnd *<VAR>wnd</VAR>, UINT <VAR>col</VAR>)</I><P>
+<A NAME="IDX401"></A>
+Handle a <CODE>WM_CTLCOLOR*</CODE> message by setting the appropriate
+foreground and background colors in
+child's device context, based on the child's resource data information.
+
+</P>
+<P>
+<U>Function:</U> afx_msg BOOL <B>OnEraseBkgnd</B> <I>(CDC *<VAR>cdc</VAR>)</I><P>
+<A NAME="IDX402"></A>
+Handle a <CODE>WM_ERASEBKGND</CODE> message by doing nothing.
+The <CODE>OnPaint()</CODE> method erases the background.
+This was done to work around a bug, possibly in win32s, that cropped
+up in non-debug builds, where the margin around edit controls wouldn't
+get filled in.
+
+</P>
+<P>
+<U>Function:</U> afx_msg void <B>OnPaint</B> <I>()</I><P>
+<A NAME="IDX403"></A>
+Erase the background, then, draw the shadows around all the children
+who request it.
+
+</P>
+<P>
+<U>Function:</U> afx_msg int <B>OnVKeyToItem</B> <I>(UINT <VAR>key</VAR>, CListBox *<VAR>lb</VAR>, UINT <VAR>ind</VAR>)</I><P>
+<A NAME="IDX404"></A>
+Check to see if <VAR>key</VAR> is the delete key or the return key.
+If it's the delete key, send a <CODE>ZLBN_DELETE</CODE> message to this listbox's
+parent; if it's a return, send a <CODE>LBN_DBLCLK</CODE> message to ths
+listbox's parent (so that hitting return in a list box does the
+same thing as a double click).  Otherwise, don't do any special handling.
+
+</P>
+<P>
+<U>Function:</U> void <B>GetGeometry</B> <I>(GeometryInfo &#38; <VAR>gi</VAR>)</I><P>
+<A NAME="IDX405"></A>
+Check to see if this manager should have its geometry recalculated.
+If so, call <CODE>ComputeGeometry()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>PreTranslateMessage</B> <I>(MSG *<VAR>msg</VAR>)</I><P>
+<A NAME="IDX406"></A>
+Do tab traversal by handling the tab, shift-tab, left, up, right, and
+down keys.  Also, if the return key is hit on a button, press that
+button.  The standard dialog code to do this can't handle window
+hierarchies, so we have to do it ourselves.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>IsManager</B> <I>()</I><P>
+<A NAME="IDX407"></A>
+Returns <CODE>True</CODE>.  <CODE>:-)</CODE>
+
+</P>
+
+
+<H1><A NAME="SEC41" HREF="wingui_toc.html#SEC41">ZActionArea</A></H1>
+
+<P>
+An action area is an array of buttons.  It may lay out the buttons
+horizontally at the bottom of a window (like Motif), or vertically at
+the right side of a window (like other Windows apps).  All the buttons
+are made the same size.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>IsVertical</B> <I>()</I><P>
+<A NAME="IDX408"></A>
+Returns <CODE>True</CODE> if this action area is laying out buttons vertically.
+Otherwise, it's laying them out horizontally.
+
+</P>
+<P>
+<U>Function:</U>  <B>ZActionArea</B> <I>(ZManager *<VAR>par</VAR>, int <VAR>ct</VAR> = 0, int <VAR>flg</VAR> = 0)</I><P>
+<A NAME="IDX409"></A>
+Creates a new action area.  If the <CODE>WI_AA_DIR_VERT</CODE> flag is set
+in <VAR>flg</VAR>, then this is a vertical action area; otherwise, it's
+horizontal.
+
+</P>
+
+
+<H1><A NAME="SEC42" HREF="wingui_toc.html#SEC42">ZFrameManager</A></H1>
+<P>
+a frame manager is a top-level manager used for laying out the major
+elements of a frame.  It normally has up to three children:
+
+</P>
+<DL COMPACT>
+
+<DT><EM>paned window</EM>
+<DD>
+This is where most of the items in a window go.
+
+<DT><EM>status bar</EM>
+<DD>
+This is where status information goes.  It always appears at the
+bottom of the window.
+
+<DT><EM>action area</EM>
+<DD>
+If a window's action area is vertical, it must be a child of the
+frame manager; it gets put at the right side of the window.
+Otherwise, if the action area is horizontal, it should be a child
+of the paned window.
+
+</DL>
+
+
+
+<H1><A NAME="SEC43" HREF="wingui_toc.html#SEC43">ZGroupBox</A></H1>
+
+<P>
+This manager is useful for drawing a line around one or more items in a
+window.  It can only have one child; it lays out its child in
+its center and draws
+a line around it.  If its resource data has text associated with it,
+the text is placed above the child.
+
+</P>
+
+
+<H1><A NAME="SEC44" HREF="wingui_toc.html#SEC44">ZHeaderManager</A></H1>
+
+<P>
+The header manager is used to manage a listbox whose columns are
+configurable.  The main message summary list is the only use for this
+manager at the moment.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetHeaders</B> <I>(esumm_t *<VAR>es</VAR>)</I><P>
+<A NAME="IDX410"></A>
+Configure the column headers to match the header list specified by
+<VAR>es</VAR>.  <VAR>es</VAR> is a pointer to a core <CODE>esumm_t</CODE> structure.
+If <VAR>es</VAR> is <CODE>NULL</CODE>, all the headers are removed.
+
+</P>
+
+
+<H1><A NAME="SEC45" HREF="wingui_toc.html#SEC45">ZPanedW</A></H1>
+
+<P>
+<U>Function:</U>  <B>ZPanedW</B> <I>(ZFrame *<VAR>fr</VAR>, int <VAR>flg</VAR> = 0)</I><P>
+<A NAME="IDX411"></A>
+Create a new <CODE>ZPanedW</CODE> as a child of a frame.
+If <VAR>flg</VAR> has <CODE>WI_PW_NO_PRESERVE_WIDTH</CODE> set, allow the paned
+window to shrink in horizontal width if a child is removed or resized.
+(Otherwise, the paned window can only grow horizontally, not shrink.)
+If <VAR>flg</VAR> has <CODE>WI_PW_USE_SPLITTERS</CODE> set, use splitters instead
+of sashes.
+
+</P>
+<P>
+<U>Function:</U>  <B>ZPanedW</B> <I>(ZManager *<VAR>mgr</VAR>, int <VAR>flg</VAR> = 0)</I><P>
+<A NAME="IDX412"></A>
+Create a new <CODE>ZPanedW</CODE> as a child of another manager.
+
+</P>
+<P>
+<U>Function:</U> void <B>AddChild</B> <I>(ZWinItem *<VAR>c</VAR>, long <VAR>flg</VAR>)</I><P>
+<A NAME="IDX413"></A>
+Add a new child to the paned window with manager flags <VAR>flg</VAR>.
+Possible flags include:
+<DL COMPACT>
+
+<DT><CODE>WIC_PW_HAS_SASH</CODE>
+<DD>
+This child should have a sash or splitter below it.
+<DT><CODE>WIC_PW_HAS_SEP</CODE>
+<DD>
+This child should have a separator below it.
+<DT><CODE>WIC_PW_MAIN_RESIZE</CODE>
+<DD>
+This child is the main resize pane for this paned window.  If the paned
+window is made larger or smaller, this child should take up the slack.
+<DT><CODE>WIC_PW_IGNORE_WIDTH</CODE>
+<DD>
+The width reported by this child's <CODE>GetGeometry()</CODE> method should
+be ignored.
+<DT><CODE>WIC_PW_SASH_RESIZE</CODE>
+<DD>
+This child can be resized using sashes or splitters.
+<DT><CODE>WIC_PW_DETACH_EDGE</CODE>
+<DD>
+This child's width should not be forced to be the same as the width
+of the paned window.
+</DL>
+<P>
+
+
+
+<H1><A NAME="SEC46" HREF="wingui_toc.html#SEC46">ZRowCol</A></H1>
+
+<P>
+A <CODE>ZRowCol</CODE> is the most common geometry manager.  It is useful for
+layout out items in rows or columns.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetAlignHoriz</B> <I>(ZWinItem *<VAR>item</VAR>, AlignmentType <VAR>t</VAR>)</I><P>
+<A NAME="IDX414"></A>
+Set <VAR>item</VAR>'s horizontal alignment to <VAR>t</VAR>, which can be
+one of the following values:
+<DL COMPACT>
+
+<DT><CODE>AlignmentNone</CODE>
+<DD>
+Don't align this item; force its size to the space available,
+which should be the same as the space it requests, if possible.
+("The space it requests" is whatever is returned by its <CODE>GetGeometry()</CODE>
+method.)
+<DT><CODE>AlignmentFull</CODE>
+<DD>
+Force this item's size to the space available, which should be as large
+as possible.  Take up all available space for this item.
+<DT><CODE>AlignmentLeft</CODE>
+<DD>
+Take up all available space for this item, force its size to the size
+it requests, and left-align it (or top-align it) in that space.
+<DT><CODE>AlignmentTop</CODE>
+<DD>
+Same as <CODE>AlignmentLeft</CODE>.
+<DT><CODE>AlignmentRight</CODE>
+<DD>
+Take up all available space for this item, force its size to the size
+it requests, and right-align it (or bottom-align it) in that space.
+<DT><CODE>AlignmentBottom</CODE>
+<DD>
+Same as <CODE>AlignmentRight</CODE>.
+<DT><CODE>AlignmentCenter</CODE>
+<DD>
+Take up all available space for this item, force its size to the size
+it requests, and center it in that space.
+</DL>
+<P>
+
+<U>Function:</U> void <B>SetAlignVert</B> <I>(ZWinItem *<VAR>item</VAR>, AlignmentType <VAR>t</VAR>)</I><P>
+<A NAME="IDX415"></A>
+Set <VAR>item</VAR>'s vertical alignment to <VAR>t</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetMatchDimen</B> <I>(ZWinItem *<VAR>item</VAR>, ZWinItem *<VAR>item2</VAR>)</I><P>
+<A NAME="IDX416"></A>
+Specify that <VAR>item</VAR>'s major dimension (i.e. height in a vertical
+<CODE>ZRowCol</CODE>, width in a horizontal one) should match <VAR>item2</VAR>'s
+major dimension.  <VAR>item</VAR> and <VAR>item2</VAR> should be children of
+a <CODE>ZRowCol</CODE>, though they don't have to be children of the <EM>same</EM>
+<CODE>ZRowCol</CODE>.  When you call <CODE>SetMatchDimen()</CODE>, you should set up
+a circularly linked list; e.g.:
+
+<PRE>
+        /* cause wi1-3 to have the same width (or height) */
+        ZRowCol *rc;
+        ZWinItem *wi1, *wi2, *wi3;
+        rc-&#62;SetMatchDimen(wi1, wi2);
+        rc-&#62;SetMatchDimen(wi2, wi3);
+        rc-&#62;SetMatchDimen(wi3, wi1);
+</PRE>
+
+<P>
+
+<U>Function:</U> void <B>SetPropWidth</B> <I>(ZWinItem *<VAR>item</VAR>, int <VAR>dim</VAR>)</I><P>
+<A NAME="IDX417"></A>
+Cause <VAR>item</VAR> to take up <VAR>dim</VAR> percent of the manager's width.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetPropHeight</B> <I>(ZWinItem *item, int dim)</I><P>
+<A NAME="IDX418"></A>
+Cause <VAR>item</VAR> to take up <VAR>dim</VAR> percent of the manager's height.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetColumns</B> <I>(int <VAR>c</VAR>)</I><P>
+<A NAME="IDX419"></A>
+Set the maximum number of columns (or rows, in a vertical <CODE>ZRowCol</CODE>).
+If there are more than <VAR>c</VAR> items in a row (or column), a new row
+(column) will be started.
+
+</P>
+<P>
+<U>Function:</U>  <B>ZRowCol</B> <I>(ZManager *<VAR>p</VAR>, int <VAR>f</VAR> = 0)</I><P>
+<A NAME="IDX420"></A>
+Construct a new <CODE>ZRowCol</CODE>.  <VAR>f</VAR> may have one or more of the
+following flags set:
+<DL COMPACT>
+
+<DT><CODE>WI_RC_EQUAL_SIZE</CODE>
+<DD>
+Force all the items to be the same size.
+<DT><CODE>WI_RC_DIR_VERT</CODE>
+<DD>
+Lay out items vertically instead of horizontally.
+<DT><CODE>WI_RC_ONE_ROW</CODE>
+<DD>
+Constrain all the items to one row (or column).
+</DL>
+<P>
+
+
+
+<H1><A NAME="SEC47" HREF="wingui_toc.html#SEC47">ZScrolledWindow</A></H1>
+<P>
+A scrolled window is a window with scrollbars.  The manager contains
+one child; the user can manipulate the scrollbars to scroll the view of
+the child.
+
+</P>
+<P>
+<U>Function:</U> void <B>Reset</B> <I>()</I><P>
+<A NAME="IDX421"></A>
+Reset the view to the upper-left hand corner.
+
+</P>
+
+
+<H1><A NAME="SEC48" HREF="wingui_toc.html#SEC48">ZMessageListLabel</A></H1>
+
+<P>
+This item is the message list label which displays the
+current messages for a frame.  It's derived from the <CODE>ZStatic</CODE>
+class.
+
+</P>
+<P>
+<U>Function:</U> void <B>Refresh</B> <I>(long <VAR>fl</VAR>)</I><P>
+<A NAME="IDX422"></A>
+Update this item's window text to reflect the new message list,
+if necessary.
+
+</P>
+
+
+<H1><A NAME="SEC49" HREF="wingui_toc.html#SEC49">ZSeparators</A></H1>
+
+<P>
+A separator is an object used to separate panes in a
+<CODE>ZPanedW</CODE>.  There are actually 5 kinds of separators;
+the base separator class is <CODE>ZSeparator</CODE>, which defines the
+interface for the other four types, which inherit from it.
+
+</P>
+
+
+
+<H1><A NAME="SEC50" HREF="wingui_toc.html#SEC50">ZSeparator</A></H1>
+
+<P>
+The base class separator is an object which visually separates panes
+in a <CODE>ZPanedW</CODE>.  The user can't do anything with it except look at it.
+For a draggable separator, use a <CODE>ZSlidingSeparator</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetPane</B> <I>(ZPanedW *<VAR>pw</VAR>, int <VAR>no</VAR>)</I><P>
+<A NAME="IDX423"></A>
+Set the paned window and pane number associated with this separator
+(i.e. the pane just above it).
+<VAR>pw</VAR> must be the paned window which contains the pane, and
+<VAR>no</VAR> is the zero-based index of the pane.
+
+</P>
+<P>
+<U>Function:</U> afx_msg <B>BOOL</B> <I>OnEraseBkgnd (CDC *<VAR>cdc</VAR>)</I><P>
+<A NAME="IDX424"></A>
+Erases the background for this separator.
+
+</P>
+<P>
+<U>Function:</U> afx_msg <B>void</B> <I>OnPaint ()</I><P>
+<A NAME="IDX425"></A>
+Draws the separator Motif-style.
+
+</P>
+
+
+<H1><A NAME="SEC51" HREF="wingui_toc.html#SEC51">ZSlidingSeparator</A></H1>
+
+<P>
+This class is used for separators which the user can drag to resize
+panes.  It's derived from <CODE>ZSeparator</CODE>.
+It has does not override <CODE>ZSeparator::OnPaint()</CODE>, so it appears
+to the user no different than a separator; therefore, instead of using this
+class directly, you should use a class derived from it which
+overrides <CODE>OnPaint()</CODE>.
+
+</P>
+
+
+<H1><A NAME="SEC52" HREF="wingui_toc.html#SEC52">ZSash</A></H1>
+
+<P>
+This class is used for Motif-style sashes.  This class provides
+just the sash button (i.e. the little square on the right side of
+a sash); it's not designed to be used by itself.  Instead, use
+a <CODE>ZSashSeparator</CODE>; creating an instance that class will create
+an instance of this one, in the correct place on the separator.
+
+</P>
+
+
+<H1><A NAME="SEC53" HREF="wingui_toc.html#SEC53">ZSplitter</A></H1>
+
+<P>
+This class is used for Windows-style splitters.  It overrides
+<CODE>OnPaint()</CODE> and <CODE>draw_drag()</CODE>
+to provide a splitter-like appearance, but is
+otherwise the same as a <CODE>ZSlidingSeparator</CODE>.
+
+</P>
+
+
+<H1><A NAME="SEC54" HREF="wingui_toc.html#SEC54">ZSashSeparator</A></H1>
+
+<P>
+This class is used for Motif-style sashes.  It looks just like a
+separator, except that it has a <CODE>ZSash</CODE> on the right side, which
+the user can manipulate to resize the associated panes.
+
+</P>
+
+
+<H1><A NAME="SEC55" HREF="wingui_toc.html#SEC55">ZSettingsListBox</A></H1>
+
+<P>
+This class is used to display a list of settings to the user
+(i.e. aliases, personal headers, etc).  A "setting" is anything
+which the core represents with a <CODE>struct options</CODE> structure.
+It is just a <CODE>ZListBox</CODE>
+with a few extra methods.
+
+</P>
+<P>
+<U>Function:</U> void <B>Fill</B> <I>(struct options **<VAR>list</VAR>)</I><P>
+<A NAME="IDX426"></A>
+Take the core options list specified by <VAR>list</VAR> and display
+it in the list box in a nice format, sorted.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>GetSetting</B> <I>(CString &#38; <VAR>name</VAR>, CString &#38; <VAR>val</VAR>, int <VAR>n</VAR> = -1)</I><P>
+<A NAME="IDX427"></A>
+Fetch the <VAR>n</VAR>th entry in the list box.  (If <VAR>n</VAR> is -1, then
+fetch the currently selected entry, if any).  Returns <CODE>True</CODE>
+if successful.
+The name of the option is returned in <VAR>name</VAR>, and the value of
+the option (if any) is returned in <VAR>val</VAR>.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>GetSetting</B> <I>(CString &#38; <VAR>name</VAR>, int pos = -1)</I><P>
+<A NAME="IDX428"></A>
+Fetch the name of the <VAR>n</VAR>th entry in the list box.  (If <VAR>n</VAR> is -1,
+then
+fetch the currently selected entry, if any).  Returns <CODE>True</CODE>
+if successful.
+The name of the option is returned in <VAR>name</VAR>.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>GetSelectedSetting</B> <I>(CString &#38; <VAR>name</VAR>)</I><P>
+<A NAME="IDX429"></A>
+Fetch the name of the currently selected entry in the list box.
+Returns <CODE>True</CODE> if successful.
+
+</P>
+
+
+<H1><A NAME="SEC56" HREF="wingui_toc.html#SEC56">ZSlider</A></H1>
+
+<P>
+A slider is a control used to display or set a numeric value.
+Currently, it is used in the variables dialog and the task meter dialog.
+It is designed to emulate the Motif scale widget.
+A slider has a position (i.e. value), a minimum value,
+a maximum value, and a granularity (i.e. value to round to).
+To set the value, the user may drag the slider thumb left or right.
+Or, the user may click to the left or right of the thumb to move it
+10% of the way to the left or right.  Holding down the mouse button
+at this point will cause this action to repeat every tenth of a second.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetRange</B> <I>(int <VAR>min</VAR>, int <VAR>max</VAR>)</I><P>
+<A NAME="IDX430"></A>
+Sets the minimum and maximum value allowed by the slider.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetPos</B> <I>(int <VAR>pos</VAR>)</I><P>
+<A NAME="IDX431"></A>
+Set the slider position to <VAR>pos</VAR>.
+
+</P>
+<P>
+<U>Function:</U> int <B>GetPos</B> <I>()</I><P>
+<A NAME="IDX432"></A>
+Get the slider position.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetGranularity</B> <I>(int <VAR>g</VAR>)</I><P>
+<A NAME="IDX433"></A>
+Set the granularity of the slider to <VAR>n</VAR>.  If <VAR>g</VAR> is non-zero,
+then the slider position will be guaranteed to be a multiple of <VAR>g</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>ShowPercent</B> <I>()</I><P>
+<A NAME="IDX434"></A>
+Requests that the slider display a percent sign after the position
+in the future.
+
+</P>
+
+
+<H1><A NAME="SEC57" HREF="wingui_toc.html#SEC57">ZStatic</A></H1>
+
+<P>
+<U>Function:</U>  <B>ZStatic</B> <I>(ZManager *parent, const char *str = NULL, DWORD dwStyle = 0, UINT nID = 0, int flags = 0)</I><P>
+<A NAME="IDX435"></A>
+Construct a <CODE>ZStatic</CODE> object with parent <VAR>parent</VAR>,
+label <VAR>str</VAR>, style <VAR>dwStyle</VAR>, object identifier <VAR>nID</VAR>,
+and manager flags <VAR>flags</VAR>.  If <VAR>str</VAR> is <CODE>NULL</CODE>, the label
+to use is retrieved from the resource database.
+
+</P>
+<P>
+<U>Function:</U> void <B>SetText</B> <I>(const char *<VAR>cs</VAR>)</I><P>
+<A NAME="IDX436"></A>
+Set the label text to <VAR>cs</VAR>.
+
+</P>
+
+
+<H1><A NAME="SEC58" HREF="wingui_toc.html#SEC58">ZmailApp</A></H1>
+
+<P>
+<U>Variable:</U> <B>HCURSOR</B> <I>timeout</I><P>
+<A NAME="IDX437"></A>
+The wait cursor, used when a long operation is going on.
+
+</P>
+<P>
+<U>Variable:</U> <B>HCURSOR</B> <I>do_not_enter</I><P>
+<A NAME="IDX438"></A>
+The do-not-enter cursor, used when the user positions the
+cursor over another frame when a modal frame is up.
+
+</P>
+<P>
+<U>Variable:</U> <B>CMenu</B> <I>window_menu</I><P>
+<A NAME="IDX439"></A>
+The <CODE>Windows</CODE> menu, currently shared by all frames.
+
+</P>
+<P>
+<U>Variable:</U> <B>BOOL</B> <I>cleaning_up</I><P>
+<A NAME="IDX440"></A>
+True if we're cleaning up (i.e. if <CODE>ExitInstance()</CODE> has been called).
+
+</P>
+<P>
+<U>Variable:</U> <B>HCURSOR</B> <I>split_vertical</I><P>
+<A NAME="IDX441"></A>
+The vertical splitter cursor.
+
+</P>
+<P>
+<U>Variable:</U> <B>HCURSOR</B> <I>split_horizontal</I><P>
+<A NAME="IDX442"></A>
+The horizontal splitter cursor.
+
+</P>
+<P>
+<U>Variable:</U> <B>HCURSOR</B> <I>std_cursor</I><P>
+<A NAME="IDX443"></A>
+The standard arrow cursor.
+
+</P>
+<P>
+<U>Variable:</U> <B>int</B> <I>timeout_ct</I><P>
+<A NAME="IDX444"></A>
+The number of times <CODE>timeout_cursors(True)</CODE> has been called
+without a corresponding <CODE>timeout_cursors(False)</CODE>.
+
+</P>
+<P>
+<U>Variable:</U> <B>COLORREF</B> <I>therm_color</I><P>
+<A NAME="IDX445"></A>
+The thermometer color, for the status bar.
+
+</P>
+<P>
+<U>Variable:</U> <B>CBrush</B> <I>therm_brush</I><P>
+<A NAME="IDX446"></A>
+A solid brush of color <CODE>therm_color</CODE>.
+
+</P>
+<P>
+<U>Function:</U> virtual BOOL <B>InitInstance</B> <I>()</I><P>
+<A NAME="IDX447"></A>
+Called by MFC to initialize this Z-Mail instance.
+
+</P>
+<P>
+<U>Function:</U> virtual BOOL <B>InitApplication</B> <I>()</I><P>
+<A NAME="IDX448"></A>
+Called by MFC to initialze the Z-Mail application.
+This just registers a few window classes.
+
+</P>
+<P>
+<U>Function:</U> virtual int <B>ExitInstance</B> <I>()</I><P>
+<A NAME="IDX449"></A>
+Called by MFC when the app is exiting.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>PreTranslateMessage</B> <I>(MSG *<VAR>pMsg</VAR>)</I><P>
+<A NAME="IDX450"></A>
+This is the same as the standard MFC <CODE>CWinApp</CODE> implementation
+of <CODE>PreTranslateMessage()</CODE>, except that we don't go through
+the main window's accelerator table.
+
+</P>
+<P>
+<U>Function:</U> void <B>RegisterWndClass</B> <I>(const char *<VAR>name</VAR>, UINT <VAR>style</VAR>, HCURSOR <VAR>cursor</VAR>, HBRUSH <VAR>back</VAR>, HICON <VAR>icon</VAR>)</I><P>
+<A NAME="IDX451"></A>
+Register a new window class, usually for a frame window.
+If <VAR>name</VAR> is already taken, and has the same style, then this
+function does nothing.  Otherwise, it registers a window class
+named <VAR>name</VAR> with the specified attributes.
+
+</P>
+<P>
+<U>Function:</U> BOOL <B>IsBusy</B> <I>()</I><P>
+<A NAME="IDX452"></A>
+Returns <CODE>True</CODE> if the hourglass cursor is up.
+
+</P>
+
+
+<H1><A NAME="SEC59" HREF="wingui_toc.html#SEC59">ico2ppm</A></H1>
+
+<P>
+The <CODE>ico2ppm</CODE> utility converts Windows <CODE>.ico</CODE> files to
+portable pixmaps.  This is useful if an icon needs to be edited
+in some other paint program.  The source is <CODE>wingui/build/ico2ppm.c</CODE>;
+it's designed to run under UNIX, but could conceivably run under DOS
+if it were linked with <CODE>binmode.obj</CODE>.
+
+</P>
+<P>
+For example, to convert an icon to a GIF:
+
+<PRE>
+% ico2ppm foo.ico | ppmtogif &#62; foo.gif
+</PRE>
+
+<P>
+This assumes you have <CODE>ppmtogif</CODE>, which is a part of the
+<CODE>pbmplus</CODE> package.
+
+</P>
+
+
+<H1><A NAME="SEC60" HREF="wingui_toc.html#SEC60">mkmak.sh</A></H1>
+<P>
+This shell script (which must be run on UNIX) generates <CODE>.MAK</CODE> files
+for builds on Windows.  It looks at <CODE>zmail_files</CODE> and extracts
+the files it needs, and then builds <CODE>nmake</CODE> rules to compile
+and link them, and puts the result in <CODE>zmail.mak</CODE>.
+It also builds the <CODE>dynadt</CODE>, <CODE>uisupp</CODE>,
+<CODE>autotype</CODE>, and <CODE>except</CODE> libraries.
+
+</P>
+<P>
+Because of a limitation of <CODE>cvpack</CODE>, we can't compile all our
+object files with full debugging information.  So, <CODE>mkmak.sh</CODE>
+only picks a subset of files to compile with full debugging information.
+These files have the <CODE>$(DBGFULL)</CODE> macro for their compile rules;
+other files only have <CODE>$(DBGLINE)</CODE> macros.
+
+</P>
+
+
+<H1><A NAME="SEC61" HREF="wingui_toc.html#SEC61">ppm2ico</A></H1>
+
+<P>
+The <CODE>ppm2ico</CODE> utility converts portable pixmaps to Windows <CODE>.ico</CODE>
+files.
+The source is <CODE>wingui/build/ppm2ico.c</CODE>;
+it's designed to run under UNIX, but could conceivably run under DOS
+if it were linked with <CODE>binmode.obj</CODE>.
+
+</P>
+<P>
+For example, to convert a GIF to an icon:
+
+<PRE>
+% ppm2ico foo.gif | giftoppm &#62; foo.ico
+</PRE>
+
+<P>
+This assumes you have <CODE>giftoppm</CODE>, which is a part of the
+<CODE>pbmplus</CODE> package.
+
+</P>
+
+
+<H1><A NAME="SEC62" HREF="wingui_toc.html#SEC62">guiapi.cpp</A></H1>
+<P>
+This file contains implementations of most of the gui API functions which
+the core calls.  For example, the core calls <CODE>gui_iconify()</CODE> when
+it wants the UI to iconify all the windows; the Windows UI implements
+this by walking through all the open frames and iconifying them.
+
+</P>
+
+
+<H1><A NAME="SEC63" HREF="wingui_toc.html#SEC63">guiitems.txt</A></H1>
+<P>
+This file contains descriptions of all the UI items in the program.
+It has a very simple syntax which is parsed by the perl script
+<CODE>guiitems.pl</CODE>,
+and used to generate the following files:
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>guiids.h</CODE>
+<DD>
+This file contains symbols for all the object and class identifiers
+and their counts.
+<DT><CODE>guiclass.cpp</CODE>
+<DD>
+This file contains an array of parent class ID's for each class.
+<DT><CODE>zmail.ini</CODE>
+<DD>
+This is the initialization file.  <CODE>guiitems.pl</CODE> puts the default
+resource data here.  It also includes the contents of the file
+<CODE>env.ini</CODE>; the programmer can put some default environment data
+in here.
+<DT><CODE>zmail.rc</CODE>
+<DD>
+This is the Windows resource file.  <CODE>guiitems.pl</CODE> puts the string table
+in here, as well as including the default resource data from <CODE>ressrc.rc</CODE>.
+The string table contains all the object and class
+names and default text 
+resources.  To retrieve a text resource from the string table, use
+the object identifier as the string table index.
+To retrieve an object or class
+name from the string table, use the object identifier
+plus 3000 as the string table index.
+</DL>
+
+<P>
+Note that spaces are significant almost everywhere; for example,
+you can't specify a comment without a space after the <CODE>#</CODE>, and
+you can't specify a text resource without a space before and after
+the <CODE>:</CODE>.
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>#</CODE>
+<DD>
+Specifying a <CODE>#</CODE> as the first word on the line causes the rest
+of the line to be ignored.
+<DT><CODE>base</CODE>
+<DD>
+Use <CODE>base = num</CODE> to specify the base object ID number for all
+objects which follow.  For example, if you say <CODE>base = 100</CODE>,
+the next <CODE>obj</CODE> definition will have an object ID of 100.
+The next one after that will have an ID of 101.
+<DT><CODE>alloc</CODE>
+<DD>
+This command is used to allocate a certain amount of object IDs for
+a group of objects.  We allocate a certain
+amount of object identifiers for each dialog, so that we can
+add more objects to a dialog without causing all the other objects
+in other dialogs to have their object ID's changed.  
+For example, let's say the aliases dialog starts at object number 10,
+and the browser dialog starts at 40.  Let's say we only have 15 objects
+in the aliases dialog.  We can add another object to the aliases dialog
+without needed to change the browser's object identifiers.  If we started
+the browser dialog at 25, then we would not be able to add a new object
+without needed to recompile the browser code with new object identifiers.
+Specify <CODE>alloc = num</CODE> to allocate <CODE>num</CODE> identifiers for the
+group that follows, until the next <CODE>alloc</CODE> command.
+<DT><CODE>startcount</CODE>
+<DD>
+This command is used to automatically generate object ID counts.
+For example, if you want to keep track of how many objects are in
+a dialog's action area, you can use <CODE>startcount</CODE> to cause a
+count identifier to be output to <CODE>guiids.h</CODE>.
+Example:
+
+<PRE>
+startcount browser-aa
+obj browser-aa-done : "Done"
+obj browser-aa-search : "&#38;Search"
+obj browser-aa-help : "Help"
+endcount
+</PRE>
+
+This example will generate three object ID symbols:
+<CODE>BROWSER_AA_DONE</CODE>,
+<CODE>BROWSER_AA_SEARCH</CODE>, and
+<CODE>BROWSER_AA_HELP</CODE>.
+It will also generate the symbol <CODE>BROWSER_AA_COUNT</CODE>,
+which will be equal to 3.
+<DT><CODE>countedobj</CODE>
+<DD>
+This is similar to <CODE>startcount</CODE>, except that it also generates
+an object ID.  For example, <CODE>countedobj foo</CODE> is the same
+as <CODE>obj foo</CODE> followed by <CODE>startcount foo</CODE>.
+<DT><CODE>endcount</CODE>
+<DD>
+This command ends a group of counted objects.
+<DT><CODE>obj</CODE>
+<DD>
+This command defines an object.  For example, <CODE>obj foo</CODE>
+defines a new object called <CODE>foo</CODE>.
+This command may be followed
+by any number of additional lines which described this object's
+default resources, in the form <CODE>.resource value</CODE>.
+If you wish, you may specify the object's <CODE>text</CODE> resource value on
+the <CODE>obj</CODE> line, in the form <CODE>obj name : "string"</CODE>.
+For example:
+
+<PRE>
+obj compose-address-aa-expand : "Expand"
+    .greyed true
+    .shadowthickness 0
+</PRE>
+
+This definition defines an object called <CODE>compose-address-aa-expand</CODE>,
+and specifies default values for the <CODE>text</CODE>, <CODE>greyed</CODE>,
+and <CODE>shadowthickness</CODE> resources.
+<DT><CODE>class</CODE>
+<DD>
+This object defines a class.  You may optionally specify the class's
+parent class, or default resources for it.
+For example:
+
+<PRE>
+class MessageSummaries : List
+    .font Courier New.9b
+    .columns 80
+    .rows 15
+</PRE>
+
+This defines the object class <CODE>MessageSummaries</CODE>, a subclass
+of <CODE>List</CODE>, with three default resources (besides the ones
+inherited from <CODE>List</CODE>).
+</DL>
+
+
+
+<H1><A NAME="SEC64" HREF="wingui_toc.html#SEC64">menures.h</A></H1>
+<P>
+This file contains command ID definitions for all the controls and
+menus in the resource file, <CODE>ressrc.rc</CODE>.
+
+</P>
+
+
+<H1><A NAME="SEC65" HREF="wingui_toc.html#SEC65">mklibs.sh</A></H1>
+<P>
+This is a UNIX shell script which generates the library files for
+Windows.  The following files are generated:
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>system.rc</CODE>
+<DD>
+This is the equivalent of <CODE>system.zmailrc</CODE>.  It's generated from
+<CODE>system.zmailrc.src</CODE> using <CODE>ifdef.sh</CODE>, by defining
+<CODE>_WINDOWS</CODE>.
+<DT><CODE>variable</CODE>
+<DD>
+This is the equivalent of the <CODE>variables</CODE> file.  It's generated
+from <CODE>variables.src</CODE> using <CODE>ifdef.sh</CODE>, by defining
+<CODE>_WINDOWS</CODE>.
+<DT><CODE>locale.rc</CODE>
+<DD>
+This is the equivalent of <CODE>locale.zmailrc</CODE>.  It's simply copied
+from <CODE>../lib/locale.zmailrc</CODE> to <CODE>locale.rc</CODE>.
+</DL>
+
+<P>
+The files <CODE>attach.typ</CODE> and <CODE>zmailmnu.rc</CODE> are currently
+maintained separately from <CODE>attach.types.src</CODE> and <CODE>system.menus</CODE>,
+unfortunately, because there are too many differences from the UNIX
+versions.
+
+</P>
+
+
+<H1><A NAME="SEC66" HREF="wingui_toc.html#SEC66">ressrc.rc</A></H1>
+<P>
+This is the Windows resource file, excluding the string table.
+The perl script <CODE>guiitems.pl</CODE> takes this file, adds string
+table information, and writes the result to <CODE>zmail.rc</CODE>, which
+is then resource-compiled into the zmail application.
+
+</P>
+
+
+<H1><A NAME="SEC67" HREF="wingui_toc.html#SEC67">stamplibs.sh</A></H1>
+<P>
+This is a UNIX shell script which puts ZPOP File-Id stamps on all the
+library files.
+
+</P>
+
+
+
+<H1><A NAME="SEC68" HREF="wingui_toc.html#SEC68">Class Hierarchy</A></H1>
+
+<PRE>
+CWnd
+  ZBitmap
+    ZFaceIcon
+  ZManager
+    ZActionArea
+    ZFrameManager
+    ZGroupBox
+    ZHeaderManager
+    ZPanedW
+    ZRowCol
+    ZScrolledWindow
+  ZSeparator
+    ZSlidingSeparator
+      ZSash
+      ZSplitter
+    ZSashSeparator
+  ZSlider
+  ZStatusBar
+ZResourceDatabase
+CFontDialog
+  ZFontFrame
+CFileDialog
+  ZAskFileDialog
+  ZNewFolderDialog
+  ZOpenFolderDialog
+  ZRenameFolderDialog
+  ZSaveMessagesDialog
+ZFrameWindowRec
+  ZFrameWnd
+  ZMDIChildWnd
+ZFrameDatabase
+ZPalette
+ZAcceleratorTable
+ZMessageGroup
+HeaderPane
+ZPaneDescriptor
+ZIntVector
+ZFrameInfo
+CButton
+  ZButton
+    ZAttachItem
+      ZNormAttachItem
+      ZOleAttachItem
+    ZToggleButton
+    ZRadioButton
+    ZIconButton
+CMDIChildWnd
+  ZMDIChildWnd
+CComboBox
+  ZComboBox
+Attach
+ZButtonItem
+  ZPushButtonItem
+    ZToggleButtonItem
+    ZIconButtonItem
+  ZCommandLineButtonItem
+  ZFolderSelectorButtonItem
+  ZPrioritySelectorButtonItem
+ZFileFinderIterator
+ZFolderDatabase
+CWinApp
+  ZmailApp
+ZActionInfo
+CListBox
+  ZListBox
+    ZAddressListBox
+    ZSettingsListBox
+ZTextPiece
+CmdAction
+CPrintDialog
+  ZPrintMessagesDialog
+ZFontDatabase
+ZDynstr
+zmPrintData
+ZDateInfo
+Compose
+CRect
+  ZRect
+ZWinItem
+  ZBitmap
+    ZFaceIcon
+  ZButton
+    ZAttachItem
+      ZNormAttachItem
+      ZOleAttachItem
+    ZToggleButton
+    ZRadioButton
+    ZIconButton
+  ZComboBox
+  ZEdit
+  ZListBox
+    ZAddressListBox
+    ZSettingsListBox
+  ZManager
+    ZActionArea
+    ZFrameManager
+    ZGroupBox
+    ZHeaderManager
+    ZPanedW
+    ZRowCol
+    ZScrolledWindow
+  ZSeparator
+    ZSlidingSeparator
+      ZSash
+      ZSplitter
+    ZSashSeparator
+  ZSlider
+  ZStatic
+    ZMessageListLabel
+  ZStatusBar
+ZConversionBuffer
+GeometryInfo
+ZToggleGroupEvent
+CStatic
+  ZStatic
+    ZMessageListLabel
+AttachTypeAlias
+StatusPane
+ZAddressParser
+ZTranslationTable
+ZTranslation
+ZFolderData
+CFrameWnd
+  ZFrameWnd
+ZFontEntry
+RowColumnConstraints
+CEdit
+  ZEdit
+ZCurrentFrameSaver
+PanedWindowConstraints
+zmCallback
+ZTextField
+CCmdTarget
+  ZCmdTarget
+    ZFrame
+      ZAboutFrame
+      ZAbstractAliasesFrame
+        ZAliasesFrame
+        ZChooseAliasesFrame
+      ZAttachDlgFrame
+      ZBrowserFrame
+      ZAskDialog
+        ZAskInputDialog
+        ZAskRetryDialog
+        ZAskMultipleDialog
+          ZAskMessageListDialog
+      ZComposeOptionsFrame
+      ZConfirmFrame
+      ZCustSortFrame
+      ZDateSearchFrame
+      ZEnvelopeFrame
+      ZFiltersFrame
+      ZFunctionsFrame
+      ZHeadersFrame
+      ZLoginFrame
+      ZMainFrame
+      ZMenuFrame
+      ZNewFolderFrame
+      ZOpenFolderFrame
+      ZPagerFrame
+        ZAttachFrame
+          ZComposeFrame
+          ZMessageFrame
+        ZPagerDialogFrame
+      ZPatternSearchFrame
+      ZPrinterFrame
+      ZRenameFolderFrame
+      ZSaveMessagesFrame
+      ZSearchReplaceFrame
+      ZTaskMeterFrame
+      ZTemplatesFrame
+      ZToolboxFrame
+      ZVariablesFrame
+    ZFrameItem
+      ZAttachArea
+      ZAbstractButtonPanel
+        ZManagedButtonPanel
+          ZToolbarPanel
+            ZToolboxPanel
+        ZMenuPanel
+          ZMenubarPanel
+          ZSubmenuPanel
+      ZCommandLine
+      ZFileFinder
+      ZFolderLabel
+      ZFolderList
+      ZFolderSelector
+      ZNewHeaderPrompts
+      ZLabeledText
+      ZMessageListField
+      ZNewArrivalsToggle
+      ZOutputArea
+      ZPrioritySelector
+      ZmailStatusBar
+      ZMessageSummaries
+      ZToggleGroup
+ZTextString
+CPtrlist
+ZSettingsListBoxIterator
+ZButtonListData
+ZOleClientDoc
+CMDIFrameWnd
+  ZMDIFrameWnd
+CString
+printdata
+CmdActionTable
+CColorDialog
+  ZColorFrame
+ZFrameDataIterator
+ResourceData
+ZColorDatabase
+</PRE>
+
+
+
+<H1><A NAME="SEC69" HREF="wingui_toc.html#SEC69">Index</A></H1>
+
+<P>
+<LI><A HREF="wingui.html#IDX225"></A>
+<H2>a</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX310">Add</A>
+<LI><A HREF="wingui.html#IDX106">AddAccel</A>
+<LI><A HREF="wingui.html#IDX413">AddChild</A>
+<LI><A HREF="wingui.html#IDX112">AddFrameItem</A>
+<LI><A HREF="wingui.html#IDX270">AddMargin</A>
+<LI><A HREF="wingui.html#IDX267">AddOutShadow</A>
+<LI><A HREF="wingui.html#IDX53">AddPanel</A>
+<LI><A HREF="wingui.html#IDX68">AddRaw</A>
+<LI><A HREF="wingui.html#IDX266">AddShadow</A>
+<LI><A HREF="wingui.html#IDX378">AddStrings</A>
+<LI><A HREF="wingui.html#IDX127">AddToMenu</A>
+<LI><A HREF="wingui.html#IDX338">AdjustHeight</A>
+<LI><A HREF="wingui.html#IDX162">AfxDoClose</A>
+<LI><A HREF="wingui.html#IDX164">AfxDoLoad</A>
+<LI><A HREF="wingui.html#IDX163">AfxDoSave</A>
+<LI><A HREF="wingui.html#IDX94">Alloc</A>
+<LI><A HREF="wingui.html#IDX304">AllocColors</A>
+<LI><A HREF="wingui.html#IDX2">AllocId</A>
+<LI><A HREF="wingui.html#IDX105">Autodismiss</A>
+</DIR>
+<H2>b</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX424">BOOL</A>
+<LI><A HREF="wingui.html#IDX175">Build</A>
+<LI><A HREF="wingui.html#IDX117">BuildFrame</A>
+</DIR>
+<H2>c</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX246">CenterInRect</A>
+<LI><A HREF="wingui.html#IDX234">Clear</A>
+<LI><A HREF="wingui.html#IDX108">ClearRefresh</A>
+<LI><A HREF="wingui.html#IDX209">ClearSavedFocus</A>
+<LI><A HREF="wingui.html#IDX346">ClearText</A>
+<LI><A HREF="wingui.html#IDX276">ClearWiFlags</A>
+<LI><A HREF="wingui.html#IDX174">Close</A>
+<LI><A HREF="wingui.html#IDX1">CmdActionTable</A>
+<LI><A HREF="wingui.html#IDX368">ComputeGeometry</A>
+<LI><A HREF="wingui.html#IDX231">Copy</A>
+<LI><A HREF="wingui.html#IDX69">CopyFrom</A>
+<LI><A HREF="wingui.html#IDX70">CopyTo</A>
+<LI><A HREF="wingui.html#IDX240">Count</A>
+<LI><A HREF="wingui.html#IDX250">Create</A>
+<LI><A HREF="wingui.html#IDX50">Create(ZmButton b, ZManager *mgr, int id)</A>
+<LI><A HREF="wingui.html#IDX387">CreateButtons</A>
+<LI><A HREF="wingui.html#IDX98">CreateFrameButtons</A>
+<LI><A HREF="wingui.html#IDX97">CreateFrameItems</A>
+<LI><A HREF="wingui.html#IDX99">CreateFrameManagers</A>
+<LI><A HREF="wingui.html#IDX100">CreateStatusBar</A>
+</DIR>
+<H2>d</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX385">DeleteChildren</A>
+<LI><A HREF="wingui.html#IDX374">DeselectAll</A>
+<LI><A HREF="wingui.html#IDX206">Destroy</A>
+<LI><A HREF="wingui.html#IDX124">DestroyChildren</A>
+<LI><A HREF="wingui.html#IDX191">DestroyOld</A>
+<LI><A HREF="wingui.html#IDX345">DoAction</A>
+<LI><A HREF="wingui.html#IDX215">DoClose</A>
+<LI><A HREF="wingui.html#IDX101">DoCmdLine</A>
+<LI><A HREF="wingui.html#IDX214">DoDestroy</A>
+<LI><A HREF="wingui.html#IDX213">DoDropFiles</A>
+<LI><A HREF="wingui.html#IDX211">DoGetMinMaxInfo</A>
+<LI><A HREF="wingui.html#IDX122">DoInitMenuPopup</A>
+<LI><A HREF="wingui.html#IDX197">DoModal</A>
+<LI><A HREF="wingui.html#IDX212">DoSetCursor</A>
+<LI><A HREF="wingui.html#IDX210">DoSize</A>
+<LI><A HREF="wingui.html#IDX336">draw_label</A>
+<LI><A HREF="wingui.html#IDX324">DrawItem</A>
+</DIR>
+<H2>e</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX71">Empty</A>
+<LI><A HREF="wingui.html#IDX399">Enable</A>
+<LI><A HREF="wingui.html#IDX111">ExecButton</A>
+<LI><A HREF="wingui.html#IDX121">ExecPinup</A>
+<LI><A HREF="wingui.html#IDX120">ExecWindowMenu</A>
+<LI><A HREF="wingui.html#IDX449">ExitInstance</A>
+<LI><A HREF="wingui.html#IDX315">Expand</A>
+</DIR>
+<H2>f</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX286">FetchWindowText</A>
+<LI><A HREF="wingui.html#IDX426">Fill</A>
+<LI><A HREF="wingui.html#IDX397">FindItem</A>
+<LI><A HREF="wingui.html#IDX235">First</A>
+<LI><A HREF="wingui.html#IDX81">FlushAllHeaders</A>
+<LI><A HREF="wingui.html#IDX79">FlushHeaders</A>
+<LI><A HREF="wingui.html#IDX342">FocusOn</A>
+<LI><A HREF="wingui.html#IDX166">FolderChanged</A>
+<LI><A HREF="wingui.html#IDX253">Free</A>
+<LI><A HREF="wingui.html#IDX4">FreeId</A>
+</DIR>
+<H2>g</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX22">GenShadowColors</A>
+<LI><A HREF="wingui.html#IDX312">Get</A>
+<LI><A HREF="wingui.html#IDX335">get_label_size</A>
+<LI><A HREF="wingui.html#IDX316">GetAll</A>
+<LI><A HREF="wingui.html#IDX317">GetAllVec</A>
+<LI><A HREF="wingui.html#IDX25">GetBg</A>
+<LI><A HREF="wingui.html#IDX29">GetBgBrush</A>
+<LI><A HREF="wingui.html#IDX27">GetBotShadow</A>
+<LI><A HREF="wingui.html#IDX66">GetBrush</A>
+<LI><A HREF="wingui.html#IDX23">GetCFont</A>
+<LI><A HREF="wingui.html#IDX329">GetCheck</A>
+<LI><A HREF="wingui.html#IDX391">GetChild</A>
+<LI><A HREF="wingui.html#IDX392">GetChildCount</A>
+<LI><A HREF="wingui.html#IDX396">GetChildNum</A>
+<LI><A HREF="wingui.html#IDX290">GetClassID</A>
+<LI><A HREF="wingui.html#IDX46">GetCmdId</A>
+<LI><A HREF="wingui.html#IDX64">GetColor</A>
+<LI><A HREF="wingui.html#IDX65">GetColorSpec</A>
+<LI><A HREF="wingui.html#IDX366">GetColumns</A>
+<LI><A HREF="wingui.html#IDX157">GetDefaultFocusItem</A>
+<LI><A HREF="wingui.html#IDX151">GetDirectionsItem</A>
+<LI><A HREF="wingui.html#IDX24">GetFg</A>
+<LI><A HREF="wingui.html#IDX370">GetFirstSelected</A>
+<LI><A HREF="wingui.html#IDX285">GetFocus</A>
+<LI><A HREF="wingui.html#IDX141">GetFolder</A>
+<LI><A HREF="wingui.html#IDX95">GetFont</A>
+<LI><A HREF="wingui.html#IDX298">GetFrame</A>
+<LI><A HREF="wingui.html#IDX405">GetGeometry</A>
+<LI><A HREF="wingui.html#IDX83">GetHeader</A>
+<LI><A HREF="wingui.html#IDX154">GetIcon</A>
+<LI><A HREF="wingui.html#IDX73">GetLength</A>
+<LI><A HREF="wingui.html#IDX74">GetLineCount</A>
+<LI><A HREF="wingui.html#IDX393">GetManagedChild</A>
+<LI><A HREF="wingui.html#IDX394">GetManagedChildCount</A>
+<LI><A HREF="wingui.html#IDX297">GetManager</A>
+<LI><A HREF="wingui.html#IDX204">GetMenuBar</A>
+<LI><A HREF="wingui.html#IDX143">GetMessageGroup</A>
+<LI><A HREF="wingui.html#IDX155">GetMessageListFieldItem</A>
+<LI><A HREF="wingui.html#IDX138">GetMessageStr</A>
+<LI><A HREF="wingui.html#IDX149">GetModalValue</A>
+<LI><A HREF="wingui.html#IDX344">GetNumColumns</A>
+<LI><A HREF="wingui.html#IDX289">GetObjId</A>
+<LI><A HREF="wingui.html#IDX147">GetPaneManager</A>
+<LI><A HREF="wingui.html#IDX153">GetParentFrame</A>
+<LI><A HREF="wingui.html#IDX299">GetParentWnd</A>
+<LI><A HREF="wingui.html#IDX432">GetPos</A>
+<LI><A HREF="wingui.html#IDX196">GetQualifiedName</A>
+<LI><A HREF="wingui.html#IDX84">GetRedrawGroup</A>
+<LI><A HREF="wingui.html#IDX288">GetRes</A>
+<LI><A HREF="wingui.html#IDX348">GetRows</A>
+<LI><A HREF="wingui.html#IDX429">GetSelectedSetting</A>
+<LI><A HREF="wingui.html#IDX369">GetSelectedText</A>
+<LI><A HREF="wingui.html#IDX428">GetSetting</A>
+<LI><A HREF="wingui.html#IDX269">GetShadowThickness</A>
+<LI><A HREF="wingui.html#IDX173">GetState</A>
+<LI><A HREF="wingui.html#IDX158">GetStatusBar</A>
+<LI><A HREF="wingui.html#IDX237">GetString</A>
+<LI><A HREF="wingui.html#IDX347">GetText</A>
+<LI><A HREF="wingui.html#IDX260">GetTextMetrics</A>
+<LI><A HREF="wingui.html#IDX26">GetTopShadow</A>
+<LI><A HREF="wingui.html#IDX136">GetType</A>
+<LI><A HREF="wingui.html#IDX277">GetWiFlags</A>
+<LI><A HREF="wingui.html#IDX284">GetWnd</A>
+<LI><A HREF="wingui.html#IDX48">GetZButton</A>
+<LI><A HREF="wingui.html#IDX388">GreyItems</A>
+</DIR>
+<H2>h</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX10">HasBg</A>
+<LI><A HREF="wingui.html#IDX8">HasCols</A>
+<LI><A HREF="wingui.html#IDX9">HasFg</A>
+<LI><A HREF="wingui.html#IDX11">HasFont</A>
+<LI><A HREF="wingui.html#IDX19">HasGreyed</A>
+<LI><A HREF="wingui.html#IDX12">HasIcon</A>
+<LI><A HREF="wingui.html#IDX15">HasMenu</A>
+<LI><A HREF="wingui.html#IDX7">HasRows</A>
+<LI><A HREF="wingui.html#IDX17">HasText</A>
+<LI><A HREF="wingui.html#IDX13">HasTransTab</A>
+<LI><A HREF="wingui.html#IDX18">HasUseSashes</A>
+<LI><A HREF="wingui.html#IDX16">HasVertical</A>
+</DIR>
+<H2>i</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX104">Iconify</A>
+<LI><A HREF="wingui.html#IDX169">IgnoresMainFolder</A>
+<LI><A HREF="wingui.html#IDX247">InflateRect</A>
+<LI><A HREF="wingui.html#IDX72">Init</A>
+<LI><A HREF="wingui.html#IDX62">Init()</A>
+<LI><A HREF="wingui.html#IDX448">InitApplication</A>
+<LI><A HREF="wingui.html#IDX447">InitInstance</A>
+<LI><A HREF="wingui.html#IDX258">Install</A>
+<LI><A HREF="wingui.html#IDX333">int</A>
+<LI><A HREF="wingui.html#IDX233">Invert</A>
+<LI><A HREF="wingui.html#IDX208">IsActive</A>
+<LI><A HREF="wingui.html#IDX452">IsBusy</A>
+<LI><A HREF="wingui.html#IDX359">IsEditable</A>
+<LI><A HREF="wingui.html#IDX239">IsEmpty</A>
+<LI><A HREF="wingui.html#IDX33">IsGreyed</A>
+<LI><A HREF="wingui.html#IDX265">IsManaged</A>
+<LI><A HREF="wingui.html#IDX407">IsManager</A>
+<LI><A HREF="wingui.html#IDX202">IsMaximized</A>
+<LI><A HREF="wingui.html#IDX167">IsMDIChild</A>
+<LI><A HREF="wingui.html#IDX165">IsModal</A>
+<LI><A HREF="wingui.html#IDX168">IsOpen</A>
+<LI><A HREF="wingui.html#IDX334">IsToggleRadio</A>
+<LI><A HREF="wingui.html#IDX408">IsVertical</A>
+<LI><A HREF="wingui.html#IDX264">IsVisible</A>
+</DIR>
+<H2>l</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX221">Last</A>
+<LI><A HREF="wingui.html#IDX379">Layout</A>
+<LI><A HREF="wingui.html#IDX376">ListDirs</A>
+<LI><A HREF="wingui.html#IDX375">ListFiles</A>
+<LI><A HREF="wingui.html#IDX92">ListToMsg</A>
+<LI><A HREF="wingui.html#IDX357">LoadFile</A>
+<LI><A HREF="wingui.html#IDX257">LookupChar</A>
+<LI><A HREF="wingui.html#IDX3">LookupId</A>
+<LI><A HREF="wingui.html#IDX255">LookupName</A>
+</DIR>
+<H2>m</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX295">MarginIndent</A>
+<LI><A HREF="wingui.html#IDX226">Member</A>
+<LI><A HREF="wingui.html#IDX259">Merge</A>
+<LI><A HREF="wingui.html#IDX287">MergeRes</A>
+<LI><A HREF="wingui.html#IDX398">MoveChild</A>
+<LI><A HREF="wingui.html#IDX386">MoveItem</A>
+<LI><A HREF="wingui.html#IDX93">MsgToList</A>
+</DIR>
+<H2>n</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX326">NeedFocus</A>
+<LI><A HREF="wingui.html#IDX89">NeedsRefresh</A>
+<LI><A HREF="wingui.html#IDX328">NeedThickBotShadow</A>
+<LI><A HREF="wingui.html#IDX236">Next</A>
+<LI><A HREF="wingui.html#IDX189">NotifyReset</A>
+</DIR>
+<H2>o</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX249">OffsetRect</A>
+<LI><A HREF="wingui.html#IDX400">OnCommand</A>
+<LI><A HREF="wingui.html#IDX401">OnCtlColor</A>
+<LI><A HREF="wingui.html#IDX402">OnEraseBkgnd</A>
+<LI><A HREF="wingui.html#IDX403">OnPaint</A>
+<LI><A HREF="wingui.html#IDX178">OnPrePopup</A>
+<LI><A HREF="wingui.html#IDX404">OnVKeyToItem</A>
+<LI><A HREF="wingui.html#IDX185">Open</A>
+<LI><A HREF="wingui.html#IDX222">operator[]</A>
+<LI><A HREF="wingui.html#IDX126">OptsLoad</A>
+<LI><A HREF="wingui.html#IDX125">OptsSave</A>
+</DIR>
+<H2>p</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX296">ParentWindow</A>
+<LI><A HREF="wingui.html#IDX176">Pinup</A>
+<LI><A HREF="wingui.html#IDX201">Popup</A>
+<LI><A HREF="wingui.html#IDX450">PreTranslateMessage</A>
+<LI><A HREF="wingui.html#IDX188">PropagateSelection</A>
+</DIR>
+<H2>r</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX256">RecalcColors</A>
+<LI><A HREF="wingui.html#IDX293">RecalcGeometry</A>
+<LI><A HREF="wingui.html#IDX192">RedoRefresh</A>
+<LI><A HREF="wingui.html#IDX193">RedrawAll</A>
+<LI><A HREF="wingui.html#IDX422">Refresh</A>
+<LI><A HREF="wingui.html#IDX451">RegisterWndClass</A>
+<LI><A HREF="wingui.html#IDX59">Reinstall</A>
+<LI><A HREF="wingui.html#IDX107">RemAccel</A>
+<LI><A HREF="wingui.html#IDX313">Remove</A>
+<LI><A HREF="wingui.html#IDX383">RemoveChild</A>
+<LI><A HREF="wingui.html#IDX384">RemoveChildren</A>
+<LI><A HREF="wingui.html#IDX113">RemoveFrameItem</A>
+<LI><A HREF="wingui.html#IDX128">RemoveFromMenu</A>
+<LI><A HREF="wingui.html#IDX54">RemovePanel</A>
+<LI><A HREF="wingui.html#IDX421">Reset</A>
+<LI><A HREF="wingui.html#IDX6">ResourceData</A>
+<LI><A HREF="wingui.html#IDX61">RestrictToHwnd</A>
+</DIR>
+<H2>s</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX358">SaveFile</A>
+<LI><A HREF="wingui.html#IDX373">ScrollTo</A>
+<LI><A HREF="wingui.html#IDX353">SelectAll</A>
+<LI><A HREF="wingui.html#IDX241">SelectIn</A>
+<LI><A HREF="wingui.html#IDX252">Set</A>
+<LI><A HREF="wingui.html#IDX414">SetAlignHoriz</A>
+<LI><A HREF="wingui.html#IDX415">SetAlignVert</A>
+<LI><A HREF="wingui.html#IDX238">SetAll</A>
+<LI><A HREF="wingui.html#IDX356">SetAutoformat</A>
+<LI><A HREF="wingui.html#IDX330">SetCheck</A>
+<LI><A HREF="wingui.html#IDX419">SetColumns</A>
+<LI><A HREF="wingui.html#IDX183">SetCurrentFolder</A>
+<LI><A HREF="wingui.html#IDX172">SetCurrentFrame</A>
+<LI><A HREF="wingui.html#IDX156">SetDefaultFocusItem</A>
+<LI><A HREF="wingui.html#IDX308">SetDirCheck</A>
+<LI><A HREF="wingui.html#IDX307">SetExpand</A>
+<LI><A HREF="wingui.html#IDX362">SetFaceData</A>
+<LI><A HREF="wingui.html#IDX354">SetFlags</A>
+<LI><A HREF="wingui.html#IDX140">SetFolder</A>
+<LI><A HREF="wingui.html#IDX301">SetFrame</A>
+<LI><A HREF="wingui.html#IDX433">SetGranularity</A>
+<LI><A HREF="wingui.html#IDX410">SetHeaders</A>
+<LI><A HREF="wingui.html#IDX364">SetIcon</A>
+<LI><A HREF="wingui.html#IDX323">SetInnerSpacing</A>
+<LI><A HREF="wingui.html#IDX261">SetManaged</A>
+<LI><A HREF="wingui.html#IDX302">SetManager</A>
+<LI><A HREF="wingui.html#IDX271">SetMargin</A>
+<LI><A HREF="wingui.html#IDX416">SetMatchDimen</A>
+<LI><A HREF="wingui.html#IDX76">SetMaxSize</A>
+<LI><A HREF="wingui.html#IDX203">SetMenuBar</A>
+<LI><A HREF="wingui.html#IDX142">SetMessageGroup</A>
+<LI><A HREF="wingui.html#IDX137">SetMessageStr</A>
+<LI><A HREF="wingui.html#IDX273">SetMinimumHeight</A>
+<LI><A HREF="wingui.html#IDX272">SetMinimumSize</A>
+<LI><A HREF="wingui.html#IDX274">SetMinimumWidth</A>
+<LI><A HREF="wingui.html#IDX148">SetModalValue</A>
+<LI><A HREF="wingui.html#IDX355">SetNoEcho</A>
+<LI><A HREF="wingui.html#IDX325">SetNoFocus</A>
+<LI><A HREF="wingui.html#IDX292">SetObjId</A>
+<LI><A HREF="wingui.html#IDX423">SetPane</A>
+<LI><A HREF="wingui.html#IDX159">SetPaneDescriptors</A>
+<LI><A HREF="wingui.html#IDX146">SetPaneManager</A>
+<LI><A HREF="wingui.html#IDX161">SetPaneOrder</A>
+<LI><A HREF="wingui.html#IDX160">SetPanes</A>
+<LI><A HREF="wingui.html#IDX152">SetParentFrame</A>
+<LI><A HREF="wingui.html#IDX300">SetParentWnd</A>
+<LI><A HREF="wingui.html#IDX431">SetPos</A>
+<LI><A HREF="wingui.html#IDX418">SetPropHeight</A>
+<LI><A HREF="wingui.html#IDX417">SetPropWidth</A>
+<LI><A HREF="wingui.html#IDX430">SetRange</A>
+<LI><A HREF="wingui.html#IDX244">SetRect</A>
+<LI><A HREF="wingui.html#IDX186">SetRefresh</A>
+<LI><A HREF="wingui.html#IDX381">SetRelayout</A>
+<LI><A HREF="wingui.html#IDX86">SetReset</A>
+<LI><A HREF="wingui.html#IDX349">SetRows</A>
+<LI><A HREF="wingui.html#IDX377">SetSelection</A>
+<LI><A HREF="wingui.html#IDX268">SetShadowThickness</A>
+<LI><A HREF="wingui.html#IDX365">SetSize</A>
+<LI><A HREF="wingui.html#IDX306">SetSorted</A>
+<LI><A HREF="wingui.html#IDX129">SetStatusLine</A>
+<LI><A HREF="wingui.html#IDX436">SetText</A>
+<LI><A HREF="wingui.html#IDX327">SetThickBotShadow</A>
+<LI><A HREF="wingui.html#IDX114">SetTitle</A>
+<LI><A HREF="wingui.html#IDX263">SetVisible</A>
+<LI><A HREF="wingui.html#IDX275">SetWiFlags</A>
+<LI><A HREF="wingui.html#IDX281">ShowItem</A>
+<LI><A HREF="wingui.html#IDX434">ShowPercent</A>
+<LI><A HREF="wingui.html#IDX219">Size</A>
+<LI><A HREF="wingui.html#IDX132">StopModalLoop</A>
+</DIR>
+<H2>t</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX331">ToggleCheck</A>
+<LI><A HREF="wingui.html#IDX37">Translate</A>
+<LI><A HREF="wingui.html#IDX75">Truncate</A>
+</DIR>
+<H2>u</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX118">UnbuildFrame</A>
+<LI><A HREF="wingui.html#IDX55">Update</A>
+<LI><A HREF="wingui.html#IDX91">UpdateHidden</A>
+<LI><A HREF="wingui.html#IDX82">UpdateMailinfo</A>
+<LI><A HREF="wingui.html#IDX32">UseSashes</A>
+</DIR>
+<H2>v</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX177">ValidParent</A>
+<LI><A HREF="wingui.html#IDX425">void</A>
+</DIR>
+<H2>w</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX90">WasReset</A>
+</DIR>
+<H2>z</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX409">ZActionArea</A>
+<LI><A HREF="wingui.html#IDX305">ZAddressListBox</A>
+<LI><A HREF="wingui.html#IDX318">ZBitmap</A>
+<LI><A HREF="wingui.html#IDX320">ZButton</A>
+<LI><A HREF="wingui.html#IDX337">ZComboBox</A>
+<LI><A HREF="wingui.html#IDX78">ZCurrentFrameSaver</A>
+<LI><A HREF="wingui.html#IDX96">ZFrame</A>
+<LI><A HREF="wingui.html#IDX363">ZIconButton</A>
+<LI><A HREF="wingui.html#IDX218">ZIntVector</A>
+<LI><A HREF="wingui.html#IDX389">ZManager</A>
+<LI><A HREF="wingui.html#IDX224">ZMessageGroup</A>
+<LI><A HREF="wingui.html#IDX412">ZPanedW</A>
+<LI><A HREF="wingui.html#IDX322">ZRadioButton</A>
+<LI><A HREF="wingui.html#IDX245">ZRect</A>
+<LI><A HREF="wingui.html#IDX420">ZRowCol</A>
+<LI><A HREF="wingui.html#IDX435">ZStatic</A>
+<LI><A HREF="wingui.html#IDX321">ZToggleButton</A>
+</DIR>
+<H2>~</H2>
+<DIR>
+<LI><A HREF="wingui.html#IDX390">~ZManager</A>
+</DIR>
+
+</P>
+
+</BODY>
+</HTML>

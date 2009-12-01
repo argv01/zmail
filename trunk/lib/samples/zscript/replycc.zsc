@@ -1,0 +1,45 @@
+# Sample Z-Script functions: add_cc, cc_all
+
+# These two functions implement a reply with all recipients
+# included on the Cc: line and only the senders on the To: line
+#
+function add_cc() {
+    msg_list - $1
+    #
+    # This works only in 2.1 and later, not 2.0.5 ...
+    #
+    set cc_to += ",$[%?To?,%?Cc?]"
+}
+
+function cc_all() {
+#%
+#     cc_all [msg-list] [-r path] [mail-flags] [recipients]
+#
+# Reply to the messages indicated by the optional msg-list, placing all
+# recipients of the messages on the Cc: line and the senders of the
+# messages on the To: line.  Otherwise the same as "replyall".
+#%
+    set msgs cc_to		# Initialize
+    #
+    # Combine argument messages with piped input ...
+    #
+    shift -m | set msgs
+    if $?input
+       msg_list $msgs $input | set msgs
+    endif
+    #
+    # Generate Cc: addresses ...
+    #
+    each $msgs add_cc
+    #
+    # BUG:		(to be fixed in 2.2)
+    # Fails if there are more than 1000 characters in $cc_to ...
+    #
+    replysender $msgs -c "$cc_to" $*
+    set _stat = $status
+    #
+    # Sneaky way to clean up after ourself ...
+    #
+    msg_list $msgs | unset msgs cc_to
+    return $_stat
+}

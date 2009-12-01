@@ -1,0 +1,1230 @@
+\input texinfo @c -*- texinfo -*-
+@c %**start of header
+@setfilename spoor.info
+@settitle SPOOR
+@finalout
+@c @smallbook
+@c @setchapternewpage odd
+@footnotestyle end
+@c %**end of header
+
+@syncodeindex tp fn
+@syncodeindex vr fn
+@synindex cp fn
+
+@ifinfo
+This file describes @sc{Spoor}, a library package for C programs that
+provides object-oriented extensions.
+
+Software and documentation Copyright 1993 Z-Code Software Corp.,
+San Rafael, CA 94903.
+@end ifinfo
+
+@titlepage
+@title SPOOR
+@subtitle Simple, Poor-man's Object-Oriented Run-time
+@subtitle Object-oriented extensions for C
+@subtitle Manual version $Revision: 2.18 $
+@subtitle $Date: 1994/11/29 02:04:29 $
+@author Bob Glickstein
+@page
+@vskip 0pt plus 1filll
+This manual documents @sc{Spoor}, a library package for C programs that
+provides object-oriented extensions.
+
+Software and documentation Copyright @copyright{} 1993,1994 Z-Code
+Software Corp., Novato, CA 94945
+@end titlepage
+
+@node Top, Overview, (dir), (dir)
+@unnumbered Introduction
+
+This manual describes @sc{Spoor}, the Simple, Poor-man's Object-Oriented
+Run-time, which is a library package for C programs that provides
+object-oriented extensions to the language.
+
+@ifinfo
+Manual version:  $Revision: 2.18 $ $Date: 1994/11/29 02:04:29 $
+@end ifinfo
+
+@menu
+* Overview::                    
+* Fundamentals::                
+* The .h file::                 
+* The .c file::                 
+* Miscellaneous::               
+* Subsystems::                  
+* Shortcomings::                
+* Glossary::                    
+* Index::                       
+
+ --- The Detailed Node Listing ---
+
+Overview
+
+* Inheritance::                 
+* Polymorphism::                
+
+Fundamentals
+
+* Class name::                  
+* Obtaining an instance::       
+* Invoking a method::           
+
+The .h file
+
+* The .h prelude::              
+* The data structure::          
+* Accessors::                   
+* Declaring selectors::         
+* Other declarations::          
+
+The .c file
+
+* The .c prelude::              
+* The class descriptor::        
+* Constructor and destructor::  
+* Methods::                     
+* Class initializer::           
+
+Methods
+
+* Unpacking arguments::         
+* Super calls::                 
+
+Class initializer
+
+* Creating the class descriptor::  
+* Overriding inherited methods::  
+* Adding new methods::          
+* Other class initializer code::  
+
+Miscellaneous
+
+* The root class::              
+* Auxiliary functions::         
+* The class class::             
+
+Subsystems
+
+* Except::                      
+* Dynadt::                      
+@end menu
+
+@node Overview, Fundamentals, Top, Top
+@chapter Overview
+
+@sc{Spoor} is a set of functions, macros, variables, types, and
+programming conventions which provide a totally portable object-oriented
+programming environment with polymorphism and single inheritance of data
+and methods.
+
+A discussion of object-oriented programming is beyond the scope of this
+manual, but this chapter discusses the broad concepts in @sc{Spoor}.
+
+@cindex class
+@cindex method
+@cindex instance
+A @dfn{class} is a data type consisting of a structure with a set of
+fields and a set of @dfn{methods}.  The class's methods are functions
+that operate on @dfn{instances} of the class.  Methods are distinguished
+from ordinary functions because of inheritance and polymorphism.
+
+@menu
+* Inheritance::                 
+* Polymorphism::                
+@end menu
+
+@node Inheritance, Polymorphism, Overview, Overview
+@section Inheritance
+
+@cindex inheritance
+@cindex subclass
+@cindex root class
+@cindex override
+Every @sc{Spoor} class is a @dfn{subclass} of some other class, forming
+a hierarchy of @dfn{inheritance}.  (One class, the @dfn{root class},
+does not inherit from any other class; see @ref{The root class}.)
+Inheritance means that the data structure contains all the fields of the
+superclass plus whatever the new class adds (@dfn{inheritance of data});
+and the class has all the methods of the superclass plus whatever the
+new class adds (@dfn{inheritance of methods}).  Furthermore, an
+inherited method may be @dfn{overridden}, replacing the inherited
+function with a new one.
+
+@node Polymorphism,  , Inheritance, Overview
+@section Polymorphism
+
+@cindex polymorphism
+@dfn{Polymorphism} refers to the fact that an instance of a class can be
+treated as an instance of its superclass.  Method invocation works
+properly on an instance even when it's being handled polymorphically.
+For instance, suppose class @var{foo} is a subclass of class @var{bar},
+and that @var{f} is an instance of @var{foo}.  Now suppose @var{f} is
+(polymorphically) passed to a function that expects an instance of
+@var{bar}.  If that function now invokes a @var{bar} method on @var{f}
+and @var{foo} overrides that method, then the override in class
+@var{foo} will (correctly) be called, even though the caller doesn't
+know that @var{f} is an instance of @var{foo}.
+
+Unfortunately, the C language has no concept of polymorphism.
+Therefore, if you pass a @w{@code{struct @var{foo} *}} where a
+@w{@code{struct @var{bar} *}} is expected, a strict type-checking C
+compiler will complain about a type mismatch, even though you and I know
+that class @var{foo} inherits from @var{bar}.  The solution to this
+problem is to typecast the pointer before passing it, or to declare the
+recipient as taking a @w{@code{void *}} rather than a @w{@code{struct
+@var{bar} *}}.  Both solutions throw away useful type information; this
+is @sc{Spoor}'s greatest drawback.
+
+@node Fundamentals, The .h file, Overview, Top
+@chapter Fundamentals
+
+A call to @w{@code{spoor_Initialize}} must precede any other @sc{Spoor}
+function calls.
+
+@deftypefn Function {void} spoor_Initialize ()
+Initialize @sc{Spoor}.
+
+This function may raise the @code{strerror(ENOMEM)} exception.
+@end deftypefn
+
+After the first call to @w{@code{spoor_Initialize}}, subsequent calls
+are no-ops.
+
+All @sc{Spoor} classes ultimately inherit from the root class, which is
+named @code{spoor} (@pxref{The root class}).  Because of polymorphism,
+any instance of any class may be referred to as a @w{@code{struct spoor
+*}}, and that is how this document indicates a function or some other
+context where an instance of any class is expected.
+
+@menu
+* Class name::                  
+* Obtaining an instance::       
+* Invoking a method::           
+@end menu
+
+@node Class name, Obtaining an instance, Fundamentals, Fundamentals
+@section Class name
+
+Every @sc{Spoor} class has a name, and by convention it is used in the
+following places:
+
+@itemize @bullet
+@item
+It is the ``struct tag'' for the data structure corresponding to the
+class (@pxref{The data structure});
+
+@item
+It is the human-readable @var{name} passed to @w{@code{spoor_CreateClass}}
+(@pxref{Creating the class descriptor});
+
+@item
+It is the prefix of accessor macro names for the class
+(@pxref{Accessors});
+
+@item
+It is the middle part of method selector variable names
+(@pxref{Invoking a method});
+
+@item
+It is the prefix of the new-instance-obtaining macro (@pxref{Other
+declarations});
+
+@item
+It is the prefix of the class descriptor variable name (@pxref{The class
+descriptor});
+
+@item
+It is the prefix of the class-initializing function name (@pxref{Class
+initializer});
+
+@item
+It is also helpful if the header file containing declarations for a
+class named @var{foo} is named @file{@var{foo}.h}, allowing modules that
+use that class to anticipate the name needed for the @w{@code{#include}}
+directive.
+@end itemize
+
+Much of the workings of @sc{Spoor} depends on following these
+conventions.
+
+@node Obtaining an instance, Invoking a method, Class name, Fundamentals
+@section Obtaining an instance
+
+A new instance can be allocated (via @code{malloc}) using
+@w{@code{spoor_NewInstance}}.
+
+@deftypefn Macro {struct spoor *} spoor_NewInstance (@w{struct spClass *@var{class}})
+Allocate, initialize, and return a new instance of @var{class}.
+Allocation is performed with @code{malloc}; initialization is performed
+with @w{@code{spoor_InitializeInstance}} (q.v.).
+
+This function may raise the @code{strerror(ENOMEM)} exception.
+@end deftypefn
+
+By convention, each class supplies a macro for allocating instances of
+itself.  In class @var{foo}, for instance, the macro
+@w{@code{@var{foo}_NEW()}} is equivalent to
+@w{@code{spoor_NewInstance(@var{foo}_class)}}.
+
+@deftypefn Function {void} spoor_DestroyInstance (@w{struct spoor *@var{obj}})
+Finalize and deallocate @var{obj}, which is an instance previously
+obtained with @w{@code{spoor_NewInstance}}.  Finalizing is performed with
+@w{@code{spoor_FinalizeInstance}} (q.v.); deallocation is performed with
+@code{free}.
+@end deftypefn
+
+It is not necessary to rely on @sc{Spoor} to allocate and deallocate
+individual instances.  The caller may provide storage for instances
+itself; in which case it is necessary to initialize and finalize the
+storage using @w{@code{spoor_InitializeInstance}} and
+@w{@code{spoor_FinalizeInstance}}.
+
+@deftypefn Macro {void} spoor_InitializeInstance (@w{struct spClass *@var{class}}, @w{struct spoor *@var{obj}})
+Initialize @var{obj} as an instance of class @var{class}.  Recursively
+calls the constructors for the superclasses of @var{class}, then calls
+the constructor for @var{class}, if one exists.  @xref{Constructor and
+destructor}.
+@end deftypefn
+
+@deftypefn Macro {void} spoor_FinalizeInstance (@w{struct spoor *@var{obj}})
+Finalize @var{obj}, which is an instance that was previously initialized
+with @w{@code{spoor_InitializeInstance}}.  Calls the destructor (if one
+exists) for the class to which @var{obj} belongs; then recursively calls
+the destructors for the superclasses of @var{obj}.
+@end deftypefn
+
+@node Invoking a method,  , Obtaining an instance, Fundamentals
+@section Invoking a method
+
+@cindex selector
+@cindex method selector
+Every method in a particular class has a @dfn{selector}.  A selector is
+an integer which is used in the method table lookup.  By convention, the
+selector for each method is held in a global variable of type @code{int}
+whose name is @w{@code{m_@var{foo}_@var{fum}}}, where @var{foo} is the name
+of the class which defines the method and @var{fum} is the name of the
+method.
+
+If class @var{foo} inherits method @var{gronk} from its superclass,
+@var{bar}, then the selector will be in
+@w{@code{m_@var{bar}_@var{gronk}}}---even if @var{foo} overrides @var{gronk}
+with its own version.  The class name in the method selector variable is
+the class that @emph{adds} the method (via @w{@code{spoor_AddMethod}}), not
+any class that inherits or overrides the method.
+
+@cindex send
+To invoke a method on a particular instance, you @dfn{send} it the
+appropriate selector, plus any additional arguments that are required,
+with @code{spSend}.
+
+@deftypefn Function {void} spSend (@w{struct spoor *@var{obj}}, @w{int @var{selector}}, @r{@dots{}})
+Invoke the method on @var{obj} whose selector is @var{selector}.
+Remaining arguments, if any, are passed to the method.
+@end deftypefn
+
+The method-selecting function @code{spSend} can only be used to invoke
+@code{void}-returning methods, because it is of type @code{void} itself.
+A family of @code{spSend} variants exists, with one version for each
+possible scalar return type.  All are called in the same way.
+
+@table @code
+@findex spSend_c
+@item spSend_c
+Returns @code{char}.
+@findex spSend_d
+@item spSend_d
+Returns @code{double}.
+@findex spSend_f
+@item spSend_f
+Returns @code{float}.
+@findex spSend_i
+@item spSend_i
+Returns @code{int}.
+@findex spSend_l
+@item spSend_l
+Returns @code{long}.
+@findex spSend_p
+@item spSend_p
+Returns @code{void *}.
+@findex spSend_s
+@item spSend_s
+Returns @code{short}.
+@findex spSend_uc
+@item spSend_uc
+Returns @code{unsigned char}.
+@findex spSend_ui
+@item spSend_ui
+Returns @code{unsigned int}.
+@findex spSend_ul
+@item spSend_ul
+Returns @code{unsigned long}.
+@findex spSend_us
+@item spSend_us
+Returns @code{unsigned short}.
+@end table
+
+@node The .h file, The .c file, Fundamentals, Top
+@chapter The .h file
+
+This chapter describes how to construct the @file{.h} file when defining a
+new @sc{Spoor} class.  It is intended to be used as a ``recipe.''  If
+you do the steps described in each of the following sections, you should
+end up with a complete @sc{Spoor} @file{.h} file.
+
+@menu
+* The .h prelude::              
+* The data structure::          
+* Accessors::                   
+* Declaring selectors::         
+* Other declarations::          
+@end menu
+
+@node The .h prelude, The data structure, The .h file, The .h file
+@section The .h prelude
+
+@cindex condom
+First, it's wise to wrap the entire @file{.h} file in a @dfn{condom} to
+protect it against multiple inclusions:
+
+@example
+@group
+#ifndef FOO_H
+# define FOO_H
+@r{@dots{}everything in the file@dots{}}
+#endif /* FOO_H */
+@end group
+@end example
+
+Inside the condom, the file should first @w{@code{#include <spoor.h>}},
+then @w{@code{#include}} the @file{.h} file for this class's superclass.
+
+@node The data structure, Accessors, The .h prelude, The .h file
+@section The data structure
+
+The data structure for a @sc{Spoor} class must be a @code{struct} and
+must begin like this:
+
+@example
+@group
+struct @var{foo} @{
+    SUPERCLASS(@var{bar});
+    @r{@dots{}}
+@end group
+@end example
+
+The @code{SUPERCLASS} macro inserts inheritance information into the
+data structure; its argument is the name of the superclass.@footnote{In
+fact, the @code{SUPERCLASS} macro inserts an entire instance of the
+superclass, which in turn contains an instance of @emph{its} superclass,
+and so on.  In this way, a pointer to a @w{@code{struct @var{foo}}} can
+be cast to a pointer to a @w{@code{struct @var{bar}}} and a valid
+@w{@code{struct @var{bar}}} will be found at that address!}
+
+The remainder of the @code{struct} definition may contain anything at
+all.
+
+@node Accessors, Declaring selectors, The data structure, The .h file
+@section Accessors
+
+Suppose class @var{foo} inherits from class @var{bar}.  Suppose that
+instances of @var{bar} have a field named @var{b}.  Unfortunately, it is
+not possible to write:
+
+@example
+@group
+struct @var{foo} *f;
+
+@r{@dots{}}
+x = f->b;
+@r{@dots{}}
+@end group
+@end example
+
+@noindent
+because @w{@code{struct @var{foo}}} does not have a field named @var{b},
+and the C compiler doesn't know to use the inherited field.
+
+@cindex accessor
+To get around this problem in @sc{Spoor}, there is a convention of
+writing @dfn{accessors} for each field in a class's data structure.  An
+accessor is a macro that takes a pointer to an instance, casts it to the
+appropriate type, then dereferences a field.  Example:
+
+@example
+@group
+struct @var{bar} @{
+    SUPERCLASS(@r{@dots{}});
+    @r{@dots{}}
+    int @var{b};
+    @r{@dots{}}
+@};
+
+#define @var{bar}_@var{b}(x) (((struct @var{bar} *) (@var{x}))->b)
+@end group
+@end example
+
+With this accessor, it is now possible to rewrite the earlier example
+as:
+
+@example
+@group
+struct @var{foo} *f;
+
+@r{@dots{}}
+x = @var{bar}_@var{b}(f);
+@r{@dots{}}
+@end group
+@end example
+
+Notice that the accessor can be used as an lvalue@footnote{An
+@dfn{lvalue} is something that can be on the left-hand side of an
+assignment operator.} as well as a value.  By convention, the name for
+an accessor of field @var{f} in class @var{c} is
+@w{@code{@var{c}_@var{f}}}.
+
+Accessors may be a workaround for an annoying problem, but they do have
+one serendipitous benefit:  @emph{not} providing an accessor for a
+certain field is akin to making that field ``private'' in the C++ sense.
+
+@node Declaring selectors, Other declarations, Accessors, The .h file
+@section Declaring selectors
+
+The @file{.h} file should declare the global variables in which method
+selectors will be held (@pxref{Invoking a method}).  For instance, if
+class @var{foo} has methods @var{a}, @var{b}, and @var{c}, the @file{.h}
+file should contain:
+
+@example
+@group
+extern int m_@var{foo}_@var{a};
+extern int m_@var{foo}_@var{b};
+extern int m_@var{foo}_@var{c};
+@end group
+@end example
+
+Only methods newly added in this class need to have new selectors
+declared.  Declararations for selectors for inherited and overridden
+methods are obtained by including the superclass's @file{.h} file.
+
+@node Other declarations,  , Declaring selectors, The .h file
+@section Other declarations
+
+@tindex spClass
+The global class descriptor for the class needs to be declared.  For a
+class named @var{foo}, it should be named @w{@code{@var{foo}_class}},
+and is of type @w{@code{struct spClass *}}:
+
+@example
+extern struct spClass *@var{foo}_class;
+@end example
+
+The class initializer needs to be declared.  For a class named
+@var{foo}, it should be named @w{@code{@var{foo}_InitializeClass}}:
+
+@example
+extern void @var{foo}_InitializeClass();
+@end example
+
+A macro for allocating instances of the class should be defined.  For a
+class named @var{foo}, it should be named @w{@code{@var{foo}_NEW}}, and
+should look like this:
+
+@example
+@group
+#define @var{foo}_NEW() \
+    ((struct @var{foo} *) spoor_NewInstance(@var{foo}_class))
+@end group
+@end example
+
+@node The .c file, Miscellaneous, The .h file, Top
+@chapter The .c file
+
+This chapter describes how to construct the @file{.c} file when defining
+a new @sc{Spoor} class.  It is intended to be used as a ``recipe.''  If
+you do the steps described in each of the following sections, you should
+end up with a complete @sc{Spoor} @file{.c} file.
+
+@menu
+* The .c prelude::              
+* The class descriptor::        
+* Constructor and destructor::  
+* Methods::                     
+* Class initializer::           
+@end menu
+
+@node The .c prelude, The class descriptor, The .c file, The .c file
+@section The .c prelude
+
+The @file{.c} file should first include its corresponding @file{.h}
+file.
+
+@node The class descriptor, Constructor and destructor, The .c prelude, The .c file
+@section The class descriptor
+
+First, the global class descriptor variable should be defined and
+initialized to 0.  For a class named @var{foo}, it should be named
+@w{@code{@var{foo}_class}}:
+
+@example
+struct spClass *@var{foo}_class = 0;
+@end example
+
+Initializing @w{@code{@var{foo}_class}} to 0 allows other modules to
+test whether this one has been initialized yet; this is important in the
+class initializer (@pxref{Class initializer}).
+
+@node Constructor and destructor, Methods, The class descriptor, The .c file
+@section Constructor and destructor
+
+Next, you may wish to define a constructor function and/or a destructor
+function.  These should be declared @code{static}.  The addresses of
+these functions will be passed to @w{@code{spoor_CreateClass}} in the
+class initializer (@pxref{Class initializer}).
+
+The constructor/destructor functions are both @code{void} and both take
+a single argument, an instance of the class.  The constructor may assume
+that the superclass portion of the instance is already initialized, and
+should initialize the portion of the instance specific to the current
+class.  The destructor should finalize the portion of the instance
+specific to the current class.
+
+As an example, suppose class @var{foo} has the following data structure:
+
+@example
+@group
+struct @var{foo} @{
+    SUPERCLASS(@var{bar});
+    struct dynstr d;
+@};
+@end group
+@end example
+
+Then the constructor and destructor might look like this:
+
+@example
+@group
+static void
+@var{foo}_initialize(self)
+    struct @var{foo} *self;
+@{
+    dynstr_Init(&(self->d));
+@}
+@end group
+
+@group
+static void
+@var{foo}_finalize(self)
+    struct @var{foo} *self;
+@{
+    dynstr_Destroy(&(self->d));
+@}
+@end group
+@end example
+
+@node Methods, Class initializer, Constructor and destructor, The .c file
+@section Methods
+
+Each new method and override is its own function in the @file{.c} file.
+Each such function should be declared @code{static}.  The addresses of
+these functions will be passed to @w{@code{spoor_AddMethod}} or
+@w{@code{spoor_AddOverride}} in the class initializer (@pxref{Class
+initializer}).
+
+@tindex spArgList_t
+Each function should be declared to take two arguments.  The first
+argument is an instance of the current class.  The second argument is of
+type @w{@code{spArgList_t}} and is an encapsulation of the method's
+``real'' arguments.
+
+@menu
+* Unpacking arguments::         
+* Super calls::                 
+@end menu
+
+@node Unpacking arguments, Super calls, Methods, Methods
+@subsection Unpacking arguments
+
+@cindex unpacking arguments
+@cindex argument unpacking
+The first thing a method implementation should do is to @dfn{unpack} its
+arguments.  Arguments to @sc{Spoor} methods are packaged up in an object
+of type @w{@code{spArgList_t}} and must be extracted in a varargs-like
+way.  Unlike varargs, no initialization or finalizing of the
+argument-list object is required, and only a single pass over the
+arguments is permitted.  The macro for extracting the next argument from
+the argument list object is called @code{spArg}.
+
+@deftypefn Macro {} spArg (@w{spArgList_t @var{arglist}}, @var{type})
+Extract from the argument list object @var{arglist} the next argument,
+which is of type @var{type}.  This macro is used exactly like
+@w{@code{va_arg}}.
+@end deftypefn
+
+Therefore, a method that takes an @code{int} and a string as arguments
+and returns a string should begin something like this:
+
+@example
+@group
+static char *
+@var{foo}_SomeMethod(self, arg)
+    struct @var{foo} *self;
+    spArgList_t arg;
+@{
+    int i = spArg(arg, int);
+    char *str = spArg(arg, char *);
+    @r{@dots{}}
+@end group
+@end example
+
+@node Super calls,  , Unpacking arguments, Methods
+@subsection Super calls
+
+@cindex super call
+In the implementation of a method which overrides an inherited version
+of itself, it is possible to invoke the overridden version using
+@code{spSuper}.  A @dfn{super call} looks like a normal method
+invocation, except that the class descriptor is included as an argument.
+
+@deftypefn Function void spSuper (@w{struct spClass *@var{class}}, @w{struct spoor *@var{obj}}, @w{int @var{selector}}, @r{@dots{}})
+Invoke the implementation of method @var{selector} which is hidden by
+the override in class @var{class}, acting on @var{obj}.  Remaining
+arguments, if any, are passed to the method.
+@end deftypefn
+
+Like @code{spSend}, there are different versions of @code{spSuper} to
+call based on the return type of the method being invoked.
+
+@table @code
+@findex spSuper_c
+@item spSuper_c
+Returns @code{char}.
+@findex spSuper_d
+@item spSuper_d
+Returns @code{double}.
+@findex spSuper_f
+@item spSuper_f
+Returns @code{float}.
+@findex spSuper_i
+@item spSuper_i
+Returns @code{int}.
+@findex spSuper_l
+@item spSuper_l
+Returns @code{long}.
+@findex spSuper_p
+@item spSuper_p
+Returns @code{void *}.
+@findex spSuper_s
+@item spSuper_s
+Returns @code{short}.
+@findex spSuper_uc
+@item spSuper_uc
+Returns @code{unsigned char}.
+@findex spSuper_ui
+@item spSuper_ui
+Returns @code{unsigned int}.
+@findex spSuper_ul
+@item spSuper_ul
+Returns @code{unsigned long}.
+@findex spSuper_us
+@item spSuper_us
+Returns @code{unsigned short}.
+@end table
+
+@node Class initializer,  , Methods, The .c file
+@section Class initializer
+
+The class initializer is a @code{void} function of no arguments which
+sets up the run-time information about the class.  It creates the class
+descriptor, linking it to its superclass.  It fills in the class's
+method table with inherited methods, overrides, and new methods.  In
+other words, it does all the things that a real object-oriented language
+does as compile-time.
+
+The name of the class initializer for a class @var{foo} should be
+@w{@code{@var{foo}_InitializeClass}}.
+
+@menu
+* Creating the class descriptor::  
+* Overriding inherited methods::  
+* Adding new methods::          
+* Other class initializer code::  
+@end menu
+
+@node Creating the class descriptor, Overriding inherited methods, Class initializer, Class initializer
+@subsection Creating the class descriptor
+
+First, the class initializer should make sure that the superclass is
+already fully initialized.  Suppose class @var{foo} inherits from class
+@var{bar}:
+
+@example
+@group
+if (!@var{bar}_class)
+    @var{bar}_InitializeClass();
+@end group
+@end example
+
+This works because of the convention of assigning @code{NULL} to the
+class descriptor before it's initialized.
+
+Next, the class initializer should abort if its class is already
+initialized:
+
+@example
+@group
+if (@var{foo}_class)
+    return;
+@end group
+@end example
+
+Next, the class descriptor should be created using
+@w{@code{spoor_CreateClass}}.
+
+@deftypefn Function {struct spClass *} spoor_CreateClass (@w{char *@var{name}}, @w{char *@var{doc}}, @w{struct spClass *@var{super}}, @w{int @var{size}}, @w{void (*@var{init})(struct spoor *)}, @w{void (*@var{final})(struct spoor *)})
+Create a new class named @var{name}.  A brief, human-readable
+description of the class is in @var{doc}.@footnote{The @var{name} and
+@var{doc} parameters are included on the off chance that someday,
+someone will want a @sc{Spoor} class browser.  They also aid in
+debugging.}  The class inherits from @var{super}.  The size of an
+instance of the class is @var{size}.  The functions @var{init} and
+@var{final} are a constructor and a destructor, respectively, for
+instances of the class.  All of @var{doc}, @var{init}, and @var{final}
+may be @code{NULL}.
+
+This function may raise the @code{strerror(ENOMEM)} exception.
+@end deftypefn
+
+To continue the example:
+
+@example
+@group
+@var{foo}_class = spoor_CreateClass("@var{foo}", "a fooish class",
+    @var{bar}_class, sizeof (struct @var{foo}),
+    @var{foo}_initialize, @var{foo}_finalize);
+@end group
+@end example
+
+@node Overriding inherited methods, Adding new methods, Creating the class descriptor, Class initializer
+@subsection Overriding inherited methods
+
+The class initializer should next call @w{@code{spoor_AddOverride}} on
+any methods that the class has inherited and wishes to override.
+
+@tindex spoor_method_t
+@deftypefn Macro {void} spoor_AddOverride (@w{struct spClass *@var{class}}, @w{int @var{selector}}, @w{char *@var{doc}}, @w{spoor_method_t @var{fn}})
+Override the method inherited by @var{class} whose selector is
+@var{selector}, using @var{doc} as the new human-readable documentation
+string and @var{fn} as the new implementation.  The type of @var{fn},
+which is @code{spoor_method_t}, is ``function returning any type, taking
+a @sc{Spoor} instance and a @code{spArgList_t} as arguments.''  If
+@var{doc} is @code{NULL}, then the inherited documentation string is
+used.  The function @var{fn} may return any scalar type.  If @var{fn} is
+@code{NULL}, then the method is overridden to become an abstract method
+(@pxref{Adding new methods}).
+@end deftypefn
+
+@node Adding new methods, Other class initializer code, Overriding inherited methods, Class initializer
+@subsection Adding new methods
+
+The class initializer should next call @w{@code{spoor_AddMethod}} to add
+any new methods and to initialize the method selector variables.
+
+@deftypefn Macro {int} spoor_AddMethod (@w{struct spClass *@var{class}}, @w{char *@var{name}}, @w{char *@var{doc}}, @w{spoor_method_t @var{fn}})
+Add a new method to @var{class} named @var{name}, with human-readable
+documentation string @var{doc} and implementation @var{fn}.  Return
+value is the selector for this method, which should be assigned to a
+global variable whose name is @w{@code{m_@var{foo}_@var{name}}}, for a
+class named @var{foo}.
+
+@cindex abstract method
+If @var{fn} is @code{NULL}, then the newly-added method is called an
+@dfn{abstract method}.  An abstract method is one which has no
+implementation in a particular class but which is generally expected to
+be overridden with real implementations in subclasses.
+
+@cindex subclass responsibility
+Invoking a method on an object in whose class that method is abstract
+causes the invocation on the same object of the method
+@w{@code{subclassResponsibility}}, which is inherited from the root
+class (@pxref{The root class}).  The default action of this method is to
+raise the exception @w{@code{spoor_SubclassResponsibility}}.  Naturally,
+that method may be overridden.
+
+This function may raise the @code{strerror(ENOMEM)} exception.
+@end deftypefn
+
+@node Other class initializer code,  , Adding new methods, Class initializer
+@subsection Other class initializer code
+
+After all new methods have been added, the class initializer should call
+the class initializers of any other classes on which it depends.  For
+instance, if class @var{foo} uses class @var{other} somewhere in its
+implementation, it should call @w{@code{@var{other}_InitializeClass()}}
+after @var{foo} is fully initialized.  This may result in many calls to
+@w{@code{@var{other}_InitializeClass}} as all the dependent classes call
+it; but if it follows the conventions set forth here, any but the first
+call should be an inexpensive no-op.
+
+Finally, the class initializer should initialize any class-specific
+data; that is, any data shared by all instances of the class.  For
+instance, a text widget class would initialize a clipboard buffer shared
+by all text widgets.
+
+@node Miscellaneous, Subsystems, The .c file, Top
+@chapter Miscellaneous
+
+This chapter describes other facilities of @sc{Spoor}.
+
+@menu
+* The root class::              
+* Auxiliary functions::         
+* The class class::             
+@end menu
+
+@node The root class, Auxiliary functions, Miscellaneous, Miscellaneous
+@section The root class
+
+@tindex spoor
+@vindex spoor_class
+The root class is the predefined @sc{Spoor} class from which all other
+classes ultimately derive.  Its name is @code{spoor}, hence pointers to
+instances are of type @w{@code{struct spoor *}}.  The class descriptor
+for the @code{spoor} class is in the global variable
+@w{@code{spoor_class}}.  The @code{spoor} class provides two methods for
+all other classes to inherit.
+
+@vindex spoor_SubclassResponsibility
+@deftypefn {Method on @code{spoor}} {void} subclassResponsibility (@w{char *@var{class}}, @w{char *@var{method}})
+Automatically invoked by @code{spSend} and @code{spSuper} (and
+variously-typed variants) when attempting to invoke an abstract method
+(@pxref{Adding new methods}).  Arguments are @var{class}, the name of
+the class from which the error arose; and @var{method}, the name of the
+abstract method whose invocation was attempted.  The action of the
+default version of this method is to raise the exception
+@w{@code{spoor_SubclassResponsibility}}, with the ``exception value''
+set to the string @w{@code{"@var{class}:@var{method}"}} (suitable for
+retrieval with @w{@code{except_GetExceptionValue}}).
+
+@vindex m_spoor_subclassResponsibility
+The selector for this method is in the global variable
+@w{@code{m_spoor_subclassResponsibility}}.
+@end deftypefn
+
+@cindex instance name
+@cindex named instance
+@cindex registry
+@deftypefn {Method on @code{spoor}} {void} setInstanceName (@w{char *@var{name}})
+Sets the name of an object to @var{name}.  @sc{Spoor} maintains a
+registry of named objects and allows object lookup by name using
+@w{@code{spoor_FindInstance}} (@pxref{Auxiliary functions}).  If
+@var{name} is @code{NULL}, then any name associated with the object is
+removed and the object is removed from the registry (if it was in it).
+
+@vindex spoor_InstanceRegistry
+The variable @w{@code{spoor_InstanceRegistry}} is of type
+@w{@code{struct hashtab *}} and contains the registry.  Callers may wish
+to iterate over its contents using @w{@code{hashtab_Iterate}} or obtain
+its size using @w{@code{hashtab_Length}}.  Elements in this hash table
+have type @w{@code{struct spoor_RegistryElt}}, which is defined in
+@file{spoor.h} like so:
+
+@example
+@group
+struct spoor_RegistryElt @{
+    char *name;
+    struct spoor *obj;
+@};
+@end group
+@end example
+
+@vindex m_spoor_setInstanceName
+The selector for this method is in the global variable
+@w{@code{m_spoor_setInstanceName}}.
+
+This function may raise the @code{strerror(ENOMEM)} exception.
+@end deftypefn
+
+The @code{spoor} class also provides these accessors:
+
+@deftypefn Accessor {struct spClass *} spoor_Class (@w{struct spoor *@var{obj}})
+Accessor for the class to which @var{obj} belongs.  This accessor should
+never be assigned to!
+@end deftypefn
+
+@deftypefn Accessor {char *} spoor_InstanceName (@w{struct spoor *@var{obj}})
+Accessor for the name of @var{obj} as set by @code{setInstanceName}.
+This accessor should not be assigned to directly, since
+@code{setInstanceName} performs the additional step of placing the
+object in the named-instance registry.
+@end deftypefn
+
+Finally, the @code{spoor} class defines a macro for allocating new
+instances of itself, per convention:
+
+@deftypefn Macro {struct spoor *} spoor_NEW ()
+Allocate, initialize, and return a new instance of the @code{spoor}
+class.  Equivalent to calling @w{@code{spoor_NewInstance(spoor_class)}}.
+
+This function may raise the @code{strerror(ENOMEM)} exception.
+@end deftypefn
+
+@node Auxiliary functions, The class class, The root class, Miscellaneous
+@section Auxiliary functions
+
+@deftypefn Function {int} spoor_IsClassMember (@w{struct spoor *@var{obj}}, @w{struct spClass *@var{class}})
+Returns non-zero if @var{obj} is a member of @var{class} or some class
+that inherits from @var{class}; zero otherwise.  This function calls
+@w{@code{spoor_NumberClasses}} (q.v.) if classes have not yet been
+numbered or if the creation of a new class has invalidated an old class
+numbering.  The class numbering scheme makes
+@w{@code{spoor_IsClassMember}} a fast constant-time operation.
+@end deftypefn
+
+@deftypefn Function {void} spoor_NumberClasses ()
+Numbers all existing @sc{Spoor} classes according to a depth-first
+traversal of the inheritance hierarchy.  This operation is linear in the
+number of classes that exist, but it makes
+@w{@code{spoor_IsClassMember}} a nearly-instantaneous operation.  In
+fact, @w{@code{spoor_IsClassMember}} will call
+@w{@code{spoor_NumberClasses}} automatically if necessary; however, the
+caller may wish to call this function itself if it wants precise control
+over when the O(n) overhead occurs.
+@end deftypefn
+
+@deftypefn Function {struct spoor *} spoor_FindInstance (@w{char *@var{name}})
+Find the instance named @var{name} and return it, or @code{NULL} if no
+such instance was found.  The instance must have been named using the
+@code{setInstanceName} method (@pxref{The root class}).  If two or more
+instances have the same name, there is no way to know which one will be
+returned from this function.
+@end deftypefn
+
+@deftypefn Function {void} spClass_setup (@w{struct spClass *@var{class}}, @w{char *@var{name}}, @w{char *@var{doc}}, @w{struct spClass *@var{super}}, @w{int @var{size}}, @w{void (*@var{init})(struct spoor *)}, @w{void (*@var{final})(struct spoor *)})
+Like @w{@code{spoor_CreateClass}} (q.v.), but used when initializing a
+class descriptor, @var{class}, already obtained separately.  In fact,
+@w{@code{spoor_CreateClass}} calls this function to initialize the class
+after allocating it.
+
+This function may raise the @code{strerror(ENOMEM)} exception.
+@end deftypefn
+
+@deftypefn Function {struct spClass *} spoor_FindClass (@w{char *@var{name}})
+Find the @sc{Spoor} class named @var{name} and return its descriptor, or
+@code{NULL} if no such class was found.
+@end deftypefn
+
+@deftypefn Macro {int} spoor_FindMethod (@w{struct spClass *@var{class}}, @w{char *@var{name}})
+Find the method in @var{class} named @var{name} and return its selector.
+The method may be one added or inherited by @var{class}.  Return value
+is less than zero if no such method was found.
+@end deftypefn
+
+@deftypefn Macro {char *} spoor_MethodDescription (@w{struct spClass *@var{class}}, @w{int @var{selector}})
+Returns the documentation string (as given to @w{@code{spoor_AddMethod}}
+or @w{@code{spoor_AddOverride}}) for the method in @var{class} whose
+selector is @var{selector}.
+@end deftypefn
+
+@node The class class,  , Auxiliary functions, Miscellaneous
+@section The class class
+
+The type of @sc{Spoor} class descriptors, @code{spClass}, is itself a
+@sc{Spoor} class!  In fact, many @sc{Spoor} operations are actually
+implemented as methods in the @code{spClass} class.
+
+@vindex spClass_class
+@findex spClass_NEW
+The class descriptor for the @code{spClass} class is in the global
+variable @w{@code{spClass_class}}.  The superclass for @code{spClass} is
+@code{spoor}.  An allocator, @w{@code{spClass_NEW()}}, is defined.
+
+No instance of @code{spClass} should ever be finalized or deallocated.
+
+@findex addMethod
+@vindex m_spClass_addMethod
+@findex findMethod
+@vindex m_spClass_findMethod
+@findex addOverride
+@vindex m_spClass_addOverride
+@findex methodDescription
+@vindex m_spClass_methodDescription
+@findex initializeInstance
+@vindex m_spClass_initializeInstance
+@findex newInstance
+@vindex m_spClass_newInstance
+The macros @w{@code{spoor_AddMethod}}, @w{@code{spoor_AddOverride}},
+@w{@code{spoor_FindMethod}}, @w{@code{spoor_MethodDescription}},
+@w{@code{spoor_InitializeInstance}}, and @w{@code{spoor_NewInstance}}
+are all implemented in terms of methods on the @code{spClass} class.
+The corresponding selectors are @w{@code{m_spClass_addMethod}},
+@w{@code{m_spClass_addOverride}}, @w{@code{m_spClass_findMethod}},
+@w{@code{m_spClass_methodDescription}},
+@w{@code{m_spClass_initializeInstance}}, and
+@w{@code{m_spClass_newInstance}}.
+
+The @code{spClass} class defines these accessors:
+
+@deftypefn Accessor {char *} spClass_Name (@w{struct spClass *@var{class}})
+Accessor for the name of the class described by @var{class}.  This
+accessor should not be assigned to.
+@end deftypefn
+
+@deftypefn Accessor {struct spClass *} spClass_superClass (@w{struct spClass *@var{class}})
+Accessor for the descriptor of the superclass for the class described by
+@var{class}.  If @var{class} is @code{spoor_class}, the result will be
+@code{NULL}.  This accessor should not be assigned to.
+@end deftypefn
+
+@node Subsystems, Shortcomings, Miscellaneous, Top
+@chapter Subsystems
+
+This chapter describes the subsystems used by @sc{Spoor}.
+
+@menu
+* Except::                      
+* Dynadt::                      
+@end menu
+
+@node Except, Dynadt, Subsystems, Subsystems
+@section Except
+
+@sc{Except} is a portable package of functions and macros permitting an
+exception-handling programming style.  Functions in @sc{Spoor} which
+fail do not return error codes, they raise exceptions.
+
+@node Dynadt,  , Except, Subsystems
+@section Dynadt
+
+@sc{Dynadt} is a portable library of several reusable,
+dynamically-resizing, container-style data types, including an array
+type (used in @sc{Spoor} in the implementation of method tables) and a
+hash table (used in @sc{Spoor} in the implementation of the named
+instance registry).
+
+@node Shortcomings, Glossary, Subsystems, Top
+@chapter Shortcomings
+
+@sc{Spoor} has some known shortcomings.
+
+@table @asis
+@item weak type-checking
+Object-oriented programming entails polymorphism, but C doesn't know
+what polymorphism is.  As a result, it is necessary to typecast often or
+to use @w{@code{void *}} when you mean some more specific type.
+@xref{Polymorphism}.
+@end table
+
+@node Glossary, Index, Shortcomings, Top
+@unnumbered Glossary
+
+@table @asis
+@item abstract method
+A @dfn{method} with no implementation.  The purpose of such a method is
+to provide a common entrypoint for @dfn{subclasses} to @dfn{inherit}.
+The subclasses @dfn{override} the missing method implementation with
+implementations of their own.
+
+@item accessor
+A macro for referring to the fields of a @sc{Spoor} class's data
+structure.  Accessors are needed because the C compiler won't
+automatically cast pointers to allow you to refer to @dfn{inherited}
+fields.
+
+@item argument unpacking
+See ``unpacking.''
+
+@item class
+A data structure and a set of @dfn{methods}.  The basis for the data
+structure and for the set of methods are @dfn{inherited} from the
+@dfn{superclass}.
+
+@item condom
+A preprocessor-based convention for protecting a header file against
+multiple inclusions.
+
+@item inheritance
+The copying of data fields and methods from a @dfn{superclass} to a
+@dfn{subclass}.  The subclass usually augments or overrides the
+inherited behavior.
+
+@item instance
+An object belonging to some @dfn{class}.  ``Belonging'' in this case
+means that the object's type is that of the class's data structure, and
+that the class's methods can operate on the object.
+
+@item instance name
+See ``named instance.''
+
+@item method
+A function belonging to a @dfn{class} and @dfn{inherited} (and possibly
+@dfn{overridden}) by @dfn{subclasses}.  Each method operates on an
+@dfn{instance} of the class and any needed additional arguments.
+
+@item method selector
+See ``selector.''
+
+@item named instance
+An @dfn{instance} which has had a name associated with it via the
+@dfn{root class} @dfn{method} @code{setInstanceName}.  Such instances
+can be retrieved by name from a global instance @dfn{registry}.
+
+@item override
+To replace the @dfn{inherited} implementation of a @dfn{method} with a
+different function.
+
+@item polymorphism
+The property that allows @dfn{instances} of some @dfn{class} to be
+handled as instances of the @dfn{superclass} but still behave like
+instances of the correct class (for purposes including @dfn{method}
+invocation).
+
+@item registry
+A global table of @dfn{named instances} which can be accessed with the
+function @w{@code{spoor_FindInstance}}.
+
+@item root class
+The @dfn{class} which does not @dfn{inherit} from any other and forms
+the root of the inheritance hierarchy.
+
+@item selector
+An integer representing a @dfn{method}.  Used in calls to @code{spSend}
+and @code{spSuper} to select the method to invoke on an @dfn{instance}.
+
+@item send
+To invoke a @dfn{method} on an @dfn{instance}.  The method
+@dfn{selector} is said to be ``sent'' to the instance.
+
+@item subclass
+A @dfn{class} which @dfn{inherits} from another.
+
+@item subclass responsibility
+The error in attempting to invoke an @dfn{abstract method} (rather than
+a concrete @dfn{override} in some @dfn{subclass}).  It is the subclass's
+responsibility to provide an implementation for the requested method.
+
+@item super call
+In an @dfn{override}, a call (using @code{spSuper}) to the overridden
+version of the method.
+
+@item superclass
+A @dfn{class} from which another @dfn{inherits}.
+
+@item unpacking
+The process of extracting arguments to a @sc{Spoor} @dfn{method} one at
+a time using a varargs-like macro, @code{spArg}.
+
+@item virtual function
+See ``abstract method''.
+@end table
+
+@node Index,  , Glossary, Top
+@unnumbered Index
+
+@printindex fn
+
+@c @shortcontents
+@contents
+
+@bye

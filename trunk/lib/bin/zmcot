@@ -1,0 +1,56 @@
+#!/bin/sh
+
+xrdb -nocpp -merge <<EOF
+zm-xterm*vt100*translations: #override !Shift <Key>F1: string("\033[s01~") \n\
+                                    !Shift <Key>F2: string("\033[s02~") \n\
+                                     Shift <Key>F3: string("\033[s03~") \n\
+                                     Shift <Key>F4: string("\033[s04~") \n\
+                                     Shift <Key>F5: string("\033[s05~") \n\
+                                     Shift <Key>F6: string("\033[s06~") \n\
+                                     Shift <Key>F7: string("\033[s07~") \n\
+                                     Shift <Key>F8: string("\033[s08~") \n\
+                                     Shift <Key>F9: string("\033[s09~") \n\
+                                    Shift <Key>F10: string("\033[s10~") \n\
+                                    Shift <Key>F11: string("\033[s11~") \n\
+                                    Shift <Key>F12: string("\033[s12~") \n\
+                                    Shift <Key>F13: string("\033[s13~") \n\
+                                    Shift <Key>F14: string("\033[s14~") \n\
+                                    Shift <Key>F15: string("\033[s15~") \n\
+                                     !Ctrl <Key>F1: string("\033[c01~") \n\
+                                     !Ctrl <Key>F2: string("\033[c02~") \n\
+                                      Ctrl <Key>F3: string("\033[c03~") \n\
+                                      Ctrl <Key>F4: string("\033[c04~") \n\
+                                      Ctrl <Key>F5: string("\033[c05~") \n\
+                                      Ctrl <Key>F6: string("\033[c06~") \n\
+                                      Ctrl <Key>F7: string("\033[c07~") \n\
+                                      Ctrl <Key>F8: string("\033[c08~") \n\
+                                      Ctrl <Key>F9: string("\033[c09~") \n\
+				     Ctrl <Key>F10: string("\033[c10~") \n\
+				     Ctrl <Key>F11: string("\033[c11~") \n\
+				     Ctrl <Key>F12: string("\033[c12~") \n\
+				     Ctrl <Key>F13: string("\033[c13~") \n\
+				     Ctrl <Key>F14: string("\033[c14~") \n\
+				     Ctrl <Key>F15: string("\033[c15~") \n\
+				 Ctrl Shift<Key>F1: string("\033[cs01~") \n\
+				 Ctrl Shift<Key>F2: string("\033[cs02~") \n\
+					  <Key>F13: string("\033[f13~") \n\
+					  <Key>F14: string("\033[f14~") \n\
+					  <Key>F15: string("\033[f15~") \n\
+				    Shift <Key>Tab: string("\033[stab") \n\
+				     Ctrl <Key>Tab: string("\033[ctab") \n\
+					 <Key>Home: string("\033[[home") \n\
+					  <Key>End: string("\033[[end") \n\
+					  <Key>F21: string("\033[f13~") \n\
+					  <Key>F22: string("\033[f14~") \n\
+					  <Key>F23: string("\033[f15~") \n\
+				       Ctrl <Key>c: string("\033[^c") \n\
+				       Ctrl <Key>z: string("\033[^z")
+EOF
+
+if test -f $HOME/.Xdefaults
+then
+	xrdb -merge < $HOME/.Xdefaults
+fi
+
+USER=${USER-`whoami`}; export USER
+exec xterm -name zm-xterm -e /usr/local/bin/zmlite $*

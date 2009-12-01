@@ -1,0 +1,84 @@
+TAR_CHASE=@TAR_CHASE@
+FIND_CHASE=@FIND_CHASE@
+USE_CP_DASH_P=true
+TAR_NO_CHOWN=@TAR_NO_CHOWN@
+
+
+mkpath='need=$DISTROOT; for part in `echo $DISTDIR/$destdir | sed '\''s:\(.\)/:\1 :g'\''`; do need=$need/$part; test -d $need || mkdir $need; done;'
+
+DISTROOT=`echo $DISTROOT | sed -e 's:/$::' -e "s:^[^/]:$SRCDIR/&:" -e 's:^$:/tmp:'`
+
+source=$1
+if test ! -f $source
+then
+    echo $0: $source not found or is not a file
+    exit 1
+fi
+shift
+
+RENAME=false
+case $1 in
+    -F) RENAME=true; shift;;
+esac
+
+if test $# -eq 0
+then
+    $RENAME && eval 'echo Cannot use -F with no destination && exit 1'
+    set $RELPATH
+fi
+
+filename=`basename $source`
+
+if $RENAME
+then
+    destdir=`echo $1 | sed 's:[^/]*$::'`
+    destfile=`basename $1`
+else
+    destdir=$1
+    destfile=$filename
+fi
+
+eval $mkpath
+
+if test "`echo $source | tr -cd /`"
+then
+    dirname=`echo $source | sed 's:/[^/]*$::'`
+else
+    dirname=.
+fi
+
+firstCopy=$DISTROOT/$DISTDIR/$destdir/$destfile
+
+if test -f $firstCopy \
+    && test newer != "`find $source $FIND_CHASE -newer $firstCopy -exec echo newer \;`"
+then
+    echo "	Skipping $source"
+else
+  rm -f $firstCopy
+  if $USE_CP_DASH_P
+  then
+    echo "	Copying $source to $firstCopy"
+    cp $source $firstCopy
+  else
+    ( cd $dirname; tar cf$TAR_CHASE$TAR_NO_CHOWN - $filename ) | \
+	( cd $DISTROOT/$DISTDIR/$destdir; tar xvf$TAR_NO_CHOWN -; \
+	    $RENAME && ( mv $filename $destfile && \
+		echo "	$filename -> $destfile" ) ) 2>&1 | sed 's/^x /	/'
+  fi
+  chmod a+r,u+w $DISTROOT/$DISTDIR/$destdir/$destfile
+  shift
+  while [ $# -gt 0 ]; do
+    if $RENAME
+    then
+	destdir=`echo $1 | sed 's:[^/]*$::'`
+	destfile=`basename $1`
+    else
+	destdir=$1
+    fi
+    eval $mkpath
+    rm -f $DISTROOT/$DISTDIR/$destdir/$destfile
+    ln $firstCopy $DISTROOT/$DISTDIR/$destdir/$destfile
+    echo "	Linked $DISTROOT/$DISTDIR/$destdir/$destfile to $firstCopy"
+    shift
+  done
+fi

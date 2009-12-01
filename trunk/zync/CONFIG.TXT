@@ -1,0 +1,1248 @@
+         Z-POP 1.1 Configuration and Installation Guide
+
+
+                  Copyright (C) 1993-1998 NetManage
+                         All rights reserved.
+ 
+
+                 About Z-POP and Z-POP services
+
+This section describes what Z-POP is and the  kinds  of  services
+you can obtain by configuring Z-POP and your Z-Mail clients.
+
+
+What is Z-POP?
+
+Z-POP is a superset of POP-3, which Z-Mail for Windows and Z-Mail
+for  Macintosh  use to move your mail from your mail host to your
+mail client.
+
+Any POP-3 client, including Z-Mail for  Windows  and  Z-Mail  for
+Macintosh,  can  use Z-POP for POP-3 mail delivery. However, only
+Z-Mail can use enhanced Z-POP services.
+
+You do not have to install Z-POP  in  order  to  use  Z-Mail  for
+Windows  or Z-Mail for Macintosh. However, you cannot use certain
+features in Z-Mail if you use a POP-3 mail delivery service other
+than Z-POP.
+
+
+What are Z-POP services?
+
+Once you've installed your Z-POP server, you can configure  Z-POP
+to  provide  services described in this section to Z-Mail clients
+on your system.
+
+
+Mail spool synchronization
+
+     While using Z-POP and Z-Mail 4.0 for Windows, you  can  make
+     mailbox synchronization available.
+
+     After working offline or working from a variety of different
+     PCs,  users'  mailboxes  can  become  out  of  sync. Through
+     mailbox  synchronization,  Z-POP  resolves  the  differences
+     between  a  mailbox  on a user's PC, and the mail spool on a
+     user's mail host.
+
+     By offering a selection of mail  synchronization  scenarios,
+     Z-Mail  for  Windows works with Z-POP to resolve differences
+     between a user's local mailbox and the  mail  spool  on  the
+     mail  host.  This enables users to keep better track of what
+     messages have been read, replied to, deleted, and saved.
+
+
+Real name service
+
+     The Z-POP server can  supply  Z-Mail  with  the  real  names
+     associated  with  users'  user  names  on  your  system. For
+     example, for a user with user name bobg,  Z-POP,  with  Real
+     Name  service  enabled,  finds  the  user's  real  name (Bob
+     Glickstein) that corresponds with the user's user name  from
+     the UNIX /etc/passwd file.
+
+     Z-POP passes the user's real name to Z-Mail,  which  assigns
+     the  real  name  to the realname Z-Script variable, and then
+     makes the realname variable read-only. This enables  you  to
+     ensure users' real names are included in the From headers of
+     outgoing mail.
+
+
+Centralized storage of user preferences
+
+     With Preferences enabled, your Z-POP server can store users'
+     Z-Mail  configurations  on  the Z-POP server. Z-POP delivers
+     users' preferences to clients running on any PC or Macintosh
+     that can access the Z-POP server.
+
+     With centralized storage of  user  preferences,  when  users
+     save  their  current  Z-Mail  configurations  on their local
+     computers, their configuration  files  are  also  stored  in
+     preferences  directories  on  the  Z-POP server according to
+     their user names.
+
+     Preferences files stored by Z-POP's Preferences service  are
+     analogous  to  .zmailrc  files  used  with  the  UNIX Z-Mail
+     clients.
+
+
+Configuration file downloading
+
+     With configuration downloading services enabled, your  Z-POP
+     server  can  supply  configuration  files, such as a central
+     system.rc file and a central attach.typ file to  Z-Mail  for
+     Windows  clients (system.zmailrc and attach.types for Z-Mail
+     for Macintosh). Configuration  downloading  enables  you  to
+     maintain  centralized  administration  of your site's Z-Mail
+     configuration.
+
+     When  the  client  asks  the  Z-POP   server   to   download
+     configuration  files  that are out-of-date, the server looks
+     in a library directory to find the files to  download.  Only
+     files  appropriate to the type and version of the client and
+     newer  than  any  corresponding  file  on  the  client   are
+     downloaded.
+
+     Z-Mail for Windows and Z-Mail for Macintosh can use  any  or
+     none  of  these  services, depending upon those services you
+     chose as defaults, and how users configure their  individual
+     Z-Mail clients.
+
+
+                  Understanding POP-3 and Z-POP
+
+Z-Mail for Windows and Z-Mail for Macintosh are designed for  use
+in  an  environment  where mail is delivered to a mail server and
+then downloaded  to  a  PC  or  Mac  via  POP  (for  Post  Office
+Protocol).  POP-3  is  a  version  of this protocol that has many
+freely available implementations. Z-POP is an enhanced version of
+POP-3  that  provides  additional functionality, and is available
+free of charge from NetManage Software.
+
+The following sections can help you determine how you to  install
+and configure POP-3, Z-POP, and Z-Mail itself. In particular, you
+must determine:
+
+     If you need POP-3
+
+     If you need Z-POP
+
+     Which ports to use for Z-POP and POP-3
+
+     The mechanism through which users at your site  receive  new
+     mail
+
+
+Retaining your current POP-3 server
+
+If you have a customized version of a  POP-3  server  that  other
+applications  use  at  your  site, you probably need to keep your
+current POP-3 server installed.
+
+If some of your users choose to leave copies of their mail on the
+mail  server  (by turning on the Leave Mail on POP host option in
+the Incoming Mail section of the User  Setup  dialog),  you  must
+ensure that you have a POP-3 server that supports preserving mail
+on the mail host.
+
+Both POP-3 and Z-POP enable you to choose to leave copies of your
+mail messages on the mail server. This option can be advantageous
+if you often read your mail directly on the host (perhaps  via  a
+host-based  version  of  Z-Mail, such as Z-Mail for Motif), or if
+you prefer to keep backup copies of your messages.
+
+Some versions of POP-3 do not have a  mechanism  for  determining
+which  message was the last to be downloaded. Furthermore, others
+support a mechanism for doing this that Z-Mail does not  use.  If
+you're using one of these POP servers, and you've chosen to leave
+mail on the host, every mail message you have on  the  server  is
+downloaded  to  your PC or Mac each time you do a new mail check.
+Because new mail checks happen every fifteen minutes by  default,
+your  mailbox  can  contain  multiple  copies of messages and can
+easily grow to an enormous size.
+
+If you have the  Z-POP  server  installed,  you  can  avoid  this
+situation by specifying the host name and port number for a Z-POP
+server in the  Incoming  Mail  section  of  Z-Mail's  User  Setup
+dialog.
+
+If you're using a  POP-3  server  that  can  determine  the  last
+message  downloaded  using a mechanism Z-Mail understands, you do
+not need to install Z-POP unless you intend to take advantage  of
+its enhancements over POP-3.
+
+If you have other applications that  use  a  generally  available
+POP-3  server,  you  may  be  able  to  replace POP-3 with Z-POP.
+However,  because  POP-3  is  an  emerging  standard,   different
+implementations   are   not   guaranteed   to  support  the  same
+functionality. It is  very  important  that  you  test  all  your
+existing  POP-3  applications  to ensure that they work correctly
+with Z-POP.
+
+
+Deciding if you need Z-POP
+
+In addition to downloading mail messages, Z-POP  can  upload  and
+download the following:
+
+     Users' real names, as they appear in the /etc/passwd file.
+
+     User-specific preferences (user.ini files)
+
+     Site-specific configuration files (attach.typ, system.rc and
+     variable files, including others)
+
+Z-POP also provides the ability to  do  mailbox  synchronization.
+Instead  of  only  downloading  mail  from the host to the PC, as
+POP-3 does, Z-POP  can  determine  the  differences  between  the
+mailbox on the host and the mailbox on the PC and can download or
+upload the changes so both mailboxes match.
+
+The   synchronization   feature   is   particularly   useful   in
+environments  where  a single user may use more than one PC, such
+as university computer labs, or companies where employees  travel
+with portable PCs.
+
+If you intend to take advantage of any  of  these  features,  you
+must install Z-POP.
+
+
+Determining which ports to use
+
+By convention, POP-3 uses port 110 on your mail server, and Z-POP
+uses  port 15232. If you require both POP-3 and Z-POP, you should
+not use port numbers that differ from these conventions.
+
+If you have decided that Z-POP can replace your POP-3 server, you
+can  arrange  for  Z-POP  to  use  both  port 110 and port 15232.
+Applications expecting to find a POP-3 server on port 110 connect
+to Z-POP.
+
+For additional information concerning how to do  this,  refer  to
+the section "Editing UNIX system files for Z-POP."
+
+
+Downloading new mail
+
+There are three methods for downloading new mail:
+
+     Using Z-POP to download your mail by specifying  your  Z-POP
+     server's host name and port number in Z-Mail's Incoming Mail
+     section of the User Setup dialog
+
+     Using a POP-3 server to download  your  mail  by  specifying
+     your  POP-3  server's  host name and port number in Z-Mail's
+     Incoming Mail section of the User Setup dialog
+
+     Using  Z-POP  synchronization  to  download  your  mail,  by
+     specifying  your Z-POP server's host name and port number in
+     the Incoming Mail section of  the  User  Setup  dialog,  and
+     turning  on  the  Use  synchronization  for  new mail checks
+     option
+
+This section describes the advantages of each method.
+
+To Z-Mail,  normal  POP-3  and  Z-POP  downloads  are  identical,
+assuming you have a POP-3 server that can determine which was the
+last to be previously downloaded. If your POP-3 server cannot  do
+this, you will want to use one of the Z-POP methods.
+
+When you use POP-3 or Z-POP to download your mail,  messages  are
+marked  read  on the server as soon as they are downloaded to the
+host. This detail is only important if you intend to use  Z-POP's
+synchronization  features.  If  messages are read on the host but
+unread on the PC, Z-POP marks them as read as soon as you perform
+a  synchronization  that changes the state of your mailbox on the
+PC in order to match the mailbox on the  host.  In  other  words,
+once  you  perform  a  PC  to  Host  synchronization, it might be
+difficult to determine which messages  you  really  haven't  read
+yet.
+
+If you choose to  download  mail  via  a  Z-POP  synchronization,
+messages  are  not  automatically  marked  read when you download
+them, so you won't encounter unusual behavior when synchronizing.
+However,  new  mail  checks  via synchronization take longer than
+normal POP-3 or Z-POP downloads.
+
+
+                     Before getting started
+
+This section describes what you need to know in order to  install
+Z-POP and avoid potential system problems.
+
+
+
+What you need to know before installing Z-POP
+
+Installing Z-POP requires that you have some familiarity with the
+following:
+
+     - How to edit network configuration files for  your  server,
+     and where these files are located in the event your server's
+     implementation of UNIX differs slightly from examples  shown
+     in this document.
+
+     Specifically, you must  edit  the  files  /etc/services  and
+     /etc/inetd.conf.  However,  under some versions of UNIX edit
+     /usr/etc/inetd.conf, and under  AIX,  run  smit  instead  of
+     editing  system configuration files. If you are not familiar
+     with these files or how to edit them, please review sections
+     concerning    network    configuration    in    the   system
+     administration documentation for your server's platform.
+
+     - How to work logged in as root on UNIX systems.
+
+     Even though  the  installation  process  for  Z-POP  is  not
+     difficult,  there  is  potential for causing damage to files
+     your system needs to operate its network services.
+
+
+Z-POP Installation in a nutshell
+
+Important:
+
+Installation instructions detailed in this document are based  on
+installing Z-POP on a Silicon Graphics computer running IRIX. The
+installation process on other UNIX variants may differ  slightly.
+These differences have been noted in the appropriate sections.
+
+These are the basic steps required to install Z-POP as your POP-3
+server and enable Z-POP services:
+
+1.  Unpack Z-POP from its tar file, which requires:
+
+      - Logging in as root on the host where you are installing
+        Z-POP.
+
+      - Changing your current working directory to:
+
+               /usr/local/etc
+
+      - Using tar to extract Z-POP's installation files from the
+        Z-POP tar file:
+
+               zcat zpop10-irix.tar.Z | tar xvf -
+
+    This creates the directory /usr/local/etc/zpoplib.
+
+2.  Change your working directory to /usr/local/etc/zpoplib and edit
+    the file zpop.config to configure Z-POP's POP-3 defaults, Z-POP
+    services, and Z-POP logs.
+
+3.  Provide configuration files for Z-POP's Configuration
+    Download service, if you'd like to enable it.
+
+4.  Ensure the same group that owns the mail spool directory owns
+    zpop, and that zpop has permissions set to 2755.  On most
+    systems you can use these two commands:
+
+        chgrp mail zpop
+        chmod 2755 zpop
+
+5.  Add an entry for port 15232 to the system configuration file
+    /etc/services.
+
+        zpop        15232/tcp
+
+6.  Add the following line to the system configuration file
+    /etc/inetd.conf.  On some systems the inetd.conf file may
+    reside in /usr/etc, or have a different name such as
+    /etc/servers.
+
+        zpop stream tcp nowait root /usr/local/etc/zpoplib/zpop zpop
+
+7.  If desired, you can replace your existing POP-3 server with
+    zpop.  Add this line to /etc/services, if necessary:
+
+        pop-3       110/tcp
+
+    Add or modify this line in /etc/inetd.conf:
+
+        pop-3 stream tcp nowait root /usr/local/etc/zpoplib/zpop zpop
+
+8.  Now you must re-start the inetd daemon to activate your new
+    Z-POP server.  Determine the process ID of inetd and enter the
+    following command:
+
+               kill -HUP <process-id>
+
+              Unpacking Z-POP from its tar archive
+
+To extract Z-POP's files  from  the  tar  archive,  follow  these
+steps:
+
+Step 1
+
+     Log in as root on the machine that you are going to  use  as
+     your Z-POP server.
+
+Step 2
+
+     Change your current working directory to the directory where
+     you are installing Z-POP. If you are installing Z-POP in the
+     default location, enter at your command line:
+
+          cd /usr/local/etc
+
+     (You must  create  this  directory  if  it  doesn't  already
+     exist.)
+
+     If you choose to unpack Z-POP  in  a  directory  other  than
+     /usr/local/etc,    you   must   consistently   edit   system
+     configuration files  to  reflect  the  alternative  location
+     you've  chosen.  For  more  information, please refer to the
+     section "Editing Z-POP's configuration file, zpop.config."
+
+Step 3
+
+     Extract the contents of the Z-POP tar file by  entering  the
+     following command:
+
+          zcat zpop10-irix.tar.Z | tar xvf -
+
+     The exact file name you supply to the zcat  command  may  be
+     different than the one shown in this example. Z-POP tar file
+     names depend on the version of Z-POP you're  installing  and
+     your hardware platform.
+
+     The command tar -xvf creates the directory zpoplib  in  your
+     current  working directory. zpoplib contains the zpop daemon
+     and its associated support files.
+
+
+               Editing UNIX system files for Z-POP
+
+Configure your server's system files by following  the  steps  in
+this  section.  Under  AIX  these  step are done through the smit
+utility. Please refer to AIX system documentation concerning  the
+use of smit.
+
+Step 1
+
+     Using an ASCII text editor, add the following  line  to  the
+     file /etc/services:
+
+          zpop 15232/tcp
+
+     If you don't  already  have  an  entry  for  pop3,  add  the
+     following as well:
+
+          pop3    110/tcp
+
+Step 2
+
+     In the file /etc/inetd.conf, if  there  is  not  already  an
+     entry  for  zpop,  you  must add one. On some UNIX operating
+     systems,  inetd.conf  may  be  located   in   the   /usr/etc
+     directory.
+
+     If you have unpacked  zpoplib  in  a  directory  other  than
+     /usr/local/etc, continue to Step 3.
+
+     If  you've  unpacked  zpoplib  in  /usr/local/etc,  add  the
+     following  entry  for  zpop, if a zpop entry doesn't already
+     exist:
+
+zpop stream tcp nowait root /usr/local/etc/zpoplib/zpop zpop
+
+     If there is already an entry for zpop, edit it so  it  looks
+     like this one.
+
+     Please skip Step 3 and proceed with Step 4.
+
+
+Step 3
+
+     If you have unpacked  zpoplib  in  a  directory  other  than
+     /usr/local/etc,   you   must   add  an  entry  for  zpop  to
+     /usr/etc/inetd.conf that is consistent with your  customized
+     location.
+
+     For example, if you had  unpacked  Z-POP  in  the  directory
+     /opt/extern,  you must add your customized, absolute path to
+     the zpop entry and use the -c option to point Z-POP  to  the
+     customized location of your zpop.config file:
+
+zpop stream tcp nowait root /opt/extern/zpoplib/zpop zpop -c /opt/extern/zpoplib/zpop.config
+
+     If there is already an entry for Z-POP, edit the existing Z-POP
+     entry so it reflects the correct path for your customized
+     location.
+
+     Note: Most operating systems cannot read inetd.conf entries
+     that continue onto more than a single line. Be certain not to
+     insert a carriage return in the entry.
+
+
+Step 4
+
+     To use Z-POP as your POP-3 server, edit the line in inetd.conf
+     that begins with pop-3, if it exists:
+
+pop3 stream tcp nowait root /usr/local/etc/zpoplib/zpop zpop
+
+     If there is no entry for POP-3, add one identical to the one in
+     this example, unless you have unpacked zpoplib in a directory
+     other than the default, /usr/local/etc.
+
+     If you have unpacked zpoplib in a directory other than
+     /usr/local/etc, you must modify part of this line so that it
+     reflects your customized location. For example, if you've
+     unpacked zpoplib in the directory /opt/extern, you must
+     specify the following:
+
+pop-3 stream tcp nowait root  /opt/extern/zpoplib/zpop zpop-c /opt/extern/zpoplib/zpop.config
+
+
+Step 5
+
+     In the directory in which you are installing Z-POP, edit the
+     configuration  file  zpop.config  as  appropriate  for  your
+     site's requirements.  Please  refer  to  the  next  section:
+     "Editing Z-POP's configuration file, zpop.config."
+
+
+Editing Z-POP's configuration file, zpop.config
+
+Configure  Z-POP  and  Z-POP  services  by  editing   zpop.config
+directives  in the zpop.config file, which resides in zpoplib. Z-
+POP reads the zpop.config file each time it starts.
+
+If  you've  unpacked   zpoplib   in   a   location   other   than
+/usr/local/etc,   you   must   tell   Z-POP  where  to  find  the
+configuration files it needs. Please refer to Step 3, on page 11,
+in the section "Editing UNIX system files for Z-POP."
+
+
+              Configuring POP-3 defaults for Z-POP
+
+This section describes how to set Z-POP's  defaults  if  you  are
+going to use Z-POP as your POP-3 server.
+
+
+Telling Z-POP where to find the mail spool
+
+The spool directive in the zpop.config tells Z-POP where mail  is
+delivered  and  stored  (the  mail-spool-directory),  and has the
+following syntax:
+
+     spool <mail-spool>
+
+where <mail-spool> can  be  either  the  path  to  a  file  or  a
+directory. Additionally, you can use the following variables:
+
+     %u represents a user name
+
+     %h indicates the home directory of a user
+
+     %d represents your platform's default spool directory
+
+For example, to tell Z-POP to find a user's  mail  spool  in  the
+Mail  directory  in  the user's home directory, use the following
+directive:
+
+     spool %h/Mail
+
+If you do not specify a file name, %u, user name, is used as  the
+spool file name, as with the example here.
+
+Alternatively, you can specify a  spool  file  by  using  the  -m
+option with the zpop command:
+
+     zpop -m %h/Mail
+
+
+Telling Z-POP where to make a copy of a user's mail spool
+
+Z-POP makes a copy of a user's mail spool to work from  during  a
+user's  Z-POP session. To specify a temporary spool name, use the
+tempcopy directive, which has the following syntax:
+
+     tempcopy <temp-spool>
+
+where <temp-spool> can be the path to  a  file  or  a  directory.
+Additionally, you can use the following variables:
+
+     %d represents your platform's default spool directory
+
+     %h indicates the home directory of a user
+
+     %s indicates the same directory as in the spool directive
+
+     %u represents a user name
+
+For example, to tell Z-POP to find make  a  copy  of  the  user's
+spool in the Mail directory in the user's home directory, use the
+following directive:
+
+     tempcopy %h/Mail
+
+If you do not specify a file name, %u.pop, user name plus a  .pop
+extension, is used as the spool file copy.
+
+Alternatively, you can specify a temporary spool  file  by  using
+the -t option with the zpop command:
+
+     zpop -t %h/Mail
+
+
+Telling Z-Mail how long to wait before timing out
+
+
+The timeout directive tells Z-POP how many seconds  to  wait  for
+new  input  from  a  client before closing the client connection,
+releasing the user's mail spool, and exiting. Specifying a  time-
+out  period  through  a  timeout directive insures that your host
+releases its lock on a user's mail spool in the event the  client
+hangs or crashes.
+
+The format of the timeout directive is:
+
+     timeout <idle-time>
+
+where <idle-time> is a  time  period  measured  in  seconds.  600
+seconds  is  the  default  setting  for  timeout  as  well as the
+minimum, except when preventing timeouts. To  prevent  time-outs,
+specify an idle-time of zero.
+
+
+                   Configuring Z-POP services
+
+
+This section describes how to configure Z-POP so your  users  can
+take   advantage   of  Z-POP  services,  which  are  saving  user
+preferences,   providing   centralized    configuration    files,
+downloading   users'   real   name   information,   and   mailbox
+synchronization.
+
+
+Telling Z-POP where to save users' preferences
+
+
+The prefs directive tells  Z-POP  where  to  store  and  retrieve
+users'  preferences files for use with Z-POP's remote preferences
+service. The format of the prefs directive is:
+
+     prefs <preferences-directory>
+
+where <preferences-directory> is the absolute path to  the  prefs
+directory. The default prefs directory is:
+
+     /usr/local/etc/zpoplib/prefs
+
+If  you've  unpacked  zpoplib   in   a   directory   other   than
+/usr/local/etc, you must indicate your customized path by editing
+the prefs directive in zpop.config.
+
+For  example,  if  you've  unpacked  zpoplib  in  the   directory
+/usr/local/packages,  you  must provide a prefs directive such as
+the following:
+
+     prefs /usr/local/packages/zpoplib/prefs
+
+The preferences directory must be writable. It's recommended that
+you  have  Z-POP  run  setgid  in  group  mail and make the prefs
+directory have access permissions of mode 775 and  have  a  group
+ownership of mail.
+
+
+Telling Z-POP where to find configuration files
+
+The library directive tells Z-POP where to  find  centralized  Z-
+Mail  configuration  files  for  use  with  Z-POP's Configuration
+Downloading service.
+
+The library directive has the following syntax:
+
+     library <library-directory>
+
+where <library-directory> is the absolute path to  the  directory
+containing  centralized configuration files you've provided. (For
+more information on providing centralized configuration files for
+your  users,  please refer to the section "Providing files for Z-
+POP's Configuration Download service.")
+
+The default library directory is  /usr/local/etc/zpoplib/lib.  If
+you've unpacked zpoplib in a directory other than /usr/local/etc,
+you must indicate your customized path  by  editing  the  library
+directive in zpop.config.
+
+For  example,  if  you've  unpacked  zpoplib  in  the   directory
+/usr/local/packages, you must provide a library directive such as
+the following:
+
+     library /usr/local/packages/zpoplib/lib
+
+
+Describing the structure of Z-POP's configuration file library
+
+The  library-structure  directive  tells  Z-POP  the  hierarchial
+structure  of  the  library  directory  indicated  by the library
+directive.
+
+The library-structure directive has been included  to  facilitate
+additional functionality in future Z-POP releases.
+
+The default value of this directive is:
+
+     PRODUCT PLATFORM VERSION
+
+It is not recommended that you change  library-structure  to  any
+other  value at this time. If, for some reason, library-structure
+has been changed or  deleted,  the  correct  entry  for  library-
+structure is the following:
+
+library-structure PRODUCT PLATFORM VERSION
+
+
+                    Configuring Z-POP reports
+
+
+This  section  describes  how  to  configure  how  Z-POP  reports
+debugging, warning, and error messages.
+
+
+Specifying the types of messages Z-POP reports
+
+Use the debug directive in the zpop.config  file  to  tell  Z-POP
+which debugging and warning messages to report.
+
+The debug directive has the following syntax:
+
+     debug <debug_keys>...
+
+where <debug_keys> is space-separated list of keywords specifying
+the  types  of  error and debugging output that you want Z-POP to
+report.
+
+By default, Z-POP generates reports for  all  fatal  errors,  and
+warnings that probably require attention.
+
+Tell Z-POP to include messages of a particular type by  including
+a  debug_key value. Set debug to any combination of the debug_key
+values listed here.
+
+This value:     Tells Z-POP to report:
+
+ALL             All debug messages listed here
+
+COMMANDS        Commands received by Z-POP
+
+CONFIG          Errors concerning the zpop.config file
+
+CONNECTION      Errors   concerning   establishing   a    network
+                connection between client and server
+
+ERRORS          Fatal errors. This  option  is  included  in  all
+                other options.
+
+LIBRARY         Errors concerning the download library
+
+MAILDROP        Errors concerning operations on the  user's  Mail
+                spool
+
+VERBOSE         Commands sent and received by Z-POP  as  well  as
+                the contents of all messages and files downloaded
+                by Z-POP
+
+WARNINGS        Non-fatal warnings and fatal errors. This  option
+                is included with all other options.
+
+
+Sending Z-POP debug output to a trace file
+
+Use the trace directive in your  zpop.config  file  to  send  any
+error  or  warning  messages issued by Z-POP, or debugging output
+generated while Z-POP is running, to  a  trace  file  instead  of
+syslogd.
+
+The trace directive has the following syntax:
+
+     TRACE <trace-file>
+
+where trace-file is the absolute path to the file where you  want
+Z-POP  to  report  debug messages you've specified with the debug
+directive.
+
+                             WARNING
+A trace file can grow until it fills your file system. Use  trace
+files  only  temporarily  for  testing  purposes,  or  have  them
+automatically deleted every night by the cron utility.
+
+If you  do  not  specify  a  trace  file,  warning  messages  and
+debugging output are reported through syslogd.
+
+
+   Providing files for Z-POP's Configuration Download service
+
+Z-Mail configuration files are text files that are found  in  the
+$ZMLIB  directory.  They  are  used  to  modify  much of Z-Mail's
+interface and behavior. Z-POP's  Configuration  Download  service
+allows  you provide users with local configuration files that are
+centrally-administered and downloaded from a single location.
+
+In the section "Telling Z-POP where to find configuration files,"
+you  told  Z-POP where to find configuration files to download to
+users through the Configuration Download service.
+
+To provide configuration files, follow these steps:
+
+Step 1
+
+     Ensure  that  your  zpop.config  files  contains  a  library
+     directive  that points to the correct configuration library.
+     By    default,     the     library     is     located     in
+     /usr/local/etc/zpoplib/lib.  For  more information, refer to
+     the section  "Telling  Z-POP  where  to  find  configuration
+     files."
+
+
+Step 2
+
+     Modify any configuration files you want Z-POP to download to
+     your   users.   Examples   are  attach.typ  (attach.type  on
+     Macintosh) or zmail.rc (system.zmailrc on Macintosh).
+
+
+Step 3
+
+     If the directories do not already exist under the  directory
+     you  have  specified  with  the  library  directive  in your
+     zpop.config  file,  create  a   directory   structure   that
+     indicates  the  product, platform, and version of Z-Mail for
+     which you'll be providing configuration files.
+
+     For example, if you want to provide configuration files  for
+     Z-Mail 4.0 for Windows, create a directory structure such as
+     the following:
+
+          zmail/windows/4.0
+
+     within the library directory, which is by default:
+
+          /usr/local/etc/zpoplib/lib
+
+
+Step 4
+
+     Copy the files you want to have Z-POP automatically download
+     into  the  version  directory.  For  example,  if  you  have
+     provided a customized attach.typ file  for  Z-Mail  4.0  for
+     Windows, copy your customized file to zmail/windows/4.0.
+
+
+Step 5
+
+     In each  library  directory,  starting  with  the  directory
+     you've   specified   in   your  library  directive  in  your
+     zpop.config file, if the file doesn't already exist,  create
+     a file named .give.
+
+     Each .give file in each library  directory  must  contain  a
+     line  specifying  the files and subdirectories they contain.
+     For example:
+
+          This directory:     Contains a .give file
+                              containing this line:
+
+
+          zmail               windows
+
+          windows             4.0
+
+          4.0                 attach.type
+
+     If you've had to create a .give file for a directory, or the
+     existing  enter  the file or subdirectory's name on a single
+     line by itself.
+
+Step 6
+
+     Increment the Seq-num in the File-Id header of the file  you
+     want  Z-POP  to  download.  The File-Id header is always the
+     first line in the configuration file.
+
+     For example, at the top of the file attach.typ you  want  Z-
+     POP  to  download  to  users  of Z-Mail 4.0 for Windows, the
+     header may appear like this:
+
+      # -%- File-id:attach.types; Client-rev:4.0.70; Seq-num:0 -%-
+
+     Edit this line to increment Seq-num by one:
+
+      # -%- File-id:attach.types; Client-rev:4.0.70; Seq-num:1 -%-
+
+     (If the Seq-num field is missing, add it after  the  Client-
+     rev field and a semicolon, as shown in these examples.)
+
+     Z-POP uses these sequence numbers  to  determine  whether  a
+     configuration  file  is  newer  on  the server and should be
+     downloaded to the client. By incrementing the Seq-num in the
+     configuration file's header, you ensure that Z-POP downloads
+     the file to any of your users who connect to your Z-POP host
+     and are using Z-POP's Configuration Download service.
+
+     Please note that when users start Z-Mail with  the  Download
+     configuration    files    option   set,   Z-Mail   retrieves
+     configuration files from the library directory that  matches
+     Z-Mail's  platform  and version. However, Z-Mail doesn't use
+     those configuration files until the next time it is invoked.
+
+                               WARNING
+
+     Sequence numbers of library files are automatically provided
+     for  each  Z-Mail client and are reset to 0 with each Z-Mail
+     release. Z-POP considers library files from  newer  releases
+     with  higher Client-rev numbers as newer files than previous
+     releases, which have lower Client-rev numbers.
+
+     If you provide configuration files from  an  earlier  Z-Mail
+     release,  edit  the  Client-rev  numbers  so  they match the
+     release you are using and set the sequence numbers  so  they
+     are  one  greater  than those of existing library files that
+     may exist in  users'  $ZMLIB  directories  on  their  client
+     machines.
+
+
+         Setting Z-POP's group ID and access permissions
+
+To ensure that Z-POP can create temporary files in the mail spool
+directory, you must ensure:
+
+1.  The same group that owns the mail spool directory owns the
+    zpop program
+
+2.  The zpop program runs in setgid mode
+
+If you do not ensure that group ownership  of  the  zpop  program
+matches the group ownership of the mail spool directory, and that
+zpop runs in setgid mode,  zpop  may  fail  with  a  pop_dropcopy
+error.
+
+
+Checking group IDs
+
+To ensure that group ownership of the zpop  program  matches  the
+group  ownership  of  your  mail  spool  directory, on your Z-POP
+server, enter the following to determine the  ownership  of  your
+mail spool directory:
+
+     ls -g /usr/var
+
+From this output, find the mail directory, as shown below:
+
+drwxrwxr-x    3 mail         512 Oct 23 15:04 mail/
+
+This output indicates that group mail owns the mail/ directory.
+
+Similarly, check zpop's  group  ownership  by  using  the  ls  -g
+command:
+
+     ls -g /usr/local/etc/zpoplib/zpop
+
+
+Setting zpop's group ID
+
+If ownership of your mail spool  directory  does  not  match  the
+group ownership of the zpop program:
+
+1.  Login as root on your Z-POP server.
+
+2.  Use the chgrp command to assign group ownership to the zpop
+    program so that it matches the group ownership of  your  mail
+    spool directory.
+
+    For example, if group mail owns your  mail  spool  directory,
+    set zpop's group ownership to mail:
+
+              chgrp mail /usr/local/etc/zpoplib/zpop
+
+    For more information on  the  chgrp  command,  refer  to  the
+    chgrp(1) man page.
+
+
+Setting zpop's access permissions
+
+After ensuring the zpop has correct group ownership, ensure  that
+zpop  runs  in setgid mode. While logged in as root on your Z-POP
+server, enter the following:
+
+     chmod 2755 /usr/local/etc/zpoplib/zpop
+
+For more information on the chmod command, refer to the  chmod(1)
+man page.
+
+
+           Enabling your newly installed Z-POP server
+
+This section does not apply to AIX.
+
+Before executing the steps  in  this  section,  you  should  have
+already completed the following:
+
+     Unpacking Z-POP's file from the tar archive
+
+     Editing    the    system     files     /etc/services     and
+     /usr/etc/inetd.conf
+
+     Editing zpop.config
+
+     Providing configuration files and  setting  up  the  library
+     directories  for  Z-POP's Configuration Downloading service,
+     if you want to enable it.
+
+     Ensuring the group of zpop is mail and the  permissions  set
+     for zpop is 2755
+
+After ensuring you have correctly completed these  tasks,  enable
+your new Z-POP server by following these steps:
+
+Step 1
+
+     Determine the process ID of the inetd daemon running on your
+     system by entering the following command:
+
+          ps -e | grep inetd
+
+     or, on some versions of UNIX:
+
+          ps -ax | grep inetd
+
+     The number in the second column of  the  output  (the  first
+     column may be blank) from this command is the process ID for
+     inetd. For example, in this sample output:
+
+                  103 ?        0:00 inetd
+
+     the process ID of inetd is 103.
+
+
+Step 2
+
+     Send a HUP signal to inetd by using the kill command:
+
+          kill -HUP process-id
+
+     Where process-id is the process ID of inetd  you  determined
+     in Step 1.
+
+     A HUP signal sent by the kill command tells inetd to re-read
+     its configuration file /usr/etc/inetd.conf.
+
+After completing these two steps, your Z-POP server is installed.
+Please  follow  the instructions for testing your Z-POP server by
+referring to the section "Testing  Z-POP"  to  ensure  that  your
+server functions correctly.
+
+NOTE
+
+Once you've completed Step 2, POP-3 requests arriving on port 110
+on  your server are sent to Z-POP, unless you have not configured
+/usr/etc/inetd.conf to use Z-POP as your POP-3 server.
+
+If you have enabled additional Z-POP services,  network  requests
+arriving on port 110 of your server are sent to the Z-POP program
+as well.
+
+
+
+                          Testing Z-POP
+
+
+To test your newly-installed Z-POP server, use telnet to  connect
+to your server at port 15232. For example:
+
+     telnet <hostname> 15232
+
+where <hostname> is the  name  of  the  server  on  which  you've
+installed Z-POP.
+
+If you have configured Z-POP correctly, the Z-POP server responds
+with the following:
+
+     +OK Welcome to Z-Mail Z-POP server v.1.0
+
+If your Z-POP server displays the following message:
+
+     telnet: Unable to connect to remote host: Connection refused
+
+or a similar error message, Z-POP service  is  not  available  on
+your host at port 15232.
+
+Recheck your entries in /etc/services and /usr/etc/inetd.conf and
+ensure  you've typed the correct port number. If your entries are
+correct, send another HUP signal to the inetd daemon by using the
+command:
+
+     kill -HUP <process-id>
+
+where <process-id> is the process  ID  for  the  inetd  currently
+running  on  your  server.  (Use  the ps command to determine the
+process ID of inetd.)
+
+If Z-POP reports the following:
+
+     +OK Warning:  non-critical  errors  occurred  starting  this
+     server. Please ask a system administrator to check the Z-POP
+     log for details. You may continue  your  session,  but  some
+     services may be unavailable.
+
+the Z-POP server is starting, but is encountering errors  in  the
+file zpop.config. Check to see if one of the directories or files
+specified in your zpop.config file is missing or damaged.
+
+NOTE: If you are installing Z-POP on a system other than  an  SGI
+system  running  IRIX,  the  exact  wording of error messages and
+warnings may be slightly different.
+
+To terminate the Z-POP and telnet sessions, enter:
+
+     quit
+
+
+
+Errors while downloading mail
+
+
+If, while downloading mail, Z-POP responds  with  a  pop_dropcopy
+error, either or both of the following may be true:
+
+     The zpop program cannot write out a temporary mail file  due
+     to   incorrect   group   ownership   and   permissions.  For
+     information on how to  correctly  set  group  ownership  and
+     permissions,  refer to page 25, Setting Z-POP's group ID and
+     access permissions.
+
+     There are syntax errors in the spool file. In this case  you
+     can  either  attempt to locate the error or extract messages
+     from the file manually.
+
+
+
+                 Removing Z-POP from your server
+
+
+This section does not apply to AIX.
+
+To remove the Z-POP server from your host, perform the  following
+steps:
+
+Step 1
+
+
+     In the file /usr/etc/inetd.conf, delete the line that begins
+     with zpop:
+
+     zpop stream tcp nowait root /usr/local/etc/zpoplib/zpop zpop
+
+
+Step 2
+
+     If you had chosen to use the zpop daemon to provide both  Z-
+     POP  and  POP-3  services,  you  may  have  commented-out an
+     existing POP-3 line in /usr/etc/inetd.conf and added  a  new
+     POP-3 line when you had installed Z-POP.
+
+     If so, delete the POP-3 line you had added, and  remove  the
+     leading  # character you had added to any POP-3 lines during
+     installation.
+
+
+Step 3
+
+     In the file /etc/services, delete the following line:
+
+              zpop 15232/tcp
+
+
+Step 4
+
+     Determine the process ID of the inetd daemon on your  system
+     by entering the following command:
+
+          ps -e | grep inetd
+
+     or, on some versions of UNIX:
+
+          ps -ax | grep inetd
+
+     The number in the second column of  the  output  (the  first
+     column  can be blank) from this command is the process ID of
+     inetd. For example, in this sample output:
+
+          103 ?        0:00 inetd
+
+     the process ID is 103.
+
+
+Step 5
+
+     Send a HUP signal to the inetd daemon with the command:
+
+          kill -HUP process-id
+
+     NOTE:
+     Once this step is complete, network requests that arrive  on
+     this  machine  destined for the POP-3 service (port 110) are
+     sent to whatever program is specified in inetd.conf for  the
+     POP-3 service.
+
+
+Step 6
+
+     Enter this command carefully! Logged in  as  root,  you  can
+     accidentally delete more than you want!
+
+     Delete Z-POP software with entering the following command:
+
+          rm -r /usr/local/etc/zpoplib
+
+     If you had installed the Z-POP software in a directory other
+     than  /usr/local/etc/zpoplib,  enter that directory in place
+     of /usr/local/etc/zpoplib, which is shown in the example.
+
+
+                     Known bugs in Z-POP 1.0
+
+
+These are the known bugs in Z-POP 1.0. If  you  encounter  a  bug
+that  is  not in this list, please submit the bug to us according
+to the instructions in the section "How to get additional help."
+
+3215    Z-POP may truncate extremely long lines of text.
+
+3412    Messages that Z-POP write to standard error are delivered
+        to the client, but not recorded in the trace file.
+
+3949    Files containing users preferences are always written  to
+        the   server   with   permissions  of  644  (-rw-r--r--),
+        regardless of their previous permission settings  or  the
+        user's default umask.
+
+3986    Extra blank lines are appended to some messages when
+        they are downloaded.
+
+4784    If a message is marked as read on the sever, Z-POP will
+        never change its status to unread during a
+        synchronization, even if the message was  never  read  on
+        the client.
+
+4877    When messages are downloaded, they are sorted according
+        to the date received. They should be sorted by date sent
+        instead.
+
+        Workaround: Choose By Date Sent from the Sort menu
+        after downloading new mail.
+
+5216    When Z-POP is invoked from the command line, command
+        line options do  not  override  settings  in  zpop.config
+        file.
+
+5383    Lines that start with the word from are prepended with a
+        > character when written back to the server.
+
+5423    When the Z-POP is configured to write only ERRORS and
+        WARNINGS to the trace file, less important information
+        gets written as well.
+
+5949    New mail checks can be very slow when done via Z-POP.

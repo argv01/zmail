@@ -1,0 +1,5 @@
+# Include the following lines in your zmail resources file if you want
+# buttons for Phone Tag and Tag-It on your main window
+button -W main
+button -p 7 -label 'Phone Tag' -name Phonetag zm_compose_phone_tag
+button -p 8 -label 'Tag-It|' -name Tagit zm_compose_tag_it

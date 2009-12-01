@@ -1,0 +1,504 @@
+#
+# Z-Mail Master Configuration Setup Program (Motif/Lite/Shell)
+#
+# Copyright 1996 NCD Software Corporation.  All rights reserved.
+#
+set __zcf__version = 1.1
+
+if $?__zcf_version
+    if "$__zcf_version" == "$__zcf__version"
+	set __install = 'Re-installing'
+    else
+	set __install = 'Converting to'
+    endif
+    ask -d c "\
+WARNING:  You already use Master Configuration version $__zcf_version.\n\n\
+$__install Master Configuration version $__zcf__version may irreparably\n\
+damage your existing customized configuration!\n\n"'\
+Choose "Yes" only if you know EXACTLY what you are doing.\n\n\
+Choose "No" or "Cancel" to stop now,'" leaving version $__zcf_version intact."
+else
+    ask -d c "\
+WARNING:  Master Configuration is designed for experienced users who wish\n\
+to heavily customize their $version environment.\n\n\
+Are you SURE you want to proceed?"
+endif
+if $status != 0
+    return
+endif
+
+# Make sure Z-Script is in a sane state.  There's no way to prevent
+# interposer interference, but clean up other cruft just in case.
+builtin unset warning
+builtin uncmd if else endif return
+
+# Sanity checks for supported commands/variables
+builtin echo "Checking out your Z-Mail version ..."
+builtin unset __test
+builtin arith __test = $is_mac$is_mswin
+if $?__test$status != 10
+    builtin error "$version cannot use Master Configuration, sorry."
+    return
+endif
+if $__test > 0
+    builtin echo -d "$version doesn't require Master Configuration."
+    return
+endif
+#builtin while 0 'builtin echo -n'
+#if $status != 0
+#    builtin error "$version doesn't have the `while' command."
+#    return
+#endif
+builtin sh :
+if $status != 0
+    builtin error "$version doesn't have a working `sh' command."
+    return
+endif
+builtin echo "$version is OK, proceeding ..."
+
+# Make sure we have a place for temp files (copied from zmenu_set_tmpdir)
+builtin uncmd __set__tmpdir
+builtin function __set__tmpdir () {
+    builtin unset __tmpdir
+    if $?tmpdir
+	if "x$tmpdir" != x
+	    builtin set __tmpdir = "$tmpdir"
+	    return
+	endif
+    endif
+    builtin set __tmpdir = /tmp
+}
+__set__tmpdir
+builtin set __workspace = "$__tmpdir"/z$$.tmp
+#builtin sh rm -rf "$__workspace"
+builtin sh mkdir "$__workspace"
+if $status != 0
+    builtin error "Can't create workspace directory, check TMPDIR setting"
+    return
+endif
+
+# Save the current state, we're going to clobber it soon
+builtin ask "\
+Initializing Master Configuration state.\n\n\
+Once Master Configuration is initialized,\n\
+you cannot abort Master Configuration setup\n\
+except by exiting from and restarting Z-Mail.\n\n\
+Mailboxes may need to be updated before exiting.\n\n"'\
+Choose "Yes" to update all mailboxes and continue.\n\
+Choose "No" to continue without updating.\n\
+Choose "Cancel" to stop Master Configuration now.'
+if $?openfolders$status == 10
+    builtin close $openfolders
+endif
+if $status < 0
+    return
+endif
+builtin saveopts -q -A -f "$__workspace/sysstate.zcf"
+builtin saveopts -q -f "$__workspace/userstate.zcf"
+if $status != 0
+    builtin error "Failed to save current state to workspace, giving up."
+    return
+endif
+
+# Handle exit conditions
+builtin unset exit_saveopts
+builtin trap - 0
+
+# Enforce sanity in the command set used in this script
+builtin uninterpose -before uninterpose *
+if $status != 0
+    builtin error "The `uninterpose' command isn't working, giving up."
+    return
+endif
+builtin uninterpose -after uninterpose *
+if $status != 0
+    builtin error "The `uninterpose' command isn't working, giving up."
+    return
+endif
+builtin uninterpose -before uncmd *
+builtin uninterpose -after uncmd *
+builtin uncmd *
+if $status != 0
+    builtin error "The `uncmd' command isn't working, exiting."
+    builtin x
+endif
+builtin uninterpose -before unfunction *
+builtin uninterpose -after unfunction *
+builtin unfunction *
+if $status != 0
+    builtin error "The `unfunction' command isn't working, exiting."
+    builtin x
+endif
+
+# Now it's safe to stop using "builtin", and all interposers are disabled
+# because all user-defined functions have been deleted.
+
+if 0
+uninterpose -before set *
+uninterpose -after set *
+uninterpose -before unset *
+uninterpose -after unset *
+uninterpose -before arith *
+uninterpose -after arith *
+uninterpose -before function *
+uninterpose -after function *
+uninterpose -before source *
+uninterpose -after source *
+uninterpose -before saveopts *
+uninterpose -after saveopts *
+uninterpose -before eval *
+uninterpose -after eval *
+uninterpose -before echo *
+uninterpose -after echo *
+uninterpose -before error *
+uninterpose -after error *
+uninterpose -before sh *
+uninterpose -after sh *
+uninterpose -before trap *
+uninterpose -after trap *
+uninterpose -before x *
+uninterpose -after x *
+uninterpose -before foreach *
+uninterpose -after foreach *
+#uninterpose -before while *
+#uninterpose -after while *
+uninterpose -before shift *
+uninterpose -after shift *
+uninterpose -before setenv *
+uninterpose -after setenv *
+uninterpose -before ask *
+uninterpose -after ask *
+endif
+
+# Handle exit conditions again, just in case
+unset exit_saveopts
+trap - 0
+
+# Set up directories used by Master Configuration
+
+function __set_zmailrc () {
+    unset __shared_mailrc
+    unset ZMAILRC	# Unsets zscript, leaves environ alone
+    if $?ZMAILRC
+	return
+    endif
+    unset MAILRC	# Unsets zscript, leaves environ alone
+    if $?MAILRC
+	setenv ZMAILRC "$MAILRC"
+	set __shared_mailrc
+	return
+    endif
+    setenv ZMAILRC ~/.zmailrc
+}
+function __cp () {
+    if "$1" == "$2"
+	return 0
+    endif
+    sh cp "$1" "$2"
+    if $status != 0
+	error "Failed to cp $1 $2, exiting."
+	x
+    endif
+    return 0
+}
+function __mkdir () {
+    if -e "$1"/.
+	return 0
+    endif
+    sh mkdir "$1"
+    if $status != 0
+	error "Failed to make directory $1, exiting."
+	x
+    endif
+}
+function __write () {
+    set __file = "$1"
+    shift
+    setenv OUTPUT "$*"
+    sh 'echo "$OUTPUT" >> '"$__file"
+    if $status != 0
+	error "Failed to write $__file, exiting."
+	x
+    endif
+    unsetenv OUTPUT
+}
+
+unset ZM_UI
+if is_gui
+    setenv ZM_UI motif
+else
+    if is_lite
+	setenv ZM_UI lite
+    else
+	setenv ZM_UI shell
+    endif
+endif
+
+__set_zmailrc
+__mkdir ~/zscript
+__mkdir ~/zscript/ui
+if -e "$ZMAILRC"
+    ask -m -i __rc_ui -d $ZM_UI \
+	    "$ZMAILRC found.\nUse it for which interface?" \
+	    "any (always use it)" motif lite shell "none (ignore it)"
+    if $status < 0
+	error "Master Configuration Setup canceled, exiting"
+	x
+    endif
+    if $status == 0
+	set __rc_ui = $__rc_ui:1
+	if $__rc_ui != none
+	    __cp "$ZMAILRC" ~/zscript/ui/$__rc_ui.zrc
+	endif
+    endif
+    __cp "$ZMAILRC" "$__workspace/original.zrc"
+    set __q = '"'
+    if $?__shared_mailrc
+	echo -p -d "\
+WARNING:  Your environment MAILRC was set, but ZMAILRC was not set.\n\n\
+Z-Mail Master Configuration cannot be shared with other mail agents.\n\
+You must either add ZMAILRC to you environment, or remove MAILRC.\n\n\
+Using $__q$HOME/.zmailrc$__q to install Master Configuration startup."
+	setenv ZMAILRC ~/.zmailrc
+    endif
+    if $?__zcf_version
+	echo -p -d "\
+ZMAILRC is changed at startup by Master Configuration $__zcf_version.\n\
+Using $__q$HOME/.zmailrc$__q to install Master Configuration startup.\n\
+You may need to move this file to your actual ZMAILRC location."
+    else
+	if "$ZMAILRC" != "$HOME/.zmailrc"
+	    echo -p -d "\
+WARNING:  Your environment ZMAILRC was set to $__q$ZMAILRC$__q.\n\
+Master Configuration is installing its starup scripts in that file.\n\n\
+Master Configuration normally uses $__q$HOME/.zmailrc$__q, so\n\
+please check that your ZMAILRC was correct and rename the file if not."
+	endif
+    endif
+else
+    set __rc_ui = $ZM_UI
+endif
+if $__rc_ui != $ZM_UI
+    ask "Use existing saved configuration for $ZM_UI interface?"
+    if $status == 0
+	__cp "$__workspace/userstate.zcf" ~/zscript/ui/$ZM_UI.zrc
+    endif
+    if $status < 0
+	error "Master Configuration Setup canceled, exiting."
+	x
+    endif
+endif
+
+# Stash aliases, filters, and headers separately
+
+saveopts -q -o alias ~/zscript/aliases
+if $status == 0
+    echo Saved aliases to ~/zscript/aliases
+endif
+
+saveopts -q -o filter ~/zscript/filters
+if $status == 0
+    echo Saved filters to ~/zscript/filters
+endif
+
+saveopts -q -o my_hdr ~/zscript/headers
+if $status == 0
+    echo Saved headers to ~/zscript/headers
+endif
+
+# Set up functions to load other functions
+
+set __q = "'"
+
+set __vpush  = 'function vpush () {'"$(\n)"
+set __vpush += "    eval set __set = $__q"'$?'"$__q"'$1'"$(\n)"
+set __vpush += '    if $__set'"$(\n)"
+set __vpush += '	arith $1 += 1'"$(\n)"
+set __vpush += '    else'"$(\n)"
+set __vpush += '	set $1 = 0'"$(\n)"
+set __vpush += '    endif'"$(\n)"
+set __vpush += '    return 0'"$(\n)"
+set __vpush += '}'"$(\n)"
+
+set __vpop  = 'function vpop () {'"$(\n)"
+set __vpop += "    eval set __set = $__q"'$?'"$__q"'$1'"$(\n)"
+set __vpop += '    if $__set'"$(\n)"
+set __vpop += "	eval set __set = $__q"'$'"$__q"'$1'"$(\n)"
+set __vpop += '	if $__set'"$(\n)"
+set __vpop += '	    arith $1 -= 1'"$(\n)"
+set __vpop += '	else'"$(\n)"
+set __vpop += '	    unset $1'"$(\n)"
+set __vpop += '	endif'"$(\n)"
+set __vpop += '    endif'"$(\n)"
+set __vpop += '    return 0'"$(\n)"
+set __vpop += '}'"$(\n)"
+
+set __desire  = 'function desire() {'"$(\n)"
+set __desire += '    if -e "$1/."'"$(\n)"
+set __desire += '	return 0'"$(\n)"
+set __desire += '    endif'"$(\n)"
+set __desire += '    if -e "$1"'"$(\n)"
+set __desire += '	vpush recursive'"$(\n)"
+set __desire += '	source "$1"'"$(\n)"
+set __desire += '	vpop recursive'"$(\n)"
+set __desire += '    endif'"$(\n)"
+set __desire += '    return 0'"$(\n)"
+set __desire += '}'"$(\n)"
+
+set __leader = "# Master Configuration startup script$(\n)"
+set __leader += "set __zcf_version = $__zcf__version$(\n)"
+
+set __trailer = "$(\n)unset ZM_UI$(\n)"
+set __trailer += 'if $is_mac$is_mswin == 0'"$(\n)"
+set __trailer += '    if is_gui'"$(\n)"
+set __trailer += '	setenv ZM_UI motif'"$(\n)"
+set __trailer += '    else'"$(\n)"
+set __trailer += '	if is_lite'"$(\n)"
+set __trailer += '	    setenv ZM_UI lite'"$(\n)"
+set __trailer += '	else'"$(\n)"
+set __trailer += '	    setenv ZM_UI shell'"$(\n)"
+set __trailer += '	endif'"$(\n)"
+set __trailer += '    endif'"$(\n)"
+set __trailer += 'endif'"$(\n\n)"
+set __trailer += 'unset ZMAILRC'"$(\n)"
+set __trailer += 'setenv ZMAILRC ~/zscript/ui/$ZM_UI.zrc'"$(\n\n)"
+set __trailer += 'desire ~/zscript/ui/any'"$(\n)"
+set __trailer += 'desire ~/zscript/ui/$ZM_UI'"$(\n\n)"
+set __trailer += 'set alias_rc = ~/zscript/aliases'"$(\n)"
+set __trailer += 'set header_rc = ~/zscript/headers'"$(\n)"
+set __trailer += 'set filter_rc = ~/zscript/filters'"$(\n)"
+set __trailer += 'desire $alias_rc'"$(\n)"
+set __trailer += 'desire $header_rc'"$(\n)"
+set __trailer += 'desire $filter_rc'"$(\n)"
+set __trailer += 'desire "$ZMLIB/samples/zscript/saveconf.zsc"'"$(\n)"
+set __trailer += "$(\n)unfunction desire vpush vpop$(\n)"
+
+__write "$__workspace/desire.zcs" "$__leader"
+__write "$__workspace/desire.zcs" "$__vpush"
+__write "$__workspace/desire.zcs" "$__vpop"
+__write "$__workspace/desire.zcs" "$__desire"
+__write "$__workspace/desire.zcs" "$__trailer"
+
+unset __leader __trailer __vpush __vpop __desire
+
+# Set up each of the UI-specific bootstrap scripts
+
+set __dofirst = "$(\n)##$(\n)"
+set __dofirst += '#'"$(\n)"
+set __dofirst += '# Hand-edited configuration that happens before'"$(\n)"
+set __dofirst += '# saved configuration follows.'"$(\n)"
+set __dofirst += '#'"$(\n)"
+set __dofirst += "##$(\n\n)# End of hand-edited configuration$(\n\n)"
+set __dofirst += '# Load any saved configuration for this UI'"$(\n)"
+
+set __nochange = "$(\n)##$(\n)"
+set __nochange += '#'"$(\n)"
+set __nochange += '# Hand-edited configuration that should NOT'"$(\n)"
+set __nochange += '# be changed by saving of options follows.'"$(\n)"
+set __nochange += '#'"$(\n)"
+set __nochange += "##$(\n)"
+
+set __script = '#'"$(\n)"
+set __script += '# Z-Mail shell mode (CLI) startup'"$(\n)"
+set __script += '#'"$(\n)"
+set __script += "$__dofirst"
+set __script += 'desire ~/zscript/ui/shell.zrc'"$(\n)"
+set __script += "$__nochange"
+
+__cp /dev/null ~/zscript/ui/shell
+__write ~/zscript/ui/shell "$__script"
+
+set __script = '#'"$(\n)"
+set __script += '# Z-Mail 3.x Motif startup'"$(\n)"
+set __script += '#'"$(\n)"
+set __script += "$__dofirst"
+set __script += 'desire ~/zscript/ui/motif.zrc'"$(\n)"
+set __script += "$__nochange"
+
+__cp /dev/null ~/zscript/ui/motif
+__write ~/zscript/ui/motif "$__script"
+
+set __script = '#'"$(\n)"
+set __script += '# Z-Mail Lite 3.x startup'"$(\n)"
+set __script += '#'"$(\n)"
+set __script += "$__dofirst"
+set __script += 'desire ~/zscript/ui/lite.zrc'"$(\n)"
+set __script += "$__nochange"
+
+__cp /dev/null ~/zscript/ui/lite
+__write ~/zscript/ui/lite "$__script"
+
+set __script = '#'"$(\n)"
+set __script += '# Z-Mail startup shared by all user interfaces'"$(\n)"
+set __script += '#'"$(\n\n)"
+set __script += 'desire "$ZMLIB/samples/zscript/addhook.zsc"'"$(\n)"
+set __script += 'desire ~/zscript/ui/any.zrc'"$(\n)"
+
+__cp /dev/null ~/zscript/ui/any
+__write ~/zscript/ui/any "$__script"
+
+unset __dofirst __nochange __script
+
+# Complete installation of Master Configuration
+
+if $?__zcf_version
+    if -e ~/.zmailrc
+	sh mv ~/.zmailrc ~/.zmailrc.zcf
+    endif
+    __cp "$__workspace/desire.zcs" ~/.zmailrc
+else
+    if -e ~/.zmailrc
+	sh mv "$ZMAILRC" ~/.zmailrc.zcf
+    endif
+    __cp "$__workspace/desire.zcs" "$ZMAILRC"
+endif
+
+# All done
+
+ask '\
+Finished creating Master Configuration.\n\n\
+Choose "Yes" to exit and keep your Master Configuration.\n\
+Your new configuration is ready to be loaded on restart.\n\n\
+Choose "No" to hand-edit your new configuration first.\n\n\
+Choose "Cancel" to exit, restoring previous configuration.'
+if $status == 1
+    source "$__workspace/sysstate.zcf"
+    builtin unset exit_saveopts
+    function __next_config() {
+	if $1 == $2
+	    return 0
+	endif
+	set __next += " $2"
+    }
+    function __edit_config() {
+	ask -m -i __f '\
+Select the next configuration to edit.\n\
+Choose "Cancel" when all selections have been made.' $*
+	if $status == 0
+	    set __next
+	    foreach __n ( $* ) '__next_config $__f $__n'
+	    page -e ~/zscript/$__f
+	    return 0
+	endif
+	return $status
+    }
+    set __next = "ui/any ui/shell ui/lite ui/motif aliases headers filters"
+    foreach __n ( $__next ) '__edit_config $__next'
+    if $is_gui$is_lite != 0
+	set __exit = 'echo -d "$__finished"'
+	set __finished = "\
+You must exit after editing and saving these files.$(\n)\
+Do NOT save configuration in any other manner!"
+    else
+	set __exit = x
+    endif
+else
+    if $status < 0
+	__cp "$__workspace/original.zrc" "$ZMAILRC"
+	sh rm -rf ~/zscript
+    endif
+    set __exit = x
+endif
+
+sh rm -rf "$__workspace"
+eval "$__exit"

@@ -1,0 +1,65 @@
+# Functions to convert an MH folder to Z-Mail.  Usage from within Z-Mail:
+#    convert_mh folder
+# where "folder" is a directory (MH-style folder).
+#
+
+function isdir() {
+    if -e $1/.
+	return 0
+    else
+	return -1
+    endif
+}
+
+function mh_message() {
+    sh "(echo ''; echo '--------'; echo '') >> $2"
+    sh cat $1 >> $2
+}
+
+function convert_mh() {
+    if X$1 == X
+	error Specify MH folder directory.
+	return -1
+    endif
+    isdir $1
+    if $status != 0
+	error $1 not a directory
+	return -1
+    endif
+    open $1
+# The following is necessary in Z-Mail 2.0.5 and earlier.  If the "open"
+# (above) fails with an "is a directory" error, try this instead.
+#   set tmpfolder = /tmp/mh$$
+#   sh "echo From $user `date` > $tmpfolder"
+#   foreach f ($1/[0-9]*) 'mh_message $f $tmpfolder'
+#   open $tmpfolder | undigest -m
+#   if $status != 0
+#	return -1
+#   endif
+#   delete 1,2
+}
+
+function ask_convert_mh() {
+    ask -file filename "What MH folder do you want to convert?"
+    if $status == -1
+	return -1;
+    endif
+    convert_mh $filename
+    if $status == 0
+	ask "MH folder converted.\nDo you want to remove $filename now?"
+	if $status == 0
+	    sh rm -fr $filename
+	endif
+	if $status == -1
+	    return -1
+	endif
+	set realfile = $filename:t
+ 	copy * {`:d`} $folder/$realfile
+	delete *
+# If you use the Z-Mail 2.0.5 version of convert_mh, remove "-n" below.
+	folder -n $folder/$realfile
+	unset realfile
+    endif
+}
+
+Button Convert-MH ask_convert_mh

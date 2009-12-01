@@ -1,0 +1,42 @@
+TYPE MultipartSpecial
+    LEGEND      MIME multipart attachment
+    SPECIALFILE
+    ICON        {
+        include("../iconlib/generic.doc.fti");
+        include("iconlib/Multipart.fti");
+    }
+
+TYPE MessagePartialSpecial
+    LEGEND      MIME partial message attachment
+    SPECIALFILE
+    ICON        {
+        include("../iconlib/generic.doc.pre.fti");
+        include("iconlib/Partial.fti");
+    }
+
+TYPE FormattedTextSpecial
+    LEGEND	MIME formatted text attachment
+    SPECIALFILE
+    ICON        {
+        include("../iconlib/generic.doc.fti");
+        include("iconlib/RichText.fti");
+    }
+
+TYPE RichTextSpecial
+    LEGEND      MIME rich text attachment
+    SUPERTYPE   FormattedTextSpecial Ascii
+    SPECIALFILE
+    ICON        {
+        include("../iconlib/generic.doc.fti");
+        include("iconlib/RichText.fti");
+    }
+
+TYPE MessageExternalSpecial
+    LEGEND	MIME external message attachment
+    SPECIALFILE
+    ICON	{
+	include("../system/iconlib/TransferDev.remotepre.fti")
+        include("../iconlib/generic.doc.fti");
+	include("iconlib/RichText.fti");
+	include("../system/iconlib/TransferDev.remotepost.fti")
+    }

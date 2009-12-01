@@ -1,0 +1,6 @@
+# Mail routing and address-fixing conveniences.  If auto_route is set, then
+# replies to messages take a closer look at the addresses of the recipients.
+# If any redundant paths are present, they are pruned.  Also, the path that
+# precedes any hosts listed in the "known_hosts" list is truncated.  This is
+# useful for uucp sites only, and is therefore commented out by default.
+# set auto_route known_hosts="sun ucbcad well unicom"

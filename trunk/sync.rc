@@ -1,0 +1,306 @@
+//Microsoft Visual C++ generated resource script.
+//
+#include "SYNCRES.H"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SYNC1 DIALOG DISCARDABLE  0, 0, 279, 162
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Synchronization Scenario"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_SYNC1_SCENARIO,8,16,200,48,LBS_NOINTEGRALHEIGHT | 
+                    LBS_DISABLENOSCROLL | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Synchronize",IDOK,217,6,56,14,WS_DISABLED
+    PUSHBUTTON      "Edit Scenario...",IDC_SYNC1_EDIT,217,23,56,14
+    PUSHBUTTON      "Cancel",IDCANCEL,217,40,56,14
+    PUSHBUTTON      "Help",IDC_SYNC1_HELP,217,57,56,14
+    LTEXT           "Scenario:",IDC_SYNC1_SCENARIO_LABEL,8,4,32,8
+    LTEXT           "Description:",IDC_SYNC1_DESCRIPTION_LABEL,8,68,40,8
+    EDITTEXT        IDC_SYNC1_DESCRIPTION,8,80,200,76,ES_MULTILINE | 
+                    ES_READONLY | WS_VSCROLL | NOT WS_TABSTOP | 0x1000
+END
+
+IDD_SYNC2 DIALOG DISCARDABLE  0, 0, 279, 102
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Sync Preview Confirmation"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Preview",IDOK,216,12,50,14
+    PUSHBUTTON      "Synchronize",IDC_SYNC2_SYNC,216,44,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,216,76,50,14
+    GROUPBOX        "",IDC_SYNC2_GROUPBOX1,8,4,264,28
+    LTEXT           "Preview and optionally edit a list of the changes that will occur upon synchronization.",
+                    IDC_SYNC2_LABEL1,12,12,200,16
+    GROUPBOX        "",IDC_SYNC2_GROUPBOX2,8,36,264,28
+    LTEXT           "Synchronize now without previewing.",IDC_SYNC2_LABEL2,
+                    12,48,200,8
+    GROUPBOX        "",IDC_SYNC2_GROUPBOX3,8,68,264,28
+    LTEXT           "Cancel synchronization.",IDC_SYNC2_LABEL3,12,80,200,8
+END
+
+IDD_SYNC3 DIALOG DISCARDABLE  0, 0, 291, 186
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION
+CAPTION "Synchronization Preview"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Synchronize",IDOK,8,164,50,14
+    PUSHBUTTON      "Mark",IDC_SYNC3_MARK,64,164,50,14,WS_DISABLED
+    PUSHBUTTON      "Unmark",IDC_SYNC3_UNMARK,120,164,50,14,WS_DISABLED
+    PUSHBUTTON      "Cancel",IDCANCEL,176,164,50,14
+    PUSHBUTTON      "Help",IDC_SYNC3_HELP,232,164,50,14
+    LTEXT           "Messages marked with ""+"" will participate in the synchronization.",
+                    IDC_SYNC3_LABEL1,39,4,212,8
+    LISTBOX         IDC_SYNC3_MESSAGE_LIST,8,32,272,80,LBS_USETABSTOPS | 
+                    LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | 
+                    WS_TABSTOP
+    GROUPBOX        "Key",IDC_SYNC3_KEYBOX,65,116,160,40
+    LTEXT           "U = unread message",IDC_SYNC3_KEY1,73,129,68,8
+    LTEXT           "R = read message",IDC_SYNC3_KEY2,73,140,60,8
+    LTEXT           "S = message status",IDC_SYNC3_KEY3,149,129,64,8
+    LTEXT           "H = message headers",IDC_SYNC3_KEY4,149,140,72,8
+    LTEXT           "    PC       Host   Cost (K)   Message Summary",
+                    IDC_SYNC3_LIST_LABEL,9,20,152,8
+    LTEXT           "",IDC_SYNC3_SUMMARY,165,20,108,8
+END
+
+IDD_SYNC4 DIALOG DISCARDABLE  0, 0, 291, 194
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION
+CAPTION "Edit Scenario"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_SYNC4_SCENARIO,8,20,220,52,LBS_NOINTEGRALHEIGHT | 
+                    LBS_DISABLENOSCROLL | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Delete",IDC_SYNC4_DELETE,9,172,50,14,WS_DISABLED
+    PUSHBUTTON      "New",IDC_SYNC4_NEW,64,172,50,14
+    PUSHBUTTON      "Copy",IDC_SYNC4_COPY,120,172,50,14,WS_DISABLED
+    PUSHBUTTON      "Edit",IDC_SYNC4_EDIT,176,172,50,14,WS_DISABLED
+    DEFPUSHBUTTON   "Close",IDOK,235,6,50,14
+    PUSHBUTTON      "Help",IDC_SYNC4_HELP,235,23,50,14
+    LTEXT           "Scenario",IDC_SYNC4_SCENARIO_LABEL,8,8,30,8
+    LTEXT           "Description",IDC_SYNC4_DESCRIPTION_LABEL,8,80,40,8
+    EDITTEXT        IDC_SYNC4_DESCRIPTION,8,92,220,72,ES_MULTILINE | 
+                    ES_READONLY | WS_VSCROLL | NOT WS_TABSTOP
+END
+
+IDD_SYNC5 DIALOG DISCARDABLE  0, 0, 231, 46
+STYLE DS_SYSMODAL | DS_MODALFRAME | WS_POPUP | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Cancel",IDCANCEL,175,6,50,14
+    PUSHBUTTON      "Copy",IDC_SYNC5_COPY,175,23,50,14
+    LTEXT           "System scenarios cannot be edited directly.  To edit a copy of this scenario, click ""Copy.""",
+                    IDC_SYNC5_COPY_LABEL,8,12,148,16
+END
+
+IDD_SYNC6 DIALOG DISCARDABLE  0, 0, 279, 78
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Synchronization Scenario Editor"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_SYNC6_CATEGORY,8,20,208,48,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,223,6,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,223,23,50,14
+    PUSHBUTTON      "Help",IDC_SYNC6_HELP,223,40,50,14
+    LTEXT           "Scenario Category:",IDC_SYNC6_CATEGORY_LABEL,8,8,64,8
+END
+
+IDD_SYNC6_CHILD1 DIALOG DISCARDABLE  0, 0, 279, 134
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Scenario Editor - Name and Description"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_SYNC61_SCENARIO,8,20,200,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SYNC61_DESCRIPTION,8,52,200,76,ES_MULTILINE | 
+                    WS_VSCROLL | 0x1000
+    DEFPUSHBUTTON   "OK",IDOK,223,6,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,223,23,50,14
+    PUSHBUTTON      "Help",IDC_SYNC61_HELP,223,40,50,14
+    LTEXT           "Scenario Name:",IDC_SYNC61_SCENARIO_LABEL,8,8,52,8
+    LTEXT           "Description:",IDC_SYNC61_DESCRIPTION_LABEL,8,40,40,8
+END
+
+IDD_SYNC6_CHILD2 DIALOG DISCARDABLE  0, 0, 283, 94
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Scenario Editor - Common Messages"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Propagate changes from PC to host",IDC_SYNC62_RADIO1,
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,20,28,128,10
+    CONTROL         "Propagate changes from host to PC",IDC_SYNC62_RADIO2,
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,20,44,128,10
+    CONTROL         "Do NOT propagate changes",IDC_SYNC62_RADIO3,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,20,60,104,10
+    DEFPUSHBUTTON   "OK",IDOK,227,6,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,227,23,50,14
+    PUSHBUTTON      "Help",IDC_SYNC62_HELP,227,40,50,14
+    LTEXT           "For messages that are on both the PC and the host:",
+                    IDC_SYNC62_LABEL,12,12,168,8
+    GROUPBOX        "",IDC_STATIC,8,4,212,80
+END
+
+IDD_SYNC6_CHILD3 DIALOG DISCARDABLE  0, 0, 279, 142
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Scenario Editor - Host-Only Messages"
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_SYNC63_READCOPY,116,32,88,36,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Ignore messages older than",IDC_SYNC63_CHECK1,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,28,48,100,14
+    EDITTEXT        IDC_SYNC63_TIME1,132,48,24,12,ES_AUTOHSCROLL
+    CONTROL         "Ignore messages larger than",IDC_SYNC63_CHECK2,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,28,64,104,12
+    EDITTEXT        IDC_SYNC63_SIZE1,132,64,24,12,ES_AUTOHSCROLL
+    COMBOBOX        IDC_SYNC63_UNREADCOPY,116,80,88,40,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Ignore messages older than",IDC_SYNC63_CHECK3,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,28,96,100,12
+    EDITTEXT        IDC_SYNC63_TIME2,132,96,24,12,ES_AUTOHSCROLL
+    CONTROL         "Ignore messages larger than",IDC_SYNC63_CHECK4,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,28,112,104,12
+    EDITTEXT        IDC_SYNC63_SIZE2,132,112,24,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,223,6,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,223,23,50,14
+    PUSHBUTTON      "Help",IDC_SYNC63_HELP,223,40,50,14
+    GROUPBOX        "",IDC_SYNC63_GROUPBOX,8,4,208,128
+    LTEXT           "For messages that are on the host but not on the PC:",
+                    IDC_SYNC63_LABEL,16,16,176,8
+    LTEXT           "Messages marked ""read"":",IDC_SYNC63_READCOPY_LABEL,20,
+                    32,84,8
+    LTEXT           "Message marked ""unread"":",IDC_SYNC63_UNREADCOPY_LABEL,
+                    20,80,92,8
+    LTEXT           "days",IDC_SYNC63_TIME1_LABEL,160,50,16,8
+    LTEXT           "K",IDC_SYNC63_SIZE1_LABEL,160,64,8,8
+    LTEXT           "days",IDC_SYNC63_TIME2_LABEL,160,100,16,8
+    LTEXT           "K",IDC_SYNC63_SIZE2_LABEL,160,116,8,8
+END
+
+IDD_SYNC6_CHILD4 DIALOG DISCARDABLE  0, 0, 279, 142
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Scenario Editor - PC-Only Messages"
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_SYNC64_READCOPY,116,32,88,36,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Ignore messages older than",IDC_SYNC64_CHECK1,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,28,48,100,14
+    EDITTEXT        IDC_SYNC64_TIME1,132,48,24,12,ES_AUTOHSCROLL
+    CONTROL         "Ignore messages larger than",IDC_SYNC64_CHECK2,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,28,64,104,12
+    EDITTEXT        IDC_SYNC64_SIZE1,132,64,24,12,ES_AUTOHSCROLL
+    COMBOBOX        IDC_SYNC64_UNREADCOPY,116,80,88,40,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Ignore messages older than",IDC_SYNC64_CHECK3,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,28,96,100,12
+    EDITTEXT        IDC_SYNC64_TIME2,132,96,24,12,ES_AUTOHSCROLL
+    CONTROL         "Ignore messages larger than",IDC_SYNC64_CHECK4,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,28,112,104,12
+    EDITTEXT        IDC_SYNC64_SIZE2,132,112,24,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,223,6,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,223,23,50,14
+    PUSHBUTTON      "Help",IDC_SYNC64_HELP,223,40,50,14
+    LTEXT           "days",IDC_SYNC64_TIME2_LABEL,160,100,16,8
+    GROUPBOX        "",IDC_SYNC64_GROUPBOX,8,4,208,128
+    LTEXT           "For messages that are on the PC but not on the host:",
+                    IDC_SYNC64_LABEL,16,16,176,8
+    LTEXT           "Messages marked ""read"":",IDC_SYNC64_READCOPY_LABEL,20,
+                    32,84,8
+    LTEXT           "Messages marked ""unread"":",
+                    IDC_SYNC64_UNREADCOPY_LABEL,20,80,92,8
+    LTEXT           "days",IDC_SYNC64_TIME1_LABEL,160,50,16,8
+    LTEXT           "K",IDC_SYNC64_SIZE1_LABEL,160,64,8,8
+    LTEXT           "K",IDC_SYNC64_SIZE2_LABEL,160,116,8,8
+END
+
+IDD_SYNC6_CHILD5 DIALOG DISCARDABLE  0, 0, 283, 102
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Scenario Editor - Deleted Messages"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Delete from the host",IDC_SYNC65_RADIO1,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,20,40,76,10
+    CONTROL         "Leave on the host",IDC_SYNC65_RADIO2,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,20,56,72,10
+    CONTROL         "Restore from the host to the PC",IDC_SYNC65_RADIO3,
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,20,72,116,10
+    DEFPUSHBUTTON   "OK",IDOK,227,6,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,227,23,50,14
+    PUSHBUTTON      "Help",IDC_SYNC65_HELP,227,40,50,14
+    GROUPBOX        "",IDC_SYNC65_GROUPBOX,8,4,212,88
+    LTEXT           "For messages that are on the host and have been deleted on the PC:",
+                    IDC_SYNC65_LABEL,16,16,192,16
+END
+
+IDD_SYNC6_CHILD6 DIALOG DISCARDABLE  0, 0, 279, 94
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Scenario Editor - Preview"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Always preview",IDC_SYNC66_RADIO1,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,24,32,60,10
+    CONTROL         "Never preview",IDC_SYNC66_RADIO2,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,24,48,60,10
+    CONTROL         "Ask me each time",IDC_SYNC66_RADIO3,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,24,64,68,10
+    DEFPUSHBUTTON   "OK",IDOK,223,6,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,223,23,50,14
+    PUSHBUTTON      "Help",IDC_SYNC66_HELP,223,40,50,14
+    GROUPBOX        "",IDC_SYNC66_GROUPBOX,8,4,208,80
+    LTEXT           "When synchronizing using this scenario:",
+                    IDC_SYNC66_LABEL,16,16,132,8
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "SYNCRES.H\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // APSTUDIO_INVOKED
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

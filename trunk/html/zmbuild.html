@@ -1,0 +1,1268 @@
+<HTML>
+<HEAD>
+<TITLE>Z-Mail Developer Documentation - Build Procedures</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>Z-Mail UNIX Build Procedures</H1>
+<P>
+<UL>
+<LI><A HREF="checklist.html">Quick Build Checklist</A> 
+<LI><A HREF="#builddetails">Detailed UNIX Z-Mail Build Procedure</A>
+<LI><A HREF="#buildzpop">Detailed Z-POP Server Build Procedure</A>
+<LI><A HREF="#buildnotes">Version and Platform Build Notes</A>
+<LI><A HREF="#problems">Potential Problems and Mistakes</A>
+</UL>
+<P>
+<H3><A NAME="builddetails">Z-Mail UNIX Build Procedure (Details)</A></H3>
+<P>
+<OL TYPE="1">
+<LI><A NAME="buildco" HREF="zmscm.html#checkout">Check out source</A> from <A HREF="cvs-primer.html">CVS</A>.
+<P>
+This requires NFS access to <tt>/usr1/build/SrcRep</tt> 
+and requires that you have properly
+<A HREF="cvs-primer.html#setup">set up your CVS environment</A>.
+<P>
+<I>If you have <STRONG>not yet</STRONG> checked out source for the target build
+platform:</I>
+<P>
+<UL>
+<LI><tt>cvs co metamail-dist</tt><br>
+<I>You may skip</I> <tt>metamail-dist</tt> <I>if you will not be building a
+release distribution.</I>
+<LI><tt>cvs co mp</tt><br>
+<I>You may skip</I> <tt>mp</tt> <I>if you will not be building a release
+distribution.</I>
+<LI><tt>cvs co <strong>-r branch-tag</strong> zmail</tt>
+</UL>
+<P>
+<I>If you have <STRONG>already</STRONG> checked out source for the target build
+platform:</I>
+<P><OL TYPE="A">
+<LI><TT>cd zmail</TT><BR><I>(if you aren't already in that directory)</I>
+<LI><tt>cvs update</tt>
+</OL>
+<P>
+<I>If the target build platform does not have</I> <tt>cvs</tt>:
+<P>
+<OL TYPE="A">
+<LI>Locate a filesystem visible to both <tt>zyrcon</tt> and the build machine.
+<LI>Log in to <tt>zyrcon</tt>.
+<LI>Change directories to the shared file system and perform <tt>cvs co</tt>
+there.
+<LI>If building a distribution, change directories to <tt>zmail</tt> and
+<A HREF="doc">run <tt>sh doc.sh</tt></A>.<br>
+<LI>Return to the build machine.
+<LI>Change directories to the shared file system
+and <A HREF="#config">proceed</A>.
+<LI>When finished building, <A HREF="#commit">commit changes</A> as usual.
+</OL>
+<P>
+Note that the above technique can be used to check out one master copy of
+the source and then perform builds for several platforms, by
+<A HREF="symlinks.html">making symbolic link trees</A> to the master copy.
+<P>
+<I>If the target build platform does not have NFS to any filesystem shared
+with </I> <tt>zyrcon</tt> (e.g. an offsite build such as Pyramid or Sequent,
+or if checking out source for a Macintosh):
+<P>
+<OL TYPE="A">
+<LI>Log in to <tt>zyrcon</tt>.
+<LI>Locate a filesystem with enough space to hold the source code.
+<LI>Change directories to that file system and perform <tt>cvs co</tt> there.
+<LI>If building a distribution, change directories to <tt>zmail</tt> and
+<A HREF="doc">run <tt>sh doc.sh</tt></A>.<br>
+<I>You probably shouldn't build anything other than distributions in this
+environment, except for Macintosh.  If you're doing ongoing UNIX development,
+get connected to</I> <tt>zyrcon</tt>.
+<LI>Pack up the source code with <tt>tar</tt> or a similar utility.
+<LI>Remove the checked-out source code so it can not be locally modified.
+<LI>Transfer the packaged source to the build machine with <tt>ftp</tt>,
+unpack it, and <A HREF="#config">proceed</A> there.
+<LI>When finished with <A HREF="#dist"><tt>make distribution</tt></A>:
+<OL TYPE="a">
+<LI><tt>make clean</tt>,
+<LI>remove any <tt>zmail*</tt> binaries and binaries in <tt>util</tt>,
+<LI>pack up the modified source, and
+<LI><tt>ftp</tt> it back to <TT>zyrcon</TT>.
+</OL>
+<LI>Unpack the modified source <STRONG>(into the same location as the original
+checkout, if possible)</STRONG> and then <A HREF="#commit">commit changes</A> as
+usual.
+<LI>You may re-use this copy of the source if you need to continue working
+on this platform.  Remember to <tt>cvs update</tt> before re-packaging the
+source for <tt>ftp</tt>.
+</OL>
+<P>
+<LI><A NAME="doc">If building a distribution</A>, check out doc from
+<A HREF="docrep.html">the DocRep</A>.
+<P>
+This requires NFS access to <tt>/usr1/build/DocRep</tt> on <tt>zyrcon</tt>.
+The default path used is <tt>/zyrcon/usr1/build/DocRep</tt>, but you can
+specify a different path by setting the environment variable <tt>DOCDIR</tt>.
+<P>
+<OL TYPE="A">
+<LI><tt>cd zmail</tt><BR><I>(if you aren't already in that directory)</I>
+<LI><tt>setenv DOCDIR /hosts/zyrcon/usr1/build/DocRep</tt><br>
+<I>This is the Z-Code automouted filesystem naming convention, derived from
+the default behavior of the IRIX 5.x and 6.x automounters.</I>
+<LI><tt>sh doc.sh</tt>
+</OL>
+<P>
+The <tt>doc.sh</tt> script examines the file <tt>shell/version.c</tt> to
+extract the version number for documentation purposes.  It looks for a
+comment of the form
+<blockquote><pre><tt>/*
+ * motif version &lt;<STRONG>version-string</STRONG>&gt;
+ * lite version &lt;<STRONG>version-string</STRONG>&gt;
+ */
+</tt></pre></blockquote>
+where <tt><STRONG>version-string</STRONG></tt> is normally the same as the
+<I>major-release</I><STRONG>.</STRONG><I>minor-revision</I> version number of the
+corresponding Z-Mail build;
+<I>e.g.</I>, <tt>3.2</tt>, <tt>3.3dev</tt> or <tt>4.0b</tt>.
+However, <tt><STRONG>version-string</STRONG></tt> may be the name of any directory in
+<A HREF="docrep.html">the DocRep</A> and does not have to be the same as
+the Z-Mail version number.
+<P>
+After extracting the <tt><STRONG>version-string</STRONG></tt>, <tt>doc.sh</tt> creates
+a temporary <tt>doc.mk</tt> file and runs <tt>make -f doc.mk</tt> to retrieve
+the documentation.  It then removes <tt>doc.mk</tt> to clean up.
+<P>
+There is <EM>no output</EM> from <TT>doc.sh</TT> when all the published documentation has already
+been copied into the local tree and is up-to-date.
+<P>
+<LI><A NAME="config">Configure for platform and user interface.</A>
+<P>
+<OL TYPE="A">
+<LI><tt>cd zmail</tt><BR><I>(if you aren't already in that directory)</I>
+<LI><tt>touch configure</tt><br>
+<I>This is usually necessary only after a fresh</I> <TT>cvs co</TT> <I>to be sure that</I>
+<TT>configure</TT> <I>appears newer than</I> <TT>configure.in</TT><I>.  CVS may alter the
+modify dates on checkout, causing</I> configure.in <I>to appear newer.</I>
+<LI><tt>sh configure <STRONG>ostype-name</STRONG></tt><br>
+<I>You can use</I> <TT>configure -f <STRONG>ostype-name</STRONG></TT> <I>to
+force a full reconfiguration.  In most cases,</I> <TT>configure</TT> <I>simply
+links to an existing configuration from the</I> <TT>config</TT>
+<I>subdirectory.</I>
+<LI><tt>sh mkmakes <STRONG>ostype-name ui-name</STRONG> zpop</tt><br>
+<I>If you are not using a freshly-checked-out build tree, check for the
+presence of a </I><TT>local.mk</TT> <I>file and be sure it contains only
+correct and relevant information.</I>
+</OL>
+<P>
+If you don't know the <tt><STRONG>ostype-name</STRONG></tt> or <tt><STRONG>ui-name</STRONG></tt>
+for <tt>configure</tt> or <tt>mkmakes</tt>, type the
+commands without them, and you'll get an informative usage message.
+<P>
+When building for a UNIX shipping distribution, you must configure and
+build both the <tt>small</tt> and <tt>motif</tt> UIs, in that order,
+with a <tt>make clean</tt> between, before
+<A HREF="#dist"><tt>make distribution</tt></A>.  Note that <tt>small</tt>
+is not related to <tt>lite</tt>; if you plan to build both <tt>motif</tt>
+and <tt>lite</tt> in the same working tree (not recommended), you should
+<tt>make distribution</tt> for <tt>motif</tt> and then <tt>make clean</tt>
+before building and distributing <tt>lite</tt>. 
+<P>
+The tag <tt>zpop</tt> is an optional modifier to the build process; ZPOP
+support may be omitted by leaving off this tag.  However, all standard
+distributions are to include ZPOP support as of Z-Mail 4.0.
+<P>
+<I>BE SURE TO EXAMINE</I> <tt>osconfig.h</tt> <I>AND VERIFY THAT THE</I>
+<tt>Corrections</tt> <I>SECTION IS SANE BEFORE YOU CONTINUE BUILDING!!</I>
+Also examine the differences between the newly-generated
+<TT>config/os-<STRONG>ostype-name</STRONG>.h</TT> and
+<TT>config/os-<STRONG>ostype-name</STRONG>.h.old</TT>, and between
+<TT>config/os-<STRONG>ostype-name</STRONG>.mk</TT> and
+<TT>config/os-<STRONG>ostype-name</STRONG>.mk.old</TT>.  Unless the
+<TT>configure</TT> script itself has changed considerably since the last build
+on this platform, there should not be any major differences in these files.
+Make an effort to understand the reasons for any differences you see before
+you proceed with the build.
+<P>
+If you are making a distribution, you must also configure <tt>mp</tt> and
+<tt>metamail</tt>:
+<P>
+<OL TYPE="A">
+<LI><tt>cd ../mp</tt>
+<LI><tt>sh configure</tt>
+<LI><tt>cd ../metamail</tt>
+<LI><tt>cp Makefile<STRONG>.opsys</STRONG> Makefile</tt><br>
+Unfortunately, the <tt><STRONG>opsys</STRONG></tt> for <tt>metamail</tt> is not always
+the same as the <tt><STRONG>ostype-name</STRONG></tt> for <tt>zmail</tt> because the
+<tt>metamail</tt> package is third-party free software.  Choose whatever
+seems most appropriate.
+<LI><tt>cd ../zmail</tt>
+</OL>
+<P>
+<I>To create a debugging build:</I>
+<P>
+<STRONG>Before</STRONG> running <TT>mkmakes</TT>, edit the file
+<TT>local.mk</TT> (in the top-level <TT>zmail</TT> directory only) and add the
+appropriate compiler flags to the <CODE>OPTIMIZE</CODE> and
+<CODE>LDFLAGS</CODE> macros.
+For example:
+<BLOCKQUOTE><PRE><CODE>OPTIMIZE = -g
+LDFLAGS = -g</CODE></PRE></BLOCKQUOTE>
+<P>
+Be careful to examine <TT>osmake.mk</TT> for existing definitions of these
+macros.  Copy any flags from <TT>osmake.mk</TT> that seem appropriate.  The
+macros in <TT>local.mk</TT> override those in <TT>osmake.mk</TT>.
+<P>
+<LI><A NAME="depend"><I>(Optional)</I> Set up <tt>make</tt> dependencies.</A>
+<P>
+<OL TYPE="A">
+<LI><tt>make depend</tt>
+<LI><tt>sh mkmakes <STRONG>ostype-name ui-name</STRONG> zpop</tt>
+</OL>
+<P>
+<tt>make depend</tt> requires the availability of <STRONG>Perl</STRONG>.
+It's OK to omit the <tt>make depend</tt> step as long as you're careful.
+<P>
+Note that you must build the makefiles with <tt>mkmakes</tt> both <I>before</I>
+and <I>after</I> <tt>make depend</tt>.
+<P>
+<I>To build MediaMail:</I>
+<P>
+<UL>
+<LI>Prior to Z-Mail 4.0: <tt>sh mkmakes <STRONG>ostype-name ui-name</STRONG> mmail</tt>
+<LI>After Z-Mail 4.0: <tt>sh mkmakes <STRONG>ostype-name ui-name</STRONG> mmail zpop</tt>
+</UL>
+<P>
+where <tt><STRONG>ui-name</STRONG></tt> is usually <tt>irix62</tt>.
+<P>
+<I>To build MediaMail Pro:</I>
+<P>
+<STRONG>Before</STRONG> running <TT>mkmakes</TT>, edit the file <TT>local.mk</TT> (it probably
+will not exist until you edit it) and add the line:<BLOCKQUOTE><CODE>LOCAL_DEFS = -DSGI_CUSTOM</CODE></BLOCKQUOTE>
+<P>
+<LI><A NAME="make"><tt>make</tt></A>
+<P>
+You may encounter portability problems if other developers have not been
+careful about changes they have made.  You may also encounter platform-specific
+build problems if this is the first time (or the first time since a major code
+revision) that a build has been done on this platform.
+<P>
+If you are building a Motif distribution and you have just compiled
+the <tt>small</tt> UI:
+<P>
+<OL TYPE="A">
+<LI><tt>make clean</tt>
+<LI><tt>sh mkmakes <STRONG>ostype-name</STRONG> motif zpop</tt>
+<LI><tt>make</tt>
+</OL>
+<P>
+Motif distributions on some platforms require <A HREF="#buildnotes">special build targets or
+<tt>make zmail.shared</tt></A> in addition to the base <tt>zmail</tt>.
+</P>
+<P>
+<LI><A NAME="metamail">If building a distribution, build <tt>metamail</tt>.</A>
+<P>
+<OL TYPE="A">
+<LI><tt>cd ../metamail</tt>
+<LI><tt>make</tt>
+<br>
+You may need to edit <tt>Makefile</tt> for the particular platform.
+There's no automated configure script, but the plain <tt>Makefile</tt>
+works <I>almost</I> everywhere.
+<LI><tt>cd ../zmail</tt>
+</OL>
+<P>
+<LI><A NAME="dist">If building a distribution, <tt>make distribution</tt>.</A>
+<P>
+Determine an appropriate <tt><STRONG>value</STRONG></tt> for <tt>DISTROOT</tt>
+(acceptable are <tt>.</tt> (dot, the current working directory) or
+<tt>..</tt> (dot dot, the parent directory), or any full path name
+ending in a directory).  Then,
+<P>
+<OL TYPE="A">
+<LI><tt>setenv DISTROOT <STRONG>value</STRONG></tt>
+<LI><tt>make DISTROOT=<STRONG>value</STRONG> distribution</tt>
+</OL>
+<P>
+When building for a UNIX shipping distribution, you must
+<A HREF="#config">configure</A> and build both the
+<tt>small</tt> and <tt>motif</tt> UIs, in that order, with a
+<tt>make clean</tt> between, before <tt>make distribution</tt>.
+<P>
+<tt>make distribution</tt> automatically builds <tt>../mp</tt> and collects
+binaries from <tt>../metamail</tt> and <tt>../mp</tt>.
+<P>
+<LI><EM>Update the build notes for</EM> <TT><STRONG>ostype-name</STRONG></TT>
+<P>
+Edit this file (<TT>html/zmbuild.html</TT>) and add any important notes, such as special <TT>make</TT>
+targets or build steps and potential future problems, to the problems section below.
+<P>
+Any problems that you were able to solve by adding definitions (as opposed to new targets)
+to <TT>osmake.mk</TT> (<TT>config/os-<STRONG>ostype-name</STRONG>.mk</TT>) should be commented
+in the <TT>.mk</TT> file.
+Mention such corrections in these build notes only if they are likely to need further changes later.
+New targets should be commented in the <TT>.mk</TT> as well, but also mention them here as they
+constitute a change to the build procedure.
+<P>
+<LI><A NAME="commit">Commit changes</A> into <A HREF="cvs-primer.html">CVS</A>
+<P>
+<OL TYPE="A">
+<LI><tt>cvs update</tt>
+<LI><tt>cvs commit</tt>
+</OL>
+<P>
+<A HREF="#config">Running <tt>sh configure</tt></A> frequently makes some
+modifications to the <tt>config/os-<STRONG>ostype-name</STRONG>.h</tt> and
+<tt>config/os-<STRONG>ostype-name</STRONG>.mk</tt> files.  These changes should be
+recorded in the repository for historical reference and for use by other
+developers.  You may also have made other portability or port-specific
+changes that need to be committed.
+</OL>
+<P>
+<H3><A NAME="buildzpop">Z-POP Server Build Procedure (Details)</A></H3>
+<P>
+The following instructions are for building the <tt>zpopd</tt> server and
+related run-time library components.
+<OL TYPE="1">
+<LI><A HREF="zmbuild.html#buildco">Check out <tt>zmail</tt> source</A> as
+usual (you don't need <tt>mp</tt> or <tt>metamail</tt>).
+<P>
+<LI>Do top level <A NAME="zpop0" HREF="zmbuild.html#config"><tt>configure</tt>
+and <tt>mkmakes</tt></A> <STRONG>as if for Z-Mail Lite</STRONG> on the same platform.
+<P>
+<I><STRONG>IMPORTANT:</STRONG> run</I> <tt>mkmakes <STRONG>ostype-name</STRONG> lite zpop</tt><br>
+<I>e.g.,</I> <tt>sh mkmakes sun413 lite zpop</tt>
+<P>
+<LI><A NAME="zpop1">Build components used by <tt>zpopd</tt>:</A>
+<P>
+<OL TYPE="A">
+<LI><tt>make maxsig.h</tt>
+<LI><tt>cd general; make</tt>
+<LI><tt>cd ../spoor; make spoor.o</tt>
+<LI><tt>cd ../mstore; make ghosts.o mime-api.o mfolder.o message.o</tt>
+<LI><tt>cd ../msgs/encode; make base64en.o</tt>
+<LI><tt>cd ../..</tt>
+</OL>
+<P><I>Alternatively, <A HREF="#builddetails">build Z-Mail Lite</A> to
+generate these components as a side-effect.</I>
+<P>
+<LI><A NAME="zpop2">Build the server</A>
+<P>
+<OL TYPE="A">
+<LI><tt>cd zync</tt>
+<LI><tt>sh configure --target=<STRONG>ostype-name</STRONG></tt><br>
+<I>where</I> <tt><STRONG>ostype-name</STRONG></tt> <I>is the same as at the top level.</I>
+<LI>Fix <tt>Makefile</tt> <A HREF="zmbuild.html#zpopnotes">if necessary</A>
+<LI><tt>make</tt>
+<LI><tt>make dist</tt> (creates <tt>zpoplib</tt>)<br>
+<I>Check</I> <tt>zpoplib</tt> <I>to make sure files are
+real files and not symlinks; many SYSV machines create symlinks
+instead of copying</I> <tt>README.TXT</tt>, <tt>CONFIG.TXT</tt>, <I>etc.
+Fixing this was on Spencer Sun's ``to do" list but he may never have done it.</I>
+</OL>
+<P>
+<LI><A NAME="zpop3">Pack up <tt>zpoplib</tt> with <tt>tar</tt> so that it
+extracts to <tt>zpoplib/</tt>.</A>
+<P>
+<I>E.g.,</I> <tt>tar cvf zpop.<STRONG>ostype-name</STRONG>.tar zpoplib</tt>
+<P>
+<LI><EM>Update the build notes for</EM> <TT><STRONG>ostype-name</STRONG></TT>
+<P>
+<LI><A NAME="commit">Commit changes</A> into <A HREF="cvs-primer.html">CVS</A>
+</OL>
+<P>
+<H4><A NAME="testzpop">Testing <tt>zpopd</tt></A></H4>
+<P>
+To debug with input and output through stdin/stdout (for example, if you
+want to step through with <tt>gdb</tt>) you must either:
+<UL>
+<LI>add <tt>--disable-sockets</tt> when configuring, or
+<LI>edit <tt>config.h</tt> and <tt>#define SANS_SOCKETS</tt>, then remove
+<tt>pop_init.o</tt> and <tt>make</tt>.
+</UL>
+<P>
+Potential gotcha: you can't specify a config file in the current directory
+with <blockquote><tt>zpopd -c zpop.config</tt></blockquote> because
+<tt>zpopd</tt> does <code>chdir("/usr/tmp")</code> when it starts up.
+So you must either give the full pathname or put it in <tt>/usr/tmp</tt>.
+<P>
+<H3><A NAME="buildnotes">Z-Mail UNIX Build Procedure (Notes)</A></H3>
+<P>
+<I><STRONG>IMPORTANT:</STRONG> Many of the notes below were derived from Z-Mail 3.2.1
+build procedures.  In some cases the</I> <tt>configure</tt> <I>and</I>
+<tt>mkmakes</tt> <I>process has been updated to incorporate some of this
+information.</I>
+<P>
+<DL>
+<P>
+<DT><I>Index by Product (<I>i.e.,</I> by User Interface)</I>
+<DD><UL>
+<LI> <A HREF="#product-all">All builds</A>
+<LI> <A HREF="#product-motif">Motif client</A>
+<LI> <A HREF="#product-lite">Lite client</A>
+<LI> <A HREF="#zpopnotes">ZPOP server</A>
+</UL>
+ <P>
+<DD><A NAME=product-all>All builds</A>
+<UL>
+<LI><A HREF="#aix4-any">aix4</A> (zeugma)
+<LI><A HREF="#apollo-any">apollo</A> (zapollo)
+<LI><A HREF="#m88k4-any">dgux</A> (zutsu)
+<LI><A HREF="#inter-any">inter</A> (zalfred)
+<LI><A HREF="#irix53-any">irix5</A>
+<LI><A HREF="#irix53-any">irix53</A> (zex)
+<LI><A HREF="#irix62-any">irix62</A> (zamboni)
+<LI><A HREF="#linux-any">linux</A>
+<LI><A HREF="#m88k4-any">m88k4</A> (zmoto)
+<LI><A HREF="#ncr-any">ncr</A> (zygon)
+<LI><A HREF="#pyr-any">pyr</A> (buster, sword)
+<LI><A HREF="#sco-any">sco</A> (z-tosh)
+<LI><A HREF="#sun411-any">sun411</A> (zcode)
+<LI><A HREF="#sun413-any">sun413</A> (zipx3)
+<LI><A HREF="#sol25-any">sol25</A> (zot)
+<LI><A HREF="#sol26-any">sol26</A>
+</UL>
+<DD><A NAME=product-motif>Motif client</A>
+<UL>
+<LI><A HREF="#aix322-motif">aix322</A> (zibm)
+<LI><A HREF="#aix-motif">aix</A> (zarf)
+<LI><A HREF="#caldera-motif">caldera</A> (zyxomna)
+<LI><A HREF="#irix-motif">irix</A> (zyrcon, zindigo, zen)
+<LI><A HREF="#irix62-motif">irix62</A> (zamboni)
+<LI><A HREF="#linux-motif">linux</A>
+<LI><A HREF="#m88k4-motif">dgux</A> (zutsu)
+<LI><A HREF="#hp300-motif">hp300</A> (zippy)
+<LI><A HREF="#hp700-motif">hp700</A> (zinger)
+<LI><A HREF="#m88k4-motif">m88k4</A> (zmoto)
+<LI><A HREF="#ncr-motif">ncr</A> (zygon)
+<LI><A HREF="#osf1-motif">osf1</A> (zarabeth)
+<LI><A HREF="#sco-motif">sco</A> (z-tosh)
+<LI><A HREF="#sol21-motif">sol21</A> (no machine) (Solaris 2.1 and 2.2)
+<LI><A HREF="#sol24-motif">sol23</A> (zipx4)
+<LI><A HREF="#sol24-motif">sol24</A> (zolaris)
+<LI><A HREF="#sol25-motif">sol25</A> (zot)
+<LI><A HREF="#ultrx-motif">ultrx</A>
+</UL>
+<DD><A NAME=product-lite>Lite client</A>
+<UL>
+<LI><A HREF="#aix-lite">aix</A> (zarf)
+<LI><A HREF="#aix4-lite">aix4</A> (zeugma)
+<LI><A HREF="#unixw-lite">unixw</A> (zunivel)
+</UL>
+<DD><A NAME="zpopnotes">ZPOP server</A>
+<UL>
+<LI><A HREF="#dgux-zpop">dgux</A> (zutsu)
+<LI><A HREF="#inter-zpop">inter</A> (zalfred)
+<LI><A HREF="#irix-zpop">irix</A> (zyrcon, zindigo, zen) (IRIX 4)
+<LI><A HREF="#irix53-zpop">irix5</A>
+<LI><A HREF="#irix53-zpop">irix53</A> (zex)
+<LI><A HREF="#motor-zpop">motor</A> (zola)
+<LI><A HREF="#ncr-zpop">ncr</A> (zygon)
+<LI><A HREF="#sol24-zpop">sol23</A> (zipx4)
+<LI><A HREF="#sol24-zpop">sol24</A> (zolaris)
+</UL>
+<P>
+<DT><I>Details by Operating System</I>
+<br><br>
+<DD>aix322 (zibm)
+<UL>
+<LI><A NAME="aix322-motif">Motif</A>
+<UL>
+<LI><tt>make zmail.shared; make aixstatic</tt><br>
+produces <tt>zmail.shared</tt> and a static <tt>zmail</tt>
+</UL>
+</UL>
+<DD>aix (zarf) (AIX 3.2.5)
+<UL>
+<LI><A NAME="aix-motif">Motif</A>
+<UL>
+<LI>Something to try for static link: <tt>-bnoso -bI:/lib/syscalls.exp</tt><br>
+but currently <tt>aixstatic</tt> target only works for 3.2.2, I think.
+</UL>
+<LI><A NAME="aix-lite">Lite</A>
+<UL>
+<LI>Link with <tt>ncurses</tt> using headers
+from <tt>/projects/zmail/lib/aix325/include</tt>
+and libraries from <tt>/projects/zmail/lib/aix325/lib</tt>.  This is
+best accomplished by adding <CODE>-I/projects/zmail/lib/aix325/include</CODE>
+to the <CODE>EXTRA_INCLUDES</CODE> macro in <TT>osmake.mk</TT>, and similarly
+replacing the contents of the <CODE>CURSES_LIB</CODE> macro in the same file
+with <CODE>/projects/zmail/lib/aix325/lib/libncurses.a</CODE>.
+</UL>
+</UL>
+<DD>aix4 (zeugma)
+<UL>
+<LI><A NAME=aix4-any>Any</A>
+<UL>
+<LI>The special target <CODE>stagedlink</CODE> is automatically used to
+link any <TT>zmail</TT> variant <I>(this does not apply to ZPOP)</I>.  This
+target builds several <TT>.a</TT> files and links them instead of linking
+all the <TT>.o</TT> files (which tends to choke <TT>make</TT>).  Be careful
+of multiple definitions of <CODE>main()</CODE> and <CODE>error()</CODE> or
+other functions that may result from including too many <TT>.o</TT> files
+in one of the <TT>.a</TT> libraries.  The <TT>license</TT> subdirectory is
+particularly vulnerable.
+</UL>
+<LI><A NAME="aix4-lite">Lite</A>
+<UL>
+<LI>Spencer Sun, former Z-Mail build engineer, says this should be linked
+with <tt>ncurses</tt> as is <TT>aix</TT>, except using headers
+from <tt>/projects/zmail/lib/aix411/include</tt>
+and libraries from <tt>/projects/zmail/lib/aix411/lib</tt>, by changing
+macros as described for <TT>aix</TT>.  <STRONG>However,</STRONG> we were
+not able to get this build to function correctly with <TT>ncurses</TT>
+for 4.0b, so<I> try the stock curses libraries first.</I>
+</UL>
+</UL>
+<DD>apollo (zapollo)
+<UL>
+<LI><A NAME="apollo-any">Any</A><br>
+<UL>
+<LI>compile with flags <tt>-A systype,bsd4.3 -A runtype,any</tt><br>
+Metamail and zmail Makefiles or .mk files have this, but mp configure
+doesn't do it, so add it to Makefile by hand...
+<LI>compiler chokes if too many -I's.  So link nearly all include files
+into include directory and change it to -I../include or whatever.
+</UL>
+</UL>
+<DD>caldera (zyxomna)<BR>
+<UL>
+<LI><I>There are only Motif binaries for Caldera; no</I> <TT>small</TT><I>, Lite, or ZPOP.
+See also the</I> <TT>linux</TT> <I>notes below.</I>
+<LI><A NAME="caldera-motif">Motif</A>
+<UL>
+<LI>Requires <TT>libcnd.a</TT> and <TT>libcnd.h</TT> for Caldera Network Desktop licensing.
+These files currently can be found at <TT>/projects/zmail/lib/caldera/.</TT>
+<LI>Caldera builds depend upon two preprocessor symbols, <CODE>CALDERA</CODE> (defined in
+<TT>osmake.mk</TT>) and <CODE>ZMAIL_CALDERA</CODE> (defined in <TT>osconfig.h</TT> in the
+<CODE>extra config info</CODE> section).  <CODE>CALDERA</CODE> is used for versioning;
+<CODE>ZMAIL_CALDERA</CODE> is used for the special Caldera Network Desktop licensing.
+<LI>The <TT>lib/forms/bugs</TT> template should be changed to use the Caldera support address.
+The address can be found in the <TT>caldera-branch</TT> copy of this file; try using:
+<BLOCKQUOTE><TT>cvs update -j caldera-branch lib/forms/bugs</TT></BLOCKQUOTE>
+<STRONG>Watch for CVS conflicts!</STRONG>  If you get a conflict, you must edit the file
+and resolve the conflict before you proceed.  Do <STRONG>not</STRONG> commit this file or
+you will change the support address improperly in other platform builds!
+<LI>After <tt>make distribution</tt>, an RPM (RedHat Package Manager) file must
+be built.  See <tt>/projects/zmail/lib/caldera/rpm/makerpm</tt> for details.  Note that
+you must run <tt>makerpm</tt> as <tt>root</tt>, not as any other user.
+</UL>
+</UL>
+<DD>dgux (zutsu)
+<DD>m88k4 (zmoto)
+<UL>
+<LI><A NAME="m88k4-any">Any</A>
+<UL>
+<LI><STRONG>WARNING:</STRONG><br>
+3.2.x wants to concoct a hostid because, while these platforms do
+<tt>HAVE_GETHOSTID</tt>, the
+presence of <code>SI_HW_SERIAL</code> takes precedence -- however,
+<code>SI_HW_SERIAL</code> is broken and always returns <CODE>0</CODE>!
+(I forget whether this applies to <TT>dgux</TT>, <TT>m88k4</TT>, or both; it's worked around
+in ZM 3.3dev and later)
+<LI>(<TT>m88k4</TT> only) also <tt>make ./custom/ucbgethostid.o</tt> before linking.
+</UL>
+<LI><A NAME="m88k4-motif">Motif</A>
+<UL>
+<LI>Default linkage is not static.
+</UL>
+<OL>
+<LI><tt>make zmail.static</tt>
+<LI><tt>make zmail.shared</tt>
+<LI><tt>mv zmail.static zmail</tt>
+</OL>
+<LI><A NAME="dgux-zpop">ZPOP</A>
+<UL>
+<LI>(<TT>dgux</TT> only) delete <tt>-lnsl</tt>, add <tt>/usr/lib/libp/libmail.a</tt>
+</UL>
+</UL>
+<DD>hp300 (zippy)
+<UL>
+<LI><A NAME="hp300-motif">Motif</A>
+<UL>
+<LI><tt>make motif/fallback.h</tt> on some other platform (it's OS-independent)
+because hp300 <tt>sed</tt> can't handle it.
+</UL>
+</UL>
+<DD>hp700 (zinger)
+<UL>
+<LI><A NAME="hp700-motif">Motif</A>
+<OL>
+<LI><tt>make zmail.static</tt>
+<LI><tt>make zmail.shared</tt>
+<LI><tt>mv zmail.static zmail</tt>
+</OL>
+</UL>
+<DD>hp800 (zappy)
+<UL><LI>No special notes</UL>
+<DD>inter (zalfred)
+<UL>
+<LI><A NAME="inter-any">Any</A>
+<UL>
+<LI>No such thing as symlinks.  It will treat symlinks on NFS-mounted
+filesystems as hard links, I think.
+<LI>A stat(2) fails if compiled with -Xp and the filename exceeds 14
+characters in length and is on an NFS-mounted filesystem.
+</UL>
+<OL>
+<LI><tt>cd lib</tt>
+<LI><tt>ln attach.types.src attach.src</tt>
+<LI><tt>ln command.hlp.src command.src</tt>
+<LI><tt>ln system.zmailrc.src system.src</tt>
+<LI>edit <tt>Makefile</tt> appropriately
+<LI><tt>cd ..</tt>
+<LI>Build.
+</OL>
+<LI><A NAME="inter-zpop">ZPOP</A>
+<UL>
+<LI>add <tt>-Xs</tt> by hand to <tt>zync/Makefile</tt>
+<LI>move <tt>-linet</tt> to end of libs line
+<LI>undefine <tt>HAVE_FLOCK</tt>
+<LI>We need <tt>-lcposix</tt> for some stuff, <STRONG>but</STRONG> you
+have to use <tt>-lc -lcposix</tt> because the crypt() in
+<tt>/lib/libcposix.a</tt> is broken.
+</UL>
+<LI><I>Building the</I> <tt>gmake</tt> <I>tool</I>
+<UL>
+<LI>use <tt>cc -Xs</tt> (cc defaults to -Xs, but to be safe...)
+<LI>define <tt>-D_POSIX_SOURCE</tt> and link with <tt>-lcposix</tt>
+(<tt>LOADLIBES</tt> macro in the <tt>Makefile</tt>)
+</UL>
+</UL>
+<DD>irix (zyrcon, zindigo, zen) (IRIX 4)
+<UL>
+<LI><A NAME="irix-motif">Motif</A>
+<UL>
+<LI><I>Do <strong>not</strong> use SGI's supplied Motif libraries,</I> they're buggy.
+Use the library in <tt>/projects/zmail/lib/irix4/lib/libXm.a</tt> instead.
+(The SGI header files are OK and work with this library.)
+</UL>
+<LI><A NAME="irix-zpop">ZPOP</A>
+<UL>
+<LI><I><STRONG>Do</STRONG></I> link with <tt>-lsun</tt>, to get NIS getpw* functions
+</UL>
+</UL>
+<DD>irix5
+<DD>irix53 (zex)
+<UL>
+<LI><A NAME="irix53-any">Any</A>
+<UL>
+<LI>Need IRIX 5.3 native build, 5.2 and earlier aren't compatible.
+<LI>IRIX 4 builds don't work at all after IRIX 5.2.
+<LI>The default IRIX <tt>m4</tt> can't handle <tt>Zmail.helpmap</tt>.
+You must use GNU <tt>m4</tt>.  If building on <tt>zex</tt>, make
+sure <tt>/usr/local/bin</tt> is first in your <code>$PATH</code>.
+</UL>
+<LI><A NAME="irix53-zpop">ZPOP</A>
+<UL>
+<LI><I>Do <STRONG>not</STRONG></I> link with <tt>-lsocket</tt>, otherwise it links
+in a broken version of getpeername.
+<LI>Don't need <tt>-lnsl</tt> either
+</UL>
+</UL>
+<DD>irix62 (zamboni)
+<UL>
+<LI><A NAME="irix62-any">Any</A>
+<UL>
+<LI>IRIX 5.3 builds don't work very well.
+<LI>IRIX 4 builds don't work at all.
+</UL>
+<LI><A NAME="irix62-motif">Motif</A>
+<UL>
+<LI>This is the one and only build that requires a C++ compiler.
+<LI>This platform is used for building <I>MediaMail</I>.
+<LI>The default IRIX <tt>m4</tt> can't handle <tt>Zmail.helpmap</tt>.
+You must use GNU <tt>m4</tt>.  If building on <tt>zamboni</tt>, make
+sure <tt>/usr/local/bin</tt> is first in your <code>$PATH</code>.
+</UL>
+</UL>
+<DD>linux
+<UL>
+<LI><A NAME="linux-any">Any</A>
+<UL>
+<LI>When building <tt>metamail</tt>, copy <tt>Makefile.sysv</tt> to <tt>Makefile</tt>, then
+edit <tt>Makefile</tt> and change <code>-DSYSV</code> to <code>-DLINUX</code>.
+<LI>Newer versions of Linux (1.3.??, 2.0.x) have a <TT>/usr/include/linux/features.h</TT> file
+that conflicts with <TT>config/features.h</TT>; probably the right thing is to rename
+<TT>config/features.h</TT> for all platforms.
+</UL>
+<LI><A NAME="linux-motif">Motif</A>
+<UL>
+<LI>Successful links have been done both with the <I>RedHat 2.0</I> distribution of Motif 1.2.4
+(this is Caldera) and with the <I>Moo-tif</I> release of Motif 2.0.
+</UL>
+</UL>
+<DD>motor (zola)
+<UL>
+<LI><A NAME="motor-zpop">ZPOP</A>
+<UL>
+<LI>undef <tt>HAVE_FLOCK</tt> (configure gets it wrong)
+<LI>use <tt>ftruncate.o</tt><br>
+<I>This note is from Spencer, I don't know what it means.  Sorry.</I>
+<LI><tt>ar x /usr/lib/libbsd.a log.o</tt>
+</UL>
+</UL>
+<DD>ncr (zygon)
+<UL>
+<LI><A NAME="ncr-any">Any</A>
+<UL>
+<LI><tt>/usr/ccs/bin</tt> must be early in <tt>PATH</tt>
+<LI><tt>/usr/bin</tt> must precede <tt>/usr/ucb</tt> in <tt>PATH</tt>
+</UL>
+<LI><A NAME="ncr-motif">Motif</A>
+<UL>
+<LI><tt>make; make ncrstatic</tt><br>
+produces <tt>zmail.shared</tt> and a static <tt>zmail</tt>
+<LI>If the link appears to be dumping core in the optimizer the machine
+probably needs a reboot
+</UL>
+<LI><A NAME="ncr-zpop">ZPOP</A>
+<UL>
+<LI><I><STRONG>Does</STRONG></I> in fact have <tt>SYSLOG_43</tt> despite what
+<tt>configure</tt> will say
+</UL>
+</UL>
+<DD>osf1 (zarabeth)
+<UL>
+<LI><A NAME="osf1-motif">Motif</A>
+<UL>
+<LI><tt>make zmail.shared</tt> by hand
+</UL>
+</UL>
+<DD>osf1v3 (zeno)
+<UL>
+<LI><tt>/usr/sbin/secsetup</tt> to switch in and out of enhanced security mode
+</UL>
+<DD>pyr (buster, sword)
+<UL>
+<LI><A NAME="pyr-any">Any</A>
+<UL>
+<LI>Commands <tt>ucb</tt> and <tt>att</tt> switch universes
+<LI>Command <tt>universe</tt> tells you which one you're in
+<LI>Build in the <tt>ucb</tt> universe
+</UL>
+</UL>
+<DD>pyr4 (penguin)
+<UL><LI>No special notes.</UL>
+<DD>sco (z-tosh)
+<UL>
+<LI><A NAME="sco-any">Any</A>
+<UL>
+<LI>We compile for the Intel Binary Compatibility Standard on SCO;
+this forces a static link.  A shared link is possible on 3.2v5.0.0 if ELF
+binaries are compiled.
+</UL>
+<LI><A NAME="sco-motif">Motif</A>
+<UL>
+<LI>On SCO 3.2v3.x, expect <tt>make</tt> to fail because the linker can't
+handle very many file names.<br>
+<I>This is no longer a problem on SCO 3.2v5.0.0</I>
+<LI><tt>make; make scostatic</tt><br>
+produces <tt>zmail.static</tt> (special target name for shorter link line).
+</UL>
+</UL>
+<DD>sun411 (zcode)
+<UL>
+<LI><A NAME="sun411-any">Any</A>
+<UL>
+<LI>Currently have to do much of this build by hand.
+<LI>Edit <tt>osmake.mk</tt> for libraries then <tt>sh mkmakes</tt> and
+<tt>make link</tt>, etc.
+<LI>See remarks in <tt>osmake.mk</tt> for details on why this is necessary.
+</UL>
+</UL>
+<DD>sun413 (zipx3)
+<DD><I>and other sunos</I>
+<UL>
+<LI><A NAME="sun413-any">Any</A>
+<UL>
+<LI>make sure libc is <I>shared</I> so people can use their local host name
+resolution routines
+</UL>
+</UL>
+<DD>sol21 (no machine) (Solaris 2.1 and 2.2)
+<UL>
+<LI><STRONG>No longer supported!</STRONG>
+<LI><A NAME="sol21-motif">Motif</A>
+<UL>
+<LI>We don't have statically-linked motif libs
+</UL>
+</UL>
+<DD>sol23 (zipx4)
+<DD>sol24 (zolaris)
+<UL>
+<LI><A NAME="sol24-motif">Motif</A><br>
+<I>More of Spencer's notes that I don't completely follow.  I think this
+all works automatically with the newer 4.0 build stuff.</I>
+<UL>
+<LI>Currently have to do much by hand.
+<LI>edit <tt>local.mk</tt> and <tt>osmake.mk</tt> for libraries, then re-edit
+<LI><tt>sh mkmakes; make zmail.static zmail.shared; mv zmail.static zmail</tt>
+</UL>
+<LI><A NAME="sol24-zpop">ZPOP</A>
+<UL>
+<LI><tt>setenv CC gcc; sh configure sol23</tt>
+<LI><tt>gmake CC=gcc</tt>
+</UL>
+</UL>
+<DD>sol24x86 (zweiback) (Solaris 2.4 and 2.5 on Intel hardware)
+<UL>
+<LI>No special notes that I know of.
+</UL>
+<DD>sol25 (zot)
+<UL>
+<LI><A NAME="sol25-any">Any</A>
+<UL>
+<LI><tt>mp</tt> acts really weird; copy <tt>mp</tt> from a solaris 2.4 build.
+</UL>
+<LI><A NAME="sol25-motif">Motif</A>
+<UL>
+<LI><tt>make zmail.static zmail.shared; mv zmail.static zmail</tt>
+<LI>(With SunSoft cc) <tt>&lt;curses.h&gt;</tt> appears to use <code>TERMIO</code> but it's really <code>TERMIOS</code>
+<LI>(With SunSoft cc) <tt>&lt;curses.h&gt;</tt> defines <code>memcpy</code> in terms of <code>bcopy</code>, erroneously
+</UL>
+</UL>
+<DD><A NAME="sol26-any">sol26</A>
+<UL>
+<LI><STRONG>Never built on this platform before.</STRONG>
+<LI>Solaris 2.5 binaries should work, but if built with <tt>gcc</tt> they may
+reference an entry point that has been removed from <TT>libcrt</TT> (C run-time).
+</UL>
+<DD>ultrx
+<UL>
+<LI><A NAME="ultrx-motif">Motif</A>
+<UL>
+<LI><I>Do <strong>not</strong> use DEC's supplied Motif 1.1 libraries,</I> they're buggy.
+Use the library in <tt>/projects/zmail/lib/ultrix/lib/libXm.a</tt> instead,
+unless DEC has upgraded past Motif 1.1.4 (which is possible).
+(The DEC Motif 1.1 header files are OK and work with this library.)
+</UL>
+</UL>
+<DD>unixw (zunivel)
+<UL>
+<LI><A NAME="unixw-lite">Lite</A>
+<UL>
+<LI>Use <tt>TERMIOS</tt> because <tt>TERMIO</tt> causes weird curses behavior.
+</UL>
+</UL>
+</DL>
+<P>
+<H3><A NAME="problems">Potential Problems and Mistakes</A></H3>
+<P>
+<STRONG>Did you read the build notes for your platform, above?</STRONG>  If not, please look there.
+If so, and you have encountered a problem that is not mentioned, please <EM>update this document</EM>
+after you have found a solution, so that other developers have a reference.  This document can be
+checked out of the SrcRep as <TT>zmail/html/zmbuild.html</TT>.
+<P>
+<H4>Warnings from <TT>configure</TT> or <TT>mkmakes</TT></H4>
+<P>
+<UL>
+<LI>Unable to link with Motif
+<P>
+This usually means that the Motif header files, normally found in <TT>/usr/include/Xm</TT>, are
+in some nonstandard place such as <TT>/usr/X11R6/include/Xm</TT> or somewhere in <TT>/opt</TT>.
+There is a macro <CODE>EXTRA_INCLUDES</CODE> that usually is placed in <TT>osmake.mk</TT> to name
+these nonstandard directories, but <TT>configure</TT> doesn't pick that up from the old config files.
+<P>
+<LI><tt>doc/lite not found</tt> or <tt>doc/motif not found</tt>
+<P>
+You have not run <tt>sh doc.sh</tt> or it did not complete successfully.
+Try again, or ignore the errors if you do not need the documentation.
+<P>
+<LI>Conflicting definitions in os-specific files
+<P>
+This is usually harmless and simply means that you (or some other developer) has used a
+platform-specific <CODE>COMPILER</CODE> or other macro in <TT>osmake.mk</TT>.  However, you
+should double-check if you aren't sure of any of the macros this warns about.
+</UL>
+<P>
+<H4>Failures in <TT>make</TT></H4>
+<P>
+<UL>
+<LI><TT>autoconf</TT> not found or fails, or <TT>m4</TT> fails
+<P>
+This happens occasionally because both <TT>configure.in</TT> and <TT>configure</TT> are stored in
+CVS.  Check the <TT>cvs log</TT> messages for each of these to be sure both were committed for
+the same reasons (most likely they were checked in simultaneously, but someone may have forgotten
+to commit <TT>configure</TT>).  If they appear to be in sync, simply <TT>touch configure</TT> and
+proceed.
+<P>
+If they are out of sync, you'll have to find a machine (such as <TT>zyrcon</TT>) that has
+<STRONG><TT>autoconf</TT> version 1.11</STRONG> and <STRONG>GNU <TT>m4</TT></STRONG>.  Run
+<TT>autoconf</TT> there and commit <TT>configure</TT>, then <TT>cvs update configure</TT> in your
+working tree.
+<P>
+If <TT>m4</TT> still fails, check your <TT>PATH</TT>.  GNU <TT>m4</TT> is usually in
+<TT>/usr/local/bin</TT> and you may be executing the OS-default <TT>m4</TT> by mistake.
+<P>
+<LI>Macro expansion too big
+<P>
+An older platform's <TT>make</TT> may have problems with the large number of files in the final
+link of <TT>zmail</TT>.  The first thing to try is GNU <TT>make</TT>, if it's available on the
+system or if you can build it; if that's not feasible, see the note below about link failures.
+<P>
+<LI>Final link fails (too many arguments warning, or sometimes <TT>make</TT> dumps core)
+<P>
+On older platforms, <TT>make</TT> or <TT>/bin/sh</TT> may not be able to handle the large
+command line generated for the final <TT>zmail</TT> link.  The only recourse in this case is to
+create an alternate target in <TT>osmake.mk</TT> that links <TT>zmail</TT> in stages.  See the
+<CODE>stagedlink</CODE> target in <TT>config/os-aix4.mk</TT> and the <CODE>ncrstatic</CODE>
+target in <TT>config/os-ncr.mk</TT> for examples of this.
+<P>
+<LI>Unresolved symbol errors at link time
+<P>
+In some cases <TT>configure</TT> defines symbols to enable an operating system feature that is
+available only through a special library, but that library has note been included in the
+<CODE>LOCAL_LIBS</CODE> macro in <TT>osmake.mk</TT>.  You may need to edit <TT>osmake.mk</TT>
+(<TT>config/os-<STRONG>ostype-name</STRONG>.mk</TT>) to add the missing libraries.
+<P>
+In general, the <TT>configure</TT> and <TT>make</TT> processes are very sensitive to the local
+environment.  Many machines have two or more variations of the compiler which are selected by
+the order of directories in the <CODE>PATH</CODE> environment variable.  Builds on machines
+from the old Z-Code network usually assume that <TT>/usr/local/bin</TT> is the first directory in the
+<CODE>PATH</CODE>.
+<P>
+<LI><TT>make distribution</TT> can't find some of the documentation
+<P>
+This usually means the DocRep for the current Z-Mail version is incomplete, probably because
+you're working on a beta release.  You can do any of three things:
+<P>
+<UL>
+<LI>Remove the <TT>doc</TT> directory completely, and distribute without doc.
+<LI>Edit <TT>doc/Makefile</TT> and remove or comment out references to the missing doc.
+<LI>Fix the DocRep by putting in symbolic links to the most recent older version of the missing
+documents.  Then re-run <TT>doc.sh</TT>.
+</UL>
+</UL>
+<P>
+<H4>Problems with Motif and X11</H4>
+<P>
+See also <EM>Problems with System Include Files</EM> and <EM>Failures of <TT>configure</TT></EM>.
+<P>
+<UL>
+<LI>Motif 1.1.4 <I>vs.</I> Motif 1.2.4
+<P>
+There were many changes in behavior from Motif 1.1.4 to 1.2.4, even in API calls whose name or
+call sequence did not change.  (The situation is much better from 1.2.4 to 2.0.x, where new
+behavior was pretty well restricted to new calls.)  You will probably have to <CODE>#ifdef</CODE>
+any code that relies on the 1.2.4 behavior and implement an equivalent in terms of 1.1.4.
+<P>
+Remember that Motif 1.2.x requires X11R5 (or later) Xt libraries, so you must use 1.1.4 on any
+system that has X11R4 (or else build X11R5 yourself and static link the whole thing).
+<P>
+<LI><CODE>XmForm</CODE> and <CODE>XmPanedWindow</CODE> (and the <CODE>SaneWindow</CODE>)
+<P>
+Some versions of OSF/Motif (1.2.2 for sure, and some vendor-supplied releases even at later
+patch levels) have a bug in the geometry interaction among <CODE>XmForm</CODE> widgets and
+<CODE>XmPanedWindow</CODE> widgets.  This only manifests in certain combinations of forms
+inside panes and vice-versa.  The symptom is that some UI elements get squashed to a few
+pixels high or wide, rendering them unusable.
+(Z-Mail has on at least one occasion been bad-mouthed on usenet for using paned widgets at all.)
+<P>
+To work around this bug, we created the <CODE>SaneWindow</CODE> widget, <TT>motif/xm/sanew.[ch]</TT>.
+This is a copy of the paned window widget with some fixes to (and restrictions on) its geometry
+management.  It's very important that sane window widgets do not have paned window children or
+grandchildren.  There is much <CODE>#ifdef</CODE>'ing in <CODE>motif/*.c</CODE> to assure this.
+<P>
+The sane window requires Motif internal header files, frequently available only with the Motif
+source.  If you don't have access to the Motif source code, forcibly <CODE>#undef SANE_WINDOW</CODE>
+for your build and hope you don't have a bad version of the Motif libs.
+<P>
+<LI>X11R4 <I>vs.</I> R5/R6
+<P>
+X11R4 lacks localization support.  X11R5 has it, but X11R5 binaries dump core when the library
+files they expect to use for localization are missing.  This means that X11R5 programs running on
+a system with an X11R4 server typically crash.  The necessary libraries are distributed with
+Z-Mail and optionally installed for this reason.
+<P>
+Motif 1.2.x does not compile under X11R4.  Hence our reliance on Motif 1.1.4 on older system types.
+<P>
+X11R5 introduces full support for the <I>EditRes</I> protocol.  Many vendor-supplied Motif libraries
+automatically set up EditRes handling for applications that link with those libraries.  The Z-Mail
+configuration process attempts to locate an EditRes protocol library even under X11R4 (it first
+appeared there as an optional extension); linkage with EditRes is arranged if these are found.
+If the libraries are not found at configure time, that build of Z-Mail will not support EditRes.
+<P>
+X11R6 introduced full-fledged <I>session manager</I> support (see below).
+<P>
+<LI>Virtual Window Managers
+<P>
+Z-Mail saves time and system resources by unmapping and remapping windows rather than destroying
+and recreating them.  However, this conflicts with the geometry management schemes used by some
+virtual window managers.  If a Z-Mail compose or message window is unmapped while offscreen, the
+virtual window manager may assign it a negative geometry or a very large positive geometry.  The
+next time the window is brought up, the window manager places it at that geometry relative to the
+current visible screen.  This of course means that it is placed offscreen, invisible and for all
+practical purposes lost.
+<P>
+We have yet to come up with a workaround for this problem.
+<P>
+<LI>Session Managers
+<P>
+Session managers are window managers that attempt to maintain state from shutdown through the
+next restart.  At shutdown time (and for some session managers, periodically throughout the
+running time of the window manager) every application on the desktop is sent a
+<CODE>WM_SAVE_YOURSELF</CODE> message.  Each application is supposed to respond by:
+<OL>
+	<LI>saving its current state to disk, and
+	<LI>posting a new <CODE>WM_COMMAND</CODE> property.
+</OL>
+<P>
+When the session manager itself exits, it records the <CODE>WM_COMMAND</CODE> properties for
+all running applications.  The next time the session manager starts up, it executes all those
+commands, thereby restarting all those applications, which in turn are intended to reload
+their saved state.
+Thus by always shutting down and restarting the session manager, rather than shutting down any
+individual application, it is possible to simulate to some degree the behavior of Windows and
+Macintosh interfaces.
+<P>
+Z-Mail has only limited support for session management (see the <CODE>layout_db</CODE> Z-Script
+variable), in part because it does not have sole control over the external data (messages and
+folders) that it displays.  3.2.1 saves no state to disk, only posting the <CODE>WM_COMMAND</CODE>;
+4.0 (including the beta) saves its dialog layout, but cannot restore the exact contents of the
+dialogs when it brings them back.
+<P>
+Additionally, the problem noted above with virtual window managers could potentially cause certain
+dialogs to become ``permanently'' lost, by storing the bizarre geometry values in the layout file.
+However, we have not had any reports of this occurring, so far as I know.
+<P>
+</UL>
+<P>
+<H4>Problems with System Include Files</H4>
+<P>
+<UL>
+<LI><CODE>BSD</CODE> <I>vs.</I> <CODE>SYSV</CODE> preprocessor defines
+ <P>
+The <TT>configure</TT> tests for the <CODE>BSD</CODE> and <CODE>SYSV</CODE>
+preprocessor symbols are frequently inaccurate.  Particularly on SysV OS's
+that have POSIX extensions, <TT>configure</TT> may decide that the machine
+is <CODE>BSD</CODE>-like even though it is really <CODE>SYSV</CODE>.  Use
+common sense and override this setting in the <CODE>corrections</CODE> section
+of <TT>osconfig.h</TT> if it seems to be causing problems.
+ <P>
+<LI><CODE>TERMIO</CODE> <I>vs.</I> <CODE>TERMIOS</CODE>
+<P>
+Many systems have both <TT>termio.h</TT> and <TT>termios.h</TT>, which define the same set of
+data structures in subtly different ways.  When building Z-Mail Lite, it is extremely important
+that the <CODE>TERM_USE_TERMIO</CODE> or <CODE>TERM_USE_TERMIOS</CODE> macros in <TT>osconfig.h</TT>
+match the terminal handling routines expected by the system <TT>curses.h</TT> file.  You may have
+to edit <TT>osconfig.h</TT> (<TT>config/os-<STRONG>ostype-name</STRONG>.h</TT>) to correct what
+<TT>configure</TT> determined.
+<P>
+An additional gotcha with <TT>TERMIO</TT> and <TT>TERMIOS</TT> is that many implementations
+overload an array element (they define two different symbolic constants to the same value).
+This usually affects <CODE>VMIN</CODE> or <CODE>VTIME</CODE> and the terminal end-of-file
+character (<CODE>VEOF</CODE>).  If you are ever using <CODE>termio</CODE> structures to save
+terminal characteristics for later resetting, be careful.  The symptom usually is that <TT>stty</TT>
+on the terminal shows <CODE>^A</CODE> (control A) as the end-of-file character.  This potentially
+affects both Lite and the command-line interface.
+<P>
+<LI><CODE>&lt;time.h&gt;</CODE> <I>vs.</I> <CODE>&lt;sys/time.h&gt;</CODE>
+<P>
+Many systems define some of the same structures in both <TT>time.h</TT> and <TT>sys/time.h</TT>.
+Normally this is detected by <TT>configure</TT> and handled through the <CODE>TIME_WITH_SYS_TIME</CODE>
+symbol.  However, in some cases the X11 header files also attempt to work around this problem, and
+conflict with the configured resolution.
+<P>
+In this case it may be necessary to add <CODE>-D__TIMEVAL__</CODE> to the <CODE>MISC_DEFS</CODE>
+macro in <TT>osmake.mk</TT> (<TT>config/os-<STRONG>ostype-name</STRONG>.mk</TT>).
+<P>
+<LI><CODE>&lt;features.h&gt;</CODE>
+<P>
+See the <A HREF="#linux-any">Linux notes</A> above.  It would probably be a good idea at some
+point to rename <TT>config/features.h</TT> as <TT>config/zfeature.h</TT>.  A reasonable workaround
+(for Linux only, so not to be committed) is to <CODE>#include "/usr/include/features.h"</CODE>
+from inside <TT>config/features.h</TT>
+</UL>
+<P>
+<H4>Miscellaneous Z-Mail Quirks</H4>
+<P>
+<UL>
+<LI>Exception handling in Z-Mail (uncaught exception)
+<P>
+The Z-Mail exception routines are fairly new compared to the rest of the source.  They're most
+heavily used in Lite, but some of the Z-POP client code (<TT>mstore/</TT>) uses them, as do some
+of the dynamic data type libraries (<TT>general/</TT>) but most of the rest of zmail does not.
+The exceptions are implemented with <code>setjmp/longjmp</code>.
+<P>
+Occasionally a thrown exception ``escapes'' from the code that was designed to use exceptions
+and flies up into the older code.  This usually results in the global uncaught exception handler
+being called, which in turn causes <TT>zmail</TT> to exit.
+<P>
+The best fix for this is to find the source of the stray exception and add a <CODE>TRY</CODE>
+block somewhere closer to its source, to handle it.  Try to add the <CODE>TRY</CODE> as high
+up in the call chain as makes sense for handling the error; don't put it at the lowest level,
+that defeats the purpose of using exceptions.
+<P>
+See the <A HREF="except_toc.html">Exception Handling</A> documentation for more details.
+<P>
+<LI>Variables file does not match version
+<P>
+The <TT>$ZMLIB/variables</TT> file, generated from <TT>lib/variables.src</TT>, contains a version
+string that must match the major and minor version (but not patch level) of the Z-Mail version
+number.  You are using the run-time library from a different version.  Set the <TT>ZMLIB</TT>
+environment variable or use the <TT>-lib</TT> command line option when starting <TT>zmail</TT>.
+<P>
+<LI>Found X resources for wrong version
+<P>
+As with <TT>variables</TT>, the app-defaults file (<TT>/usr/lib/X11/app-defaults/Zmail</TT> for
+most installations)
+contains a version number.  Set the <TT>XAPPLRESDIR</TT> or <TT>XUSERFILESEARCHPATH</TT> environment
+variables to reference the same directory as your Z-Mail library (<TT>ZMLIB</TT>); there is a copy
+of the correct app-defaults file stored there.
+<P>
+Be careful with <TT>XUSERFILESEARCHPATH</TT>, it has a special syntax.  Read O'Reilly volume 3.
+<P>
+<LI>Choice of mail transport agent (sending mail fails)
+<P>
+There are four macros in <TT>osconfig.h</TT> (<TT>config/os-<STRONG>ostype-name</STRONG>.h</TT>)
+that select the outbound mail transport agent (MTA):
+<P>
+<UL>
+<LI><CODE>HAVE_BINMAIL</CODE> - Uses /bin/mail
+<LI><CODE>HAVE_SENDMAIL</CODE> - Uses /usr/lib/sendmail
+<LI><CODE>HAVE_EXECMAIL</CODE> - Uses /usr/lib/mail/execmail
+<LI><CODE>HAVE_SUBMIT</CODE> - Uses MMDF's /usr/mmdf/bin/submit
+</UL>
+<P>
+Presently, <TT>configure</TT> always defines <CODE>HAVE_SENDMAIL</CODE> without actually checking
+for the other cases.  This must be fixed in the <tt>Corrections</tt> section of <TT>osconfig.h</TT>
+if the platform uses another MTA.  The choice of MTA controls the interprocess protocol used by
+<TT>msgs/mail.c</TT> to talk to the sending MTA.  This is of interest only on UNIX; the Mac and
+Windows versions use SMTP directly via TCP.
+<P>
+The symbol <CODE>MMDF</CODE> (below) is defined by <TT>config/config.h</TT> on <CODE>M_UNIX</CODE> systems
+(SCO UNIX) that do not <CODE>HAVE_SENDMAIL</CODE>, so be careful if fixing the <TT>configure</TT>
+behavior.
+<P>
+<LI>Mail file locking
+<P>
+File locking is handled in <TT>shell/lock.c</TT> and <TT>shell/xcreat.c</TT>.
+There are two <TT>configure</TT>-tested definitions that control file locking:
+<P>
+<UL>
+<LI><CODE>HAVE_LOCKING</CODE> - The <CODE>locking(2)</CODE> call exists
+<LI><CODE>HAVE_MAILLOCK_H</CODE> - The <CODE>maillock(3)</CODE> headers exist (<TT>ld ... -lmail</TT>)
+</UL>
+<P>
+When <CODE>HAVE_MAILLOCK_H</CODE> is defined, <TT>shell/lock.c</TT> always prefers to lock the
+system mailbox using the <CODE>maillock(3)</CODE> call; other files are locked as specified by
+the setting of the run-time Z-Script variable <CODE>dot_lock</CODE>.
+<P>
+In addition, there are a set of symbols that appear in <TT>osconfig.h.in</TT> (and thus in every
+platform's <TT>os-<STRONG>ostype-name</STRONG>.h</TT>) but that are <STRONG>always undefined</STRONG>:
+<P>
+<UL>
+<LI><CODE>LOCK_FLOCK</CODE> - Use <CODE>flock(2)</CODE> for file locks (not NFS compatible)
+<LI><CODE>LOCK_FCNTL</CODE> - Use <CODE>fcntl(2)</CODE> for locking (NFS <TT>rpc.lockd</TT> compatible)
+<LI><CODE>LOCK_LK_LOCK</CODE> - Use MMDF's <CODE>lk_fopen(3)</CODE> and <CODE>lk_fclose(3)</CODE>
+<LI><CODE>LOCK_LOCKING</CODE> - Use <CODE>locking(2)</CODE> for locking
+<LI><CODE>ML_KERNEL</CODE> - Use kernel locking as defined above
+<LI><CODE>ML_DOTLOCK</CODE> - Use file locking with <TT>.lock</TT> suffix
+<LI><CODE>ML_DOTMLK</CODE> - Use file locking with <TT>.mlk</TT> suffix
+<P>
+The <CODE>ML_DOTMLK</CODE> behavior is currently controlled by the compiler-defined
+<CODE>M_XENIX</CODE> symbol, and is never used because we haven't done a Xenix build in years.
+<P>
+<LI><CODE>BLOCK_AGAIN</CODE> - Deadlocked blocking locks return <CODE>EAGAIN</CODE>
+<P>
+This behavior is presently handled by the <CODE>zlock()</CODE> routine
+in <TT>shell/lock.c</TT>, which translates <CODE>EWOULDBLOCK</CODE> to <CODE>EAGAIN</CODE> so that
+all platforms appear to the rest of the code to have <CODE>BLOCK_AGAIN</CODE> behavior.
+</UL>
+<P>
+These symbols were included as reminders of ways that the <TT>configure</TT> process and the
+resulting locking code could become more sophisticated.  Currently, <TT>shell/lock.c</TT> always
+operates as if <CODE>LOCK_FCNTL</CODE>, <CODE>ML_KERNEL</CODE> and <CODE>ML_DOTLOCK</CODE> are
+defined.  None of these always-undefined symbols is tested in the code.
+<P>
+The symbol <CODE>MMDF</CODE> (below) also causes <TT>shell/lock.c</TT> to use blocking rather
+than non-blocking locks.
+<P>
+<LI>Location of system mail spool (system mailbox not found)
+<P>
+At run time, Z-Mail recognizes the environment variable <TT>MAIL</TT> or the command-line
+switch <TT>-mailbox <strong>filename</strong></TT> to set the system mailbox location.
+<P>
+There are also three symbols in <TT>osconfig.h</TT>
+(<TT>config/os-<STRONG>ostype-name</STRONG>.h</TT>) that affect the compiled-in defaults:
+<P>
+<UL>
+<LI><CODE>USE_USR_MAIL</CODE> - mail is in /usr/mail
+<LI><CODE>USE_SPOOL_MAIL</CODE> - mail is in /usr/spool/mail
+<P>
+These select a file path as defined in <TT>config/config.h</TT>:
+<BLOCKQUOTE><PRE><CODE>#ifdef USE_USR_MAIL
+#define MAILDIR         "/usr/mail"
+#else /* assume USE_SPOOL_MAIL */
+#define MAILDIR         "/usr/spool/mail"
+#endif /* USE_USR_MAIL */</CODE></PRE></BLOCKQUOTE>
+<P>
+<CODE>MAILDIR</CODE> is defined in <TT>/usr/include/maillock.h</TT> when that file is present
+(<CODE>HAVE_MAILLOCK_H</CODE>).
+<P>
+<LI><CODE>USE_HOMEMAIL</CODE> - mail is in user's home directory
+<P>
+<STRONG>There currently are <EM>no</EM> platforms on which we define <CODE>HOMEMAIL</CODE>.</STRONG>
+The file used in the home directory is identified in <TT>config/config.h</TT>:
+<BLOCKQUOTE><PRE><CODE>#ifndef MAILFILE
+#define MAILFILE        "Mailbox"       /* or whatever */
+#endif /* MAILFILE */</CODE></PRE></BLOCKQUOTE>
+</UL>
+<P>
+Currently, <TT>configure</TT> always defines <CODE>USE_SPOOL_MAIL</CODE> without checking for
+other possibilities.  Many systems now use <TT>/var/mail</TT> or <TT>/var/spool/mail</TT> so it
+may be important to override <CODE>MAILDIR</CODE> in the <CODE>extra config info</CODE> section
+of <TT>osconfig.h</TT>.
+<P>
+<LI>Mailbox format (file is not a folder, messages merged together, control-A's in messages)
+<P>
+The Z-Script variable <CODE>folder_type</CODE> controls the folder format; it defaults to
+<CODE>standard</CODE> (messages separated by "From sender date" lines) but may be set to
+<CODE>delimited</CODE> (messages prefixed and suffixed with lines consisting of four
+<CODE>'\01'</CODE> bytes).  The specified format is used primarily for <EM>sending mail</EM> to
+folders, <I>i.e.</I> using folder names in <TT>To/Cc/Bcc/Fcc</TT> headers.  The folder
+format is automatically determined when opening a folder, and the <STRONG>current folder's
+format is always used</STRONG> when <EM>saving messages</EM> to folders.
+<P>
+It's generally best when all of a user's folders are kept in the same format.  Saving a message
+from a folder in one format into a folder that is another format <STRONG>does not work</STRONG>.
+<P>
+There is one symbol in <TT>config/config.h</TT> (<STRONG>not</STRONG> <TT>osconfig.h</TT>) that
+affects compilation:
+<P>
+<UL>
+<LI><CODE>MMDF</CODE> - MTA writes folders in <EM>MMDF</EM> format (<CODE>delimited</CODE> type)
+<P>This is defined by <TT>config/config.h</TT> on <CODE>M_UNIX</CODE> systems
+(SCO UNIX) that do not <CODE>HAVE_SENDMAIL</CODE>.  However, it's not usually necessary for the
+correct operation of Z-Mail.
+</UL>
+<P>
+The Z-Script <CODE>folder_type</CODE> is set to <CODE>delimited</CODE> in
+<TT>$ZMLIB/system.zmailrc</TT> when directory <TT>/usr/mmdf</TT> exists,
+<EM>on <CODE>SCO</CODE> only</EM> (compilations with the symbol <CODE>SCO</CODE> defined).
+This is inconsistent with the way that the <CODE>MMDF</CODE> symbol is defined.
+<P>
+<I><STRONG>Windows and Macintosh:</STRONG></I>  Z-Mail for Windows uses
+<STRONG>UNIX line termination</STRONG>, a single <CODE>'\012'</CODE> character
+(linefeed), rather than the DOS/Windows text file standard two characters
+<CODE>"\015\012"</CODE>.
+Z-Mail for Macintosh uses the standard Macintosh line termination for text
+files, that is, a single <CODE>'\015'</CODE> character (carriage return).
+This allows UNIX and Windows Z-Mail to interoperate across PC NFS mounts and
+the like, and also normally allows UNIX and Macintosh Z-Mail to interoperate
+across CAP and similar Mac file-sharing schemes, but it can cause problems
+when using FTP or floppy disk copies to move files among platforms.
+<P>
+Note that Macintosh C compilers typically swap the ASCII value of the symbolic
+characters <CODE>'\n'</CODE> and <CODE>'\r'</CODE>, so the above scheme is also the one that permits the
+greatest amount of C and C++ code to be shared with no <CODE>#ifdef</CODE> or
+similar modifications.
+<P>
+<LI>Licensing problems
+<P>
+Version 4.0b (and eventually 4.0) of Z-Mail is special-cased to use licenses from version 3.2.
+Be sure you are using a license key generated for that version.
+<P>
+The network license client/server exchange is extremely sensitive to word-size issues.  Be sure
+that <CODE>Int32</CODE> is correctly <CODE>typedef</CODE>'d for both the client and server platforms
+(<TT>configure</TT> supposedly deals correctly with this), and be sure to use it in declarations in
+any new licensing code you write.
+</UL>
+</BODY>
+</HTML>

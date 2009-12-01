@@ -1,0 +1,119 @@
+!
+!		OSF Keysyms
+!
+osfBackSpace			: 1004FF08
+osfInsert			: 1004FF63
+osfDelete			: 1004FFFF
+osfCopy				: 1004FF02
+osfCut				: 1004FF03
+osfPaste			: 1004FF04
+
+osfAddMode			: 1004FF31
+osfPrimaryPaste			: 1004FF32
+osfQuickPaste			: 1004FF33
+
+osfPageUp			: 1004FF41
+osfPageDown			: 1004FF42
+
+osfEndLine			: 1004FF57
+osfBeginLine			: 1004FF58
+
+osfActivate			: 1004FF44
+
+osfMenuBar			: 1004FF45
+
+osfClear			: 1004FF0B
+osfCancel			: 1004FF69
+osfHelp				: 1004FF6A
+osfMenu				: 1004FF67
+osfSelect			: 1004FF60
+osfUndo				: 1004FF65
+
+osfLeft				: 1004FF51
+osfUp				: 1004FF52
+osfRight			: 1004FF53
+osfDown				: 1004FF54
+
+!		DEC specific keysyms
+!
+DRemove				: 1000FF00
+
+!		HP specific keysyms
+!
+Reset				: 1000FF6C
+System				: 1000FF6D
+User				: 1000FF6E
+ClearLine			: 1000FF6F
+InsertLine			: 1000FF70
+DeleteLine			: 1000FF71
+InsertChar			: 1000FF72
+DeleteChar			: 1000FF73
+BackTab				: 1000FF74
+KP_BackTab			: 1000FF75
+hpModelock1			: 1000FF48
+hpModelock2			: 1000FF49
+
+XK_mute_acute			: 0x100000a8
+XK_mute_grave			: 0x100000a9
+XK_mute_asciicircum		: 0x100000aa
+XK_mute_diaeresis		: 0x100000ab
+XK_mute_asciitilde		: 0x100000ac
+XK_lira				: 0x100000af
+XK_guilder			: 0x100000be
+XK_Ydiaeresis			: 0x100000ee
+XK_IO				: 0x100000ee
+XK_longminus			: 0x100000f6
+XK_block			: 0x100000fc
+
+!		Apollo specific keysyms
+!
+apLineDel            : 1000FF00
+apCharDel            : 1000FF01
+apCopy               : 1000FF02
+apCut                : 1000FF03
+apPaste              : 1000FF04
+apMove               : 1000FF05
+apGrow               : 1000FF06
+apCmd                : 1000FF07
+apShell              : 1000FF08
+apLeftBar            : 1000FF09
+apRightBar           : 1000FF0A
+apLeftBox            : 1000FF0B
+apRightBox           : 1000FF0C
+apUpBox              : 1000FF0D
+apDownBox            : 1000FF0E
+apPop                : 1000FF0F
+apRead               : 1000FF10
+apEdit               : 1000FF11
+apSave               : 1000FF12
+apExit               : 1000FF13
+apRepeat             : 1000FF14
+apKP_parenleft       : 1000FFA8
+apKP_parenright      : 1000FFA9
+
+! Apollo specific keysyms as they were in the share-mode server.
+! These are needed for compatibility with old Apollo clients.
+!
+LineDel            : 1000FF00
+CharDel            : 1000FF01
+Copy               : 1000FF02
+Cut                : 1000FF03
+Paste              : 1000FF04
+Move               : 1000FF05
+Grow               : 1000FF06
+Cmd                : 1000FF07
+Shell              : 1000FF08
+LeftBar            : 1000FF09
+RightBar           : 1000FF0A
+LeftBox            : 1000FF0B
+RightBox           : 1000FF0C
+UpBox              : 1000FF0D
+DownBox            : 1000FF0E
+Pop                : 1000FF0F
+Read               : 1000FF10
+Edit               : 1000FF11
+Save               : 1000FF12
+Exit               : 1000FF13
+Repeat             : 1000FF14
+KP_parenleft       : 1000FFA8
+KP_parenright      : 1000FFA9

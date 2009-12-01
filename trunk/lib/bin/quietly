@@ -1,0 +1,15 @@
+:
+: Wrapper for verbose tools -- only print stderr if nonzero exit status
+
+errors=${TMPDIR-/tmp}/qt$$
+
+eval "$@" 2>$errors
+status=$?
+
+if test $status -ne 0
+then
+    cat $errors 1>&2
+fi
+
+rm -f $errors
+exit $status

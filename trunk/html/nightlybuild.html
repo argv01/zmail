@@ -1,0 +1,101 @@
+<HTML>
+<HEAD><TITLE>Z-Code Nightly Build System</TITLE></HEAD>
+<BODY>
+<H1>Z-Code Nightly Build System</H1>
+
+This document is an overview of the nightly
+build system at Z-Code.  It assumes familiarity with the UNIX Z-Mail
+build process and with UNIX itself.  If you actually want to get into
+the guts of how the various scripts work, a good working knowledge of
+Bourne shell scripts and Perl is recommended.
+<HR>
+A <KBD>builds</KBD> account has been created on various systems with UID
+30000.  The password is <KBD>builds</KBD> on most systems.  Each machine
+has it's own home directory, in there you will find a .profile that needs to
+be run to set up the path and other variables needed for that machine to
+build zmail.
+<P>
+The nightly build root is <KBD>zeppelin:/builds/auto</KBD>.  For
+building, the relevant subdirectories are the <KBD>clean</KBD>
+subdirectory and various other subdirectories for each platform.
+The subsubdirectories are typically
+<UL>
+<LI><CODE>mp</CODE>
+<LI><CODE>mm-contrib/sh-versions</CODE>,
+<LI><CODE>metamail</CODE>
+<LI><CODE>lite</CODE>
+<LI><CODE>zmail</CODE>
+<LI><CODE>imap</CODE>
+<LI><CODE>ldap</CODE>
+</UL>
+<P>
+Probably the easiest way to document this stuff is to walk through a
+nightly build run.  Substitute <CODE>lite</CODE> for <CODE>zmail</CODE>
+for Lite nightly builds.
+<P>
+<KBD>builds</KBD> has a <KBD>crontab</KBD> on <KBD>zeppelin</KBD> that
+looks like this:
+<PRE>
+0 21 * * 0,2,4,6 bin/dispatcher osf1v3-lite sol25cc-motif irix62-lite hp700_10-motif sun413-lite sco-motif m88k4-motif hp700-motif;bin/dispatcher irix53-lite sol23-lite hp800_10-lite sol24-lite aix322-lite sun411-lite aix4-lite
+0 21 * * 1,3,5 bin/dispatcher osf1v3-motif sol25cc-lite irix62-motif hp700_10-lite sun413-motif sco-lite m88k4-lite hp700-lite;bin/dispatcher irix53-motif sol23-motif hp800_10-motif sol24-motif aix322-motif sun411-motif aix4-motif
+</PRE>
+<KBD>~builds/bin/dispatcher</KBD></A>
+is the main script which gets everything going.  By default it changes to
+the nightly build root directory, does a <KBD>cvs update</KBD> on
+the clean copy of the source code directories listed above (the
+"subsubdirectories").
+<P>
+If any conflicts are discovered, the entire nightly build process is aborted
+(although in theory this should never happen because no one should be
+doing development work or committing changes from the nightly build
+directory, except for <CODE>version.c</CODE>).  If you want to skip the
+update step, you can set the <KBD>DISPATCHERFLAGS</KBD> environment
+variable to <KBD>nocvsupdate</KBD>.  Other values you can add to this
+variable are <KBD>echoonly</KBD> in which case it only echoes what steps
+it's going to do instead of actually doing them, and <KBD>debug</KBD>
+which sets both <KBD>nocvsupdate</KBD> and <KBD>echoonly</KBD>.
+<P>
+After the update is completed, 
+<KBD>dispatcher</KBD></A>
+runs through its command line arguments.  It selects a build host based
+on the type of build being performed (see the large <CODE>case
+$build</CODE> in the script), runs the
+<KBD>makelinks</KBD></A>
+script (which does a bunch of <KBD>tlink</KBD>s) to set up a symbolic
+link tree, if necessary, then uses <KBD>rsh</KBD> to run the script
+<KBD>zeppelin:/builds/auto/build</KBD></A>
+on the selected build machine.
+<HR>
+The <KBD>build</KBD></A>
+script uses the first part of command the line parameter as the OS type for
+<KBD>configure</KBD> etc., and the remaining part of the argument is passed as
+the UI parameter to <KBD>mkmakes</KBD>.
+<P>
+<KBD>build</KBD></A>
+performs these steps, currently in this order:
+<UL>
+<LI>builds <KBD>mp</KBD>
+<LI>builds <KBD>metamail</KBD>
+<LI>builds <KBD>imap</KBD>
+<LI>runs <KBD>configure</KBD>
+<LI>runs <KBD>mkmakes</KBD>
+<LI><KBD>make small</KBD>
+<LI>runs <KBD>mkmakes</KBD> (again)
+<LI>builds <KBD>zmail</KBD>
+<LI>builds <KBD>ldap</KBD>
+<LI>builds <KBD>distribution</KBD>
+</UL>
+<HR>
+The last 20 lines of the build log on each platform are mailed to the
+list of people defined in the
+<A HREF="file:/hosts/zipx3/usr/people/builds/bin/dispatcher"><KBD>dispatcher</KBD></A>
+script (which is also where the number of lines is determined).  I
+usually just scroll to the last line of the log to see if it linked OK.
+If not, some error must have happened; depending on the nature of the
+error, you may have to consult the full log to find out what went wrong.
+The logs live in the <KBD>logs</KBD> subdirectory off of the build root,
+and are compressed with <KBD>gzip</KBD> after they are mailed out,
+so you'll have to use <KBD>zcat</KBD>.
+<P>
+</BODY>
+</HTML>

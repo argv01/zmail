@@ -1,0 +1,83 @@
+# Sample Z-Script  functions: fastuniq, do_uniq
+#	 	      button: Uniq
+
+# This file is provided for comparison to uniq.zsc.  It performs the same
+# operation, but is significantly faster because it examines only adjacent
+# messages.  "uniq" preserves sorting order of the folder; this sacrifices
+# sorting order for speed of operation.
+
+function fastuniq() {
+#%
+# Cull duplicate messages out of a folder.  Useful if you've saved the
+# same message more than once or merged together two folders that had
+# some overlap.  Deletes the argument message (e.g., the selected message,
+# if attached to a button in GUI mode) if the next message after it has
+# the same Message-ID: header.  Ignores messages that are already deleted.
+#
+# NOTE that this requires that the messages be sorted so that duplicates
+# are adjacent!  It's possible to scan the entire folder for duplicates,
+# but much more time-consuming.  See "uniq".
+#
+# To apply this function to all the messages, just do:
+#
+#    sort -d -r -S
+#    each * fastuniq
+#
+# This function requires Z-Mail 3.0 and later (for the "arith" command).
+#%
+#
+    unset any same first next	# Initialize variable state
+    set deleted=""
+    if $?1
+	msg_list - $1	# Set current message = first argument
+    else
+	msg_list - 1	# Set current message = first message
+    endif
+    if $status != 0
+	return
+    endif
+    msg_list . { $ } | set next
+    if ! $?next
+	return 0
+    endif
+    arith next += 1
+    #
+    # Get the deleted messages -- speeds up later operations.
+    #
+    msg_list . - $next | :d | set deleted
+    #
+    # If the current message is deleted, don't do anything
+    #
+    msg_list . { $deleted } | set any
+    if $?any == 0
+	return 0
+    endif
+    #
+    # See if the next message has the same message ID as this one
+    #
+    eval -h pick -r $next { $deleted } -h message-id %i | set same
+    #
+    # Sanity check -- perhaps the header is missing?
+    #
+    if $?same
+	msg_list . | set first
+	echo Deleting $first
+	delete $first
+	msg_list $same		# The "output" of fastuniq is $same
+#    else
+#	echo -p No duplicates of %m found
+    endif
+    return 0
+}
+
+function do_uniq() {
+    set reply_to_hdr = message-id
+    echo Sorting by message-id ...
+    sort -a -S -d	# -d -r -S is faster but less accurate
+    unset reply_to_hdr
+    echo Scanning ...
+    each * fastuniq
+    sort -d -S		# restore date-sent ordering
+    echo Done.
+}
+button -n Uniq do_uniq

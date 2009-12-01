@@ -1,0 +1,22 @@
+# Sample Z-Script  function: show_As
+#	 	     button: To Do
+
+function show_As() {
+#%
+#      show_As
+#
+# Show all messages that have been marked with an "A" priority.
+#%
+    unset As
+    pick -p A | set As
+    if $?As
+	ask -l A "Important Messages" $As
+	if $status == 0
+	    display $A
+	endif
+	unset A
+    else
+	echo -d "Nothing marked A."
+    endif
+}
+button -n "To Do" show_As

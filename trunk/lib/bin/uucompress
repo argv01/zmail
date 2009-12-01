@@ -1,0 +1,5 @@
+:
+case ${1-"-"} in
+-) compress | uuencode UUPIPEOUT.Z;;
+*) compress < $1 | uuencode `basename $1`.Z;;
+esac | sed 's/begin 0/begin 600/'

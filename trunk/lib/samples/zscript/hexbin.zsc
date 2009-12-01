@@ -1,0 +1,43 @@
+#
+# Unix processing of Macintosh BinHex'd messages (requires "hexbin" utility)
+#
+# Author: Spencer Sun
+
+attach -type application/mac-binhex40 ":process_hexbin %s" None "mac-binhex40"
+
+function process_hexbin() {
+#%
+# Zscript to handle a hexbin attachment
+#%
+  set __hexbinsavedir="$cwd"
+  cd $1:h
+  sh hexbin -3 $1
+  cd $__hexbinsavedir
+  unset __hexbinsavedir
+  if ! -e $1.data
+    sh /bin/rm -f $1.data $1.rsrc $1.info
+    error -d "Can't process attachment: no data fork was created."
+    return 0
+  endif
+  if -z $1.data
+    sh /bin/rm -f $1.data $1.rsrc $1.info
+    error -d "Can't process attachment: zero-length data fork."
+    return 0
+  endif
+  set f="$1.data"
+  ask -i __hexbincmd '\
+Hexbin successfully extracted the data fork.  Enter a UNIX\n\
+command to execute on this file, using $f in place of the\n\
+filename.  If your command does not include $f, the file will\n\
+be piped in on the command'"'"'s standard input.'
+  if $status == -1
+    return 0
+  endif
+  if "$__hexbincmd" =~ '*$f*'
+    eval sh "$__hexbincmd; /bin/rm -f $1.data $1.rsrc $1.info" &
+  else
+    eval sh "$__hexbincmd < $f; /bin/rm -f $1.data $1.rsrc $1.info" &
+  endif
+  unset __hexbincmd
+  unset f
+}

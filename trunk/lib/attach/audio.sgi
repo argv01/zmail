@@ -1,0 +1,26 @@
+# Sound attachments for the SGI.
+# PATH	/usr/sbin
+
+# MIME audio type
+# The record rule isn't quite right, because we want 8-bit ISDN u-law data, 
+# but aiffcompress only operates on 16-bit data
+TYPE	audio/basic	"sfplay -i mu-law chan 1 rate 8000 end '%s' &"	\
+	"recordaiff -f aifc -n 1 -s 16 -r 8000 -c ulaw -t 60 '%s' &"	\
+	"sound"
+
+# Older Z-Mail audio type, for viewing messages from Z-Mail 2.1 and earlier
+TYPE	sound	"sfplay '%s' &"		None	"sound"
+BITMAP	sound	bitmaps/sound.xbm
+
+# AIFF audio
+# PATH	/usr/sbin
+# This is compatible with our old default attach.types for sgis.
+TYPE	audio	"playaiff '%s' &"	None	"AIFF audio"
+BITMAP	audio	bitmaps/sound.xbm
+
+# This is compatible with the definitions which were being used within SGI.
+TYPE	audio/x-aiff	"playaiff %s"	"recordaiff -t 60 %s &"	"AIFF Audio"
+BITMAP	audio/x-aiff	bitmaps/sound.xbm
+ALIAS	aiff	audio/x-aiff
+# type name which might be used by other MIME implentations
+ALIAS	aiff	audio/aiff

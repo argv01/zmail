@@ -1,0 +1,710 @@
+@@# system.zmailrc.src     Copyright 1993 Z-Code Software Corp.
+@@# this file is preprocessed by ifdef.sh
+@@# Consult config/features.h for symbol definitions.
+# system.zmailrc -- /usr/lib/Zmail/system.zmailrc init file for Z-Mail
+# Copyright (c) 1990-94 Z-Code Software, a Division of NCD.
+
+# For easier system.zmailrc debugging, set the DBFILE environment
+# variable to the name of a file (or tty) that you wish to
+# receive debugging output, and use the -debug commandline option
+# when you start Z-Mail.
+
+# Check for a license command file; if it's not there, we'll have to get
+# a license elsewhere, possibly from the Z-Code Network License Server.
+if -e $ZMLIB/license/license.zrc
+    source $ZMLIB/license/license.zrc
+endif
+
+# When Z-Mail is run as a mail filter from the .forward file, the
+# environment is likely to be that of the MTA, not the user.  The
+# Z-Mail variable "home" is forced to be correct, so export it.
+setenv HOME $home
+
+# Z-Mail and its users should always be able to execute Z-Mail utilities
+setenv PATH "${ZMLIB}/bin:${PATH}"
+
+# Set up the display early to allow quick exit in headers-only mode.
+# The hdrs_only flag is true if the command line was: "zmail -H".
+# The variable summary_fmt is set to change the format of the header
+# summaries that are displayed.
+if hdrs_only
+    set summary_fmt='%22a %M %-2N %T  %.31s'
+else
+    if is_lite
+	set summary_fmt='%22n %M %-2N %5T (%l) %s'
+    else
+	set summary_fmt='%22n %M %-2N %5T (%l) %.25s'
+@@ifdef _WINDOWS
+	set ext_summary_fmt = 'w24,m%n%.;w7,m%M %-2N%.;w8,m%T%.;w7,m(%l)%.;w20,m%s%.;'
+@@endif _WINDOWS
+    endif
+endif
+
+# Interpret message priorities
+# Priority values 1 through 5 are reserved for compatibility with Z-Mail 2.1
+# and 3.0, which label those priorities with letters A through E.  "Urgent"
+# is recognized on received messages only, by default; X.400 MTAs send it.
+priority Urgent=6 High=7 Medium=8 Low=9
+
+##
+# If your mail transport agent uses lock files to synchronize with user
+# agents, you need to set dot_lock here.  This applies to most mailers
+# on System V Unix systems.
+##
+# set dot_lock
+##
+# The installation procedure should have correctly computed the value of
+# the "dot_lock" variable and created $ZMLIB/lock.zmailrc accordingly.
+# If you appear to be losing mail or to have trouble with NFS-mounted mail
+# delivery areas, check the above setting.
+##
+if -e $ZMLIB/lock.zmailrc
+    source $ZMLIB/lock.zmailrc
+endif
+@@ifdef SCO
+
+# Special handling for MMDF-style folders
+if -e /usr/mmdf
+    set folder_type = delimited
+endif
+@@endif SCO
+
+## Initialize local natural language support
+if $?LANG
+    if -e $ZMLIB/locale/$LANG/locale.zmailrc
+	source $ZMLIB/locale/$LANG/locale.zmailrc
+    else
+	source $ZMLIB/locale.zmailrc
+    endif
+else
+    source $ZMLIB/locale.zmailrc
+endif
+
+##########################################################################
+# Additional customizations for the local system should be added here.   #
+# Note that additional settings are made following this section; please  #
+# also check the rest of this file to be sure it is appropriate for your #
+# environment.                                                           #
+##########################################################################
+
+# The following is a convenient way to load local customizations.
+function load_custom_overrides () {
+@@ifndef MSDOS
+    # Customizations placed in $ZMLIB/custom.zmailrc are read as the last
+    # actions taken via this file, by way of this function.
+    if -e $ZMLIB/custom.zmailrc
+	source $ZMLIB/custom.zmailrc
+@@else MSDOS
+    # Customizations placed in $ZMLIB/custom.rc are read as the last
+    # actions taken via this file, by way of this function.
+    if -e $ZMLIB/custom.rc
+	source $ZMLIB/custom.rc
+@@endif MSDOS
+	unfunction load_custom_overrides
+    endif
+}
+
+## End local system customizations
+
+## Stop reading here if displaying headers is our only action
+if hdrs_only
+    load_custom_overrides
+    return	# Quits reading this file
+endif
+
+# This setting usually does no harm and stops problems before they show up.
+# Sun's sendmail.cf for diskless workstations is misconfigured to not allow
+# commas between addresses.
+@@ifdef M88K
+set picky_mta += omit_commas,uucp_style
+@@else
+set picky_mta += omit_commas
+@@endif M88K
+
+## When reading messages, don't bother looking at lengthy, boring headers.
+ignore message-id received via status priority precedence x-zm-priority
+ignore references resent-message-id return-path return-receipt-to
+ignore mime-version content-type content-transfer-encoding
+ignore content-length content-lines content-identifier
+ignore encoding x-vue-version
+ignore x-face x-key-digest x-zmuid
+
+# A few extra special-cases -- patterns like this are case-sensitive.
+ignore *Error* Content-* X400* Encoding*
+
+# Set things up for the "Full headers" toggle in GUI modes
+# by ignoring headers that are part of $msg_win_hdr_fmt.
+# However, also retain these headers for hardcopy printing
+# (see $alwaysignore for more information).
+if is_gui
+    retain From Date Subject Name Reply-To Resent-[FDTC]* To Cc
+    ignore From From* Date Subject Name To Cc	# From* hits "From " line
+    set display_headers = unignored
+endif
+if is_lite
+    retain From Date Name Subject Reply-To Resent-[FDTC]* To Cc
+    ignore From From* Date Subject Name		# From* hits "From " line
+    set display_headers = unignored
+endif
+@@if (IRIX53 || IRIX5 || IRIX) && !HAVE_IMPRESSARIO 
+
+## Initialize printing configuration
+if -e $ZMLIB/bin/getprinters
+    function getprinters() {
+	# call the "getprinters" script to get a list of printers, in order
+	# to set the "printer" variable.
+	sh "$ZMLIB/bin/getprinters > /tmp/zmlp$$"
+	source /tmp/zmlp$$
+	sh /bin/rm -f /tmp/zmlp$$
+    }
+    getprinters
+endif
+@@endif (IRIX53 || IRIX5 || IRIX) && !HAVE_IMPRESSARIO 
+
+# Set the print_cmd to mailp by default.
+if ! $?print_cmd
+  set print_cmd = "$ZMLIB/bin/mailp -W80 %O"
+  setenv MP_PROLOGUE "$ZMLIB/mp"
+endif
+
+# By default, zmail's history is set to the last command only.  Set it to
+# remember the last 100 commands.
+set history = 100
+
+# If the variable "unix" is set, then any command that isn't a zmail command
+# will execute the command as if you typed it from the shell.  Note, such
+# commands will not go through another shell -- this is it.  This may be
+# considered confusing for new users, so it is commented out by default.
+set unix
+
+# Label replies with a header showing the who, what, and when of the
+# message being replied-to.
+set in_reply_to='%f\n\t"%s" (%d)'
+
+# Mail routing and address-fixing conveniences.  If auto_route is set, then
+# replies to messages take a closer look at the addresses of the recipients.
+# If any redundant paths are present, they are pruned.  Also, the path that
+# precedes any hosts listed in the "known_hosts" list is truncated.  This is
+# useful for uucp sites only, and is therefore commented out by default.
+# set auto_route known_hosts="sun ucbcad well unicom"
+
+function resend() {
+#% (fallback help text)
+#     resend [msg-list] [addresses]
+#
+# Resend (unedited) the listed messages to the addresses.
+#%
+    # Versions earlier than 2.1 do not support "mail -resend".
+    # Use equivalent backwards-compatible options just in case.
+    mail -send -forward $*
+}
+#   # Below is the Z-Script implementation.  The prompting originally
+#   # supported by function resend is now a builtin to "mail -resend".
+#
+#   shift -m			# Skip the messages specifed or selected.
+#   if $status < 0		# If the message list had an error, return.
+#	return
+#   endif
+#   set _msgs = "$output"	# Set _msgs to be result of "shift -m".
+#   if "X$_msgs" != X		# If there were messages,
+#	msg_list - $_msgs	# Set current message correctly.
+#   endif
+#   if $argc == 1		# If no other args exist, prompt for user list.
+#	ask -i userid "Forward to:"
+#	if $status == -1	# If user cancelled command, return now.
+#    return
+#	endif
+#   else
+#	set userid = "$*"	# Addresses already specified, get from args.
+#   endif
+#   mail -resend $_msgs $userid	# Forward messages to userid(s).
+#   msg_list $_msgs | unset userid _msgs	# Set $output and unset locals.
+
+function saveit() {
+#% (fallback help text)
+#      saveit [msg-list]
+#%
+    if "x$_save_file" == "x"
+        eval ask -f __save_file -d +/. "Saving: $*"
+    else
+        ask -f __save_file -d "$__save_file" "Saving: $*"
+    endif
+    if $status == 0
+	save $* "$__save_file"
+    endif
+}
+
+function bugreport() {
+#% (fallback help text)
+# Use this function to send mail to report problems with Z-Mail.
+#%
+    mail -p bugs		# mail using prepared bugreport form
+}
+# button -n Gripe bugreport
+
+function view_msg() {
+#% (fallback help text)
+#      view_msg [folder]
+#
+# This is used to view a single rfc822 message in a file
+#%
+
+    if $# == 1
+	open -T "$1"
+	if $status == 0
+@@ifdef VUI
+	    read ^
+@@else VUI
+	    pinup ^
+@@endif VUI
+	else
+	    return $status
+	endif
+    else
+	eval error "$0 failed: takes only one argument"
+    endif
+    return 0
+}
+
+function view_fldr() {
+#% (fallback help text)
+#      view_fldr [folder]
+#
+# This is used to view a folder (file of more than one message)
+#%
+    if $# != 1
+	eval error "$0 failed: takes only one argument"
+	return 0 # Suppress attachment error dialog
+    endif
+    if $?main_state:(folder_writable)
+	ask -m -i __how -d "Merging into current folder" "Display folder by:" \
+	    "Saving into new folder" "Viewing as temporary folder"
+	if $status != 0
+	    return 0
+	endif
+    else
+	ask -m -i __how -d "Viewing as temporary folder" "Display folder by:" \
+	    "Saving into new folder"
+	if $status != 0
+	    return 0
+	endif
+    endif
+    unset __list
+    if "$__how" == "Merging into current folder"
+	merge "$1" | set __list
+	if $status != 0
+	    return 0
+	endif
+    else
+	open -T "$1" | set __list
+	if $status != 0
+	    return 0
+	endif
+	if ! $?__list
+	    close -n "$1"
+	    return 0
+	endif
+	if "$__how" == "Saving into new folder"
+	    ask -f __vf_folder "Enter folder to write:"
+	    if $status == 0
+		copy * $__vf_folder
+		unset __list
+		open $__vf_folder | set __list
+		set __status == $status
+		close -n "$1"
+		if $__status != 0
+		    return 0
+		endif
+	    else
+		close -n "$1"
+	    endif
+	endif
+	ask -l __list -d 1 "Display which message?" $__list 
+	if $status == 0
+	    pinup $__list
+	endif
+    endif
+    return 0
+}
+
+function page_edit() {
+#% (fallback help text)
+#      page_edit [filename]
+#
+# This is used to create a new text file
+#%
+    sh touch $1
+    page -e $1
+}
+
+@@ifdef DSERV
+# Adjust this default pattern for the local directory server
+set __default_lookup_pattern = '.*'
+
+function lookup() {
+    if ! $?address_book
+	error "No address_book set."
+	return
+    endif
+    if is_gui
+	dialog Browser
+	return
+    endif
+    if is_lite
+	dialog Browser
+	return
+    endif
+@@ifdef UNIX
+    if $?1
+	set __lookup_pattern = "$*"
+    else
+	set __lookup_pattern = "$__default_lookup_pattern"
+    endif
+    sh $address_book -1 "$__lookup_pattern"
+@@else
+    return 1
+@@endif UNIX
+}
+@@endif DSERV
+
+function window_sh() {
+#% (fallback help text)
+#      window_sh command args ...
+#
+# Run an external command, in its own window if appropriate.  Note that
+# this forces use of a terminal emulator, even if $window_shell is empty.
+#%
+    # Use of "$1" "$2" etc. works around unavailability of "$@" for now.
+    if is_lite
+	builtin screencmd -p builtin sh "$1" "$2" "$3" "$4" "$5" "$6" "$7" \
+	    "$8" "$9" "$10" "$11" "$12" "$13" "$14" "$15" "$16" "$17" \
+	    "$18" "$19" "$20" "$21" "$22" "$23" "$24" "$25"
+	return $status
+    endif
+    if is_gui
+	if $?window_shell
+	    set __window_shell = "$window_shell"
+	else
+	    set __window_shell
+	endif
+	if X"$__window_shell" == X
+	    set __winterm
+	    if $?winterm
+		if X"$winterm" != X
+		    set __winterm = "$winterm"
+		endif
+	    endif
+	    if X"$__winterm" != X
+		set __window_shell = "$__winterm -e"
+	    else
+		set __window_shell = "xterm -e"
+	    endif
+	endif
+	builtin sh $__window_shell "$1" "$2" "$3" "$4" "$5" "$6" "$7" \
+	    "$8" "$9" "$10" "$11" "$12" "$13" "$14" "$15" "$16" "$17" \
+	    "$18" "$19" "$20" "$21" "$22" "$23" "$24" "$25"
+	return $status
+    endif
+    builtin sh "$1" "$2" "$3" "$4" "$5" "$6" "$7" \
+	"$8" "$9" "$10" "$11" "$12" "$13" "$14" "$15" "$16" "$17" \
+	"$18" "$19" "$20" "$21" "$22" "$23" "$24" "$25"
+    return $status
+}
+
+# This function may used for adding new types automatically.
+# Currently, defining this is a security hole in that arbitrary text
+# can be executed as Z-Mail commands, with possible bad consequences.
+#
+# attach -type NewType ":addtype '%s'" None "Commands to create a new type"
+#
+# function addtype() {
+#     # This should be improved to allow ONLY "attach" commands
+#     echo "Adding new attachment type ..."
+#     source $1
+#     sh rm $1
+#     attach
+# }
+
+# Do some tricks with X resources ...
+#if is_lite
+#    exit	# Exit this script, not the program
+#endif
+#if is_gui
+#    if ! $?XAPPLRESDIR
+#	if ! -e /usr/lib/X11/app-defaults/Zmail
+#	    setenv XAPPLRESDIR $ZMLIB
+#	else
+#	    setenv XAPPLRESDIR /usr/lib/X11/app-defaults
+#	endif
+#   endif
+#   if $?XUSERFILESEARCHPATH
+#	if "$XUSERFILESEARCHPATH" !~ "*:$XAPPLRESDIR*"
+#	    setenv XUSERFILESEARCHPATH "$XAPPLRESDIR/%N:$XUSERFILESEARCHPATH"
+#	endif
+#   endif
+#endif
+
+function zmfilter_reply_each () {
+#% (fallback help text)
+#      zmfilter_reply_each [filename]
+#
+@@if UNIX
+# This is used to reply to a message using a template file.  The string
+# $SUBJECT in the template file is replaced with the message's subject.
+@@else
+# This is used to reply to a message using a template file.
+@@endif UNIX
+#%
+@@if UNIX
+    setenv SUBJECT "$[%s]"
+    sh "sed 's/"'\$SUBJECT'"/'"'"$SUBJECT"/'" $1 > /tmp/reply$$"
+    unsetenv SUBJECT
+@@endif UNIX
+    if $?autoinclude
+	set __need_autoinclude
+	unset autoinclude
+    endif
+@@if UNIX
+    reply -unedited -draft /tmp/reply$$
+@@else
+    reply -unedited -draft $1
+    #
+    # reply -draft $1
+    # textedit set-item compose-body
+    # textedit get-text __entire_message
+    # set __pattern = '\(\(.\|'"$(\n)"'\)*\)\$SUBJECT\(\(.\|'"$(\n)"'\)*\)'
+    # match "$__pattern" "$__entire_message"
+    # if $__matches == 4
+    #	set __entire_message = "$__match_1$[%s]$__match_3"
+    #	textedit delete-all
+    #	textedit insert "$__entire_message"
+    # endif
+    # unset __pattern __entire_message
+@@endif UNIX
+    if $?__need_autoinclude
+	set autoinclude
+	unset __need_autoinclude
+    endif
+    return 0
+}
+
+function zmfilter_reply() {
+    foreach m $input 'msg_list - $m ; zmfilter_reply_each $1'
+}
+
+@@if IRIX53 || IRIX5 || IRIX
+function create_aiff () {
+#% (fallback help text)
+#      create_aiff [recordaiff arguments]
+#
+# This function is used to create new audio attachments by recording
+# from the microphone.
+#%
+    sh -m 'Activating microphone' apanel -nodisplay -nofork -source mic
+    sh -m 'Recording ... press <Stop> when done.' recordaiff $*
+
+    if $?child
+	sh kill -INT $child
+    endif
+}
+@@endif IRIX53 || IRIX5 || IRIX
+
+function view_external () {
+#% (fallback help text)
+#      view_external filename access-type [name [site [direcory [mode [server]]]]]
+#
+# Display an external-body part.  If the part is external because the
+# recipient chose to remove it, present a special-case error message.
+#%
+    if !$?METAMAIL_PAGER
+	if $?PAGER
+	    if "$PAGER" == more
+		setenv METAMAIL_PAGER 'more -w'
+	    else
+		setenv METAMAIL_PAGER "$PAGER"
+	    endif
+	else
+	    setenv METAMAIL_PAGER 'more -w'
+	endif
+    endif
+		
+    if "$2" == "x-removed-by-recipient"
+	error "This attachment has been removed by the recipient."
+	return 0
+    else
+    	window_sh "$zmlib/bin/showexternal" "$1" "$2" "$3" "$4" "$5" "$6" "$7"
+	return $status
+    endif
+}
+
+function trustable_address() {
+    if "$1" !~ "*|*"
+	if "$1" !~ "*[ 	<,][+/~]*"
+	    return 0
+	endif
+    endif
+    builtin eval builtin error "Ignoring suspicious address "'"'"$1"'"'"."
+}
+
+function trusted_mailto () {
+#% (fallback help text)
+@@if IRIX53 || IRIX5
+#	trusted_mailto [ address [ subject [ body [ inperson-reply ] ] ] ]
+@@else not Irix 5
+#	trusted_mailto [ address [ subject [ body ] ] ]
+@@endif not Irix 5
+#%
+    builtin mail
+    trustable_address "$1"
+    if !$status
+	builtin compcmd to "$1"
+    endif
+    builtin compcmd subject "$2"
+    if "x$3" != "x"
+	builtin compcmd append-text "$3"
+    endif
+@@if IRIX53 || IRIX5
+    if "x$4" != "x"
+	trustable_address "$4"
+	if !$status
+	    builtin compcmd insert-header X-InPerson-Address: "$4"
+	endif
+    endif
+@@endif Irix 5
+}
+
+function trusted_sendfile () {
+#% (fallback help text)
+#	trusted_sendfile filename [ address [ subject [ body ] ] ]
+#%
+    trusted_mailto "$2" "$3" "$4"
+    builtin compcmd attach-file "$1"
+}
+
+
+@@if OS_OSF1_DEMO
+source $ZMLIB/samples/zscript/decmm.zsc
+@@endif OS_OSF1_DEMO
+
+function follow_url() {
+#%
+#      follow_url "string"
+#
+# Extract something that looks like a URL from the argument string
+# and attempt to hand it off to a Web browser named by $browser
+# (Netscape if $browser is not set).
+#%
+    # Set WS to space,tab,newline and ws to space,tab
+    set WS=" $(\t\n)" ws=" $(\t)"
+    match "^\(.\)*\([^${WS}]*[${ws}<]\)*\<\([Uu][Rr][Ll]:\)*\([^${WS}:]+://[^${WS}>]+\(/\|\>\)\)\(.\)*" "$1"
+    if $status == 0
+	echo "Sending $__match_4 to Web browser."
+	if $?browser
+	    sh $browser "$__match_4"
+	else
+	    sh $ZMLIB/bin/tell-netscape openURL "$__match_4"
+	endif
+    else
+	match "^\(.\)*\([^${WS}]*[${ws}<]\)*\(url:\)*mailto:\([^${WS}>]*\)\>?\(.\)*" "$1:l"
+	if $status == 0
+	    mail -s "$%s" "$__match_4"
+        else
+            match "\([Ww][Ww][Ww]\)\.\(.*\)" "$1"
+            if $status == 0
+               echo "Sending $__match_0 to Web browser."
+               if $?browser
+                   sh $browser "$__match_0"
+               else
+                   sh $ZMLIB/bin/tell-netscape openURL "$__match_0"
+               endif
+            else
+               error "The selection doesn't look like a URL to me."
+            endif
+        endif
+    endif
+    return $status
+}
+
+#
+# =============================================================================
+# The following filters and functions convert X-Priority to Zmail priority
+# when new mail is read, and add X-Priority to mail when pail is sent using
+# Zmail priority.
+# =============================================================================
+
+filter  high_priority_1 'mark -G' -i -h X-Priority "1"
+filter  high_priority_2 'mark -G' -i -h X-Priority "2"
+filter  low_priority_4 'mark -L' -i -h X-Priority "4"
+filter  low_priority_5 'mark -L' -i -h X-Priority "5"
+
+function convert_zm_to_x_priority() {
+compcmd insert-header:off X-Priority:
+compcmd get-header X-Zm-Priority
+if $?header_value
+if "$header_value" =~ *Low*
+  compcmd insert-header X-Priority: "4 (Low)"
+endif
+if "$header_value" =~ *High*
+  compcmd insert-header X-Priority: "2 (High)"
+endif
+endif
+}
+
+interpose -operation send convert_zm_to_x_priority
+
+# =============================================================================
+
+# pick up menu and button definitions
+@@ifndef MSDOS
+if $?LANG
+    if -e $ZMLIB/locale/$LANG/zmail.menus
+        source $ZMLIB/locale/$LANG/zmail.menus
+    else
+        source $ZMLIB/zmail.menus
+    endif
+else
+    source $ZMLIB/zmail.menus
+endif
+@@else MSDOS
+source $ZMLIB/zmailmnu.rc
+@@endif MSDOS
+
+# "cmd" is used to set command line aliases similar to the way "csh"
+# does it.  The only difference is that "alias" is a reserved word in
+# Z-Mail and Mail, so cmd is used.
+#
+cmd dq 'd \!*; q'		# Delete a message list, then quit.
+cmd unread 'flags \!* U O'	# Mark messages unread.
+
+# Pick up Lite system initialization
+if is_lite
+if $?LANG
+    if -e $ZMLIB/locale/$LANG/system.literc
+        source $ZMLIB/locale/$LANG/system.literc
+    else
+        source $ZMLIB/system.literc
+    endif
+else
+    source $ZMLIB/system.literc
+endif
+@@ifdef ZMCOT
+    source $ZMLIB/system.zmcotrc
+@@endif
+endif
+
+# Pick up local customization that should take precedence over this file.
+load_custom_overrides
+
+@@if MEDIAMAIL
+
+function check_partial() {
+    set __output="$__tmpdir/check-$1:t"
+    sh "check-partials \"$1\" > \"$__output\""
+    if ! -z "$__output"
+	page "$__output"
+    endif
+    remove -f "$__output"
+}
+
+foreach pending (/usr/mail/$USER.partials/*) 'check_partial "$pending"'
+@@endif MEDIAMAIL

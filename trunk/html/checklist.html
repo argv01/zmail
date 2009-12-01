@@ -1,0 +1,134 @@
+<HEAD>
+<TITLE>Quick Build Checklist</TITLE>
+</HEAD>
+<BODY BGCOLOR=#ffffff>
+<H1>Quick Build Checklist</H1>
+Syd Logan
+<P>
+The following is a summary of the clone and build process. 
+<BR>
+<BR>Note: You should be cloning work trees underneath your home directory in /projects/zmail/users,
+or /projects/zmail/work. 
+<P>
+The first several steps are done only once, and only if you are cloning a new tree.
+<PRE>
+$ cd /projects/zmail/users/your-name-here
+$ mkdir osname-host
+</PRE>
+<BLOCKQUOTE>
+(examples of osname-host are hp800_10-avon and aix4-zeugma. By 
+convention this is how we name public build trees)
+</BLOCKQUOTE>
+<PRE>
+<BR>
+Note, do the following steps on zyrcon!! If you aren't there now, rlogin or 
+telnet in before continuing.
+<BR>
+$ cd osname-host
+$ cvs co -r motif-4-1-branch zmail 
+$ cvs co metamail-dist 
+$ cvs co mp 
+$ cvs co imap 
+$ cvs co ldap 
+$ cd zmail
+$ setenv DOCDIR /hosts/zyrcon/usr1/build/DocRep
+$ sh doc.sh 
+</PRE>
+Now, go to the host you are doing the build on, and cd to the zmail directory 
+of the clone tree before continuing. The remainder of the steps must happen 
+on the build host
+<PRE>
+$ sh configure osname
+<BLOCKQUOTE>
+(for example, $ sh configure hp800_10)
+</BLOCKQUOTE>
+</PRE>
+If you are making a distribution, you must also configure mp and metamail: 
+<PRE>
+<LI>cd ../mp 
+<LI>sh configure 
+<LI>cd ../metamail 
+</PRE>
+Click <A HREF="metamail.html">here</A> for the explicit steps required to
+obtain a makefile for the OS for which you are doing a build. Note that 
+some hosts require modification in order for mp to build, so check this
+page carefully
+<PRE>
+<LI>make 
+<LI>cd ../zmail 
+</PRE>
+ </P>
+The remainder of the steps actually generate the binaries and build the
+distributions, and may be done more than once (for example, to generate
+a new release after a checkin has been made and cvs update has been run). 
+ <P>
+If not in the zmail directory:
+<PRE>
+$ cd /projects/zmail/revbuilds/osname-host/zmail
+</PRE>
+ <P>
+Then, generate makefiles and build the small version:
+<PRE>
+$ sh mkmakes osname small zpop
+$ make
+</PRE>
+Next, do a make clean, and generate makefiles and build the motif version:
+<PRE>
+$ make clean
+$ sh mkmakes osname motif zpop
+$ make
+<PRE>
+<BR>
+Note:
+<BR>
+If you are building the motif version on one of the following hosts:
+<BR>
+<LI>sun411
+<LI>sun413
+<LI>sun414
+<LI>sol23
+<LI>sol24
+<LI>sol25cc
+<LI>m88k4
+<P>
+</PRE>
+then you must do the following instead of make:
+<PRE>
+$ make zmail.static zmail.shared; cp zmail.static zmail
+<BR>
+</PRE>
+After doing the make (or make zmail.static zmail.shared; cp zmail.static zmail), 
+then it is time to build a distribution:
+<PRE>
+$ make DISTROOT=.. distribution 
+</PRE>
+Then, it is time to build lite and do its distribution:
+<BR>
+<BR>
+First - if you did a make zmail.static zmail.shared above, then you must 
+remove them so that they are not copied with the lite distribution:
+<PRE>
+$ rm zmail.static zmail.shared
+
+Then:
+
+$ make clean
+$ sh mkmakes osname lite zpop
+$ make
+</PRE>
+ <P>
+If you need to build a zpop server for inclusion in the distribution:
+<PRE>
+     $ cd zync
+     $ sh configure --target=osname          (note the --)
+</PRE>
+Click <A HREF="zyncnotes.html">here</A> for changes you may need to make
+to the generated makefile before doing the make, then:
+<PRE>
+     $ make
+     $ make dist
+     $ cd ..
+
+$ make DISTROOT=.. distribution
+</PRE>
+</BODY>

@@ -1,0 +1,27 @@
+decoder_open(120): telling the MIME decoder where to put externalized parts
+dumper(28): general transfer of processed data to some disk file or external processs
+feeder(71): allocating memory for a fragment transfer buffer during message reassembly
+feeder(72): reading a message fragment during message reassembly
+next_fragment(58): preparing to read fragment 1 of a message whose parts have all arrived
+partials_status(46): preparing to skim over the names of files in a waiting room
+partials_status(50): when we know how many parts to expect, creating a file named "last-##" in a waiting room
+pick_filename(48): finding the user's passwd entry in general, and home directory in particular
+pick_filename(51): creating directory for externalized parts
+popen_delivery(101): starting up the local delivery agent (with -d option)
+popen_delivery(112): telling the local delivery agent our username
+popen_delivery(114): starting up the default local delivery agent (no -d option)
+receive(43): finding the user's passwd entry in general, and username in particular
+receive(103): creating a receiving directory for inbound fragments in general
+receive(112): allocating memory to remember the name of this waiting directory
+receive(117): creating waiting room subdirectory for a *single* family of fragments
+receive(122): confirming that this waiting room really is a directory (not a symlink, device, named pipe, etc.)
+receive(128): preparing to write a fragment into a numbered file in this waiting room
+receive(133): confirming that this numbered file has been created properly
+receive(134): confirming that this numbered file is owned by the user
+receive(135): confirming that this numbered file is a regular file (not a symlink, device, named pipe, etc.)
+receive(163): transferring start of any inbound message to either the local delivery agent or a numbered fragment file in the waiting area
+receive(173): reading the remainder of any inbound message
+receive(174): writing this remainder to either the local delivery agent or a numbered fragment file in the waiting area
+skim(28): confirming that a fragmented message waiting to be completed really is of type message/partial
+skim(52): allocating memory to remember the interpart boundaries in a completed message
+update_status_report(155): preparing to write a new status report into a file named "status" in a waiting room

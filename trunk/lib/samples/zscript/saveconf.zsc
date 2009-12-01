@@ -1,0 +1,128 @@
+#
+# Enhanced "saveopts" placing various configurations in separate files
+#
+# Copyright 1996 NCD Software Corporation.  All rights reserved.
+#
+
+function __saveconf() {
+#%
+#      __saveconf [-q] [-a] [-f] [-g]
+#
+# This function is intended to be used as an interposer on the
+# "saveopts" commmand.
+#
+# Saveconf stores configuration in a set of files, loaded from
+# the central ZMAILRC file.  This makes it easier to selectively
+# save and edit subsets of your configuration.  The following
+# new variables name extra files where configuration is stored:
+#
+#   alias_rc            E-mail address aliases (group names)
+#   filter_rc           Filters (both newmail-only and standard)
+#   header_rc           Displayed and customized message headers
+#
+# The ZMAILRC file is modified to read these configuration files
+# after setting up other configuration.  Lite key bindings and
+# Motif fonts and colors are still managed by "saveopts -g".
+#
+# Saveconf is aware of the Z-Mail Master Configuration utility
+# for advanced users.  If you have set up Master Configuration,
+# saveconf uses the files it created, separating Motif/Lite and
+# command-line (shell) configuration more completely.
+#%
+    if " $* " =~ "* -[oA] *"
+	return 0
+    endif
+    if $# > 0
+	eval set __file = '"$'$#'"'
+	if "X$__file" !~ "X-*"
+	    # Expand paths
+	    foreach __f ("$__file") 'set __file = "$__f"'
+	    foreach __f ("$ZMAILRC") 'set __z = "$__f"'
+	    # Compare file names
+	    if "X$__z" != "X$__file"
+		return 0
+	    endif
+	endif
+    endif
+
+    set __opts
+    if " $* " =~ "* -q *"
+	set __opts += " -q"
+    endif
+    if " $* " =~ "* -a *"
+	set __opts += " -a"
+    endif
+    if " $* " =~ "* -f *"
+	set __opts += " -f"
+    endif
+
+    set __status = 0
+
+    if ! $?alias_rc
+	set alias_rc = "~/.aliases.zrc"
+    endif
+    saveopts $__opts -o alias "$alias_rc"
+    arith __status += $status
+
+    if ! $?filter_rc
+	set filter_rc = "~/.filters.zrc"
+    endif
+    saveopts $__opts -o filter "$filter_rc"
+    arith __status += $status
+
+    if ! $?header_rc
+	set header_rc = "~/.headers.zrc"
+    endif
+    saveopts $__opts -o my_hdr "$header_rc"
+    arith __status += $status
+
+    set __categories = "-o set -o retain -o ignore -o priority"
+    set __categories += " -o function -o interpose -o cmd"
+    if $?__zcf_version
+	if $is_gui$is_lite == 0
+	    set __categories += " -o map -o map!"
+	else
+	    set __categories += " -o button -o menu"
+	endif
+    else
+	set __categories += " -o button -o menu -o map -o map!"
+    endif
+    if " $* " =~ "* -g *"
+	set __opts += " -g"
+    endif
+    saveopts $__opts $__categories
+    if $status == 0
+	arith __status += $status
+	if $?ZMAILRC
+	    if ! $?__zcf_version
+		echo -file "$ZMAILRC" "#"
+		echo -file "$ZMAILRC" "# Other configuration"
+		echo -file "$ZMAILRC" "#"
+		echo -file "$ZMAILRC" 'source $alias_rc'
+		echo -file "$ZMAILRC" 'source $filter_rc'
+		echo -file "$ZMAILRC" 'source $header_rc'
+		echo -file "$ZMAILRC" 'source $ZMLIB/samples/zscript/saveconf.zsc'
+	    endif
+	endif
+    endif
+
+    thwart $__status
+}
+
+interpose -before saveopts __saveconf
+
+function editconf() {
+    if $?__zcf_version
+	set __pf = ~/zscript/
+	set __cf = "ui/any ui/shell ui/lite ui/motif aliases headers filters"
+    else
+	set __pf
+	set __cf = "$ZMAILRC $alias_rc $header_rc $filter_rc"
+    endif
+    ask -m -i __f 'Select configuration to edit.' $__cf
+    if $status == 0
+	page -e $__pf$__f
+    endif
+}
+
+menu -b MainOptionsMenu -name mom_editconf -mnemonic d -label 'Edit Configuration ...' editconf

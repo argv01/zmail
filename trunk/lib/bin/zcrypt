@@ -1,0 +1,68 @@
+: zcrypt
+# Copyright 1993-94 Z-Code Software, a Division of NCD.  All rights reserved.
+if test -z "$TMPDIR"
+then
+    TMPDIR=/tmp
+fi
+TMPF=$TMPDIR/ocr$$
+if test -z "$CRYPT"
+then
+    CRYPT=crypt
+fi
+
+# Some crypts use "CrYpTkEy", for whatever weird reason.
+if test -n "$CRYPTKEY"; then CrYpTkEy="$CRYPTKEY"; fi
+if test -n "$CrYpTkEy"; then CRYPTKEY="$CrYpTkEy"; fi
+export CRYPTKEY
+export CrYpTkEy
+
+case $1 in
+-e) ICONV=cat; OCONV=btoa; shift;;
+-u) ICONV=atob; OCONV=cat; CRYPTKEY=""; shift;;
+*)
+    if grep "xbtoa Begin" "$1" >/dev/null 2>/dev/null
+    then
+	ICONV=atob; OCONV=cat; CRYPTKEY=""
+    else
+	ICONV=cat; OCONV=btoa
+    fi
+    ;;
+esac
+case $CRYPT in
+*crypt) if test -n "$CRYPTKEY"; then CRYPT="$CRYPT -k"; fi;;
+esac
+if test $# -eq 0
+then
+    set $TMPDIR/icr$$
+    cat > $1
+fi
+if test -z "$DISPLAY"
+then
+    # This is a hack because we can't prompt if no $DISPLAY
+    case $CRYPT in
+    crypt*|crypt*-k*)
+	if test -n "$CRYPTKEY"
+	then
+	    echo "Can't get key from environment; can't encrypt" 1>&2
+	    exit 1
+	fi
+	;;
+    esac
+    CRYPT="($CRYPT 2>/dev/null || eval 'echo $CRYPT failed 1>&2 ; exit 1')"
+    $ICONV < "$1" | eval "$CRYPT" > $TMPF
+else
+    if test -z "$CRYPTKEY"
+    then
+	xterm -geometry 40x5+200+200 -e sh -c "$ICONV < '$1' | $CRYPT > $TMPF"
+    else
+	$ICONV < "$1" | eval "$CRYPT" > $TMPF
+    fi
+fi
+if test -s $TMPF
+then
+    $OCONV < $TMPF
+else
+    echo "$CRYPT failed" 1>&2
+    exit 1
+fi
+rm $TMPDIR/*$$

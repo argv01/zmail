@@ -1,0 +1,20 @@
+# Entry for directory tree shipments, using the common "tarmail" format.
+# In this example, the "viewer" is a post-processing operation; the files
+# are not displayed, they are extracted into a local directory tree.
+TYPE	TarMail	"|atob|uncompress|tar xvf -"	None	"Tar Archive"
+
+# Postscript is a recognized type, but there is no universally
+# available postscript viewer.  Also, if you have an interactive
+# Postscript interpreter, you should think carefully before placing it
+# in the following line, because PostScript can be an enormous
+# security hole.  It is RELATIVELY harmless when sent to the printer,
+# so you might use lpr as a default viewer.  PostScript is a trademark
+# of Adobe Systems Incorporated which is registered in certain
+# jurisdictions.
+
+# MIME type
+TYPE	application/postscript	None	None	"postscript document"
+
+# old Z-Mail type
+ALIAS	Postscript	application/postscript
+

@@ -1,0 +1,37 @@
+# .zmailrc to cause Z-Mail to emulate SysV mailx
+# -- Bart Schaefer
+#
+#----------------------------------------------------------------------------
+# Shortcomings:
+#  Z-Mail does not support the "noisy phone line" flag of mailx
+#   (-i command line option to ignore interrupts)
+#  Z-Mail command line options generally mimic BSD Mail, not mailx
+#  Lines marked with ?? may not reflect current mailx reality
+#----------------------------------------------------------------------------
+#
+# Set up prompting, headers
+#
+set prompt='& '
+set mil_time date_received
+set hdr_format='%8.80a %D %M %-2N %5T  %l/%c "%.29s"'	# ??
+#
+# Set up mailing/replying miscellaneous
+#
+set indent_str = "$(\t)"	# tab			# ??
+set reply_to_hdr auto_route newline=next		# ??
+#
+# Set up command interface
+#
+# Disable history
+#
+set ignore_bang
+#
+# Commands ??
+#
+cmd r replyall
+cmd R replysender
+
+#
+# You may want this file sourced.
+#
+# source /usr/lib/Mail.rc

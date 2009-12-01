@@ -1,0 +1,8 @@
+# "cmd" is used to set command line aliases similar to the way "csh"
+# does it.  The only difference is that "alias" is a reserved word in
+# Z-Mail and Mail, so cmd is used.
+#
+cmd dq 'd \!*; q'		# Delete a message list, then quit.
+cmd unread 'flags \!* U O'	# Mark messages unread.
+cmd : fullscreen		# Colon now "toggles" fullscreen mode.
+

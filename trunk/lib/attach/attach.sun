@@ -1,0 +1,20 @@
+# MailTool encodings, sort of ... note that output file cannot be specified
+# with standard uudecode, so this is not a particularly safe encoding.
+# Entered twice because Sun's comma-separated list is order-independent.
+#CODE uuencode,compress	"|compress|uuenpipe"	"|uudepipe|uncompress|"	
+#CODE compress,uuencode	"|compress|uuenpipe"	"|uudepipe|uncompress|"
+# And twice more because Sun sometimes puts spaces in (sigh).
+#CODE "uuencode, compress"	"|compress|uuenpipe"	"|uudepipe|uncompress|"
+#CODE "compress, uuencode"	"|compress|uuenpipe"	"|uudepipe|uncompress|"
+
+# MailTool "default" type
+ALIAS	default	text/plain
+
+# PATH	/usr/openwin/bin
+#TYPE	"application/postscript"	"pageview '%s' &"	None	\
+	"postscript document"
+# MailTool "postscript-file" type
+ALIAS	postscript-file	application/postscript
+
+
+

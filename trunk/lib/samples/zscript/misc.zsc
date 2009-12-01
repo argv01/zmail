@@ -1,0 +1,81 @@
+# Miscellaneous Z-Script sample functions
+
+function show_all_subjs() {
+    msg_list + $*
+    hide *
+    eval -h pick -n -s %s | unhide
+    if X$output == X
+	eval -h error "Error trying to find messages with subject\n%s"
+    endif
+}
+button "Show Subject" show_all_subjs
+
+function gui_edit_msg() {
+    copy $1 /tmp/msg$1.$$ | delete
+    sh $window_shell $visual /tmp/msg$1.$$
+    merge /tmp/msg$1.$$
+}
+function loop_edit_msg() {
+    foreach msg $* 'gui_edit_msg $msg'
+}
+button "Edit Message" loop_edit_msg
+
+function backtrack() {
+    pick -r ^-. -1 -h message-id $* | mark
+    return 0
+}
+
+function prev_reference() {
+    msg_list - $*   # set current message
+    unmark *        # clear temporary marks
+    foreach ref ($[%?references?]) 'backtrack $ref'
+    msg_list `:m`
+    if "X$output" == X
+	error "No previous reference found."
+    else
+	unmark `:m` | pick -1
+    endif
+}
+
+function read_prev_ref() {
+    prev_reference $*
+    if $status == 0
+	read $output
+    endif
+}
+button "Previous Reference" read_prev_ref
+
+function use_as_composition() {
+#%
+# This function has been obsoleted by the "mail -q!" command.
+#
+#      use_as_composition [messagelist]
+#
+# Use each of the messages in messagelist (or the current message) as the
+# headers and body of a new composition.  Creates one composition for each
+# message in the list.  If attached to a GUI button, the selected messages
+# from the Main Window Message Summaries are used.
+#%
+    msg_list $*
+    foreach msg $output 'copy -f $msg /tmp/draft$$ ; mail -draft /tmp/draft$$'
+    sh rm /tmp/draft$$
+}
+button "Use As Composition" use_as_composition
+
+function msg_diff() {
+#%
+#      msg_diff [messagelist]
+#
+# Run the "diff" program on the two messages and display the result.
+# If more than two messages are passed to this function, the first and
+# last in the list are compared.
+#%
+    if $?input
+	set - $input
+    endif
+    pick +1 -r $* | write -f /tmp/msg$$ | flags -S
+    pick -1 -r $* | Pipe "diff - /tmp/msg$$ > /tmp/diff$$"
+    page /tmp/diff$$
+    sh rm /tmp/diff$$ /tmp/msg$$
+}
+button Diff msg_diff

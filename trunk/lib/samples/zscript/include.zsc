@@ -1,0 +1,68 @@
+#
+# Provide a path-searching file-inclusion utility.
+#
+
+if $?__include_loaded
+    return 0
+endif
+if ! $?zmpath
+    set zmpath = "$ZMLIB/samples/zscript"
+endif
+
+#
+# These functions are prefixed with "__" so they won't be saved
+# in the user's personal initialization files.
+#
+
+function __source () {
+    if -e "$2"/.
+	return 0
+    endif
+    if ! -e "$2"
+	return 0
+    endif
+    builtin source "$2"
+    return $1
+}
+
+function __zmpath_include () {
+    if $?zmpath
+	foreach __z ($zmpath) '__source -1 "$__z/$1"'
+    endif
+    return 0
+}
+
+function __include () {
+    if -e "$1"/.
+	return 0
+    endif
+    if -e "$1"
+	builtin source "$1"
+    else
+	__zmpath_include "$1"
+    endif
+    return 0
+}
+
+#
+# The user-visible part of the utility.
+#
+
+function include () {
+#%
+#      include <scriptfile>
+#
+# Read and execute Z-Script commands from the file <scriptfile>.
+#
+# Directories listed in the variable $zmpath are searched if the
+# scriptfile is not found in the current directory.  The current
+# directory is always checked first.
+#%
+    if $?__include_loaded
+	__include "$1"
+	return 0
+    endif
+    source "$1"
+}
+
+set __include_loaded

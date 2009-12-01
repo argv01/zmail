@@ -1,0 +1,294 @@
+#! /usr/local/bin/zmail -I
+#
+# Z-Mail script that acts like the BSD "vacation" program.
+#
+# Author: Bart Schaefer
+# Copyright (c) 1991-94 Z-Code Software, a Division of NCD.
+#
+
+#
+# Set the version number of this script.
+#
+set v_version = "Z-Vacation 1.8"
+
+#
+# Initialize message and recipient file locations.
+# These names are similar to the BSD "vacation",
+# but the files do not have the same format.
+#
+set v_message = ~/.zvacation.msg
+set v_sent_to = ~/.zvacation.dir
+
+# Make sure we know who we are acting for.
+if ! $?user
+    set user = "$LOGNAME"
+endif
+
+function vacation() {
+#%
+# This function is used as a filter for all incoming mail during your
+# vacation.  It sends the file ~/.zvacation.msg to each person who sends
+# mail to you.  The automated reply is sent to the same correspondent
+# at most once per week, and an attempt is made to avoid replying to
+# mailing lists and junk mail.
+#
+# You may set the subject of the reply by placing this command in your
+# ~/.zmailrc file:
+#   set v_subject = "I am on vacation"
+# You may use any subject you like, but avoid using double quotes (")
+# except as shown above.  "I am on vacation" is used if none is set.
+#
+# You may set a list of senders to whom replies should not be set by
+# placing this command in your ~/.zmailrc file:
+#   set v_suppress = "-request -daemon Postmaster"
+# Any address containing the one of the listed words will not receive
+# a vacation reply.  Replies to addresses containing any of the strings
+# "-request", "-daemon", and "Postmaster" are always suppressed.  This
+# includes "mailer-daemon", "mush-users-request", etc. and is not case
+# sensitive, so "z-code!postmaster" also matches.
+#
+# To enable the vacation filter, place this command in ~/.forward:
+#
+#   |"/usr/local/bin/zmail -init /usr/lib/Zmail/vacation -receive"
+#
+# If your operating system recognizes the #! syntax for shell scripts,
+# you may execute this file directly:
+#
+#   |"/usr/lib/Zmail/vacation -receive"
+#
+# If your MTA is MMDF, use this entry in your ~/.maildelivery file:
+#
+#   * - pipe ? /usr/local/bin/zmail -init /usr/lib/Zmail/vacation -receive
+#
+# See the maildelivery manual pages for more information.
+#
+# If you are using the Z-Code Network License Server, you may need to tell
+# zmail how to contact the server by adding the "-zcnlserv host:port" option
+# to the zmail command in your .forward or .maildelivery file.
+#%
+    # Filter functions are given a list of messages in $input.
+    # Perform the vacation actions on each such message.
+    each $input v_action
+}
+
+#
+# If this script is not being read by an interactive Z-Mail,
+# install the filter.  Note that this script is intended to
+# be sourced via the -init (-I) option of the zmail command.
+# (See the #! line at the top of this file.)  This ensures
+# that the vacation filter will be installed and run first,
+# before any other filters.
+#
+if redirect
+    filter vacation-mail vacation
+endif
+
+function v_action() {
+#%
+# This function expects a single message number as an argument.
+# That message is checked to see whether a reply should be sent.
+# If the check succeeds, a reply is generated.
+#%
+    v_check $1
+    if $status == 0
+	v_mail $1
+    endif
+    return 0
+}
+
+function v_check() {
+#%
+# This function is executed to check each arriving message to determine
+# whether an automated reply should be sent.  It searches the logfile
+# maintained by v_mail to see if a reply has been sent to the current
+# author within the past week.  It also checks for Precedence: bulk and
+# Precedence: junk, and for messages from -REQUEST@ (mailing lists).
+#
+# If any of the checks succeeds, v_check returns -1 to indicate that
+# no reply should be sent to the message in question.
+#%
+    # Check that the reply message file exists.
+    if ! -e $v_message
+	return -1
+    endif
+
+    # Set the current message to the argument message.
+    # If there is no argument, don't change the current.
+    if $?1
+	msg_list - $1
+    endif
+
+    # Eliminate any messages sent by this program.  The cryptic syntax
+    # here determines whether an X-Reply-Generated-By header exists.
+    if $?[%?x-reply-generated-by?]
+	return -1
+    endif
+
+    # If this message was not explictly sent to the current user,
+    # don't send a reply.  This catches most mailing-list mail.
+    unset v_to
+    pick -r . -t "$user" | set v_to
+    if ! $?v_to
+	return -1
+    endif
+    unset v_to
+
+    # Compare the sender of the current message to special senders.
+    # If there is a match, do not send a reply to this message.
+    if $?v_suppress
+	set v_suppress = "$v_suppress -request -daemon Postmaster"
+    else
+	set v_suppress = "-request -daemon Postmaster"
+    endif
+    foreach sender ($v_suppress) 'v_special from,reply-to $sender'
+    if $status == -1
+	unset sender
+	return -1
+    else
+	unset sender
+    endif
+
+    # Examine the Precedence: header for junk-mail values.
+    foreach prec (junk bulk) 'v_special precedence $prec'
+    if $status == -1
+	unset prec
+	return -1
+    else
+	unset prec
+    endif
+
+    # Remember who sent the message we may be replying to.
+    # Strip off the local machine name if present.
+    eval -h set from = %a reply_to = %?reply-to?
+    if "$from" =~ {,*"$hostname:1"!}"$[%u]"{,@"$hostname:1"*}
+	eval -h set from = %u
+	# Eliminate any messages sent by the current user.
+	if "$from" == "$user"
+	    unset from
+	    return -1
+	endif
+    endif
+
+    # If the $v_sent_to folder does not exist or has zero size,
+    # no replies have been sent.  Send a reply to this message.
+    if ! -e $v_sent_to
+	unset from
+	return 0
+    endif
+    if -z $v_sent_to
+	unset from
+	return 0
+    endif
+
+    # Remember the name of the current folder.
+    set lastfolder = $thisfolder
+
+    # Set the variable $sent, to allow testing even if "open" fails.
+    set sent
+    # The $v_sent_to folder does exist, so open it for checking.
+    # If the folder is already open, this will switch to it.
+    builtin open -r $v_sent_to | set sent
+
+    # If no messages were found, assume a reply should be sent.
+    # This is most likely an error condition of some kind.
+    if X$sent == X
+	unset from sent
+	return 0
+    endif
+    # Clear $sent (it is no longer needed).
+    unset sent
+
+    # Clear the variable $pastweek.
+    unset pastweek
+    # Search for replies dated within the past week, sent to
+    # the author of the current message.  Save any matches.
+    builtin pick -a +1wk | builtin pick -t "$from" | set pastweek
+    unset from
+
+    # Also check the reply-to address (rudimentary at this time)
+    if ! $?pastweek
+        if X"$reply_to" != X
+            builtin pick -a +1wk | \
+                builtin pick -t "$reply_to" | set pastweek
+        endif
+    endif
+
+    # Return to the previous folder.
+    builtin folder -n $lastfolder
+    unset lastfolder
+
+    # If there were any replies to the current author in the
+    # past week, do not reply to the current message.
+    if $?pastweek
+	unset pastweek
+	return -1
+    endif
+
+    # All tests completed.  A reply should be sent.
+    return 0
+}
+
+function v_special() {
+#%
+# Check a specified header ($1) against a given pattern ($2).
+# If there is a match, return -1 to prevent a reply from being sent.
+#%
+    if $?v_special
+	unset v_special
+    endif
+    if "$1" == from
+	builtin pick -r . -i -f -e $2 | set v_special
+    else
+	builtin pick -r . -i -h $1 -e $2 | set v_special
+    endif
+    if $?v_special
+	unset v_special
+	return -1
+    else
+	return 0
+    endif
+}
+
+function v_mail() {
+#%
+# This function is executed to send the vacation message in reply to the
+# incoming mail.  It sets the logfile to record the headers of the reply.
+# Note that the ~/.zvacation.msg file should NOT contain message headers.
+#%
+    # Remember the name of the logfile.
+    # Other filters may need it later.
+    if $?logfile
+	set oldlog = $logfile
+    endif
+    if $?record
+	set oldrec = $record
+	unset record
+    endif
+    # Reset the logfile to the $v_sent_to folder.
+    set logfile = $v_sent_to
+    # If no $v_subject is set, invent one.
+    if ! $?v_subject
+	set v_subject = "I am on vacation"
+    endif
+    # Set a special header to indicate automation.
+    my_hdr X-Reply-Generated-By: "$version, $v_version" 
+    # Generate a reply using the $v_message file.
+    # The usual signatures are attached.
+    builtin reply $1 -s "$v_subject" -U -H $v_message
+    # Remove the special header.
+    un_hdr X-Reply-Generated-By:
+    # Restore the "new" status of the message,
+    # so other filters are not confused.
+    flags N $1
+    # Restore the previous logfile, if any.
+    if $?oldlog
+	set logfile = $oldlog
+	unset oldlog
+    else
+	unset logfile
+    endif
+    if $?oldrec
+	set record = $oldrec
+	unset oldrec
+    endif
+}

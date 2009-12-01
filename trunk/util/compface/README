@@ -1,0 +1,27 @@
+Compface - 48x48x1 image compression and decompression
+Copyright (c) James Ashton 1990.
+Written 89/11/11
+
+Feel free to distribute this source at will so long as the above
+message and this message are included in full.
+
+The programme (two programmes really - but they're just links to each
+other) converts 48x48x1 images to and from a compressed format.  The
+uncompressed images are expected to contain 48x48/4 (576) hex digits.
+All other characters and any `0's followed by `X' or `x' are ignored.
+Usually the files are 48 lines of "0x%04X,0x%04X,0x%04X,".  The
+compressed images contain some number of printable characters.  Non
+printable characters, including ` ' are ignored.  The purpose of the
+programme is to allow the inclusion of face images within mail headers
+using the field name `X-face: '.
+
+The programmes make use of a library which can be used to allow the
+compression and decompression algorithms to be used in other
+programmes such as mail despatchers and mail notification daemons.
+
+A small amount of editing in the Makefile may be required to get it
+going - mainly setting EXECUTABLE to what you want and putting the
+manual entry in the right place.
+
+						James Ashton.
+						jaa@cs.su.oz.au

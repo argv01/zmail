@@ -1,0 +1,27 @@
+<HTML>
+<HEAD>
+<!-- This HTML file has been created by texi2html 1.35
+     from ../general/dynadt.texinfo on 9 August 1996 -->
+
+<TITLE>Dynamic Abstract Data Types - Footnotes</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>Dynamic Abstract Data Types</H1>
+<H3><A NAME="FOOT1" HREF="dynadt.html#FOOT1">(1)</A></H3>
+<P>You should always use
+<CODE>Srandom</CODE> rather than calling <CODE>srand</CODE> or <CODE>srandom</CODE>
+directly.  If your platform supplies both <CODE>srand</CODE> and
+<CODE>srandom</CODE>, there is no good way to tell which random-number
+generator will be used by Sklist, but <CODE>Srandom</CODE> will always
+initialize the right one.
+<H3><A NAME="FOOT2" HREF="dynadt.html#FOOT2">(2)</A></H3>
+<P>When <CODE>dpipe_Flush</CODE> is called
+on the Dpipe and <VAR>rd</VAR> <EM>is</EM> 0, then the exception
+<CODE>dpipe_err_NoReader</CODE> is raised.
+<H3><A NAME="FOOT3" HREF="dynadt.html#FOOT3">(3)</A></H3>
+<P>Care is only required in calling
+<CODE>dpipe_Close</CODE>.  A filter function should close its destination
+Dpipe when it is out of data to write.  Apart from that,
+<CODE>dpipe_Close</CODE> should only be called on the writing end.
+</BODY>
+</HTML>
