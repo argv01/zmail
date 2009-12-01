@@ -1,0 +1,9 @@
+# The fullscreen mode allows the screen to be set up like a full screen editor.
+# There are "fullscreen commands" which are bound to keyboard key-sequences
+# (usually one character).  The user can rebind these keys to suit his tastes.
+# Note that the binding for R below removes the binding of reply-all.
+#
+set fullscreen_help	# Unset this to remove help message in fullscreen.
+bind \n display		# Hit return to display the next message.
+bind e macro "[line-mode]edit\n"	# Quick edit from fullscreen.
+bind P macro "[line-mode]Print\n"	# Show me all the headers.

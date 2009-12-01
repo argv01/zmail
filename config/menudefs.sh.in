@@ -1,0 +1,16 @@
+#!/bin/sh
+root=$1
+shift
+$root/config/ifdef.sh $root/lib/system.menus $root/lib/menus.tmp "$@"
+( sed '/INSERT MENUS HERE/,$d' $root/lib/Zmail
+  @AWK@ -f $root/config/menudefs.awk
+  sed '1,/INSERT MENUS HERE/d' $root/lib/Zmail
+) > $root/lib/menudefs.tmp < $root/lib/menus.tmp
+
+sed -n 's/ERROR:\([^:]*\):\(.*\)/error on line \2 of system.menus: \1/p' $root/lib/menudefs.tmp
+grep ERROR $root/lib/menudefs.tmp >/dev/null && exit 1
+
+rm -f $root/lib/Zmail $root/lib/menus.tmp
+mv $root/lib/menudefs.tmp $root/lib/Zmail
+
+exit 0

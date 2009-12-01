@@ -1,0 +1,73 @@
+<HTML>
+<HEAD>
+<TITLE>GNATS for the Emacs Impaired</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>GNATS for the Emacs Impaired</H1>
+<P>
+You can file bug reports and append comments to bug reports without 
+ever using emacs.
+<P>
+<H3>File Bug Reports</H3>
+<P>
+Use the gnats template, shown at the end of this page.
+<OL>
+<LI>Change the following fields in your template, and save the template in
+your <tt>$templates</tt> directory:
+<blockquote><pre>
+&gt;Originator:  put your name here
+&gt;Release:     version of the software you are using
+&gt;Environment: for windows, the version of windows and your stack
+&gt;Category:    see /zen/usr/local/lib/gnats/z-code. 
+	      qa requests:        qa-test
+	      zmail for windows:  win16-port
+&gt;Class:       &lt;[ sw-bug | doc-bug | change-request | support ]&gt;
+</pre></blockquote>
+<LI>When you use the template, do not fill in the Subject header.  Instead,
+use the Synopsis field:
+<blockquote><samp>
+&gt;Synopsis:    description containing as many keywords as possible
+</samp></blockquote>
+Fill in the "Description" of your bug or test request, and if you
+know "How to Repeat" the behavior, include that information also.
+</OL>
+<P>
+<H3>Append Comments to a Bug Report</H3>
+<P>
+If you receive a bug report message and would like to add comments:
+<OL>
+<LI>Reply to the message.  Do <B>not</B> alter the subject line.
+<LI>Cc: bugs
+</OL>
+<P>
+You can remove all the bug report fields from your reply -- makes the
+bug report easier to read.
+<P>
+You cannot change the state of a bug (open, analyzed, feedback, closed)
+through mail.  For that, you need emacs-full GNATS or the <tt>edit-pr</tt>
+command.
+<P>
+<pre>
+To: bugs
+
+&gt;Submitter-Id:  z-code
+&gt;Originator:    ** Your Name Here **
+&gt;Organization:  Z-Code Software
+&gt;Confidential:  no
+&gt;Synopsis:      
+&gt;Severity:      serious
+&gt;Priority:      medium
+&gt;Category:      qa-test
+&gt;Class:         support
+&gt;Release:       ZM-Win 16 (3.2.1 24feb95)
+&gt;Environment:
+** Your Platform Here **
+
+&gt;Description:
+
+&gt;How-To-Repeat:
+
+&gt;Fix:
+</pre>
+</BODY>
+</HTML>

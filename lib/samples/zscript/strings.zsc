@@ -1,0 +1,122 @@
+#
+# BASIC-like string operators
+#
+
+function left() {
+#%
+# left string N
+#
+#   sets $__left to the leftmost N characters of string
+#
+#   WARNING: Fails if string contains newlines.
+#%
+    if $# < 2
+	return -1
+    endif
+    set __pat = "^" __n = $2
+    while '$__n > 0' 'set __pat += "." ; arith __n -= 1'
+    match "$__pat" "$1"
+    if $status == 0
+	set __left = "$__match_0"
+    endif
+}
+
+function right() {
+#%
+# right string N
+#
+#   sets $__right to the rightmost N characters of string
+#
+#   WARNING: Fails if string contains newlines.
+#%
+    if $# < 2
+	return -1
+    endif
+    set __pat __n = $2
+    while '$__n > 0' 'set __pat += "." ; arith __n -= 1'
+    match ".*\($__pat\)"'$' "$1"
+    if $status == 0
+	set __right = "$__match_1"
+    endif
+}
+
+function mid() {
+#%
+# mid string M N
+#
+#   sets $__mid to N characters of string beginning with the Mth
+#
+#   WARNING: Fails if string contains newlines.
+#%
+    if $# < 3
+	return -1
+    endif
+    set __pat = "^" __n = $2
+    while '$__n > 0' 'set __pat += "." ; arith __n -= 1'
+    match "$__pat\(.*\)" "$1"
+    if $status == 0
+	left "$__match_1" $3
+	set __mid = "$__left"
+    endif
+    return $status
+}
+
+function len() {
+#%
+# len string
+#
+#   sets $__len to the length of string
+#%
+    set __len = 0
+    match '\(.\)*' "$1"
+    if $?__len_0
+	set __len = $__len_0
+    endif
+    return 0
+}
+
+function instr() {
+#%
+# instr string substring
+#
+#   sets $__instr to the starting position of substring in string
+#
+#   NOTE: substring is actually a pattern, not a simple string
+#         Not guaranteed to find the leftmost substring, if it repeats
+#         Starting position is 0-based, i.e. "instr xxxyxxx y" is 3
+#%
+    unset __instr
+    # Relies on bug: \(.\)* matches newlines
+    match "^\(\(.\)*\)$2" "$1"	
+    if $status != 0
+	return $status
+    endif
+    set __instr = $__len_1
+}
+
+function tr() {
+#%
+# tr string str1 str2
+#
+#   sets $__tr to string with occurrences of str1 replaced by str2
+#
+#   NOTE: str1 is actually a pattern, not a simple string
+#         Won't do more than 100 replacements (recursion limit)
+#         Replacements are actually done right to left
+#
+#   WARNING: Fails if string contains newlines.
+#%
+    # Relies on bug: \(.\)* matches newlines
+    set __pat = "^\(.*\)\($2\)\(.*\)"'$' __tr = "$1$4"
+    match "$__pat" "$1"
+    if $status != 0
+	return $status
+    endif
+    if X"$__match_1" == X
+	set __tr = "$3$__match_3$4"
+    else
+	set recursive
+	tr "$__match_1" "$2" "$3" "$3$__match_3$4"
+	unset recursive
+    endif
+}

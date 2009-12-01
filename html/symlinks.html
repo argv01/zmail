@@ -1,0 +1,159 @@
+<HTML>
+<HEAD>
+<TITLE>Symbolic Link Trees</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>Symbolic Link Trees</H1>
+<P>
+Standard practice at Z-Code has been to ensure as carefully as possible that
+all platforms built for the same release use exactly the same code base.
+To that end, our typical procedure for release builds has been to check out
+a single ``clean'' copy of the source and then create <I>symlink trees</I>
+for individual platform builds.
+<P>
+<OL>
+<LI>Make a release build directory (e.g. <tt>/software/zm40</tt>) 
+<LI>Create a subdirectory <tt>clean</tt> within that build directory.
+<LI><A HREF="index.html#buildco">Check out</A> <tt>metamail-dist</tt>,
+<tt>mp</tt>, and <tt>zmail</tt> in the <tt>clean</tt> directory.
+<LI><A HREF="index.html#doc">Run <tt>doc.sh</tt></A> in the
+<tt>clean/zmail</tt> directory.
+<LI>For each <A HREF="index.html#config"><tt><B>ostype-name</B></tt></A>
+to be built, <A HREF="#ltree">create a symlink tree</A> to <tt>clean</tt>.
+<LI>Perform all subsequent <A HREF="index.html#commit">updates and commits</A>
+from subdirectories of the <tt>clean</tt> directory, using any machine that
+has CVS.
+</OL>
+<P>
+<H3><A NAME="ltree">Creating a Symlink Tree</A></H3>
+<P>
+IRIX (SGI's UNIX) provides a command named <tt>tlink</tt>:
+<blockquote><tt>
+tlink -v -r -X -xCVS clean <B>ostype-name</B> mp metamail zmail
+</tt></blockquote>
+<P>
+<tt>tlink</tt> can also be used to clean up existing symlink trees, removing
+bad links and directories that no longer exist in the source tree:
+<blockquote><tt>
+tlink -v -p -c clean <B>ostype-name</B>
+</tt></blockquote>
+<P>
+See <tt><B>man tlink</B></tt> on any IRIX machine for more information.
+<P>
+For other machines, the <A HREF="ltree">appended script</A> simulates
+<tt>tlink -r -X -xCVS</tt> but does not support other <tt>tlink</tt> operations.
+<P>
+<HR>
+<pre><code><xmp>
+#! /bin/sh -
+# Usage:
+#       ltree <source> <destination>
+#
+# NOTE: Assumes that ../ always works, so <source> and <destination> must
+#       be on the same filesystem whenever NFS is involved.
+# NOTE: Directories named CVS are omitted as a special case.
+#
+if [ $# -ne 2 ]
+then
+    echo 'usage: ltree source-directory destination-directory' 1>&2
+    exit 1
+fi
+[ -n "$1" ] || set - . "$2"
+[ -n "$2" ] || set - "$1" .
+
+TOP=`/bin/pwd`
+cd $1 || exit 1
+READ=`/bin/pwd`
+cd $TOP || exit 1
+cd $2 2>/dev/null || {
+    {
+        mkdir $2 && cd $2
+    } || exit 1
+}
+WRITE=`/bin/pwd`
+case $WRITE in
+$READ)
+    echo "$0: destination-directory is same as source-directory"
+    exit 1
+    ;;
+$READ/*)
+    echo "$0: destination-directory is inside source-directory"
+    exit 1
+    ;;
+esac
+cd $TOP
+
+echo "Mirroring directory structure ..." 1>&2
+PID=$$
+{
+    cd $READ
+    find . ! -name CVS -type d -print
+} | {
+    cd $WRITE
+    while read dir
+    do
+        if [ ! -d $dir ]
+        then mkdir $dir || exit 1
+        fi
+    done
+} || exit $?
+
+echo "Creating relative paths ..." 1>&2
+count=0
+aprefix=
+set - `echo $WRITE | tr / ' '`
+for dir in `echo $READ | tr / ' '`
+do
+    case $1 in
+    $dir)
+        count=`expr $count + 1`
+        aprefix=$aprefix/$1
+        shift
+        ;;
+    *) break;;
+    esac
+done
+rprefix=
+while [ $# -gt 0 ]
+do
+    aprefix=$aprefix/$1
+    rprefix=../$rprefix
+    shift
+done
+set - `echo $READ | tr / ' '`
+shift $count
+rest=
+while [ $# -gt 0 ]
+do
+    rest=$rest/$1
+    shift
+done
+echo "Replacing $aprefix with $rprefix.$rest in symlinks." 1>&2
+
+echo "Linking files ..." 1>&2
+{
+    cd $READ
+    find . ! -type d -print
+} | {
+    while read file
+    do
+        case $file in
+        */CVS/*) continue;;
+        esac
+        walkup=`echo $file | sed \
+                                -e 's@^\./@@' \
+                                -e 's@[^/]*/@../@g' \
+                                -e 's@^[^/]*$@.@' \
+                                -e 's@/[^/]*$@@'`
+        echo $rprefix$walkup$rest/$file $file
+    done
+} | sed 's@/\./@/@g' | {
+    cd $WRITE
+    while read source destination
+    do ln -s $source $destination
+    done
+}
+exit 0
+</xmp></code></pre>
+</BODY>
+</HTML>

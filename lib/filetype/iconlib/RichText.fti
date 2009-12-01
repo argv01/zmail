@@ -1,0 +1,60 @@
+
+#       Lines On Closed Sheet of Paper
+		color(-68);
+		bgnline();
+			vertex(46.81, 67.35);
+			vertex(71.09, 79.71);
+		endline();
+
+#       Path_1
+		color(outlinecolor);
+		bgnline();
+			vertex(46.81, 60.08);
+			vertex(71.52, 72.11);
+		endline();
+
+#       Path_2
+		bgnline();
+			vertex(46.81, 53.02);
+			vertex(64.14, 61.47);
+		endline();
+
+#       Path_3
+		bgnline();
+			vertex(46.81, 45.53);
+			vertex(71.09, 57.23);
+		endline();
+
+#       Path_4
+		color(-17);
+		bgnline();
+			vertex(46.81, 38.68);
+			vertex(58.16, 43.98);
+		endline();
+
+#       Path_5
+		color(outlinecolor);
+		bgnline();
+			vertex(46.81, 31.41);
+			vertex(71.09, 43.22);
+		endline();
+
+#       Path_6
+		bgnline();
+			vertex(46.81, 24.35);
+			vertex(65.55, 33.34);
+		endline();
+
+#       Path_4
+		color(-17);
+		bgnline();
+			vertex(46.80, 37.20);
+			vertex(58.15, 42.50);
+		endline();
+
+#       Lines On Closed Sheet of Paper
+		color(-68);
+		bgnline();
+			vertex(47.00, 66.00);
+			vertex(71.28, 78.36);
+		endline();

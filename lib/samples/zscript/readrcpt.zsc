@@ -1,0 +1,39 @@
+# Sample Z-Script  function: confirm_read
+#                    header: X-Acknowledge
+
+# Check for an X-Acknowledge header on any message that is
+# displayed and ask the user to confirm reading the message.
+
+function confirm_read() {
+    #
+    # Get the value of the X-Acknowledge header
+    set acks = "$[%?X-Acknowledge?]"
+    # Check whether it includes "read", using lower case
+    # The X makes sure "if" never receives an empty arg
+    if "X$acks:l" =~ *read*
+	# Check to see if message has already been read
+	# by checking the content of the Status: header, which
+	# will contain an 'R' if so.
+	set stat = "$[%?Status?]"
+	if "X$stat" =~ *R*
+	    # Uncomment the following line if you're testing
+	    # the implementation of read receipt and want to
+	    # verify you get here
+	    #echo -d "Already read!"
+	    return -1
+	endif
+	# Ask whether to acknowledge, not to, or cancel
+	ask "Acknowledge that you've read this message?"
+	if $status == 0
+	    # If acknowledged, send the reply
+	    reply -send -file $home/.acknowledged
+	else
+	    if $status < 0
+		# If canceled, don't continue display
+		thwart
+	    endif
+	endif
+    endif
+}
+interpose -operation display confirm_read
+my_hdr X-Acknowledge: "[read|no]"

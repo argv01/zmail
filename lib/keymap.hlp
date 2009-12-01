@@ -1,0 +1,166 @@
+Motif uses a number of special symbolic key names that are not equivalent
+across all X installations.  Z-Mail includes extensive information to map
+these keysyms to several combinations of X11 with various keyboards, but
+still occasionally fails to interpret keys correctly.  Symptoms you may see
+include:
+
+	Backspace fails to erase characters in text entry fields.
+	Backspace deletes characters to the right of the cursor.
+	Page up, page down, home, end, or arrow keys do not work.
+	Extended characters on non-English keyboards are ignored.
+
+If you are having trouble with Motif key bindings, here are some suggestions
+that may be helpful.
+
+International Keyboards (extended characters):
+----------------------------------------------
+
+Many extended character set keyboards (i.e. those for languages other than
+U.S. English) use the left Meta key to allow entry of ASCII symbols that
+are overloaded on the keyboard.  Motif, however, does not distinguish the
+left and right Meta keys -- either one will invoke a menu accelerator,
+rather than entering the intended ASCII symbol.
+
+To avoid this problem, it is necessary to use the xmodmap command to remove
+the "meta" meaning from the left Meta key, so Motif will differentiate it:
+
+    xmodmap -e 'remove Mod1 = Meta_L Mode_switch' \
+	    -e 'keysym Mode_switch = NoSymbol' \
+	    -e 'keysym Meta_L = Mode_switch' \
+	    -e 'add Mod2 = Mode_switch'
+
+DECstation keyboards:
+---------------------
+
+The "backspace" key on a DECstation keyboard is frequently mapped to the
+Delete symbol.  The Backspace symbol usually does not have a mapping,
+though it occasionally is mapped on F12.  The simplest workaround for this
+is to use the xmodmap command:
+
+    xmodmap -e "keysym Delete = Delete osfBackSpace"
+
+This leaves the backspace key mapped to Delete (so DECterm and other DEC
+X apps continue to work correctly) and adds the osfBackSpace mapping to
+that key for use by Motif apps like Z-Mail.  Note that this is different
+from the usual symbolic mapping for osfBackSpace (below).
+
+Sun keyboards and OpenWindows:
+------------------------------
+
+If you are running the Motif version of Z-Mail under OpenWindows, many of
+the labeled keys on the Sun keyboard may act differently than expected or
+may not work at all.  Fortunately, the Motif window manager (mwm) looks for
+a file in the user's home directory, named ".motifbind".  This file may be
+used to specify new bindings for the Motif key symbols.  The following is
+a sample set of symbol bindings for the Sun type 4 keyboard.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!"X11/NeWS - Sun Microsystems Inc."
+! OpenWindows 2.0 Server for a Sun-4
+! with a type 4 keyboard
+! Place this in ~/.motifbind
+
+osfCancel       :               <Key>Escape
+osfLeft         :               <Key>Left
+osfUp           :               <Key>Up
+osfRight        :               <Key>Right
+osfDown         :               <Key>Down
+osfEndLine      :               <Key>End
+osfBeginLine    :               <Key>Home
+osfPageUp       :               <Key>Prior
+osfPageDown     :               <Key>Next
+osfBackSpace    :               <Key>BackSpace
+osfDelete       :               <Key>Delete
+osfInsert       :               <Key>Insert
+osfAddMode      :Shift          <Key>F8
+osfHelp         :               <Key>Help
+osfMenu         :               <Key>F4
+osfMenuBar      :               <Key>F10
+osfCut          :               <Key>F20
+osfPaste        :               <Key>F18
+osfCopy         :               <Key>F16
+osfUndo         :               <Key>F14
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Sun keyboards and the MIT X Server
+----------------------------------
+
+If you are running the Motif version of Z-Mail on a Sun under the standard
+X server, you may wish to use the following as your .motifbind file.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!"X11R4 or X11R5"
+! MIT X Server for a Sun-4
+! with a type 4 keyboard
+! Place this in ~/.motifbind
+osfCancel       :               <Key>Escape
+osfLeft         :               <Key>Left
+osfUp           :               <Key>Up
+osfRight        :               <Key>Right
+osfDown         :               <Key>Down
+osfEndLine      :               <Key>End
+osfBeginLine    :               <Key>Home
+osfPageUp       :               <Key>Next
+osfPageDown     :               <Key>Prior
+osfBackSpace    :               <Key>BackSpace
+osfDelete       :               <Key>Delete
+osfInsert       :               <Key>Insert
+osfAddMode      :Shift          <Key>F8
+osfHelp         :               <Key>Help
+osfMenu         :Shift          <Key>F10
+osfMenuBar      :               <Key>F10
+osfCopy         :               <Key>F15
+osfCut          :               <Key>F18
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+HP Keyboards and X servers
+--------------------------
+The fallback virtual binding table that HP provided to OSF for connection of
+Motif clients to HP servers has some defects.  The HP-specific keysyms should
+have had an "hp" prefix (i.e., "hpInsertChar"), as can be seen correctly in
+the X11R5 XKeysymDB file.
+
+The XKeysymDB file is an X Consortium registry, and is correct.  Users should
+not attempt to change this file.  Instead, one should use a ".motifbind" file
+in their home directory which provides the corrected table, or use the
+"xmbind" utility (available only with X11R5/Motif 1.2) to edit the virtual
+key table in the MOTIF_BINDINGS property on the root window.
+
+If All Else Fails:
+------------------
+
+If you are not running mwm, you are unable to supply a .motifbind for
+every user, or key binding problems persist, you may wish to modify your
+system.zmailrc file to add key bindings when Z-Mail starts up.  The
+following sample maps the most common X11 key bindings into corresponding
+Motif key bindings.  However, not all X servers and keyboards have all of
+these bindings.  Attempting to modify an undefined key symbol with xmodmap
+will produce a lengthy error message.  You may wish to edit the list below
+to omit some cases.  Note that there are two alternatives for each of
+osfHelp, osfPageDown, and osfPageUp.  You should select one of those
+alternatives; do not attempt to use both.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if is_gui
+    # If we do all these keysyms in one xmodmap, and any of the
+    # keys on the left of the = are not defined, the whole thing
+    # will fail.  Do them one by one instead.
+    sh 'xmodmap -e "keysym BackSpace = BackSpace osfBackSpace"'
+    sh 'xmodmap -e "keysym Delete = Delete osfDelete"'
+    sh 'xmodmap -e "keysym Down = Down osfDown"'
+    sh 'xmodmap -e "keysym End = End osfEndLine"'
+    sh 'xmodmap -e "keysym Escape = Escape osfCancel"'
+#   sh 'xmodmap -e "keysym F1 = F1 Help osfHelp"'
+    sh 'xmodmap -e "keysym Help = Help osfHelp"'
+    sh 'xmodmap -e "keysym Home = Home osfBeginLine"'
+    sh 'xmodmap -e "keysym Insert = Insert osfInsert"'
+    sh 'xmodmap -e "keysym Left = Left osfLeft"'
+    sh 'xmodmap -e "keysym PageDown = PageDown Next osfPageDown"'
+#   sh 'xmodmap -e "keysym Next = Next PageDown osfPageDown"'
+    sh 'xmodmap -e "keysym PageUp = PageUp Prior osfPageUp"'
+#   sh 'xmodmap -e "keysym Prior = Prior PageUp osfPageUp"'
+    sh 'xmodmap -e "keysym Right = Right osfRight"'
+    sh 'xmodmap -e "keysym Up = Up osfUp"'
+endif
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+

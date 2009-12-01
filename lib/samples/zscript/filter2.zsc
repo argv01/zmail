@@ -1,0 +1,80 @@
+#
+# Mutually exclusive ZScript filters
+#
+# An example solution to the "multiple filtering" problem.
+#
+# ZScript filters always execute in alphabetical order by name.  This
+# design was was selected so that:
+# 1.  users could add new filters to be executed in arbitrary order,
+#     without having to remove and redefine all their filters any time
+#     they wanted to add one; and
+# 2.  system adminstrators and users could both define sets of filters
+#     that interact in different ways -- if filters ran in the order in
+#     which they were defined, sysadmin filters would always run first.
+#
+# ZScript filters also have the property that each filter's criteria are
+# tested against every filterable message, whether or not it has been
+# filtered before.  This permits multiple actions on any given message,
+# but it makes it difficult to *prevent* multiple actions from being
+# applied to messages that match more than one filter.
+#
+# The following bit of ZScript takes advantage of the priority tagging
+# mechanism (cf. the "mark" and "priority" commands) to set up mutually
+# exclusive filters.  It pre-empts priority values beginning at 30 and
+# working downwards, so if you wish to use priority marks of your own,
+# use numbers working up from 1 (ZScript normally names priorities 1-9
+# as A-E, Urgent, High, Medium, and Low, leaving the other 21 unnamed).
+#
+# This scheme is of course limited to 30 mutually-exclusive filters,
+# fewer if some priority numbers are to be reserved for user tagging.
+#
+
+# Usage:
+#	Filter name "command [args ...]" [filter options]
+#
+# This is exactly like the "filter" built-in command, except that the
+# `-n' (new mail only) option is not supported.
+#
+# Note:  Choose "name" to alphabetically precede any string beginning
+# with "zz", to guarantee that filters are applied in proper sequence.
+#
+set skippri = -x nextpri = 30
+cmd Filter 'priority \!:1 = $nextpri ; \
+	    set skippri = "$skippri -p "\!:1 ; \
+	    arith nextpri -= 1 ; \
+	    \filter \!:1 "pick $skippri | mark "-\!:1 \!:3-$ ; \
+	    \filter zz-\!:1 "mark - | "\!:2 -p \!:1 ; \
+	    Filter_sanity_check'
+
+# How it works:
+#
+# The "Filter" command creates *two* filters.  The first filter (call
+# it the "selector") applies the user-supplied filter criteria and,
+# upon a match, also tests each message for a previously-assigned
+# priority.  If no earlier selector has assigned a priority, a unique
+# priority is assigned to the message.
+#
+# The second filter (call it the "actor") acts on messages having the
+# unique priority assigned by the selector.  The actor removes the
+# priority tag and applies the user-supplied filter action.
+#
+# Even if a message matches multiple selectors, it is tagged only with
+# the priority of the earliest selector, so it is affected by only one
+# actor.  The filters are thus mutually exclusive.
+#
+# Names of the two filters are selected to ensure that the actor always
+# runs later than the selector.
+
+###
+
+# This support function sanity-checks the state of $nextpri and stops
+# creating mutually-exclusive filters when available priorities run out.
+# Non-exclusive filters are still created for every desired action.
+# 
+set lastpri = 1		# Use "10" to reserve the standard 9 priorities
+function Filter_sanity_check() {
+    if $nextpri < $lastpri
+	cmd Filter filter
+    endif
+    return 0
+}

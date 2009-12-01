@@ -1,0 +1,104 @@
+function safely_alias() {
+#%
+# This function gives the user one chance to pick a new name for the
+# alias if the first one he picked is going to clobber another alias.
+#%
+    alias -q "$1"		# Check for clobbering another alias
+    if $status == 0
+	set name = "$1"
+    else
+	if redirect
+	    return -1
+	endif
+	ask -i name \
+	"$1"' is already an alias.\nWhat should I call the alias?'
+	if $status != 0
+	    return -1
+	endif
+    endif
+    alias "$name" "$2"
+}
+
+function create_alias() {
+#%
+# Create an alias mapping the first name of the sender of the current or
+# argument (selected) message to his address.
+#%
+    msg_list - $*                       # Make sure current message is set
+    set name="$[%n]" address="$[%f]"    # Grab name and From: from message
+    if "X$name" == X
+	ask -i name \
+	"Can't find this sender's name.\nWhat should I call the alias?"
+	if $status != 0
+	    return -1
+	endif
+    endif
+    safely_alias $name:1 "$address"	# alias first name to address
+}
+button "Create Alias" create_alias
+
+function set_reply_to() {
+#%
+#     set_reply_to [message-number]
+#
+# Sets the varible "$reply_to" to the reply address taken from the
+# indicated message.  BUG: Does not attempt to track $reply_to_hdr.
+#%
+    msg_list - $1
+    unset reply_to
+    if $?[%?reply-to?]
+	set reply_to = "$[%?reply-to?]"
+    else
+	if $?[%?from?]
+	    set reply_to = "$[%?from?]"
+	else
+	    if $?[%?return-path?]
+		set reply_to = "$[%?return-path?]"
+	    endif
+	endif
+    endif
+}
+
+function collect_addrs() {
+    set_reply_to $1
+    if $?reply_to
+	if $?addrs
+	    # Fast test for "Did I already use this address?"
+	    # Not always correct, but errs conservatively.
+	    if "$addrs" !~ *"$reply_to"*
+		set addrs = "$addrs, $reply_to"
+	    endif
+	else
+	    set addrs = "$reply_to"
+	endif
+    endif
+    return 0
+}
+
+function alias_to() {
+#%
+#     alias_to message-numbers alias-name
+#
+# Create an alias named alias-name that maps to the senders
+# of all the listed message-numbers.
+#%
+    unset addrs msgs
+    shift -m | set msgs
+    if $?msgs
+	each $msgs collect_addrs
+    else
+	error "usage: alias_to message-numbers alias-name"
+	return -1
+    endif
+    if $# == 0
+	ask -i name "Enter name for alias:"
+	if $status != 0
+	    return
+	endif
+    else
+	set name = "$*"
+    endif
+    safely_alias "$name" "$addrs"
+    unset addrs msgs name reply_to
+}
+button "Alias To" alias_to

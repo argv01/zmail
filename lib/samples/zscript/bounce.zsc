@@ -1,0 +1,101 @@
+# Sample Z-Script function: bounce
+#                 button:   Bounce
+
+function bounce() {
+#%
+# Often, you send mail and mistype an address or something and it causes
+# a "mailer daemon" to return your mail with an error like "host unknown"
+# or "unknown user".  The "bounce" function (below) extracts your original
+# message from the mailer-daemon and allows you to edit it again, if it
+# needs it.  Otherwise, you can just send it again.
+#%
+    if $(%t) == 0   # a convenient way to see if there are any messages.
+        error No messages.
+        return -1
+    endif
+
+    # Get a tempfile name
+    if $?tmpdir
+	set __btmp = "$tmpdir/bnc$$"
+    else
+	set __btmp = "/tmp/bnc$$"
+    endif
+
+    # Use the message specified ($1), if given.  Else, use the "current msg".
+    set -- $1 .
+
+    # First find out if the message has attachments.  If it does, the
+    # returned message is most likely one of them (MIME-aware MTA).
+    unset __list
+    msg_list $1 | detach -info parts-list __list
+    if $?__list
+	if X$__list:2 == X
+	    # There's only one part, it's not really a bounce.
+	    unset __list
+	else
+	    # Check for a message/rfc822 attachment.
+	    msg_list $1 | detach -part 2 -info type __type
+	    if "$__type:l" =~ *message/rfc822*
+		detach -part 2 $1 "$__btmp"
+	    else
+		if "${__list:3}${__type:l}" =~ 3*message/delivery*
+		    msg_list $1 | detach -part 3 -info type __type
+		    if "$__type:l" =~ *message/rfc822*
+			detach -part 3 $1 "$__btmp"
+		    else
+			unset __list
+		    endif
+		else
+		    unset __list
+		endif
+	    endif
+	endif
+    endif
+
+    # The message has no attachments, or the wrong kind.  Brute force.
+    if ! $?__list
+	# If we're on UNIX, we can do this the easy way ...
+	if $is_mac$is_mswin == 0
+	    Pipe -p From: $1 "cat > $__btmp"
+	else
+	    # Check for an old-style sendmail bounce ...
+	    pick -r $1 -B -e '   ----- Unsent'
+	    if X$output == X
+		# ... dang.  We don't know what sent this.  Take a shot
+		# anyway, but this will explode too much if the message
+		# that was bounced itself contained forwarded messages.
+		undigest -p From: $1 "$__btmp"
+	    else
+		# ... ah.  Good ol' sendmail.  Explode it.
+		undigest -p '   ----- Unsent' $1 "$__btmp"
+	    endif
+	endif
+    endif
+
+    # If we got something in the temp file, load it into a composition.
+    if ! -z "$__btmp"
+	open -r "$__btmp"
+	if $status != 0
+	    return $status
+	endif
+
+	# Using -u means "send unsigned" so it won't autosign the message;
+	# this assumes you've already signed it the first time you sent it.
+	# Using -q! reloads the message and its attachments (if any).
+	mail -u -q! $
+
+	# Optionally, try this to kill "Received" headers:
+	# mail -z -u -q! $
+	# compcmd header:off Received
+	# resume
+
+	close -n	# Unfortunately, this prompts in 3.2.x versions
+			# when the composition has not already been sent.
+
+	delete $1	# Kill the original bounce message
+    endif
+
+    # Blow away the temp file.
+    remove -f "$__btmp"
+}
+button Bounce bounce

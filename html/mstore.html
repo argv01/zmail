@@ -1,0 +1,1845 @@
+<HTML>
+<HEAD>
+<!-- This HTML file has been created by texi2html 1.35
+     from ../mstore/mstore.texi on 9 August 1996 -->
+
+<TITLE>Message Store API Requirements</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>Message Store API Requirements</H1>
+
+
+<H1><A NAME="SEC1" HREF="mstore_toc.html#SEC1">Abstract</A></H1>
+
+<P>
+Message Store Management is the first stage of the Z-Mail modularization
+project (M12N).  This document describes the design of a new set of
+objects and interfaces to create a generalized interface to a variety of
+message store types, independent of the protocols used to access those
+stores; and a standard model for management of messages, folders, and
+message stores themselves, relatively independent of the underlying
+implementations.
+
+</P>
+<P>
+This is a PROPRIETARY and CONFIDENTIAL DRAFT.  Comments and critique are
+requested.
+
+</P>
+
+
+
+<H1><A NAME="SEC2" HREF="mstore_toc.html#SEC2">Goals</A></H1>
+
+<P>
+This proposal is intended to provide an architectural foundation for the
+management of a variety of message stores in Z-Mail.  This architecture
+should define an abstract interface for accessing message stores from
+the Z-Mail "core," based on existing message store APIs and protocols
+including Z-Mail's own implicit message store model.  Of particular
+interest are remote message store protocols, especially those usable in
+a disconnected (i.e., sometimes-connected) manner; specifically, the
+architecture should support "synchronization" of a local copy of the
+message store with the actual store held on the remote server.
+
+</P>
+<P>
+Although the interface is expressed in terms of an object model, it is
+the operations defined on that model that are important.  The object
+model is intended to provide a framework for organizing those operations
+and a common means of viewing messaging data that may be stored in any
+of a variety of "database" formats, from true databases through simple
+collections of text objects in a file.  The operations, however, are
+intended to form an interface layer to a set of pre-existing message store
+implementations, some of which incorporate an object model and some of
+which do not.
+
+</P>
+
+
+<H1><A NAME="SEC3" HREF="mstore_toc.html#SEC3">Definitions</A></H1>
+
+<DL COMPACT>
+
+<DT>Message
+<DD>
+An object composed of two or more parts; those parts are the
+<STRONG>header</STRONG> (addressing information and attributes) and one or more
+<STRONG>body</STRONG> parts.  Body parts may themselves be compound objects,
+including messages or even message stores. <A NAME="FOOT1" HREF="mstore_foot.html#FOOT1">(1)</A>  The specific structure of a message is defined by the
+type of message store that contains it.
+
+<DT>Mailbox (aka Folder)
+<DD>
+A logical collection of entities, where each entity may be a message or
+another (nested) mailbox.  A mailbox may or may not have a
+physical <A NAME="FOOT2" HREF="mstore_foot.html#FOOT2">(2)</A> representation.
+
+<DT>Message Store
+<DD>
+A physical <A NAME="FOOT3" HREF="mstore_foot.html#FOOT3">(3)</A> collection of messages,
+possibly organized into mailboxes, <A NAME="FOOT4" HREF="mstore_foot.html#FOOT4">(4)</A> and accessed via a well-defined (though possibly
+implicitly defined) set of operations.
+</DL>
+
+
+
+<H1><A NAME="SEC4" HREF="mstore_toc.html#SEC4">Requirements</A></H1>
+
+<P>
+The message store model adopted for Z-Mail should:
+
+</P>
+
+<OL>
+<LI>
+
+Support existing Z-Mail functionality as much as possible with each
+message store type (completely, for native store formats).  Includes:
+
+
+<OL>
+<LI>
+
+Extract header information
+<LI>
+
+Update status and priority (attributes)
+<LI>
+
+Retrieve or process entire messages as single objects
+
+
+<UL>
+<LI>
+
+Resending RFC822 messages
+<LI>
+
+Attach or otherwise include in outgoing mail
+<LI>
+
+Store and process locally
+</UL>
+
+<LI>
+
+Retrieve or process message parts
+
+
+<UL>
+<LI>
+
+Extract attribute information from parts
+<LI>
+
+Recursively process message parts as messages
+<LI>
+
+Store and process message parts locally
+</UL>
+
+<LI>
+
+Reorder messages within logical groupings
+<LI>
+
+Search and select
+<LI>
+
+Filter on header and/or body content
+<LI>
+
+Delete entire messages or individual body parts
+<LI>
+
+Edit messages or body parts
+</OL>
+
+<LI>
+
+Facilitate introduction of new Z-Mail functionality.  Includes, but is
+not limited to:
+
+
+<UL>
+<LI>
+
+Annotate (comments, replied-to or sent-to info, etc.)
+<LI>
+
+Filter outgoing messages on header/body content
+<LI>
+
+Encryption and digital signatures
+<LI>
+
+Store by reference rather than multiple copies (?)
+<LI>
+
+Optimizations
+</UL>
+
+<LI>
+
+Support both "local" and "remote" message stores.  This includes:
+
+
+<UL>
+<LI>
+
+Hide the message store implementation behind a data abstraction.
+<LI>
+
+Facilitate POP and IMAP interaction with the Z-Mail core.
+<LI>
+
+Facilitate "folder synchronization" for disconnected Z-Mail sessions.
+</UL>
+
+<LI>
+
+Facilitate incorporation of additional (new) message store back-ends
+into Z-Mail.
+</OL>
+
+<P>
+In addition, the message store object must support the following operations:
+
+</P>
+
+<UL>
+<LI>
+
+List mailboxes in the store
+<LI>
+
+List messages in each mailbox
+</UL>
+
+<P>
+The following operations are desirable, and should be considered in the
+object model, but are not required for all message stores:
+
+</P>
+
+<UL>
+<LI>
+
+Create and delete mailboxes
+<LI>
+
+Move and copy messages among mailboxes
+<LI>
+
+Add messages to the message store (not just outgoing messages)
+</UL>
+
+
+
+<H1><A NAME="SEC5" HREF="mstore_toc.html#SEC5">Message Store Implementations Considered</A></H1>
+
+<P>
+The following message stores and their interface protocols and/or APIs
+were considered in developing this design:
+
+</P>
+
+<UL>
+<LI>
+
+CMC
+<LI>
+
+HP OpenMail
+<LI>
+
+IMAP 4
+<LI>
+
+Simple MAPI
+<LI>
+
+Extended MAPI
+<LI>
+
+POP 3
+</UL>
+
+<P>
+In some cases, the characteristics of these message stores have been
+extrapolated from the API or protocol calls available to manipulate
+them.
+
+</P>
+<P>
+In addition, existing Z-Mail usage of "V7" and MMDF format flat-file
+mailboxes (folders) was considered.  MH and MHS mail hierarchies were
+considered from the standpoint of storage formats; detailed analysis of
+the MH command set was not (as of this writing) performed.  MHS is a
+storage-format-based mail exchange only, and has no explicit API.
+
+</P>
+<P>
+Note that of these stores, CMC, OpenMail, and MAPI all subsume the
+outgoing message transport agent function and directory services
+functions as well.  This is addressed by the message store model.
+
+</P>
+
+<H2>CMC operations</H2>
+
+<P>
+CMC is an API designed for use by mail-enabled applications, not mail
+user agents.  See "Simple MAPI operations" below for more discussion.
+
+</P>
+
+<OL>
+<LI>
+
+logon/logoff
+<LI>
+
+send message/send documents
+<LI>
+
+list summaries
+<LI>
+
+read message
+<LI>
+
+look up addresses (address book)
+<LI>
+
+delete message
+<LI>
+
+execute "extended" command (server-defined command set)
+</OL>
+
+
+<H2>OpenMail operations</H2>
+
+
+<OL>
+<LI>
+
+initialize API/connect/logon
+<LI>
+
+logout/disconnect/terminate API
+<LI>
+
+send/receive files
+<LI>
+
+list contents of "container" objects
+<LI>
+
+read (convert to text) message objects
+<LI>
+
+check addresses against directory (address book)
+<LI>
+
+compose new/reply/forward
+
+
+<UL>
+<LI>
+
+include file
+<LI>
+
+send (with possible deferral)
+<LI>
+
+request ack
+<LI>
+
+attach item
+</UL>
+
+<LI>
+
+cancel deferred mail
+<LI>
+
+copy/move/delete item (message, part of composition, etc.)
+<LI>
+
+reorder item within container
+<LI>
+
+export file (UNIX only?)
+<LI>
+
+directory (address book) manipulation
+
+
+<UL>
+<LI>
+
+list address books
+<LI>
+
+create/open/modify/delete attributes
+<LI>
+
+add/delete/modify entries
+<LI>
+
+search entries for an address
+<LI>
+
+list/add/delete/modify "access control list" (HP filesystem thing)
+</UL>
+
+</OL>
+
+
+<H2>IMAP 4 operations</H2>
+
+
+<OL>
+<LI>
+
+query server capabilities
+<LI>
+
+login/authenticate/logout
+<LI>
+
+list mailboxes (optionally restrict to "subscribed" subset)
+<LI>
+
+create/rename/delete mailbox
+<LI>
+
+append new message to mailbox
+<LI>
+
+checkpoint mailboxes
+<LI>
+
+poll for new messages in mailbox
+<LI>
+
+open (select or examine) mailbox
+<LI>
+
+update (expunge) mailbox
+<LI>
+
+close (and expunge) mailbox
+<LI>
+
+search (many criteria)
+<LI>
+
+fetch messages/fetch partially
+<LI>
+
+fetch message parts (by message structure)
+<LI>
+
+update attributes (store)
+<LI>
+
+copy message to another mailbox
+</OL>
+
+
+<H2>Simple MAPI operations</H2>
+
+<P>
+Simple MAPI was initially considered as a possible message store access
+method for us to support.  Further investigation reveals that Simple MAPI
+is only intended as a set of calls to invoke a messaging user agent from
+another mail-enabled application.  It is of interest only as an example
+of the types of operations a UA must either be able to request from its
+message store provider or be able to implement independently.
+
+</P>
+<P>
+Note that Simple MAPI doesn't provide any operations designed for
+managing existing mail; you can't even list messages except by "find
+next".
+
+</P>
+
+<OL>
+<LI>
+
+logon/logoff
+<LI>
+
+input address
+<LI>
+
+delete message
+<LI>
+
+"find next" message (i.e. sequential ala DOS "find next" file)
+<LI>
+
+read message
+<LI>
+
+save message
+<LI>
+
+send message/send document
+<LI>
+
+show directory (address book) entry
+<LI>
+
+check address against address book
+</OL>
+
+
+<H2>Extended MAPI operations</H2>
+
+<P>
+MAPI provides an entire messaging architecture similar to the one described
+in this document.  An issue has been raised as to whether we are therefore
+"reinventing the wheel" by even considering implementing this structure.
+See section <A HREF="mstore.html#SEC35">Remarks</A>, "Special Discussion of MAPI".
+
+</P>
+<P>
+A simplified description of the MAPI architecture would divide it into
+three major sections:  The client interface, the service provider interface,
+and the drivers.  Drivers are further subdivided into address books (our
+directory service), transports (our mail transport), and message stores
+(corresponding to the major object model described in this document).  The
+service provider interface is embedded in the Windows operating system and
+accessed by the clients through the client interface.  The service provider
+interface launches the actual service provider application/UI (e.g. MSMail)
+and connects it to the drivers, which manipulate the persistent data.
+
+</P>
+<P>
+Note that Extended MAPI operates almost entirely by modifying
+"properties" of "MAPI objects."  These properties form an almost
+inclusive superset of OpenMail and IMAP 4 operations, and (obviously) a
+superset of Simple MAPI.  For Z-Mail to be a MAPI service provider, it
+must provide a MAPI-defined set of methods so that it can be launched
+and accessed when a MAPI client makes requests; and it MUST manipulate
+the message store through the Extended MAPI drivers, because the client
+may also be expecting to directly manipulate MAPI objects.
+
+</P>
+<P>
+This means that our primary considerations in developing for MAPI must be
+to easily support use of Extended MAPI from our user agent (UA) side, and
+to be able to build driver modules from the point of view of transport and
+store.  Investigation of what is required for each of these is continuing.
+It is currently my <A NAME="FOOT5" HREF="mstore_foot.html#FOOT5">(5)</A> belief that implementing the structure
+defined here will support the effort to supply drivers, possibly at the
+cost of some duplicated effort in the UA.
+
+</P>
+
+<H2>POP 3 operations</H2>
+
+
+<OL>
+<LI>
+
+logon/logoff
+<LI>
+
+mailbox status (number of messages, size, last seen)
+<LI>
+
+list messages (numbers and sizes)
+<LI>
+
+retrieve message (read)
+<LI>
+
+delete message
+</OL>
+
+
+
+<H1><A NAME="SEC6" HREF="mstore_toc.html#SEC6">Message Store Object Model</A></H1>
+
+<P>
+The object model proposed here uses four basic object types:  Message,
+mailbox, message store (mstore), and a special message store termed the
+<STRONG>meta-store</STRONG>.  The meta-store shares many characteristics with
+mstore objects, and may be implementable as a subclass of message
+stores; it is presented as a separate object for clarity.  Each of these
+objects, except the meta-store, may be considered to act as a cache for
+persistent objects residing in a persistent message store.  Whether they
+act as "write-through" caches will be implementation dependent.
+
+</P>
+<P>
+In addition, a mail transport object and a directory service object are
+assumed as part of the complete set of possible capabilities of message
+store implementations.  However, the specific characteristics of these
+objects are not discussed in this proposal.
+
+</P>
+
+
+
+<H2><A NAME="SEC7" HREF="mstore_toc.html#SEC7">Message Object</A></H2>
+
+
+
+<H3><A NAME="SEC8" HREF="mstore_toc.html#SEC8">Message Characteristics</A></H3>
+
+
+<UL>
+<LI>
+
+A message object must reside in at least one mailbox, and has a reference
+to each mailbox in which it resides.  One of these mailboxes must be the
+<STRONG>owner</STRONG> mailbox for the message, which is used to reference the message
+store in which the message resides.  The message knows which mailbox is
+its owner.
+
+<LI>
+
+A single message object may simultaneously reside in more than one
+mailbox only when all mailboxes containing the message reside either on
+the same message store, or on the meta-store and exactly one other
+message store. <A NAME="FOOT6" HREF="mstore_foot.html#FOOT6">(6)</A>
+
+<LI>
+
+Operations on message objects are ultimately implemented by the message
+store on which they reside.  Per the cache model, however, some
+operations may be recorded by the message object and later flushed
+(updated) to the message store.
+
+<LI>
+
+Message objects are compound objects (see def'n of a
+message). <A NAME="FOOT7" HREF="mstore_foot.html#FOOT7">(7)</A>
+
+</UL>
+
+
+
+<H3><A NAME="SEC9" HREF="mstore_toc.html#SEC9">Message Methods</A></H3>
+
+<P>
+Most of these methods may be implemented in terms of corresponding mstore
+methods.
+
+</P>
+
+<UL>
+<LI>
+
+Fetch Self<A NAME="FOOT8" HREF="mstore_foot.html#FOOT8">(8)</A>
+<LI>
+
+Fetch Attribute (e.g. header text)
+<LI>
+
+Add Attribute
+<LI>
+
+Modify Attribute
+<LI>
+
+Fetch Sub-part
+<LI>
+
+Fetch Sub-part Attribute (e.g. content-type)
+<LI>
+
+(Create Sub-part <A NAME="FOOT9" HREF="mstore_foot.html#FOOT9">(9)</A>)
+<LI>
+
+Modify Sub-part
+<LI>
+
+Delete Sub-part
+<LI>
+
+Generate Summary <A NAME="FOOT10" HREF="mstore_foot.html#FOOT10">(10)</A>
+<LI>
+
+Update Self <A NAME="FOOT11" HREF="mstore_foot.html#FOOT11">(11)</A>
+</UL>
+
+
+
+<H2><A NAME="SEC10" HREF="mstore_toc.html#SEC10">Mailbox (Folder) Object</A></H2>
+
+
+
+<H3><A NAME="SEC11" HREF="mstore_toc.html#SEC11">Mailbox Characteristics</A></H3>
+
+
+<UL>
+<LI>
+
+A mailbox is a logical collection of messages; <A NAME="FOOT12" HREF="mstore_foot.html#FOOT12">(12)</A> whether it also is a physical collection is dependent
+on the implementation of the message store on which it resides.
+
+<LI>
+
+A mailbox object must reside in either a message store or the
+meta-store, to which it has a reference.  It may not simultaneously
+reside in two message stores (not even when one of them is the
+meta-store).  A mailbox that resides on the meta-store may not be
+updated (see Meta-Store Object) and may not "own" messages (see
+Message Object).
+
+<LI>
+
+A mailbox object has references to all the messages it contains, and
+imposes a sequential ordering on those messages.
+
+<LI>
+
+Operations on mailbox objects are ultimately implemented by the message
+store on which they reside.  Some operations may be recorded by the
+mailbox object and later updated to the message store.
+
+<LI>
+
+Mailbox objects may also contain other mailbox objects, hierarchically,
+depending on the storage format of the message store on which they
+reside.
+
+</UL>
+
+
+
+<H3><A NAME="SEC12" HREF="mstore_toc.html#SEC12">Mailbox Methods</A></H3>
+
+<P>
+Most of these methods are implemented in terms of corresponding mstore methods.
+
+</P>
+
+<UL>
+<LI>
+
+Fetch reference to Message
+<LI>
+
+Reorder Messages <A NAME="FOOT13" HREF="mstore_foot.html#FOOT13">(13)</A>
+<LI>
+
+Search/Select messages by Attributes
+<LI>
+
+Search/Select messages by Contents
+<LI>
+
+Delete Message
+<LI>
+
+Poll for new mail <A NAME="FOOT14" HREF="mstore_foot.html#FOOT14">(14)</A>
+<LI>
+
+List Summaries of a set of messages <A NAME="FOOT15" HREF="mstore_foot.html#FOOT15">(15)</A>
+<LI>
+
+(Fetch mailbox Attributes)
+<LI>
+
+(Modify mailbox Attributes)
+<LI>
+
+Update Self <A NAME="FOOT16" HREF="mstore_foot.html#FOOT16">(16)</A>
+</UL>
+
+
+
+<H2><A NAME="SEC13" HREF="mstore_toc.html#SEC13">Message Store (MStore) Object</A></H2>
+
+
+
+<H3><A NAME="SEC14" HREF="mstore_toc.html#SEC14">Message Store Characteristics</A></H3>
+
+
+<UL>
+<LI>
+
+MStore objects act as the abstract interfaces between the user agent
+(Z-Mail) and a set of different concrete message store implementations.
+Each concrete implementation is a subclass of the general mstore object.
+
+<LI>
+
+For simplicity, every mstore must contain at least one mailbox object,
+even if it is only a logical mailbox representing the entire store.
+
+<LI>
+
+The mstore object implements all operations on messages and mailboxes.
+These operations may be cached and later updated to the actual store.
+
+<LI>
+
+Each mstore object must implement creation of a corresponding mail
+transport object, to send mail in that mstore's native
+format. <A NAME="FOOT17" HREF="mstore_foot.html#FOOT17">(17)</A>
+
+<LI>
+
+Each mstore object must implement creation of a directory service
+object, to look up and verify addresses in that mstore's native
+format. <A NAME="FOOT18" HREF="mstore_foot.html#FOOT18">(18)</A>
+
+</UL>
+
+
+
+<H3><A NAME="SEC15" HREF="mstore_toc.html#SEC15">MStore Methods</A></H3>
+
+
+<UL>
+<LI>
+
+Operations on mstores:
+
+
+<UL>
+<LI>
+
+List Mailboxes <A NAME="FOOT19" HREF="mstore_foot.html#FOOT19">(19)</A>
+<LI>
+
+Select/"Open" Mailbox<A NAME="FOOT20" HREF="mstore_foot.html#FOOT20">(20)</A>
+<LI>
+
+Create Mailbox
+<LI>
+
+Rename Mailbox
+<LI>
+
+Delete Mailbox
+<LI>
+
+(Modify Mailbox Attributes <A NAME="FOOT21" HREF="mstore_foot.html#FOOT21">(21)</A>)
+<LI>
+
+(Create new Message in Mailbox <A NAME="FOOT22" HREF="mstore_foot.html#FOOT22">(22)</A>)
+<LI>
+
+Add Message to mailbox
+<LI>
+
+Reorder Messages in mailbox <A NAME="FOOT23" HREF="mstore_foot.html#FOOT23">(23)</A>
+<LI>
+
+Search/Select messages by Attributes
+<LI>
+
+Search/Select messages by Contents
+<LI>
+
+Delete Message from mailbox
+<LI>
+
+Poll Mailbox for new mail <A NAME="FOOT24" HREF="mstore_foot.html#FOOT24">(24)</A>
+<LI>
+
+List Summaries of a set of messages in a mailbox
+<LI>
+
+Update Mailbox
+</UL>
+
+<LI>
+
+Operations on messages:
+
+
+<UL>
+<LI>
+
+Fetch Message
+<LI>
+
+Fetch Message Attribute
+<LI>
+
+Add Message Attribute
+<LI>
+
+Modify Message Attribute
+<LI>
+
+Fetch Sub-part of message
+<LI>
+
+Fetch Sub-part Attribute
+<LI>
+
+(Create Sub-part <A NAME="FOOT25" HREF="mstore_foot.html#FOOT25">(25)</A>)
+<LI>
+
+Modify Sub-part
+<LI>
+
+Delete Sub-part
+<LI>
+
+(Add Message to Mailbox)
+<LI>
+
+(Update Message <A NAME="FOOT26" HREF="mstore_foot.html#FOOT26">(26)</A>)
+</UL>
+
+<LI>
+
+Other operations:
+
+
+<UL>
+<LI>
+
+Update Self <A NAME="FOOT27" HREF="mstore_foot.html#FOOT27">(27)</A>
+<LI>
+
+Create Mail Transport Object
+<LI>
+
+Create Directory Service Object
+<LI>
+
+Report Supported Operations <A NAME="FOOT28" HREF="mstore_foot.html#FOOT28">(28)</A>
+</UL>
+
+</UL>
+
+
+
+<H2><A NAME="SEC16" HREF="mstore_toc.html#SEC16">Meta-Store Object</A></H2>
+
+
+
+<H3><A NAME="SEC17" HREF="mstore_toc.html#SEC17">Meta-Store Characteristics</A></H3>
+
+
+<UL>
+<LI>
+
+The meta-store represents a collection of mstores and of "mixed mailbox"
+objects. <A NAME="FOOT29" HREF="mstore_foot.html#FOOT29">(29)</A>  These mixed
+mailboxes may contain messages that reside in two or more mstores, and
+are the only mailboxes that permit this.
+
+<LI>
+
+There is normally only one meta-store, which is responsible for creating
+and keeping references to ALL mstore objects.  The meta-store is also
+responsible for creating "mixed mailbox" objects.
+
+<LI>
+
+The meta-store must implement, for mixed mailboxes and the messages they
+contain, all operations of a message store object.  For most message (as
+opposed to mailbox) operations, this means nothing more than invoking the
+same operation via the "owner" mailbox of the message.
+
+<LI>
+
+The meta-store implementation of <CODE>List mailboxes</CODE> must embody
+knowledge of the local filesystem. <A NAME="FOOT30" HREF="mstore_foot.html#FOOT30">(30)</A>  When a list of available
+mailboxes needs to be generated, the meta-store compiles the list by
+querying the filesystem and/or one or more mstores.  (This permits the
+<CODE>List mailboxes</CODE> operation to be hidden within the message store
+model, yet still permits individual files or directories on the local
+filesystem to be treated as both mstores and as mailboxes, without
+having to first "open" each as an mstore.)
+
+<LI>
+
+The meta-store provides the "default" behavior for any operation not
+supported by a particular subclass of mstore.  For example, any mstore
+that does not support a directory service or a mail transport can ask
+the meta-store to create those objects for it.
+
+<LI>
+
+As a specific case of the above, any operation that affects two or more
+message stores may be handled by the meta-store; the meta-store embodies
+the knowledge of how to convert among mstore formats, extract messages
+from one store and insert them into another, etc.  If the meta-store
+doesn't know how to do this for a given subclass of mstore, then that
+subclass cannot participate in inter-mstore operations.
+
+<LI>
+
+As another case of the above, the meta-store is permitted (but not
+required) to be able to move a mailbox from one store to another, which
+includes moving mixed mailboxes on to a specific mstore by homogenizing
+them.  (This step is required in order to "update" a mixed mailbox.)
+
+</UL>
+
+
+
+<H3><A NAME="SEC18" HREF="mstore_toc.html#SEC18">Meta-Store Methods</A></H3>
+
+
+<UL>
+<LI>
+
+List MStores <A NAME="FOOT31" HREF="mstore_foot.html#FOOT31">(31)</A>
+<LI>
+
+Create MStore Objects
+<LI>
+
+Open/Initialize MStore Object <A NAME="FOOT32" HREF="mstore_foot.html#FOOT32">(32)</A>
+<LI>
+
+Dispose MStore <A NAME="FOOT33" HREF="mstore_foot.html#FOOT33">(33)</A>
+<LI>
+
+Delete (local) MStore <A NAME="FOOT34" HREF="mstore_foot.html#FOOT34">(34)</A>
+<LI>
+
+Update all MStores
+<LI>
+
+Create default Mail Transport Object
+<LI>
+
+Create default Directory Service Object
+<LI>
+
+Create "Mixed" (Virtual) Mailbox
+<LI>
+
+Delete "Mixed" (Virtual) Mailbox
+<LI>
+
+MStore operations on "mixed" mailboxes and the message in them; see
+section <A HREF="mstore.html#SEC13">Message Store (MStore) Object</A>, operations on mailboxes and messages.
+</UL>
+
+
+
+<H2><A NAME="SEC19" HREF="mstore_toc.html#SEC19">Address Object</A></H2>
+
+
+
+<H3><A NAME="SEC20" HREF="mstore_toc.html#SEC20">Address Characteristics</A></H3>
+
+<P>
+An address represents a single conceptual destination for a message.
+Each instance of an address contains enough information to uniquely
+identify a destination to some eventual transport agent.
+
+</P>
+<P>
+For the most part, addresses are passive creatures.  Their primary
+purpose is simply to remember their destination, and provide other
+objects with high-level access to the various semantic components of
+this destination.  Addresses will most commonly be used as a medium of
+communication between directory services and MTA's.
+
+</P>
+
+
+
+<H4><A NAME="SEC21" HREF="mstore_toc.html#SEC21">Address Subclasses</A></H4>
+
+<P>
+The address class itself is abstract; concrete subclasses of address
+implement the required interface and may augment it with additional
+functionality.
+
+</P>
+<P>
+A major area for subclasses to flesh out concerns access to semantically
+meaningful subcomponents within an address.  For example, a subclass for
+X.400 addresses would allow manipulation of ADMD, PRMD, and other
+fields.  Conversely, a subclass for RFC-822 addresses would provide
+accessors for components like the route-addr, group name, or leading
+phrase.  Certain semantic components, (a user-presentable "real"
+name?), may appear across many different mail systems.  In these cases,
+it may be appropriate to mandate support for such the address class
+level.
+
+</P>
+<P>
+An important open question is how various MTA and directory services
+modules can cooperate to insure that the addresses in an outbound
+message are always usable.  A message that is headed for SMTP transport
+should not, for example, receive X.400 addresses from a directory
+service.  It may be necessary to devise a mechanism whereby MTA's
+declare what address subclasses they can handle, and directory services
+declare what address subclasses they can produce.
+
+</P>
+
+
+<H4><A NAME="SEC22" HREF="mstore_toc.html#SEC22">Addressing Heterogeneity</A></H4>
+
+<P>
+It might be interesting to designate a "save into named folder"
+subclass.  This would require some tricky acrobatics.  For one, an
+individual composition would then have to be sent to multiple kinds of
+address (e.g. three MAPI addresses and one local log file).  In such a
+context, how can we guarantee that the named folder contains messages
+that are at all compatible with the overall structure of the outbound
+composition?
+
+</P>
+<P>
+Can we let multiple transports take a stab at the composition, with each
+filtering out the addresses that it can handle?  This could be nice, as
+it would smoothly facilitate separate handling of Bcc's, to whom one
+might wish to send a slightly modified form of the message.  This would
+also permit, say, posting an article via NNTP while also e-mailing other
+interested parties directly via SMTP.
+
+</P>
+<P>
+Again, though, we return to the question of how to maximize flexibility
+without creating compositions whose recipients list is so heterogeneous
+as to render the message utterly undeliverable.  Certain kinds of
+address may be compatible, while others are not.  Is a well-formed
+address subclass hierarchy a good place to express these restrictions?
+
+</P>
+<P>
+Or is the very problem a non-issue, stemming from unrealistic notions of
+generality that may never actually be implemented?
+
+</P>
+
+
+<H4><A NAME="SEC23" HREF="mstore_toc.html#SEC23">Addresses and Transport Protocols</A></H4>
+
+<P>
+An address is only meaningful when interpreted in the context of a
+particular protocol.  Therefore, each subclass of address necessarily
+implies a single transport protocol or a family of mutually compatible
+protocols.
+
+</P>
+<P>
+For example, an address expressed using the conventions of RFC-822 would
+mandate the use of an 822-ready transport protocol.  This will usually
+be SMTP or ESMTP.  However, there are a wealth of other transports that
+are capable of meaningfully interpreting such an address.  IMAP and POP
+servers, for example, may support additional verbs for outbound mail.
+Under Unix, <CODE>sendmail</CODE> implicitly defines an 822-ready protocol by
+its use of input streams and command-line arguments.
+
+</P>
+
+
+<H4><A NAME="SEC24" HREF="mstore_toc.html#SEC24">Addresses and Directory Services</A></H4>
+
+<P>
+The directory service will most often be the source of addresses.  In
+simple cases, this may simply involve parsing a string supplied by the
+user.  When the address itself is represented as a string, one may think
+of the identity mapping as the most trivial possible directory
+service.<A NAME="FOOT35" HREF="mstore_foot.html#FOOT35">(35)</A>
+
+</P>
+<P>
+In general, a given directory service may be used as a source of
+instances of some subclass of address.  An X.500 service may yield X.400
+addresses, while an AOCE phone book would supply AOCE addresses.
+
+</P>
+
+
+<H4><A NAME="SEC25" HREF="mstore_toc.html#SEC25">Address Qualifications</A></H4>
+
+<P>
+Every address carries a <STRONG>qualification</STRONG>.  A qualification further
+clarifies the role of an address within any particular message.
+Whenever possible, qualifications should be orthogonal to the address
+itself, so that any address may meaningfully carry any qualification.
+The following initial set of qualifications are drawn from common
+RFC-822 practice:
+
+</P>
+
+<UL>
+<LI>
+
+To
+
+The address represents an entity for whom the message is primarily
+intended.
+
+<LI>
+
+Cc
+
+The addressed recipient is receiving the message in an advisory or
+secondary capacity.
+
+<LI>
+
+Bcc
+
+The addressed entity is to receive a copy of the message secretly.
+Other recipients should not be able to know, by examining the message,
+that this address has also received a copy.
+
+<LI>
+
+Unqualified
+
+No special qualification is associated with this address.  Addresses
+culled from alias lists or directory services will usually be
+unqualified, though that is not a requirement.  Some addresses must be
+qualified before they can be used to transport a message; others may not
+require qualification.
+
+</UL>
+
+<P>
+Other qualifications may be added to this set as needed.  Additional
+research is needed in this area.
+
+</P>
+<P>
+It is not clear that address qualifications are useful at this level in
+the class hierarchy.  It is clearly the case that qualifications have
+meaning for certain <EM>subclasses</EM> of address, but not for all.  What
+does it mean to Bcc a newsgroup?
+
+</P>
+
+
+<H3><A NAME="SEC26" HREF="mstore_toc.html#SEC26">Address Methods</A></H3>
+
+<P>
+Anything else besides the simple stuff below?  It seems that all the
+rest would be directory services' job.
+
+</P>
+
+
+<H4><A NAME="SEC27" HREF="mstore_toc.html#SEC27">Qualifications interface</A></H4>
+
+<UL>
+<LI>
+
+Get Qualification
+<LI>
+
+Set Qualification
+</UL>
+
+
+
+<H4><A NAME="SEC28" HREF="mstore_toc.html#SEC28">String interface</A></H4>
+
+<UL>
+<LI>
+
+Parse from String
+<LI>
+
+Express as Parseable String
+<LI>
+
+Express as Non-Parseable Presentation String (?)
+</UL>
+
+
+
+<H2><A NAME="SEC29" HREF="mstore_toc.html#SEC29">Mail Transport Object</A></H2>
+
+
+
+<H3><A NAME="SEC30" HREF="mstore_toc.html#SEC30">Mail Transport Characteristics</A></H3>
+
+
+<UL>
+<LI>
+
+Each mail transport object is associated with a message store. <A NAME="FOOT36" HREF="mstore_foot.html#FOOT36">(36)</A>
+
+<LI>
+
+A mail transport has references to at least three mailboxes on its mstore:
+
+
+<OL>
+<LI>
+
+The "working" or "draft" mailbox, containing unfinished
+messages. <A NAME="FOOT37" HREF="mstore_foot.html#FOOT37">(37)</A>
+
+<LI>
+
+The "outbound" or "queue" mailbox, containing finished messages
+awaiting delivery.
+
+<LI>
+
+The "dead" mailbox, containing messages that were aborted before being
+finished or for which delivery failed.
+
+</OL>
+
+These mailboxes need not be distinct; depending on the implementation,
+any two or even all three may refer to the same mailbox.
+
+<LI>
+
+The normal flow of a mail transport interaction is:
+
+
+<OL>
+<LI>
+
+Initiate new composition; creates a new message in the "drafts" mailbox.
+
+<LI>
+
+Edit composition; uses message methods section <A HREF="mstore.html#SEC7">Message Object</A> to assemble
+and modify the new message.
+
+<LI>
+
+Send; moves the message to the "queue" mailbox and (possibly) initiates
+the appropriate protocol to deliver the message. <A NAME="FOOT38" HREF="mstore_foot.html#FOOT38">(38)</A>
+
+</OL>
+
+Special cases:
+
+
+<UL>
+<LI>
+
+Fatal send failure; message moves from the "queue" mailbox to the "dead"
+mailbox.  Benign send failures (e.g. unable to connect to SMTP server)
+normally leave the message in the "queue" mailbox.
+
+<LI>
+
+Resend; copies message directly from a mailbox OTHER THAN the "drafts"
+mailbox, to the "queue" mailbox.  For some delivery protocols, this implies
+adding new attributes (e.g. Resent-* headers) to the message. <A NAME="FOOT39" HREF="mstore_foot.html#FOOT39">(39)</A>
+
+<LI>
+
+Others?
+
+</UL>
+
+<LI>
+
+The mail transport may also reference other folders on its mstore
+for purposes of replying to messages, including sub-parts or other
+portions of messages in new compositions, etc.  The mail transport is
+normally expected to modify only the attributes of these messages, not
+to delete body parts, etc.
+
+</UL>
+
+
+
+<H3><A NAME="SEC31" HREF="mstore_toc.html#SEC31">Mail Transport Methods</A></H3>
+
+
+<UL>
+
+<LI>
+
+Compose new Message
+
+<LI>
+
+Reply to Message
+
+<LI>
+
+Send composed Message
+
+This is defined in several steps to permit multiple queued messages to be
+delivered in a single conversation with a remote transport provider.
+
+
+<UL>
+
+<LI>
+
+Connect to Transport Provider
+
+<LI>
+
+Begin Message Transaction
+
+<LI>
+
+Deliver Message
+
+<LI>
+
+End Message Transaction
+
+<LI>
+
+Disconnect from Transport Provider
+
+</UL>
+
+<LI>
+
+Resend Message (forward)
+
+<LI>
+
+Edit Message, including:
+
+
+<UL>
+
+<LI>
+
+Include Message <A NAME="FOOT40" HREF="mstore_foot.html#FOOT40">(40)</A>
+
+<LI>
+
+Message methods for editing section <A HREF="mstore.html#SEC7">Message Object</A> (e.g. Create
+Sub-part) <A NAME="FOOT41" HREF="mstore_foot.html#FOOT41">(41)</A>
+
+<LI>
+
+Others?
+
+</UL>
+
+</UL>
+
+
+
+<H2><A NAME="SEC32" HREF="mstore_toc.html#SEC32">Directory Service Object</A></H2>
+
+
+
+<H3><A NAME="SEC33" HREF="mstore_toc.html#SEC33">Directory Service Characteristics</A></H3>
+
+
+<UL>
+<LI>
+
+The Directory Services object is unspecified at this time.
+
+</UL>
+
+
+
+<H3><A NAME="SEC34" HREF="mstore_toc.html#SEC34">Directory Service Methods</A></H3>
+
+
+
+<H1><A NAME="SEC35" HREF="mstore_toc.html#SEC35">Remarks</A></H1>
+
+
+<H2>Implementation Notes</H2>
+
+<P>
+It is the intent of this design that each subclass of the message store
+object interfaces with only one concrete message store implementation.
+Thus any operation that involves two or more message store types, such
+as moving a message from one store to another, must be handled by the
+meta-store.  However, it is of course possible to interface to more than
+one concrete store with a single mstore subclass.
+
+</P>
+<P>
+The architecture that this document defines has two aspects:
+
+</P>
+
+<OL>
+<LI>
+
+The object model that a user agent <A NAME="FOOT42" HREF="mstore_foot.html#FOOT42">(42)</A>
+uses to "view" the message database and perform management tasks;
+
+<LI>
+
+The set of tasks that must be expressible in a given message store
+implementation to implement a workable subset of the model.
+</OL>
+
+<P>
+Of these, the second is the more important in terms of interfacing to
+existing message store implementations.  The first is more important
+for those stores that we must implement ourselves (for example, a UNIX
+file/directory structure containing MIME-formatted messages).
+
+</P>
+<P>
+Thus the API specified by this document has a somewhat top-heavy feel;
+it attempts to express the notion that the mailbox/message heirarchy is
+mainly representative of the first item above, whereas the mstore object
+is the primary expression of the second item.  It is, however, the
+intention that callers of the API will treat the objects as if the
+implementation were "bottom heavy"; that is, it would be considered
+incorrect in nearly all cases for a caller to make a request directly of
+the mstore for any operation that is defined on a message object.
+
+</P>
+<P>
+Given the API definition and a particular message store implementation,
+the API developer has two choices:
+
+</P>
+
+<OL>
+<LI>
+
+Subclass the message store object and express the required functions
+entirely within that object; this permits generic mailbox (folder)
+and message objects to be re-used to access that store (assuming
+that the generic objects delegate operations UP the heirarchy when
+necessary).
+
+<LI>
+
+Subclass across the entire heirarchy and implement each function at
+the lowest level where it makes sense; at the mstore level, delegate
+some operations DOWN the heirarchy to the folders and messages.
+</OL>
+
+<P>
+It's of course implicit that the API developer can scrap our object
+heirarchy completely and simply implement the API calls in terms
+of some other object model.  The API definition document should specify
+which API calls are required for all mstores and which are representative
+of stores we will implement in-house.
+
+</P>
+
+<H2>Miscellaneous</H2>
+
+<P>
+MStore should possibly first be subclassed into "local" and "remote"
+message stores, and then further subclassed from there.  It is sometimes
+important to the user to be able to differentiate stores in this manner.
+On the other hand, it may be desirable to have e.g. both local and remote
+IMAP stores; how should this be handled?
+
+</P>
+<P>
+Remote access protocols such as IMAP 4 and especially POP 3 are probably
+most easily represented by TWO messages stores, one local and one
+remote.  When connected to the server, the remote mstore performs its
+operations (through the protocol) directly on the server mailbox(es),
+including fetching messages from the server to the local machine.  Once
+messages are on the local machine and the server connection is dropped,
+the local mstore is used to operate on the messages.  When the
+connection is re-established, the state of the local store can be copied
+to the remote store.  Rather than implement folder synchronization for
+every type of store that could be used in a disconnected manner, it
+should be possible to make synch the responsibility of the meta-store.
+Thus, any two mstores could be synched with one another (within
+limitations of individual store implementations), and disconnected
+access simply becomes one case of the general scheme.
+
+</P>
+<P>
+Each V7 or MMDF folder, and each <EM>distinct</EM> MH hierarchy (that is,
+any hierarchy that is not a subdirectory of an MH hierarchy) should be
+treated as a separate message store.  This permits the existing Z-Mail
+open/update/close semantics to be mapped straightforwardly onto the
+message store model.
+
+</P>
+
+<H2>Special Discussion of MAPI</H2>
+
+<P>
+Some specific statements regarding MAPI were made in the course of
+discussion of this requirements document and the associated API document.
+These represent valid issues, but have often been stated in terms that
+imply a basic conflict between this proposal and use of MAPI.  It is
+therefore important that those statements be addressed.
+
+</P>
+
+<BLOCKQUOTE>
+<P>
+The future of Z-Mail as a cross-platform e-mail product depends
+upon, among other things, our choice of a backend mstore architecture.
+</BLOCKQUOTE>
+
+<P>
+It is a premise of this document that the above statement, at least in
+its strictest interpretation, is incorrect.  This document resulted from
+a strong belief that the future of Z-Mail depends not upon any specific
+backend message store architecture, but instead upon our being as
+independent as possible of any specific backend.
+
+</P>
+
+<BLOCKQUOTE>
+<P>
+In a nutshell, we need to decide if we'll commit to MAPI on Windows
+and/or AOCE on Mac, or we'll try to use our own, substantially
+similar, object model being developed by Bart and Bob.
+</BLOCKQUOTE>
+
+<P>
+This is an both an oversimplification and an obfuscation of the issues.
+The two are not mutually exclusive!  MAPI and our model overlap at some
+level, but MAPI extends much farther into the "backend" than our model
+is intended to.  The question is not whether we'll commit to MAPI, but
+how we will go about interfacing Z-Mail to MAPI. <A NAME="FOOT43" HREF="mstore_foot.html#FOOT43">(43)</A>
+
+</P>
+
+<BLOCKQUOTE>
+<P>
+I <A NAME="FOOT44" HREF="mstore_foot.html#FOOT44">(44)</A> prefer that we make a decision on MAPI.  I am a firm
+believe of *not* reinventing the wheel especially since MAPI already has
+a name and is out there.
+</BLOCKQUOTE>
+
+<P>
+It makes no difference whether MAPI "has a name", because we do intend to
+support it.  Buzzwords are not at issue.
+
+</P>
+<P>
+MAPI is not "already out there" for a large number of the cases we want
+to consider.  It is not available on UNIX (though it is being worked on by
+at least one vendor); and even when it is, can we have confidence that it
+will be available in any reasonable time frame for all the platforms we
+support?  Furthermore, although we have little choice of being tied to
+Microsoft on the Windows platform, there is a question whether we want to
+be tied to some other vendor's MAPI implementation as our entire livelyhood
+on any other platform.
+
+</P>
+<P>
+Finally, even if we did decide to employ MAPI's object model exclusively,
+we have the issue of drivers for POP, IMAP, NNTP, etc.  Not only can we
+not afford to wait for MAPI to become universally available before
+we begin providing clients for these protocols, it is far from clear
+that we would save any significant effort by writing those drivers
+directly to MAPI rather than first to our object model.
+
+</P>
+
+
+<H1><A NAME="SEC36" HREF="mstore_toc.html#SEC36">User-Interface Considerations</A></H1>
+
+<P>
+Each message store may have different message formats, mail transport
+submissions formats, and addressing conventions (e.g., X.400, MHS, MAPI,
+VIM).  It may therefore be desirable to have specialized user interface
+components for each message store.  For example, at the least the
+"Address Area" section of the Z-Mail compose window would need to be
+different when entering X.400-style addresses.  Similarly, it should
+also be possible to customize the Address Browser and related dialogs
+for different directory service objects.
+
+</P>
+<P>
+Should this customization be considered part of the message store, (or mail
+transport, or directory service, as appropriate) objects?  Or is a parallel
+model needed in each user interface?
+
+</P>
+<P>
+To perform appropriate user interaction during the folder synchronization
+process, the user interface elements that deal with display of messages
+must become more independent of folder context.  Also, the UI needs to be
+active during the update procedure, so that the user can (for example)
+ask to see the body of a message from the server in order to decide what
+to do with it.  We may not be able to handle this completely in the
+initial release of a folder-synchronizing zmail.
+
+</P>
+<P>
+Note that some APIs, notably simple and extended MAPI, actually provide
+UI elements such as dialogs for entering addresses or reading messages.
+We need to carefully consider which of these we will use.
+
+</P>
+
+
+<H1><A NAME="SEC37" HREF="mstore_toc.html#SEC37">Z-Script Considerations</A></H1>
+
+<P>
+IMAP 4 most closely resembles the zscript model of acting on messages in
+a "selected" (active) folder.
+
+</P>
+<P>
+Existing zscript commands act either on messages or on folders.  Most of
+those acting on messages translate directly into message methods; some,
+however, become mailbox (folder) methods.  Does this introduce any need
+for mailbox/message pairings when performing zscript actions?
+
+</P>
+
+
+<H1><A NAME="SEC38" HREF="mstore_toc.html#SEC38">Additional Recommendations</A></H1>
+
+<P>
+Support these message stores "natively," that is, built in to Z-Mail:
+
+</P>
+
+<UL>
+<LI>
+
+"V7" and MMDF flat-file stores containing RFC822/MIME messages
+<LI>
+
+MH directory-format stores (UNIX only; possibly by calling MH commands)
+<LI>
+
+NetWare/MHS directory-format stores
+<LI>
+
+IMAP 4
+<LI>
+
+POP 3
+</UL>
+
+<P>
+For mail transports, support SMTP and MHS on all platforms, UUPC on Windows
+(and Mac?).  Continue to support programmatic interface (through $sendmail)
+for mail submission on UNIX.
+
+</P>
+<P>
+MAPI needs special consideration.  For Windows 95 ("Chicago") we will
+need to support Extended MAPI in order to be the mail service provider
+for MicroSoft and probably many other mail-enabled apps once MAPI 2 is
+available.  We may be able to implement the enabling part of this without
+actually using a MicroSoft Exchange (MSX) back-end, but that isn't clear
+as of this writing.
+
+</P>
+<P>
+Support other stores (OpenMail, etc.) through external processes
+whenever possible.  Although that the message store object model should
+make it easy to link directly to various APIs, there are more flexible
+approaches possible.  Investigate ways to use Apple and Windows IPC to
+communicate with e.g. a simple local IMAP server that then interacts
+with the desired message store through that store's API.  This avoids
+the need to link Z-Mail itself with every possible message store API.
+(Another way to look at this:  Use a special "mail exchange" mstore
+object whose external format is "published" to interact with separate
+processes; those separate processes in turn interact with message stores
+that are not "native.")
+
+</P>
+<P>
+Suggestion:  Consider using the MHS directory format as the "outbox"
+for compositions-in-progress.  This format can easily be collected into
+a MIME message at send time, and maps well onto OpenMail and MAPI
+submission schemes that treat attachments as separate files/objects.
+
+</P>
+
+
+<H1><A NAME="SEC39" HREF="mstore_toc.html#SEC39">Unresolved Issues</A></H1>
+
+<P>
+What are the semantics of the "delete" operation when a message is
+contained in more than one mailbox?  Is this message store implementation
+dependent?  Is delete a mailbox operation, or a message operation?
+
+</P>
+<P>
+How do OLE objects map onto the generalized scheme proposed?  My guess
+is that an OLE-aware Z-Mail will have to map this scheme onto OLE and
+then use OLE to access it, rather than mapping OLE onto this scheme; but
+I'm not familiar enough with OLE to say for certain.  Tony says:
+
+</P>
+
+<BLOCKQUOTE>
+<P>
+I think the "right" thing to do is to try and map OLE2 onto this scheme
+if at all possible, since:
+
+</P>
+
+<OL>
+<LI>
+
+I believe that OpenDoc is quite similar
+in structure to OLE2 (chicken and egg...:)
+<LI>
+
+OLE2 is on the Mac 3.
+</OL>
+
+<P>
+If we're going to use this mstore model, I'd like the interface to the
+application to be consistent; ie, I'd like to avoid the old "well, in
+this case you have to go straight to OLE2 -- but not in this one...".
+Too confusing and error prone in practice.
+</BLOCKQUOTE>
+
+<P>
+Should recursive interpretation of parts be considered the responsibility
+of the message store object, at least from the viewpoint of the API?  Or
+should the API permit retrieval of the part and require that it then be
+interpreted "locally"?
+
+</P>
+<P>
+Should the "local cache" (used to draw message summaries, compute reply
+addresses, etc.) be hidden inside the message store object, or made part
+of the message object?
+
+</P>
+<P>
+Some protocols (e.g. MAPI, OpenMail) don't support disconnected operation
+in a nice way--there's no well-defined way to "download" messages from
+the store to work on them locally.
+
+</P>
+<P>
+Should we extend the IMAP 4 protocol to provide for message submission
+functionality, to facilitate using IMAP as an interface to other protocols?
+
+</P>
+<P>
+How do you do digital signatures and encryption on an MTA that handles
+attachments as separate objects (OpenMail, X.400, MHS)?
+
+</P>
+<P>
+Do we permit mix-and-match of outgoing message transport function with
+various message stores, even in the case of message stores that provide
+outgoing transport function?  That is, can you specify accessing your
+mail with OpenMail but submitting it with SMTP?  Note that the structure
+of messages being received would be radically different from those sent,
+in this example.
+
+</P>
+<P>
+Some zscript operations (such as "pipe") don't make sense, even on UNIX,
+for some message store formats.  We'll probably have to deal with this on
+a case-by-case basis.
+
+</P>
+
+</BODY>
+</HTML>

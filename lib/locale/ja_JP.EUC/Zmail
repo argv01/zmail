@@ -1,0 +1,1489 @@
+! Install this file in /usr/lib/X11/app-defaults/Zmail
+!
+! This file contains reasonable default settings for various things
+! that are X window system specific.  This file not required to run
+! Z-Mail, but if /usr/lib/X11/app-defaults/Zmail exists, it must
+! include the MenuBar labelString resources specified below.
+!
+! This file may be edited.  Future versions will contain more settings.
+!
+! Version number of this file -- do NOT remove or alter this setting!
+Zmail.version: 3.2.0
+!
+! Fallback resources were NOT used, i.e. all the resource specifications
+! are coming from this file.  If this file does not exist or cannot be
+! accessed by X, a default configuration will be in effect.  This is what
+! "fallback" resources are.  Thus, if you use this file, you override the
+! fallback resources.  Unless this file has been edited by your system
+! administrator, the resources here match Z-Mail's fallback resources.
+Zmail.usedFallbacks: False
+!
+! motif 1.1.4 memory leak workaround for Menus.
+*defaultFontList: fixed
+!
+! Enable SGI's "buffy" mode
+Zmail*sgiMode:                       true
+!
+! Uses SGI's "Schemes"
+Zmail*schemeFileList:                SgiSpec, OzPalette, OzSpec, ZmailSpec
+Zmail*useSchemes:                    all
+!Zmail*scheme:                       Base
+!
+! Insight help dialogs
+!
+*helpSubSys:                    mmail.books.MediaMailHelp
+*helpTitle:                     MediaMail
+!
+! Global Editing Translations and Misc.
+!
+*XmText.baseTranslations: #override \
+	<Key>osfDelete: delete-previous-character()\n\
+	Ctrl<Key>a:	beginning-of-line()\n\
+	Ctrl<Key>b:	backward-character()\n\
+	Ctrl<Key>d:	delete-next-character()\n\
+	Ctrl<Key>e:	end-of-line()\n\
+	Ctrl<Key>f:	forward-character()\n\
+	Ctrl<Key>g:	beep()\n\
+	Ctrl<Key>h:	delete-previous-character()\n\
+	Ctrl<Key>i:	cut-primary()\n\
+	Ctrl<Key>j:	newline-and-indent()\n\
+	Ctrl<Key>k:	kill-to-end-of-line()\n\
+	Ctrl<Key>l:	redraw-display()\n\
+	Ctrl<Key>m:	newline()\n\
+	Ctrl<Key>n:	next-line()\n\
+	Ctrl<Key>o:	newline-and-backup()\n\
+	Ctrl<Key>p:	previous-line()\n\
+	Ctrl<Key>u:	kill-to-start-of-line()\n\
+	Ctrl<Key>v:	next-page()\n\
+	Ctrl<Key>w:	kill-previous-word()\n\
+	Ctrl<Key>y:	unkill()\n\
+	Ctrl<Key>z:	scroll-one-line-up()\n\
+	Mod1<Key>b:	backward-word()\n\
+	Mod1<Key>d:	kill-next-word()\n\
+	Mod1<Key>f:	forward-word()\n\
+	Mod1<Key>v:	previous-page()\n\
+	Mod1<Key>y:	do-quick-action()\n\
+	Mod1<Key>z:	scroll-one-line-down()\n\
+	Mod1<Key>at:	quick-copy-set()\n\
+	Mod1<Key>greater:	end-of-file()\n\
+	Mod1<Key>less:	beginning-of-file()\n\
+	Mod1<Key>]:	forward-paragraph()\n\
+	Mod1<Key>[:	backward-paragraph()\n\
+	Shift<Key>osfDelete:	cut-clipboard()
+*XmSash.traversalOn: False
+Zmail*borderWidth: 0
+! Whether to fill text edit field upon list selection
+Zmail.addressAutoEdit:          true
+! Whether to replace selected list items upon entry of new addresses
+Zmail.addressAutoReplace:       true
+!
+! Indigo Magic guidelines call for extremely sparing use of Maximize and Minimize
+!
+*mwmFunctions: 25
+*search_dialog.mwmFunctions: 17
+*dates_dialog.mwmFunctions: 17
+*alias_dialog.mwmFunctions: 17
+*paging_dialog.mwmFunctions: 17
+*toolbox_window.mwmFunctions: 19
+*variables_dialog.mwmFunctions: 17
+Zmail.mwmFunctions: 1
+*compose_window.mwmFunctions: 1
+*message_window.mwmFunctions: 1
+*pinup_window.mwmFunctions: 1
+!
+! The "please wait" mouse cursor while Z-Mail is busy.
+!
+!Zmail*waitCursor: watch
+!
+! Window colors
+! Most of the settings here are commented out as they are merely
+! suggestions and we don't want to make any presumptions.  Edit
+! to your tastes.
+!
+! The Z logo in the main window and the Z icons
+Zmail*zmail_logo.foreground: Red
+Zmail*zmail_icons.foreground: Red
+! The "action area" (buttons at the bottom of each dialog)
+! *action_area.Help.foreground:	Yellow
+! Make all pushbuttons similar..
+!*XmPushButton.foreground: Blue
+!
+! MenuBar:
+!    set all menus in menubar similarly...
+!    These colors don't work on black&white screens!
+!*menu_bar*background: skyblue3
+!*menu_bar*foreground: white
+! ...or, you can set each menu individually..
+!*menu_bar.background: skyblue3
+!*menu_bar.foreground: white
+!*XmCascadeButton.background: skyblue3
+!*XmCascadeButton.foreground: white
+!*menu_bar*XmMenuShell*background: white
+!*menu_bar*XmMenuShell*foreground: skyblue3
+!
+*scrollBarDisplayPolicy: static
+!
+! Misc dialogs
+!
+*messages_list_label.labelString: メッセージ:
+! note intentional trailing whitespace below
+*fr_efolder*labelString: フォルダ: 
+*fr_efolder*columns: 20
+*file_finder*file_list.visibleItemCount: 12
+*directory_label.labelString: ディレクトリ:
+*dots_toggle.labelString: 隠しファイル
+*folders_toggle.labelString: フォルダのみ
+*file_finder*file*labelString: ファイル:
+*file_finder*file*columns: 25
+*rename_folder_dialog.title: メール・フォルダの名称変更
+*rename_folder_dialog*directions.labelString: \
+下のリストから名称変更したいメール・フォルダを選択してください。\n\
+"新しい名前" のフィールドに付けたい名前を入力して、"名称変更"\n\
+をクリックしてください。
+*rename_folder_dialog*file_label.labelString: 古い名前:
+*rename_folder_dialog*file2*labelString: 新しい名前:
+*rename_folder_dialog*file2*columns: 25
+*rename_folder_dialog*action_area.Ok.labelString: 了解
+*rename_folder_dialog*action_area.Search.labelString: 検索
+*rename_folder_dialog*action_area.Cancel.labelString: 取消
+*reopen_folder_list.visibleItemCount: 5
+*reopen_fldrs_dialog.title: フォルダの再オープン
+*reopen_fldrs_dialog.iconName: Reopen
+*open_folder_dialog.title: メール・フォルダのオープン
+*open_folder_dialog.iconName: Open
+*open_folder_dialog*file_label.labelString: フォルダ:
+*open_folder_dialog*directions.labelString: \
+下のリストからオープンしたいメール・フォルダを選択して、\n\
+"オープン" をクリックしてください。\n
+*new_fldrs_dialog.title: 新しいフォルタの作成
+*new_fldrs_dialog.iconName: New
+*new_fldrs_dialog*directions.labelString: \
+"ファイル" フィールドに作成したいメール・フォルダ（または\n\
+ディレクトリ）名を入力して、"作成" をクリックしてください。
+*reopen_fldrs_dialog*directions.labelString: 再オープンのためにフォルダを選択してください。
+*new_folder_dialog*file_label.labelString: 名前:
+*task_meter_dialog.title: タスク・メータ
+*task_meter_dialog.iconName: Task Meter
+*save_dialog.title: メール・メッセージの保存
+*save_dialog.iconName: Save
+*save_dialog*directions.labelString: \
+下のリストからメッセージを保存したいメール・フォルダ\n\
+を選択して "保管" をクリックしてください。
+*save_text_only.labelString: テキストのみ保存
+*overwrite_file.labelString: ファイルの上書き
+*prune.labelString: 大きなパートを切り詰める
+*as_copy.labelString: コピー
+*read_only.labelString: 書込不可
+*read_write.labelString: 書込可能
+*create_dir.labelString: ディレクトリ作成
+*create_file.labelString: メール・フォルダの作成
+!*open_folder_dialog*folders_toggle.set: True
+!*folders_dialog*folders_toggle.set: True
+*error_dialog.OK.labelString: 了解
+*error_dialog.Cancel.labelString: 取消
+*error_dialog.Help.labelString: ヘルプ
+*warning_dialog.OK.labelString: 了解
+*error_dialog.Cancel	.labelString: 取消
+*error_dialog.Help.labelString: ヘルプ
+!
+! Dismiss buttons that change from Cancel to Close when an
+! irreversible change has been made
+!
+Zmail.cancelLabelString: 取消し
+Zmail.closeLabelString:  閉じる
+!
+!
+! Default Sizes And Values
+!
+! Main window (*main_window):
+!
+! The format string used to title the main window (see "help prompt")
+*title: メディアメイル
+! The format string used to label the icon (see "help prompt")
+*iconName: %t Msgs
+! Height of folder status list
+*main_window*folder_list.visibleItemCount: 1
+! Height of header summary display
+!  reset these depending on screen resolution!
+*message_summaries.visibleItemCount: 15
+! Size of scrolled output area
+*main_output_text.columns: 40
+*main_output_text.rows: 3
+! Limit on output area scrollback, in characters
+*scrollLength: 4096
+! The Command Area label
+*command_area*labelString: コマンド:
+*command_area*columns: 37
+! Width of messages field
+*main_window*fr_messages_text.columns: 18
+! Buttons area buttons
+*main_buttons.Compose.labelString: 作成
+*main_buttons.Read.labelString: 読み込み
+*main_buttons.Delete.labelString: 削除
+*main_buttons.Undelete.labelString: 削除取消
+*main_buttons.Save.labelString: 保存
+*main_buttons.Print.labelString: 印刷
+*main_buttons.Resend.labelString: 再送
+*main_buttons.Update.labelString: 更新
+! New arrivals button
+*new_arrivals.marginHeight: 0
+*new_arrivals.marginWidth: 0
+*folder_popup*labelString: フォルダ:
+*fr_toggle_label.labelString: 新規到着
+*fr_toggle_label.marginLeft: 3
+! Fix for output window sizing
+*main_window*XmSash.baseTranslations: #override \
+  ~Ctrl ~Shift ~Meta ~Alt<Btn1Down>: SashAction(Start) resize_output_start()
+!
+! Toolbox (*toolbox_window):
+!
+toolbox_window.title: ツールボックス
+toolbox_window.iconName: Toolbox
+*toolbox_window*Aliases_btn.label.labelString: 別名
+*toolbox_window*Compose_btn.label.labelString: 作成
+*toolbox_window*Envelope_btn.label.labelString: 封筒 
+*toolbox_window*Folders_btn.label.labelString: フォルダ 
+*toolbox_window*Headers_btn.label.labelString: ヘッダ 
+*toolbox_window*Help_btn.label.labelString: ヘルプ 
+*toolbox_window*Opened_btn.label.labelString: オープン 
+*toolbox_window*Variables_btn.label.labelString: 変数 
+*toolbox_window*Dates_btn.label.labelString: 日付 
+*toolbox_window*Search_btn.label.labelString: 検索
+*toolbox_window*Printer_btn.label.labelString: 印刷
+*toolbox_window*Sort_btn.label.labelString: 並べ替え
+*toolbox_window*Templates_btn.label.labelString: テンプレート
+*toolbox_window*Fonts_btn.label.labelString: フォント
+*toolbox_window*Browser_btn.label.labelString: ブラウザ
+*toolbox_window*Buttons_btn.label.labelString: ボタン
+*toolbox_window*Menus_btn.label.labelString: メニュー
+*toolbox_window*Filters_btn.label.labelString: フィルタ
+*toolbox_window*Functions_btn.label.labelString: ファンクション
+*toolbox_window*action_area.Done.labelString: 終了
+*toolbox_window*action_area.Help.labelString: ヘルプ
+!
+! Message display window (*message_window, *pinup_window):
+!
+! Translations
+!This is no longer necessary, with the Edit menu menu items.
+!*message_text.baseTranslations: #override \
+!    <Key>osfUp: scroll-one-line-down() \n\
+!    <Key>osfDown: scroll-one-line-up()
+! Size of scrolled display
+*message_text.columns: 40
+*message_text.rows: 24
+! Size of header display (columns determined dynamically)
+*message_header.rows: 5
+*message_header.scrollVertical: false
+!*message_header.scrollHorizontal: false
+!*message_header.wordWrap: true
+! Action area buttons
+*message_window*action_area.Done.labelString: 終了
+*message_window*action_area.Next.labelString: 次
+*message_window*action_area.Prev.labelString: 前
+*message_window*action_area.Delete.labelString: 削除
+*message_window*action_area.Save.labelString: 保存
+*message_window*action_area.Print.labelString: 印刷
+*message_window*action_area.Reply.labelString: 返信
+*message_window*action_area.ReplyAll.labelString: 全員に返信
+*message_window*action_area.Forward.labelString: 転送
+!
+! The maximum amount of text that will be displayed without
+! prompting for confimation (more can be viewed after confirm).
+! Note, this is a Zmail resource, not a message_window resource,
+! but it currently affects only the message window text area.
+*maxTextLength: 50000
+!
+*attachments_label.labelString: 全リスト
+*attachment_area_label.labelString: アタッチメント
+!
+! Composition window (*compose_window):
+!
+*compose_window.title: メッセージ作成
+*compose_window.iconName: Compose
+! Address input area
+*compose_window*to*labelString: To:
+*compose_window*to*columns: 20
+*compose_window*cc*labelString: Cc:
+*compose_window*cc*columns: 20
+*compose_window*bcc*labelString: Bcc:
+*compose_window*bcc*columns: 20
+*compose_window*subject*labelString: Subject:
+*compose_window*subject*columns: 20
+*compose_window*address_label.labelString: アドレス:
+*compose_window*address_list.visibleItemCount: 3
+! Action area buttons
+*compose_window*action_area.Done.labelString: 終了
+*compose_window*action_area.Send.labelString: 送る
+*compose_window*action_area.Include.labelString: 引用
+*compose_window*action_area.Attachments.labelString: アタッチメント
+*compose_window*action_area.Cancel.labelString: 取消
+*compose_window*toolbar.rightAttachment: attach_form
+*compose_window*toolbar.?.labelType: pixmap
+*compose_window*toolbar.File.labelPixmap: paperclip.xbm
+*compose_window*toolbar.Audio.labelPixmap: microphone.xbm
+*compose_window*toolbar.Video.labelPixmap: video.xbm
+*compose_window*toolbar.Still.labelPixmap: camera.xbm
+*compose_window*toolbar.Screen.labelPixmap: screen.xbm
+*compose_window*listing*list.listSizePolicy: constant
+*compose_window*listing*list.visibleItemCount: 5
+*compose_window*listing.push.topAttachment: attach_form
+*compose_window*listing.push.bottomAttachment: attach_form
+*compose_window*listing.push.fractionBase: 3
+*compose_window*listing.push.XmPushButton.topOffset: 1
+*compose_window*listing.push.XmPushButton.bottomOffset: 1
+*compose_window*listing.push.XmPushButton.leftAttachment: attach_form
+*compose_window*listing.push.XmPushButton.rightAttachment: attach_form
+*compose_window*listing.push.XmPushButton.topAttachment: attach_position
+*compose_window*listing.push.XmPushButton.bottomAttachment: attach_position
+*compose_window*listing.push.Edit.topPosition: 0
+*compose_window*listing.push.Edit.bottomPosition: 1
+*compose_window*listing.push.Expand.topPosition: 1
+*compose_window*listing.push.Expand.bottomPosition: 2
+*compose_window*listing.push.Remove.topPosition: 2
+*compose_window*listing.push.Remove.bottomPosition: 3
+*compose_window*listing.push.Edit.labelString: 編集
+*compose_window*listing.push.Expand.labelString: 展開
+*compose_window*listing.push.Remove.labelString: 削除
+*compose_window*listing*scrollBarDisplayPolicy: as_needed
+! Size of editing area
+*compose_text.columns: 40
+*compose_text.rows: 18
+! Size of header editing area (Edit Headers mode)
+*prompter*raw.rows: 7
+!
+! Compose Options dialog (popped up from options menu)
+!
+*comp_opts_dialog.title: 作成オプション
+*comp_opts_dialog*directions.labelString: \
+変更したいオプションのチェック・ボックスをクリックしてください。\n\
+Note: ここで行なった設定は現在の作成でのみ有効です。\n\
+恒久的に設定するには変数ダイアログを使用してください。
+*comp_opts_dialog*logfile*labelString: ログ・ファイル:
+*comp_opts_dialog*logfile*columns: 20
+*comp_opts_dialog*record*labelString: 記録ファイル:
+*comp_opts_dialog*record*columns: 20
+*comp_opts_dialog*autosign.labelString: 署名の自動付加
+*comp_opts_dialog*return-receipt.labelString: 自動返信の指定
+*comp_opts_dialog*autoformat.labelString: 自動改行
+*comp_opts_dialog*edit-hdrs.labelString: ヘッダの編集
+*comp_opts_dialog*autodismiss.labelString: 自動終了
+*comp_opts_dialog*autoiconify.labelString: 自動アイコン化
+*comp_opts_dialog*autoclear.labelString: 自動消去
+*comp_opts_dialog*verify.labelString: 確認
+*comp_opts_dialog*verbose.labelString: 詳細表示
+*comp_opts_dialog*synchronous.labelString: 同期送信
+*comp_opts_dialog*record-user.labelString: ユーザの記録
+!
+! Aliases popup (*comp_alias_dialog)
+!
+l*comp_alias_dialog.title: 別名の選択
+*comp_alias_dialog.iconName: Choose Aliases
+*comp_alias_dialog*alias_list.visibleItemCount: 8
+*comp_alias_dialog*directions.labelString: \
+リストの中から別名を選択して、使用\n\
+するヘッダのボタンを押してください。
+!
+! Aliases dialog (*alias_dialog):
+!
+*alias_dialog.title: メールの別名
+*alias_dialog.iconName: Aliases
+! Height of name and address lists
+! *alias_dialog*alias_list.visibleItemCount: 8
+*alias_dialog*address_list.visibleItemCount: 4
+*alias_dialog*directions.labelString: \
+"別名" フィールドに作成したい別名の名前を入力してください。\n\
+"別名アドレス" フィールドに１つ、またはそれ以上のアドレスを\n\
+入力して、"適用" をクリックしてください。
+*alias_dialog*alias_name*labelString: 別名:
+*alias_dialog*alias_name*columns: 12
+*alias_dialog*alias_address_label.labelString: 別名アドレス:
+*alias_address_text.columns: 25
+*alias_dialog*expand.labelString: 常に展開する
+*alias_dialog*address_label.labelString: アドレス:
+! Both action area's buttons
+*alias_dialog*action_area.Remove.labelString: 削除
+*alias_dialog*action_area.Expand.labelString: 展開
+*alias_dialog*action_area.Edit.labelString: 編集
+*alias_dialog*action_area.Done.labelString: 終了
+*alias_dialog*action_area.Set.labelString: 設定する
+*alias_dialog*action_area.Unset.labelString: 設定しない
+*alias_dialog*action_area.Save.labelString: 保存
+*alias_dialog*action_area.Mail.labelString: メール
+*alias_dialog*action_area.Clear.labelString: 消去
+*alias_dialog*action_area.Help.labelString: ヘルプ
+!
+! Attachments dialog (*attachments_dialog):
+!
+! Height of attachments list
+*attachment_list.visibleItemCount: 3
+Zmail*attachments_dialog.title: アタッチメント
+Zmail*attachments_dialog.iconName: Attachments
+*attachments_dialog*file_type.labelString: ファイル・タイプ:
+*attachments_dialog*auto_type.labelString: 自動タイプ
+*attachments_dialog*encoding.labelString: 符合化の種類:
+*attachments_dialog*comment*labelString: コメント:
+*attachments_dialog*comment*columns: 25
+! reduce size of option menus
+*attachments_dialog*pulldown_menu.XmPushButton.shadowThickness: 1
+*attachments_dialog*attached_docs.labelString: アタッチされた文書
+! Indigo Magic autotypes pretty well, so use it by default
+*compose_window.attachments_dialog*auto_type.set: True
+! Action area buttons
+*attachments_dialog*action_area.Done.labelString: 終了
+*attachments_dialog*action_area.Attach.labelString: アタッチする
+*attachments_dialog*action_area.Unattach.labelString: アタッチしない
+*attachments_dialog*action_area.New.labelString: 新規
+*attachments_dialog*action_area.Display.labelString: 表示
+*attachments_dialog*action_area.Edit.labelString: 編集
+*attachments_dialog*action_area.Help.labelString: ヘルプ
+!
+! Date Search dialog (*dates_dialog):
+!
+Zmail*dates_dialog.title: 日付検索
+Zmail*dates_dialog.iconName: Dates
+! Search criteria
+*dates_dialog*constrain_to_messages.labelString: "Messages:" に強制
+*dates_dialog*use_date_received.labelString: メッセージ受信日を使用
+*dates_dialog*find_non_matching.labelString: 一致しないものを検索
+*dates_dialog*search_all_folders.labelString: 使用中の全フォルダを検索
+*dates_dialog*perform_function.labelString: 結果によりファンクションを実行
+*dates_dialog*on_date_only.labelString: 指定日のみ
+*dates_dialog*on_or_before.labelString: 指定日以前
+*dates_dialog*on_or_after.labelString: 指定日以降
+*dates_dialog*between_dates.labelString: 指定日間
+! Days of the week
+*dates_dialog*Sun.labelString: 日
+*dates_dialog*Mon.labelString: 月
+*dates_dialog*Tue.labelString: 火
+*dates_dialog*Wed.labelString: 水
+*dates_dialog*Thu.labelString: 木
+*dates_dialog*Fri.labelString: 金
+*dates_dialog*Sat.labelString: 土
+! List of month names
+*dates_dialog*months.visibleItemCount: 12
+*dates_dialog*months.items: １月, ２月, ３月, ４月, ５月, ６月, \
+			    ７月, ８月, ９月, 10月, 11月, 12月
+! Height of list of functions to perform
+*dates_dialog*search_functions.visibleItemCount: 2
+! Height of list of matched messages
+*dates_dialog*search_result.visibleItemCount: 5
+! Years slider
+*dates_dialog*years.titleString: 年
+! Actions to perform on matched messages
+*dates_dialog*act_select.labelString: 一致を選択
+*dates_dialog*act_view.labelString: 一致したもののみ表示
+! Output area
+*dates_dialog*pick_date_msg.value: \
+検索したいメッセージの日付をマウスでクリックして、[検索]\
+をクリックしてください。検索結果がここに表示されます。
+! Action area buttons
+*dates_dialog*action_area.Done.labelString: 終了
+*dates_dialog*action_area.Search.labelString: 検索
+*dates_dialog*action_area.Clear.labelString: 消去
+*dates_dialog*action_area.Help.labelString: ヘルプ
+!
+! Pattern Search dialog (*search_dialog):
+!
+Zmail*search_dialog.title: パターン検索
+Zmail*search_dialog.iconName: Patterns
+*search_dialog*search_pattern*labelString: 検索パターン:
+*search_dialog*search_pattern*columns: 5
+*search_dialog*search_where.labelString: 検索範囲:
+! Search criteria
+*search_dialog*entire_message.labelString: 全メッセージ
+*search_dialog*msg_body.labelString: メッセージ本文
+*search_dialog*to_fields.labelString: To:
+*search_dialog*from_fields.labelString: From:
+*search_dialog*subject.labelString: Subject:
+*search_dialog*header.value: その他:
+*search_dialog*constrain_to_messages.labelString: "Messages:" に強制
+*search_dialog*ignore_case.labelString: 大文字、小文字の違いを無視
+*search_dialog*magic.labelString: パターン(正規表現)の一致
+*search_dialog*find_non_matching.labelString: 一致しないものを検索
+*search_dialog*search_all_folders.labelString: 使用中の全フォルダを検索
+*search_dialog*perform_function.labelString: 結果によりファンクションを実行
+*search_dialog*pick_msg.value: \
+検索したい文字列を上の適当なフィールドに入力して、[検索]\n\
+をクリックしてください。検索結果はここに表示されます。
+! Height of list of functions to perform
+*search_dialog*search_functions.visibleItemCount: 6
+! Actions to perform on matched messages
+*search_dialog*act_select.labelString: 一致を選択
+*search_dialog*act_view.labelString: 一致したもののみ表示
+*search_dialog*pkpat_search_form.right.resizable: false
+! Action area buttons
+*search_dialog*action_area.Done.labelString: 終了
+*search_dialog*action_area.Search.labelString: 検索
+*search_dialog*action_area.Clear.labelString: 消去
+*search_dialog*action_area.Help.labelString: ヘルプ
+!
+! Search and Replace dialog (*editor_dialog):
+!
+*editor_dialog*search*labelString: 検索:
+*editor_dialog*search*columns: 20
+*editor_dialog*replace*labelString: 置換:
+*editor_dialog*replace*columns: 19
+*editor_dialog*find_next.labelString: 逐次検索
+*editor_dialog*find_all.labelString: 全範囲
+*editor_dialog*ignore_case.labelString: 大文字、小文字の違いを無視
+*editor_dialog*wrap_around.labelString: ラップ・アラウンド
+*editor_dialog*confirm_replace.labelString: 確認しながら置換
+! trailing whitespace below to force list width
+*spell_label.labelString: 綴の違う単語
+!*spell_label.labelString: 綴の違う単語
+!
+! Envelope dialog (*envelope_dialog):
+!
+Zmail*envelope_dialog.title: 封筒
+Zmail*envelope_dialog.iconName: Envelope
+! Height of list of personal headers
+*envelope_list.visibleItemCount: 8
+*envelope_dialog*directions*labelString: \
+下のフィールドにヘッダ名とヘッダ情報を入力して [追加] をクリック\n\
+してください。下のリストからヘッダ名を選択して、[削除] をクリック\n\
+してください。
+*envelope_dialog*hdr_name*labelString: ヘッダ名:
+*envelope_dialog*hdr_name*columns: 25
+*envelope_dialog*hdr_value*labelString: ヘッダの内容:
+*envelope_dialog*hdr_value*columns: 25
+! Action area buttons
+*envelope_dialog*action_area.Done.labelString: 終了
+*envelope_dialog*action_area.Set.labelString: 設定する
+*envelope_dialog*action_area.Unset.labelString: 設定しない
+*envelope_dialog*action_area.Save.labelString: 保存
+*envelope_dialog*action_area.Clear.labelString: 消去
+*envelope_dialog*action_area.Help.labelString: ヘルプ
+!
+! Headers dialog (*headers_dialog):
+!
+Zmail*headers_dialog.title: メールのヘッダ
+Zmail*headers_dialog.iconName: Headers
+*headers_dialog*ignored.labelString: ヘッダを無視
+*headers_dialog*retained.labelString: 表示のみ
+! Height of list of ignored/retained headers
+*headers_list.visibleItemCount: 8
+! trailing whitespace below to line up labels with lists
+*headers_dialog*settings*labelString: 現在の設定:             
+*headers_dialog*choices*labelString: 有効な選択肢:
+*headers_dialog*directions*labelString: \
+"現在の設定" リストの中からヘッダを選択して [削除] をクリック\n\
+してください。"有効な選択肢" リストの中からヘッダを選択して、\n\
+[追加] をクリックしてください。
+*headers_dialog*hdr_name*labelString: ヘッダ名:
+*headers_dialog*hdr_name*columns: 20
+! Action area buttons
+*headers_dialog*action_area.Done.labelString: 終了
+*headers_dialog*action_area.Set.labelString: 設定する
+*headers_dialog*action_area.Unset.labelString: 設定しない
+*headers_dialog*action_area.Save.labelString: 保存
+*headers_dialog*action_area.Help.labelString: ヘルプ
+!
+! Help index (*help_index_dialog)
+!
+Zmail*help_index_dialog.title: ヘルプの索引
+Zmail*help_index_dialog.iconName: Help Index
+*help_index_dialog*title_label.labelString: ヘルプの索引
+! Size of scrolled display
+Zmail*help_index_dialog*help_description.columns: 30
+*help_description.columns: 30
+*help_description.rows: 24
+! Height of index list (normally automatic from *help_description.rows)
+!*help_list.visibleItemCount: 9
+! Action area buttons
+*help_index_dialog*action_area.Done.labelString: 終了
+*help_index_dialog*action_area.Search.labelString: 検索
+*help_index_dialog*action_area.Help.labelString: ヘルプ
+!
+! Functions help dialog (*functions_help_dialog)
+!
+*functions_help_dialog*help_description.columns: 40
+*functions_help_dialog.title: ヘルプ: ファンクション
+*functions_help_dialog.iconName: Help: Functions
+*functions_help_dialog*title_label.labelString: ヘルプ: ファンクション
+! Action area buttons
+*functions_help_dialog*action_area.Done.labelString: 終了
+*functions_help_dialog*action_area.Search.labelString: 検索
+*functions_help_dialog*action_area.Help.labelString: ヘルプ
+!
+! Index searches
+!
+*search_label.labelString: 検索文字列:
+*search_button.labelString: 検索
+!
+! Secondary help dialog
+!
+*information_dialog*output_text.columns: 40
+*information_dialog*output_text.rows: 20
+*information_dialog*action_area.Done.labelString: 終了
+*information_dialog*action_area.Save.labelString: 保存
+*information_dialog*action_area.Search.labelString: 検索
+!
+! Paging dialog (*paging_dialog)
+!
+*paging_dialog*output_text.columns: 40
+*paging_dialog*output_text.rows: 20
+*paging_dialog*action_area.Done.labelString: 終了
+*paging_dialog*action_area.Save.labelString: 保存
+*paging_dialog*action_area.Search.labelString: 検索
+!
+! Printer dialog (*printer_dialog):
+Zmail*printer_dialog.title: メール・メッセージの印刷
+Zmail*printer_dialog.iconName: Printer
+*printer_dialog*printers_label.labelString: プリンタ
+*printer_dialog*print_cmd*labelString: 印刷コマンド:
+*printer_dialog*print_cmd*columns: 15
+*print_message.labelString: メッセージの印刷:
+*print_message_toggles*standard.labelString: 標準的なメッセージ・ヘッダ
+*print_message_toggles*all_headers.labelString: 全てのメッセージ・ヘッダ
+*print_message_toggles*body_only.labelString: 本文のみ
+*printer_dialog*printers_label: プリンタ
+!
+! Templates dialog (*templates_dialog):
+!
+Zmail*templates_dialog.title: メールのテンプレート
+Zmail*templates_dialog.iconName: Templates
+! Height of list of template names
+*template_list.visibleItemCount: 8
+*templates_dialog*directions.labelString: メッセージのテンプレートを選択して下さい:
+! Action area buttons
+*template_dialog*action_area.Done.labelString: 終了
+*template_dialog*action_area.Use.labelString: 使用
+*template_dialog*action_area.Help.labelString: ヘルプ
+!
+! Variables dialog (*variables_dialog):
+!
+Zmail*variables_dialog.title: Variables
+Zmail*variables_dialog.iconName: Variables
+*variables_dialog*variable_description.columns: 35
+*variables_dialog*variable_description.rows: 8
+*variables_dialog*var_description.labelString: 変数の説明:
+*variables_dialog*directions.labelString: \
+説明を表示するには下のリストから値を選択してください。\n\
+値を設定するには右下のコントロールを使用してください。\n\
+警告:この操作では設定を元に戻すアンドゥはできません。
+*var_btn.labelString: 適用
+*var_btn.marginLeft: 7
+*var_btn.marginRight: 7
+*expand_refs.labelString: 変数/ファイル参照を拡張:
+*expand_refs_toggles*Yes.set: True
+*expand_refs_toggles*Yes.labelString: はい
+*expand_refs_toggles*No.labelString: いいえ
+*variables_dialog*Set.labelString: 設定する
+*variables_dialog*Unset.labelString: 設定しない
+! Height of index list (normally automatic from *variable_description.rows)
+!*variable_list.visibleItemCount: 17
+! Action area buttons
+*variables_dialog*action_area.Done.labelString: 終了
+*variables_dialog*action_area.Save.labelString: 保存
+*variables_dialog*action_area.Load.labelString: ロード
+*variables_dialog*action_area.Search.labelString: 検索
+*variables_dialog*action_area.Help.labelString: ヘルプ
+!
+
+! Fonts dialog (*fonts_dialog)
+!
+fonts_dialog.title: フォント
+fonts_dialog.iconName: Fonts
+*fonts_dialog*specify*labelString: フォント:
+*fonts_dialog*sample.value: The quick brown fox jumps over the lazy dog.\n\
+THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG\n\
+0123456789!@#$%^&*-+=|(){}[]
+*fonts_dialog*sample.rows: 3
+*fonts_dialog*obj_label.labelString: オブジェクト:
+*fonts_dialog*prompt_dialog*textString: ~/.zmfonts
+*fonts_dialog*PushButtons.labelString: プッシュボタン
+*fonts_dialog*Labels.labelString: ラベル
+*fonts_dialog*ToggleButtons.labelString: トグルボタン
+*fonts_dialog*Texts.labelString: テキスト
+*fonts_dialog*Lists.labelString: リスト
+*fonts_dialog*Menus.labelString: メニュー
+*fonts_dialog*set_mode.labelString: セット・モード:
+*fonts_dialog*interactive.labelString: フォント: 対話式
+*fonts_dialog*object_type.labelString: フォント: オブジェクト・タイプ
+*fonts_dialog*label_only.labelString: ラベルのみ
+*fonts_dialog*label_font.labelString: ラベルとフォント
+*fonts_dialog*directions*labelString: \
+リストからフォントを選択してください。そして、チェック・ボックス\n\
+使用して、そのフォントが表示されるオブジェクト・タイプを選択して\n\
+[割り当て] をクリックしてください。警告: この操作では設定を元に\n\
+戻すアンドゥはできません。
+! Action area buttons
+*fonts_dialog*action_area.Done.labelString: 終了
+*fonts_dialog*action_area.Assign.labelString: 割り当て
+*fonts_dialog*action_area.Save.labelString: 保存
+*fonts_dialog*action_area.Help.labelString: ヘルプ
+!
+! MenuBar resources.
+! Everything (and we mean -everything-) for the menubars for all windows
+! is specified here.  This includes, labels, mnemonics, accelerators and
+! accelerator texts.
+!
+! WARNING: You may alter the labelString values, but DO NOT remove them!
+! Accelerators and mnemonics may be safely added or removed, but be sure
+! that the acceleratorText changes with the accelerator.
+!
+! Main window, Compose window, Message window
+!
+*main_window*menu_bar*folder.labelString: フォルダ (F)
+*main_window*menu_bar*folder.mnemonic: F
+*main_window*menu_bar*message.labelString: メッセージ (M)
+*main_window*menu_bar*message.mnemonic: M
+*main_window*menu_bar*view.labelString: 表示 (V)
+*main_window*menu_bar*view.mnemonic: V
+*main_window*menu_bar*find.labelString: 検索 (i)
+*main_window*menu_bar*find.mnemonic: i
+*main_window*menu_bar*sort.labelString: 並べ替え (S)
+*main_window*menu_bar*sort.mnemonic: S
+*main_window*menu_bar*compose.labelString: 作成 (C)
+*main_window*menu_bar*compose.mnemonic: C
+*main_window*menu_bar*options.labelString: オプション (O)
+*main_window*menu_bar*options.mnemonic: O
+*main_window*menu_bar*layout.labelString: レイアウト (L)
+*main_window*menu_bar*layout.mnemonic: L
+*main_window*menu_bar*help.labelString: ヘルプ (H)
+*main_window*menu_bar*help.mnemonic: H
+*main_window*menu_bar*mfm_new_folder.labelString: 新規 ... (N)
+*main_window*menu_bar*mfm_new_folder.mnemonic: N
+*main_window*menu_bar*mfm_open_folder.labelString: オープン ... (O)
+*main_window*menu_bar*mfm_open_folder.mnemonic: O
+*main_window*menu_bar*mfm_open_folder.acceleratorText: Shift+Ctrl+O
+*main_window*menu_bar*mfm_open_folder.accelerator: Shift Ctrl<Key>O
+*main_window*menu_bar*mfm_rename_folder.labelString:  名前変更... (R)
+*main_window*menu_bar*mfm_rename_folder.mnemonic: R
+*main_window*menu_bar*mfm_remove_folder.labelString: 削除 ... (m)
+*main_window*menu_bar*mfm_remove_folder.mnemonic: m
+*main_window*menu_bar*mfm_update.labelString: 更新 (U)
+*main_window*menu_bar*mfm_update.mnemonic: U
+*main_window*menu_bar*mfm_update.acceleratorText: Shift+Ctrl+U
+*main_window*menu_bar*mfm_update.accelerator: Shift Ctrl<Key>U
+*main_window*menu_bar*mfm_close_fldr.labelString: フォルダを閉じる (C)
+*main_window*menu_bar*mfm_close_fldr.mnemonic: C
+*main_window*menu_bar*mfm_close_fldr.acceleratorText: Shift+Ctrl+W
+*main_window*menu_bar*mfm_close_fldr.accelerator: Shift Ctrl<Key>W
+*main_window*menu_bar*mfm_quit.labelString: 中止 (Q)
+*main_window*menu_bar*mfm_quit.mnemonic: Q
+*main_window*menu_bar*mfm_quit.acceleratorText: Shift+Ctrl+Q
+*main_window*menu_bar*mfm_quit.accelerator: Shift Ctrl<Key>Q
+*main_window*menu_bar*mm_read.labelString: 読む (R)
+*main_window*menu_bar*mm_read.mnemonic: R
+*main_window*menu_bar*mm_save.labelString: 保管 ... (S)
+*main_window*menu_bar*mm_save.mnemonic: S
+*main_window*menu_bar*mm_save.acceleratorText: Shift+Ctrl+S
+*main_window*menu_bar*mm_save.accelerator: Shift Ctrl<Key>S
+*main_window*menu_bar*mm_delete.labelString: 削除 (D)
+*main_window*menu_bar*mm_delete.mnemonic: D
+*main_window*menu_bar*mm_delete.acceleratorText: Shift+Ctrl+D
+*main_window*menu_bar*mm_delete.accelerator: Shift Ctrl<Key>D
+*main_window*menu_bar*mm_undelete.labelString: 削除取消 (U)
+*main_window*menu_bar*mm_undelete.mnemonic: U
+*main_window*menu_bar*mm_print.labelString: 印刷 ... (P)
+*main_window*menu_bar*mm_print.mnemonic: P
+*main_window*menu_bar*mm_print.acceleratorText: Shift+Ctrl+P
+*main_window*menu_bar*mm_print.accelerator: Shift Ctrl<Key>P
+*main_window*menu_bar*mm_pinup.labelString: ピンナップ ... (n)
+*main_window*menu_bar*mm_pinup.mnemonic: n
+*main_window*menu_bar*mm_priority.labelString: 優先度処理 (z)
+*main_window*menu_bar*mm_priority.mnemonic: z
+*main_window*menu_bar*mm_mark.labelString: マークを付ける (M)
+*main_window*menu_bar*mm_mark.mnemonic: M
+*main_window*menu_bar*mm_unmark.labelString: マークを消す (k)
+*main_window*menu_bar*mm_unmark.mnemonic: k
+*main_window*menu_bar*mm_preserve.labelString: 保存する (e)
+*main_window*menu_bar*mm_preserve.mnemonic: e
+*main_window*menu_bar*mm_unpreserve.labelString: 保存しない (v)
+*main_window*menu_bar*mm_unpreserve.mnemonic: v
+*main_window*menu_bar*mm_select_all.labelString: 全てを選択 (A)
+*main_window*menu_bar*mm_select_all.mnemonic: A
+*main_window*menu_bar*mm_select_all.acceleratorText: Shift+Meta+A
+*main_window*menu_bar*mm_select_all.accelerator: Shift Meta<Key>A
+*emp_low.labelString: 低い (L)
+*emp_low.mnemonic: L
+*emp_urgent.labelString: 中間 (M)
+*emp_urgent.mnemonic: M
+*emp_high.labelString: 高い (H)
+*emp_high.mnemonic: H
+*emp_none.labelString: 一般 (N)
+*emp_none.mnemonic: N
+*emp_other.labelString: その他 (O)
+*emp_other.mnemonic: O
+*main_window*menu_bar*vm_view_all.labelString: 全表示 (V)
+*main_window*menu_bar*vm_view_all.mnemonic: V
+*main_window*menu_bar*vm_view_sel_only.labelString: 選択されたものを表示 (O)
+*main_window*menu_bar*vm_view_sel_only.mnemonic: O
+*main_window*menu_bar*vm_hide_sel.labelString: 選択されたものをを隠す (H)
+*main_window*menu_bar*vm_hide_sel.mnemonic: H
+*main_window*menu_bar*vm_hide_old.labelString: 新しいものを表示
+*main_window*menu_bar*vm_hide_del.labelString: 削除されたものを隠す
+*main_window*menu_bar*mfim_all_references.labelString: 全てを参照 (A)
+*main_window*menu_bar*mfim_all_references.mnemonic: A
+*main_window*menu_bar*mfim_next_reference.labelString: 次を参照 (N)
+*main_window*menu_bar*mfim_next_reference.mnemonic: N
+*main_window*menu_bar*mfim_prev_reference.labelString: 前を参照 (P)
+*main_window*menu_bar*mfim_prev_reference.mnemonic: P
+*main_window*menu_bar*mfim_pattern.labelString: パターン検索 ... (S)
+*main_window*menu_bar*mfim_pattern.mnemonic: S
+*main_window*menu_bar*mfim_date.labelString: 日付検索 ... (D)
+*main_window*menu_bar*mfim_date.mnemonic: D
+*nrm_same_subject.labelString: サブジェクト (S)
+*nrm_same_subject.mnemonic: S
+*nrm_same_author.labelString: 発信者 (A)
+*nrm_same_author.mnemonic: A
+*nrm_same_msgid.labelString: メッセージＩＤ (I)
+*nrm_same_msgid.mnemonic: I
+*nrm_same_priority.labelString: 優先度 (P)
+*nrm_same_priority.mnemonic: P
+*nrm_same_mark.labelString: マーク (M)
+*nrm_same_mark.mnemonic: M
+*prm_same_subject.labelString: サブジェクト (S)
+*prm_same_subject.mnemonic: S
+*prm_same_author.labelString: 発信者 (A)
+*prm_same_author.mnemonic: A
+*prm_same_msgid.labelString: メッセージＩＤ (I)
+*prm_same_msgid.mnemonic: I
+*prm_same_priority.labelString: 優先度 (P)
+*prm_same_priority.mnemonic: P
+*prm_same_mark.labelString: マーク (M)
+*prm_same_mark.mnemonic: M
+*arm_same_subject.labelString: サブジェクト (S)
+*arm_same_subject.mnemonic: S
+*arm_same_author.labelString: 発信者 (A)
+*arm_same_author.mnemonic: A
+*arm_same_msgid.labelString: メッセージＩＤ (I)
+*arm_same_msgid.mnemonic: I
+*arm_same_priority.labelString: 優先度処理 (P)
+*arm_same_priority.mnemonic: P
+*arm_same_mark.labelString: マーク (M)
+*arm_same_mark.mnemonic: M
+*main_window*menu_bar*sm_date.labelString: 日付 (D)
+*main_window*menu_bar*sm_date.mnemonic: D
+*main_window*menu_bar*sm_subject.labelString: サブジェクト (S)
+*main_window*menu_bar*sm_subject.mnemonic: S
+*main_window*menu_bar*sm_author.labelString: 発信者 (A)
+*main_window*menu_bar*sm_author.mnemonic: A
+*main_window*menu_bar*sm_length.labelString: メッセージ長 (L)
+*main_window*menu_bar*sm_length.mnemonic: L
+*main_window*menu_bar*sm_priority.labelString: 優先度/マーク (P)
+*main_window*menu_bar*sm_priority.mnemonic: P
+*main_window*menu_bar*sm_status.labelString: 状態 (t)
+*main_window*menu_bar*sm_status.mnemonic: t
+*main_window*menu_bar*mcm_compose.labelString: 新規作成 (N)
+*main_window*menu_bar*mcm_compose.mnemonic: N
+*main_window*menu_bar*mcm_compose.acceleratorText: Shift+Ctrl+N
+*main_window*menu_bar*mcm_compose.accelerator: Shift Ctrl<Key>N
+*main_window*menu_bar*mcm_reply.labelString: 返信 (R)
+*main_window*menu_bar*mcm_reply.mnemonic: R
+*main_window*menu_bar*mcm_forward.labelString: 転送 (F)
+*main_window*menu_bar*mcm_forward.mnemonic: F
+*main_window*menu_bar*mcm_templates.labelString: テンプレート... (T)
+*main_window*menu_bar*mcm_templates.mnemonic: T
+*rpm_replysender.labelString: 送り手のみ (S)
+*rpm_replysender.mnemonic: S
+*rpm_replysender.acceleratorText: Shift+Ctrl+R
+*rpm_replysender.accelerator: Shift Ctrl<Key>R
+*rpm_replyall.labelString: 受取った全員 (A)
+*rpm_replyall.mnemonic: A
+*rpm_replyall.acceleratorText: Shift+Ctrl+A
+*rpm_replyall.accelerator: Shift Ctrl<Key>A
+*rpm_sender_inc.labelString: 送り手 (メッセージを含む) (I)
+*rpm_sender_inc.mnemonic: I
+*rpm_all_inc.labelString: 全員 (メッセージを含む) (l)
+*rpm_all_inc.mnemonic: l
+*rpm_sender_inperson.labelString: InPerson で送り手を呼ぶ... (v)
+*rpm_sender_inperson.mnemonic: v
+*fwdm_resend.labelString: 再送 ... (R)
+*fwdm_resend.mnemonic: R
+*fwdm_forward.labelString: 編集 ... (E)
+*fwdm_forward.mnemonic: E
+*fwdm_forward_attach.labelString: アタッチメントとして (A)
+*fwdm_forward_attach.mnemonic: A
+*main_window*menu_bar*mom_aliases.labelString: 別名 ... (A)
+*main_window*menu_bar*mom_aliases.mnemonic: A
+*main_window*menu_bar*mom_sig.labelString: 署名 ...(g)
+*main_window*menu_bar*mom_sig.mnemonic: g
+*main_window*menu_bar*mom_headers.labelString: ヘッダ ... (H)
+*main_window*menu_bar*mom_headers.mnemonic: H
+*main_window*menu_bar*mom_envelope.labelString: 封筒 ... (E)
+*main_window*menu_bar*mom_envelope.mnemonic: E
+*main_window*menu_bar*mom_fonts.labelString: フォント ... (F)
+*main_window*menu_bar*mom_fonts.mnemonic: F
+*main_window*menu_bar*mom_toolbox.labelString: ツールボックス ... (T)
+*main_window*menu_bar*mom_toolbox.mnemonic: T
+*main_window*menu_bar*mom_toolbox.acceleratorText: Shift+Ctrl+T
+*main_window*menu_bar*mom_toolbox.accelerator: Shift Ctrl<Key>T
+*main_window*menu_bar*mom_variables.labelString: 変数 ... (V)
+*main_window*menu_bar*mom_variables.mnemonic: V
+*main_window*menu_bar*mom_variables.acceleratorText: Shift+Ctrl+B
+*main_window*menu_bar*mom_variables.accelerator: Shift Ctrl<Key>B
+*main_window*menu_bar*mom_save_state.labelString: 設定の保管 ... (S)
+*main_window*menu_bar*mom_save_state.mnemonic: S
+*main_window*menu_bar*win_title.labelString: フォルダの状況 (F)
+*main_window*menu_bar*win_title.mnemonic: F
+*main_window*menu_bar*win_control.labelString: フォルダ・パネル (P)
+*main_window*menu_bar*win_control.mnemonic: P
+*main_window*menu_bar*win_list.labelString: メッセージの要約 (S)
+*main_window*menu_bar*win_list.mnemonic: S
+*main_window*menu_bar*win_panel.labelString: ボタン・パネル (B)
+*main_window*menu_bar*win_panel.mnemonic: B
+*main_window*menu_bar*win_output.labelString: 出力ウィンドウ (O)
+*main_window*menu_bar*win_output.mnemonic: O
+*main_window*menu_bar*win_status.labelString: ステータス・バー (t)
+*main_window*menu_bar*win_status.mnemonic: t
+*main_window*menu_bar*mhm_context.labelString: クリックでヘルプ (C)
+*main_window*menu_bar*mhm_context.mnemonic: C
+*main_window*menu_bar*mhm_context.acceleratorText: Shift+F1
+*main_window*menu_bar*mhm_context.accelerator: Shift<Key>F1
+*main_window*menu_bar*mhm_general.labelString: 概要 (O)
+*main_window*menu_bar*mhm_general.mnemonic: O
+*main_window*menu_bar*mhm_menus.labelString: メイン・ウィンドウについて
+*main_window*menu_bar*mhm_compose.labelString: メッセージの作成
+*main_window*menu_bar*mhm_read.labelString: メッセージの読み方
+*main_window*menu_bar*mhm_print.labelString: メッセージの印刷
+*main_window*menu_bar*mhm_reply.labelString: メッセージの返信
+*main_window*menu_bar*mhm_fwd.labelString: メッセージの転送
+*main_window*menu_bar*mhm_folder.labelString: フォルダの使用
+*main_window*menu_bar*mhm_index.labelString: 索引 (I)
+*main_window*menu_bar*mhm_index.mnemonic: I
+*main_window*menu_bar*mhm_product.labelString: 製品情報 (P)
+*main_window*menu_bar*mhm_product.mnemonic: P
+*compose_window*menu_bar*message.labelString: メッセージ (M)
+*compose_window*menu_bar*message.mnemonic: M
+*compose_window*menu_bar*edit.labelString: 編集 (E)
+*compose_window*menu_bar*edit.mnemonic: E
+*compose_window*menu_bar*include.labelString: 引用 (I)
+*compose_window*menu_bar*include.mnemonic: I
+*compose_window*menu_bar*attach.labelString: アタッチ (t)
+*compose_window*menu_bar*attach.mnemonic: t
+**compose_window*menu_bar*address.labelString: アドレス (A)
+*compose_window*menu_bar*address.mnemonic: A
+*compose_window*menu_bar*options.labelString: オプション (O)
+*compose_window*menu_bar*options.mnemonic: O
+*compose_window*menu_bar*layout.labelString: レイアウト (L)
+*compose_window*menu_bar*layout.mnemonic: L
+*compose_window*menu_bar*help.labelString: ヘルプ (H)
+*compose_window*menu_bar*help.mnemonic: H
+*compose_window*menu_bar*mm_compose.labelString: 新規作成 (N)
+*compose_window*menu_bar*mm_compose.mnemonic: N
+*compose_window*menu_bar*mm_compose.acceleratorText: Shift+Ctrl+N
+*compose_window*menu_bar*mm_compose.accelerator: Shift Ctrl<Key>N
+*compose_window*menu_bar*mm_reuse.labelString: 再使用 (R)
+*compose_window*menu_bar*mm_reuse.mnemonic: R
+*compose_window*menu_bar*mm_templates.labelString: テンプレート ...
+*compose_window*menu_bar*mm_templates.mnemonic: T
+*compose_window*menu_bar*mm_send.labelString: 送信 (S)
+*compose_window*menu_bar*mm_send.mnemonic: S
+*compose_window*menu_bar*mm_send.acceleratorText: Shift+Ctrl+S
+*compose_window*menu_bar*mm_send.accelerator: Shift Ctrl<Key>S
+*compose_window*menu_bar*mm_save.labelString: ファイルに保管 ... (W)
+*compose_window*menu_bar*mm_save.mnemonic: W
+*compose_window*menu_bar*mm_save.acceleratorText: Shift+Ctrl+W
+*compose_window*menu_bar*mm_save.accelerator: Shift Ctrl<Key>W
+*compose_window*menu_bar*mm_draft.labelString: ドラフトとして保管 ...
+*compose_window*menu_bar*mm_print.labelString: 印刷 ... (P)
+*compose_window*menu_bar*mm_print.mnemonic: P
+*compose_window*menu_bar*mm_print.acceleratorText: Shift+Ctrl+P
+*compose_window*menu_bar*mm_print.accelerator: Shift Ctrl<Key>P
+*compose_window*menu_bar*mm_cancel.labelString: 取消 (C)
+*compose_window*menu_bar*mm_cancel.mnemonic: C
+*compose_window*menu_bar*mm_cancel.acceleratorText: SHift+Ctrl+W
+*compose_window*menu_bar*mm_cancel.accelerator: Shift Ctrl<Key>W
+*compose_window*menu_bar*em_cut.labelString: カット (C)
+*compose_window*menu_bar*em_cut.mnemonic: C
+*compose_window*menu_bar*em_cut.acceleratorText: Shift+Ctrl+X
+*compose_window*menu_bar*em_cut.accelerator: Shift Ctrl<Key>X
+*compose_window*menu_bar*em_copy.labelString: コピー (o)
+*compose_window*menu_bar*em_copy.mnemonic: o
+*compose_window*menu_bar*em_copy.acceleratorText: Shift+Ctrl+C
+*compose_window*menu_bar*em_copy.accelerator: Shift Ctrl<Key>C
+*compose_window*menu_bar*em_paste.labelString: ペースト (P)
+*compose_window*menu_bar*em_paste.mnemonic: P
+*compose_window*menu_bar*em_paste.acceleratorText: Shift+Ctrl+V
+*compose_window*menu_bar*em_paste.accelerator: Shift Ctrl<Key>V
+*compose_window*menu_bar*em_paste_sp.labelString: 特殊なペースト (S)
+*compose_window*menu_bar*em_paste_sp.mnemonic: S
+*compose_window*menu_bar*em_delete.labelString: 削除 (D)
+*compose_window*menu_bar*em_delete.mnemonic: D
+*compose_window*menu_bar*em_format.labelString: 形式 (F)
+*compose_window*menu_bar*em_format.mnemonic: F
+*compose_window*menu_bar*em_select_all.labelString: 全てを選択 (A)
+*compose_window*menu_bar*em_select_all.mnemonic: A
+*compose_window*menu_bar*em_select_all.acceleratorText: Shift+Meta+A
+*compose_window*menu_bar*em_select_all.accelerator: Shift Meta<Key>A
+*compose_window*menu_bar*em_search.labelString: 検索／置換／スペル ... (R)
+*compose_window*menu_bar*em_search.mnemonic: R
+*compose_window*menu_bar*em_search.acceleratorText: Shift+Ctrl+L
+*compose_window*menu_bar*em_search.accelerator: Shift Ctrl<Key>L
+*compose_window*menu_bar*em_editor.labelString: エディタ ... (E)
+*compose_window*menu_bar*em_editor.mnemonic: E
+*compose_window*menu_bar*em_editor.acceleratorText: Shift+Ctrl+E
+*compose_window*menu_bar*em_editor.accelerator: Shift Ctrl<Key>E
+*compose_window*menu_bar*psm_indent.labelString: 字下げ (I)
+*compose_window*menu_bar*psm_indent.mnemonic: I
+*compose_window*menu_bar*psm_fill.labelString: フィル (F)
+*compose_window*menu_bar*psm_fill.mnemonic: F
+*compose_window*menu_bar*em_fill.labelString: フィル (F)
+*compose_window*menu_bar*em_fill.mnemonic: F
+*compose_window*menu_bar*em_indent.labelString: 字下げ (I)
+*compose_window*menu_bar*em_indent.mnemonic: I
+*compose_window*menu_bar*em_unindent.labelString: 字下げしない (U)
+*compose_window*menu_bar*em_unindent.mnemonic: U
+*compose_window*menu_bar*em_process.labelString: コマンドの出力の取り込み ...
+*compose_window*menu_bar*em_process.mnemonic: P
+*compose_window*menu_bar*com_autosign.labelString: 署名の自動付加 (A)
+*compose_window*menu_bar*com_autosign.mnemonic: A
+*compose_window*menu_bar*com_autoformat.labelString: 自動改行 (f)
+*compose_window*menu_bar*com_autoformat.mnemonic: f
+*compose_window*menu_bar*hdrs_priority.labelString: 優先度処理 (P)
+*compose_window*menu_bar*hdrs_priority.mnemonic: P
+*compose_window*menu_bar*com_return-receipt.labelString: 自動返信の指定
+*compose_window*menu_bar*com_return-receipt.mnemonic: R
+*compose_window*menu_bar*com_record-msg.labelString: ファイルに記録 (t)
+*compose_window*menu_bar*com_record-msg.mnemonic: t
+*compose_window*menu_bar*com_options.labelString: オプション ... (O)
+*compose_window*menu_bar*com_options.mnemonic: O
+*compose_window*menu_bar*im_messages.labelString: メッセージ (M)
+*compose_window*menu_bar*im_messages.mnemonic: M
+*compose_window*menu_bar*im_files.labelString: ファイル (F)
+*compose_window*menu_bar*im_files.mnemonic: F
+*compose_window*menu_bar*imm_selected.labelString: 字下げして (I)
+*compose_window*menu_bar*imm_selected.mnemonic: I
+*compose_window*menu_bar*imm_forward.labelString: 字下げしないで (N)
+*compose_window*menu_bar*imm_forward.mnemonic: N
+*compose_window*menu_bar*imm_forward_attach.labelString: アタッチメントとして (A)
+*compose_window*menu_bar*imm_forward_attach.mnemonic: A
+*compose_window*menu_bar*ifm_indented.labelString: 挿入 ... (I)
+*compose_window*menu_bar*ifm_indented.mnemonic: I
+*compose_window*menu_bar*ifm_indentedr.labelString: 置換 ... (R)
+*compose_window*menu_bar*ifm_indentedr.mnemonic: R
+*compose_window*menu_bar*hdrs_aliases.labelString: アリアス ... (A)
+*compose_window*menu_bar*hdrs_aliases.mnemonic: A
+*compose_window*menu_bar*hdrs_to.labelString: To
+*compose_window*menu_bar*hdrs_to.mnemonic: T
+*compose_window*menu_bar*hdrs_subject.labelString: Subject
+*compose_window*menu_bar*hdrs_subject.mnemonic: S
+*compose_window*menu_bar*hdrs_cc.labelString: Cc
+*compose_window*menu_bar*hdrs_cc.mnemonic: C
+*compose_window*menu_bar*hdrs_bcc.labelString: Bcc
+*compose_window*menu_bar*hdrs_bcc.mnemonic: B
+*compose_window*menu_bar*emp_low.labelString: 低い (L)
+*compose_window*menu_bar*emp_low.mnemonic: L
+*compose_window*menu_bar*emp_urgent.labelString: 中間 (M)
+*compose_window*menu_bar*emp_urgent.mnemonic: M
+*compose_window*menu_bar*emp_high.labelString: 高い (H)
+*compose_window*menu_bar*emp_high.mnemonic: H
+*compose_window*menu_bar*emp_none.labelString: 通常 (N)
+*compose_window*menu_bar*emp_none.mnemonic: N
+*compose_window*menu_bar*emp_other.labelString: その他 ...
+*compose_window*menu_bar*emp_other.mnemonic: O
+*compose_window*menu_bar*lm_folder.labelString: フォルダ・パネル (F)
+*compose_window*menu_bar*lm_folder.mnemonic: F
+*compose_window*menu_bar*lm_tool.labelString: ツール・バー (T)
+*compose_window*menu_bar*lm_tool.mnemonic: T
+*compose_window*menu_bar*lm_attachments.labelString: アタッチメント・パネル (A)
+*compose_window*menu_bar*lm_attachments.mnemonic: A
+*compose_window*menu_bar*lm_body.labelString: メッセージ本文 (B)
+*compose_window*menu_bar*lm_body.mnemonic: B
+*compose_window*menu_bar*lm_actions.labelString: ボタン・パネル (u)
+*compose_window*menu_bar*lm_actions.mnemonic: u
+*compose_window*menu_bar*lm_status.labelString: ステータス・バー (t)
+*compose_window*menu_bar*lm_status.mnemonic: t
+*compose_window*menu_bar*cam_file.labelString: ファイル ... (F)
+*compose_window*menu_bar*cam_file.mnemonic: F
+*compose_window*menu_bar*cam_audio.labelString: オーディオ ... (A)
+*compose_window*menu_bar*cam_audio.mnemonic: A
+*compose_window*menu_bar*cam_still.labelString: 静止画像 ... (V)
+*compose_window*menu_bar*cam_still.mnemonic: V
+*compose_window*menu_bar*cam_video.labelString: ヴィデオ ... (M)
+*compose_window*menu_bar*cam_video.mnemonic: M
+*compose_window*menu_bar*cam_screen.labelString: スクリーン画像 ... (S)
+*compose_window*menu_bar*cam_screen.mnemonic: S
+*compose_window*menu_bar*chm_context.labelString: クリックでヘルプ (C)
+*compose_window*menu_bar*chm_context.mnemonic: C
+*compose_window*menu_bar*chm_context.acceleratorText: Shift+F1
+*compose_window*menu_bar*chm_context.accelerator: Shift<Key>F1
+*compose_window*menu_bar*chm_about.labelString: 作成ウィンドウについて
+*compose_window*menu_bar*chm_addressing.labelString: メッセージの宛先
+*compose_window*menu_bar*chm_add_attach.labelString: アタッチメントの追加
+*compose_window*menu_bar*chm_include.labelString: メッセージやファイルの引用
+*compose_window*menu_bar*chm_send.labelString: メッセージの送信
+*compose_window*menu_bar*chm_alias.labelString: 別名の使用
+*compose_window*menu_bar*chm_options.labelString: 作成オプションの設定
+*compose_window*menu_bar*chm_index.labelString: 索引 (I)
+*compose_window*menu_bar*chm_index.mnemonic: I
+*message_window*menu_bar*message.labelString: メッセージ (M)
+*message_window*menu_bar*message.mnemonic: M
+*message_window*menu_bar*edit.labelString: 編集 (E)
+*message_window*menu_bar*edit.mnemonic: E
+*message_window*menu_bar*find.labelString: 検索 (F)
+*message_window*menu_bar*find.mnemonic: F
+*message_window*menu_bar*compose.labelString: 作成 (C)
+*message_window*menu_bar*compose.mnemonic: C
+*message_window*menu_bar*reply.labelString: 返信 (R)
+*message_window*menu_bar*reply.mnemonic: R
+*message_window*menu_bar*forward.labelString: 転送 (o)
+*message_window*menu_bar*forward.mnemonic: o
+*message_window*menu_bar*layout.labelString: レイアウト (L)
+*message_window*menu_bar*layout.mnemonic: L
+*message_window*menu_bar*help.labelString: ヘルプ (H)
+*message_window*menu_bar*help.mnemonic: H
+*message_window*menu_bar*cm_compose.labelString: 新規作成 (N)
+*message_window*menu_bar*cm_compose.mnemonic: N
+*message_window*menu_bar*cm_compose.acceleratorText: Shift+Ctrl+N
+*message_window*menu_bar*cm_compose.accelerator: Shift Ctrl<Key>N
+*message_window*menu_bar*cm_templates.labelString: テンプレート ... (T)
+*message_window*menu_bar*cm_templates.mnemonic: T
+*message_window*menu_bar*mmm_save_message.labelString: 保管 ... (S)
+*message_window*menu_bar*mmm_save_message.mnemonic: S
+*message_window*menu_bar*mmm_save_message.acceleratorText: Shift+Ctrl+S
+*message_window*menu_bar*mmm_save_message.accelerator: Shift Ctrl<Key>S
+*message_window*menu_bar*mmm_delete.labelString: 削除 (D)
+*message_window*menu_bar*mmm_delete.mnemonic: D
+*message_window*menu_bar*mmm_delete.acceleratorText: Shift+Ctrl+D
+*message_window*menu_bar*mmm_delete.accelerator: Shift Ctrl<Key>D
+*message_window*menu_bar*mmm_undelete.labelString: 削除取消 (U)
+*message_window*menu_bar*mmm_undelete.mnemonic: U
+*message_window*menu_bar*mmm_print.labelString: 印刷 ... (P)
+*message_window*menu_bar*mmm_print.mnemonic: P
+*message_window*menu_bar*mmm_print.acceleratorText: Shift+Ctrl+P
+*message_window*menu_bar*mmm_print.accelerator: Shift Ctrl<Key>P
+*message_window*menu_bar*mmm_pinup.labelString: ピンナップ (n)
+*message_window*menu_bar*mmm_pinup.mnemonic: n
+*message_window*menu_bar*mmm_priority.labelString: 優先度処理 (z)
+*message_window*menu_bar*mmm_priority.mnemonic: z
+*message_window*menu_bar*mmm_mark.labelString: マークを打つ (M)
+*message_window*menu_bar*mmm_mark.mnemonic: M
+*message_window*menu_bar*mmm_unmark.labelString: マークを消す (k)
+*message_window*menu_bar*mmm_unmark.mnemonic: k
+*message_window*menu_bar*mmm_preserve.labelString: 保存する (e)
+*message_window*menu_bar*mmm_preserve.mnemonic: e
+*message_window*menu_bar*mmm_unpreserve.labelString: 保存しない (v)
+*message_window*menu_bar*mmm_unpreserve.mnemonic: v
+*message_window*menu_bar*mmm_attachments.labelString: アタッチメント ... (A)
+*message_window*menu_bar*mmm_attachments.mnemonic: A
+*message_window*menu_bar*mmm_attachments.acceleratorText: Shift+Ctrl+A
+*message_window*menu_bar*mmm_attachments.accelerator: Shift Ctrl<Key>A
+*message_window*menu_bar*mmm_done.labelString: 終了 (o)
+*message_window*menu_bar*mmm_done.mnemonic: o
+*message_window*menu_bar*mmm_done.acceleratorText: Shift+Ctrl+W
+*message_window*menu_bar*mmm_done.accelerator: Shift Ctrl<Key>W
+*message_window*menu_bar*em_copy.labelString: コピー (o)
+*message_window*menu_bar*em_copy.mnemonic: o
+*message_window*menu_bar*em_copy.acceleratorText: Shift+Ctrl+C
+*message_window*menu_bar*em_copy.accelerator: Shift Ctrl<Key>C
+*message_window*menu_bar*em_select_all.labelString: 全てを選択 (A)
+*message_window*menu_bar*em_select_all.mnemonic: A
+*message_window*menu_bar*em_select_all.acceleratorText: Shift+Meta+A
+*message_window*menu_bar*em_select_all.accelerator: Shift Meta<Key>A
+*message_window*menu_bar*em_edit.labelString: 編集 ... (E)
+*message_window*menu_bar*em_edit.mnemonic: E
+*message_window*menu_bar*em_next_page_next.labelString: 次ページ
+*message_window*menu_bar*em_prev_page.labelString: 前ページ
+*message_window*menu_bar*em_scroll_up.labelString: 上スクロール
+*message_window*menu_bar*em_scroll_up.acceleratorText: Up
+*message_window*menu_bar*em_scroll_up.accelerator: <Key>Up
+*message_window*menu_bar*em_scroll_down.labelString: 下スクロール
+*message_window*menu_bar*em_scroll_down.acceleratorText: Down
+*message_window*menu_bar*em_scroll_down.accelerator: <Key>Down
+*message_window*menu_bar*em_scroll_home.labelString: 先頭
+*message_window*menu_bar*em_scroll_home.acceleratorText: Home
+*message_window*menu_bar*em_scroll_home.accelerator: <Key>Home
+*message_window*menu_bar*em_scroll_end.labelString: 末尾
+*message_window*menu_bar*em_scroll_end.acceleratorText: End
+*message_window*menu_bar*em_scroll_end.accelerator: <Key>End
+*message_window*menu_bar*fm_next.labelString: 次を読む (N)
+*message_window*menu_bar*fm_next.mnemonic: N
+*message_window*menu_bar*fm_next.acceleratorText: Shift+Ctrl+N
+*message_window*menu_bar*fm_next.accelerator: Shift Ctrl<Key>N
+*message_window*menu_bar*fm_prev.labelString: 前を読む (P)
+*message_window*menu_bar*fm_prev.mnemonic: P
+*message_window*menu_bar*fm_prev.acceleratorText: Shift+Ctrl+P
+*message_window*menu_bar*fm_prev.accelerator: Shift Ctrl<Key>P
+*message_window*menu_bar*fm_next_reference.labelString: 次への参照 (R)
+*message_window*menu_bar*fm_next_reference.mnemonic: R
+*message_window*menu_bar*fm_prev_reference.labelString: 前への参照 (v)
+*message_window*menu_bar*fm_prev_reference.mnemonic: v
+*message_window*menu_bar*fm_search.labelString: 検索 ... (S)
+*message_window*menu_bar*fm_search.mnemonic: S
+*message_window*menu_bar*msghm_context.labelString: クリックでヘルプ (C)
+*message_window*menu_bar*msghm_context.mnemonic: C
+*message_window*menu_bar*msghm_context.acceleratorText: Shift+F1
+*message_window*menu_bar*msghm_context.accelerator: Shift<Key>F1
+*message_window*menu_bar*msghm_about.labelString: メッセージ・ウィンドウについて
+*message_window*menu_bar*msghm_displaying.labelString: アタッチメントの表示
+*message_window*menu_bar*msghm_replying.labelString: メッセージの返信
+*message_window*menu_bar*msghm_fwd.labelString: メッセージの転送
+*message_window*menu_bar*msghm_print.labelString: メッセージの印刷
+*message_window*menu_bar*msghm_saving.labelString: メッセージの保管
+*message_window*menu_bar*msghm_index.labelString: 索引 (I)
+*message_window*menu_bar*msghm_index.mnemonic: I
+*message_window*menu_bar*lm_folder.labelString: フォルダ・パネル (F)
+*message_window*menu_bar*lm_folder.mnemonic: F
+*message_window*menu_bar*lm_header.labelString: メッセージ・ヘッダ (H)
+*message_window*menu_bar*lm_header.mnemonic: H
+*message_window*menu_bar*lm_attachments.labelString: アタッチメント・パネル (A)
+*message_window*menu_bar*lm_attachments.mnemonic: A
+*message_window*menu_bar*lm_body.labelString: メッセージ本文 (M)
+*message_window*menu_bar*lm_body.mnemonic: M
+*message_window*menu_bar*lm_actions.labelString: ボタン・パネル (B)
+*message_window*menu_bar*lm_actions.mnemonic: B
+*message_window*menu_bar*lm_full_headers.labelString: 全ヘッダ (u)
+*message_window*menu_bar*lm_full_headers.mnemonic: u
+*message_summaries*popup_menu*msp_read.labelString: 読み込み
+*message_summaries*popup_menu*msp_delete.labelString: 削除
+*message_summaries*popup_menu*msp_undelete.labelString: 削除取消
+*message_summaries*popup_menu*msp_save.labelString: 保管
+*message_summaries*popup_menu*msp_hide.labelString: 要約の非表示
+*message_summaries*popup_menu*msp_pri.labelString: 優先度
+*message_summaries*popup_menu*msp_lpr.labelString: 印刷
+*message_summaries*popup_menu*msp_select_all.labelString: 全てを選択
+!
+! Add an accelerator or two
+!
+*message_window*menu_bar*em_next_page_next.labelString: 次ページ
+*message_window*menu_bar*em_next_page_next.acceleratorText: Page Down
+*message_window*menu_bar*em_next_page_next.accelerator: <Key>Next
+*message_window*menu_bar*em_prev_page.labelString: 前ページ
+*message_window*menu_bar*em_prev_page.acceleratorText: Page Up
+*message_window*menu_bar*em_prev_page.accelerator: <Key>Prior
+!
+! License dialog
+!
+Zmail*license_dialog.title: License Registration
+Zmail*license_dialog.iconName: Licenses
+*license_dialog*progname*labelString: プログラム:
+*license_dialog*progname*columns: 12
+*license_dialog*version*labelString: バージョン:
+*license_dialog*version*columns: 12
+*license_dialog*hostname*labelString: ホスト名:
+*license_dialog*hostname*columns: 12
+*license_dialog*hostid*labelString: ホスト ID:
+*license_dialog*hostid*columns: 12
+*license_dialog*expiration*labelString: 有効期限:
+*license_dialog*expiration*columns: 12
+*license_dialog*max_users*labelString: 最大ユーザ数:
+*license_dialog*max_users*columns: 12
+*license_dialog*entry_list.visibleItemCount: 5
+*license_dialog*passwd_textw*labelString: アクティベイション・キー:
+*license_dialog*passwd_textw*columns: 8
+*license_dialog*user_textw*labelString: ユーザ:
+*license_dialog*user_textw*columns: 20
+!
+! Editable pager
+!
+*pm_edit.labelString: 編集 (E)
+*pm_edit.mnemonic: E
+*pm_file.labelString: ファイル (F)
+*pm_file.mnemonic: F
+*pm_help.labelString: ヘルプ (H)
+*pm_help.mnemonic: H
+*pm_help.accelerator: Shift<key>F1
+*pm_help.acceleratorText: Shift+F1
+*pfm_open.labelString: オープン ... (O)
+*pfm_open.mnemonic: O
+*pfm_open.accelerator: Shift Ctrl<Key>O
+*pfm_open.acceleratorText: Shift+Ctrl+O
+*pfm_insert.labelString: 挿入 ... (I)
+*pfm_insert.mnemonic: I
+*pfm_save.labelString: 保管 (S)
+*pfm_save.mnemonic: S
+*pfm_save.accelerator: Shift Ctrl<Key>S
+*pfm_save.acceleratorText: Shift+Ctrl+S
+*pfm_save_as.labelString: 別名保管 ... (A)
+*pfm_save_as.mnemonic: A
+*pfm_close.labelString: 閉じる (C)
+*pfm_close.mnemonic: C
+*pfm_close.accelerator: Shift Ctrl<Key>W
+*pfm_close.acceleratorText: Shift+Ctrl+W
+*pem_editor.labelString: エディタ ... (E)
+*pem_editor.mnemonic: E
+*pem_editor.accelerator: Shift Meta<Key>E
+*pem_editor.acceleratorText: Shift+Meta+E
+*pfm_print.labelString: 印刷 (P)
+*pfm_print.mnemonic: P
+*pfm_print.accelerator: Shift Ctrl<Key>P
+*pfm_print.acceleratorText: Shift+Ctrl+P
+*pem_editable.labelString: 編集可能 (d)
+*pem_editable.mnemonic: d
+*pem_cut.labelString: カット (C)
+*pem_cut.mnemonic: C
+*pem_cut.accelerator: Shift Meta<Key>X
+*pem_cut.acceleratorText: Shift+Meta+X
+*pem_copy.labelString: コピー (o)
+*pem_copy.mnemonic: o
+*pem_copy.accelerator: Shift Meta<Key>C
+*pem_copy.acceleratorText: Shift+Meta+C
+*pem_paste.labelString: ペースト (P)
+*pem_paste.mnemonic: P
+*pem_paste.accelerator: Shift Meta<Key>V
+*pem_paste.acceleratorText: Shift+Meta+V
+*pem_select_all.labelString: 全てを選択 (A)
+*pem_select_all.mnemonic: A
+*pem_select_all.accelerator: Shift Meta<Key>A
+*pem_select_all.acceleratorText: Shift+Meta+A
+*pem_clear.labelString: 消去 (C)
+*pem_clear.mnemonic: C
+*pem_srch_spell.labelString: 検索/置換/スペル ... (R)
+*pem_srch_spell.mnemonic: R
+*pem_srch_spell.accelerator: Shift Ctrl<Key>L
+*pem_srch_spell.acceleratorText: Shift+Ctrl+L
+*phm_ctxt.labelString: クリックでヘルプ (C)
+*phm_ctxt.mnemonic: C
+*phm_ctxt.acceleratorText: Shift+F1
+*phm_ctxt.accelerator: Shift<Key>F1
+*phm_about.labelString: テキスト・ページャについて
+*phm_about.accelerator: <Key>F1
+*phm_about.acceleratorText: F1
+*phm_create.labelString: 署名の作成
+*phm_display.labelString: テキスト・アタッチメントの表示
+*phm_index.labelString: 索引 (I)
+*phm_index.mnemonic: I
+!
+! Functions Dialog
+!
+*fdm_edit.labelString: 編集 (E)
+*fdm_edit.mnemonic: E
+*fdm_file.labelString: ファイル (F)
+*fdm_file.mnemonic: F
+*fdm_help.labelString: ヘルプ (H)
+*fdm_help.mnemonic: H
+*fdfm_load.labelString: ロード ... (L)
+*fdfm_load.mnemonic: L
+*fdfm_save.labelString: 保存 ... (S)
+*fdfm_save.mnemonic: S
+*fdfm_close.labelString: 閉じる (C)
+*fdfm_close.mnemonic: C
+*fdfm_close.accelerator: Shift Ctrl<Key>W
+*fdfm_close.acceleratorText: Shift+Ctrl+W
+*fdem_cut.labelString: カット (C)
+*fdem_cut.mnemonic: C
+*fdem_cut.accelerator: Shift Meta<Key>X
+*fdem_cut.acceleratorText: Shift+Meta+X
+*fdem_copy.labelString: コピー (o)
+*fdem_copy.mnemonic: o
+*fdem_copy.accelerator: Shift Meta<Key>C
+*fdem_copy.acceleratorText: Shift+Meta+C
+*fdem_paste.labelString: ペースト (P)
+*fdem_paste.mnemonic: P
+*fdem_paste.accelerator: Shift Meta<Key>V
+*fdem_paste.acceleratorText: Shift+Meta+V
+*fdem_select_all.labelString: 全てを選択 (A)
+*fdem_select_all.mnemonic: A
+*fdem_select_all.accelerator: Shift Meta<Key>A
+*fdem_select_all.acceleratorText: Shift+Meta+A
+*fdem_clear.labelString: 消去 (l)
+*fdem_clear.mnemonic: l
+*fdhm_about.labelString: ファンクション・ダイアローグについて ... (A)
+*fdhm_about.mnemonic: A
+*fdhm_index.labelString: 索引 ... (G)
+*fdhm_index.mnemonic: G
+*fdhm_builtin.labelString: 内蔵コマンド ... (B)
+*fdhm_builtin.mnemonic: B
+*fdhm_func.labelString: ファンクション索引 ... (F)
+*fdhm_func.mnemonic: F
+*fdhm_cmd.labelString: 選択コマンドのヘルプ ... (H)
+*fdhm_cmd.mnemonic: H
+!
+! Status Bars
+!
+*status_bar.status_item.marginWidth: 5
+*status_bar.status_item.marginHeight: 5
+
+*main_buttons.Reply.labelString: 返信
+*main_buttons.Forward.labelString: 転送
+
+*Done.labelString: 終了
+*Ok.labelString: 了解
+*OK.labelString: 了解
+*Open.labelString: オープン
+*Cancel.labelString: 取消
+*Save.labelString: 保管
+*Search.labelString: 検索
+*Help.labelString: ヘルプ
+
+
+*editor_dialog*action_area.Done.labelString: 終了
+*editor_dialog*action_area.Search.labelString: 検索
+*editor_dialog*action_area.Replace.labelString: 置換
+*editor_dialog*action_area.Spell.labelString: スペル
+*editor_dialog*action_area.Clear.labelString: 消去
+*editor_dialog*action_area.Help.labelString: ヘルプ
+
+*templates_dialog*action_area.Use.labelString: 使用
+*templates_dialog*action_area.New.labelString: 新規
+*templates_dialog*action_area.Edit.labelString: 編集
+
+
+
+!
+!
+! Font specifications
+! (change according to screen resolution/display)
+*XmList.fontList: 7x14;--mincho-*--14-*;-*--14-*:
+*XmText.fontList: 7x14;--mincho-*--14-*;-*--14-*:
+*XmScale.fontList: 7x14;--mincho-*--14-*;-*--14-*:
+*XmLabel.fontList: 7x14;--mincho-*--14-*;-*--14-*:
+*XmLabelGadget.fontList: 7x14;--mincho-*--14-*;-*--14-*:
+*XmCascadeButton.fontList: 7x14;--mincho-*--14-*;-*--14-*:
+*XmCascadeButtonGadget.fontList: 7x14;--mincho-*--14-*;-*--14-*:
+*XmPushButton.fontList: 7x14;--mincho-*--14-*;-*--14-*:
+*XmPushButtonGadget.fontList: 7x14;--mincho-*--14-*;-*--14-*:
+*XmToggleButton.fontList: 7x14;--mincho-*--14-*;-*--14-*:
+*XmToggleButtonGadget.fontList: 7x14;--mincho-*--14-*;-*--14-*:
+! Fixed-width fonts are required for these resources
+*message_header.fontList: 7x14;--mincho-*--14-*;-*--14-*:
+*information_dialog*XmLabelGadget.fontList: 7x14;--mincho-*--14-*;-*--14-*:
+
+*action_area.Close.labelString: 閉じる
+
+! follows are added by sun@esd.
+*Create.labelString: 作成
+*Rename.labelString: 名称変更
+*Apply.labelString:  適用
+*Delete.labelString: 削除
+*Use.labelString:    使用
+*Add.labelString:    追加
+*Remove.labelString: 削除
+*Clear.labelString:  消去
+*find_next.labelString: 逐次検索
+*find_all.labelString: 全範囲
+*ignore_case.labelString: 大文字、小文字の違いを無視
+*wrap_around.labelString: ラップ・アラウンド
+message_window*menu_bar*lm_status.labelString: ステータス・バー (T)
+*message_window*menu_bar*lm_status.mnemonic: t
+*Stop.labelString:      停止
+*Continue.labelString:  継続
+
+
+*printBox.printLabelString:             印刷
+*printBox.saveLabelString:              オプション保存...
+*printBox.optionsbLabelString:          オプション...
+*printBox.cancelLabelString:            取消
+*printBox.helpLabelString:              ヘルプ
+*printBox.filenameLabelString:          印刷するファイル:
+*printBox.printerLabelString:           印刷可能なプリンタ:
+*printBox.optionLabelString:            オプション:
+*printBox.numCopiesLabelString:         コピー部数:
+*printBox.jobTitleLabelString:          見出しページのタイトル:
+*printBox.jobDefTitleLabelString:       標準
+*printBox.jobSpecTitleLabelString:      任意:
+*printBox.completionLabelString:        印刷終了時に:
+*printBox.mailLabelString:              メール送信
+*printBox.messageLabelString:           コンソールへメッセージ送信
+*printBox.handlingLabelString:          ファイルハンドリング:
+*printBox.copyJobLabelString:           スプールディレクトリにコピー
+*printBox.linkJobLabelString:           スプールディレクトリにリンク
+*printBox.printerSpecLabelString:       プリンタ設定オプション:
+*printBox.saveDlgTitleLabelString:      設定を保存
+*printBox.saveDlgSaveLabelString:       保存
+*printBox.saveDlgUserLabelString:       保存 - 個人
+*printBox.saveDlgAllLabelString:        保存 - すべてのユーザ
+*printBox.saveDlgCancelLabelString:     取消
+*printBox.saveDlgMsgLabelString:        プリンタ設定を保存\n\n \
+			設定を保存するプリンタ :
+
+! these textwidgets don't require Japanese input.
+*new_fldrs_dialog*preeditType:	None
+*open_folder_dialog*preeditType:	None
+*rename_folder_dialog*preeditType:	None
+*file_finder_dialog*preeditType:	None
+*prompt_dialog_popup*preeditType:	None
+

@@ -1,0 +1,264 @@
+/* Do not make any changes to this file before the END OF CONFIGURE INFO
+ * line.  OS-specific make information should go after that line.
+ */
+
+#ifndef OSCONFIG
+#define OSCONFIG @ostype@
+
+/*
+ * functions we may need
+ */
+#undef HAVE_CBREAK
+#undef HAVE_CHSIZE
+#undef HAVE_FTRUNCATE
+#undef HAVE_GETDTABLESIZE
+#undef HAVE_GETENV
+#undef HAVE_GETHOSTNAME
+#undef HAVE_GETWD
+#undef HAVE_IDLOK
+#undef HAVE_HERROR
+#undef HAVE_LOCKING
+#undef HAVE_LSTAT
+#undef HAVE_MEMMOVE
+#undef HAVE_MKDIR
+#undef HAVE_POLL
+#undef HAVE_POPEN
+#undef HAVE_PUTENV
+#undef HAVE_PUTP
+#undef HAVE_RANDOM
+#undef HAVE_READDIR
+#undef HAVE_RENAME
+#undef HAVE_RESET_SHELL_MODE
+#undef HAVE_RE_COMP
+#undef HAVE_SELECT
+#undef HAVE_SIGBLOCK
+#undef HAVE_SIGLONGJMP
+#undef HAVE_SIGPROCMASK
+#undef HAVE_SIGSETJMP
+#undef HAVE_SLK_ATTRON
+#undef HAVE_SLK_INIT
+#undef HAVE_SRAND
+#undef HAVE_STRCASECMP
+#undef HAVE_STRCHR
+#undef HAVE_STRERROR
+#undef HAVE__STRICMP	/* Windows only, so far */
+#undef HAVE_STRNCASECMP
+#undef HAVE__STRNICMP	/* Windows only, so far */
+#undef HAVE_STRPBRK
+#undef HAVE_STRSIGNAL
+#undef HAVE_STRSPN
+#undef HAVE_STRSTR
+#undef HAVE_STRTOUL
+#undef HAVE_TCGETATTR
+#undef HAVE_TCSETATTR
+#undef HAVE_TIGETSTR
+#undef HAVE_TIMEZONE
+#undef HAVE_TOUCHLINE
+#undef HAVE_TPARM
+#undef HAVE_TYPEAHEAD
+#undef HAVE_UNAME
+#undef HAVE_U_SHORT_AND_LONG
+#undef HAVE_VPRINTF
+#undef HAVE_WAIT2
+#undef HAVE_WAIT3
+#undef HAVE_WAITPID
+#undef HAVE_WATTRON
+#undef HAVE_WATTRSET
+#undef HAVE_XSTANDOUT
+/*
+ * header files we may need
+ */
+#undef HAVE_BSTRING_H
+#undef HAVE_RESOURCE_H
+#undef HAVE_FCNTL_H
+#undef HAVE_SYS_SELECT_H
+#undef HAVE_SYS_BSDTYPES_H
+#undef HAVE_STDLIB_H
+#undef HAVE_LIMITS_H
+#undef HAVE_MALLOC_H
+#undef HAVE_MEMORY_H
+#undef HAVE_STRING_H
+#undef HAVE_STRINGS_H
+#undef HAVE_STRING_H
+#undef HAVE_SYS_IOCTL_H
+#undef HAVE_MAILLOCK_H
+#undef HAVE_VFORK_H
+#undef HAVE_UNISTD_H
+#undef HAVE_LOCALE_H
+#undef HAVE_NL_TYPES_H
+#undef HAVE_SYS_SYSTEMINFO_H
+#undef HAVE_NETDB_H
+#undef HAVE_NET_ERRNO_H
+#undef HAVE_SSDEFAULTSCHEME_H
+
+#undef HAVE_UUNAME
+#undef HAVE_AIX_CURSES
+#undef HAVE_CURSESX
+#undef HAVE_NCURSES
+
+#undef HAVE_HOSTENT	/* struct hostent in <netdb.h> */
+#undef HAVE_UTSNAME	/* struct utsname in <sys/utsname.h> */
+#undef DECLARE_GETPW	/* need to declare getpwuid() and getpwnam() */
+
+#undef INTIS32BITS	/* is an int 32 bits wide? */
+#undef LONGIS32BITS	/* is a long 32 bits wide? */
+#undef HAVE_VOID_STAR	/* generic pointer type (void *) is accepted */
+#undef SAFE_BCOPY	/* bcopy works with overlapping areas */
+#undef HAVE_B_MEMFUNCS	/* bcopy and friends */
+#undef HAVE_MEM_MEMFUNCS /* memcpy and friends */
+#define ALIGNMENT 0
+#undef RETSIGTYPE /* return type for a signal handler */
+/*
+ * this is true on BSD systems where read(2) is restarted when interrupted,
+ * rather than returning EINTR...
+ */ 
+#undef HAVE_RESTARTABLE_SYSCALLS
+
+/*
+ * this is true on SysV systems where we need to reinstall signal
+ * handlers when a signal happens...
+ */
+#undef HANDLERS_NEED_RESETTING
+
+#undef NO_FOPEN_A_PLUS  /* fopen(..., "a+") doesn't work like we expect */
+#undef HAVE_SIGLIST	/* extern char *sys_siglist[] there */
+#undef DECLARE_ERRNO	/* need to declare errno */
+#undef DECLARE_SYS_ERRLIST /* need to declare sys_errlist[] */
+#undef HAVE_H_ERRNO	/* errno used by gethostbyname() and such */
+
+#undef HAVE_FD_SET_TYPE		/* fd_set defined */
+#undef HAVE_LONG_FILE_NAMES	/* > 14 character filenames allowed */
+#undef DIRENT
+#undef SYSNDIR
+#undef SYSDIR
+#define vfork vfork
+#undef TIME_WITH_SYS_TIME	/* should include sys/time.h and time.h */
+#undef HAVE_SYS_TIME_H		/* has <sys/time.h> */
+#undef HAVE_BSD_SYS_TIME	/* on MIPS, include <bsd/sys/time.h> */
+#undef HAVE_SYS_UTIME_H		/* has <sys/utime.h> for struct utimbuf */
+#undef HAVE_UTIME_H		/* has <utime.h> for struct utimbuf */
+#undef HAVE_UTIMBUF		/* has struct utimbuf */
+#undef HAVE_TM_ZONE		/* struct tm has char *tm_zone field */
+#undef HAVE_TZNAME		/* we have global char *tzname[] */
+#undef DECLARE_TZNAME		/* need to declare extern char *tzname[] */ 
+#undef HAVE_INT_SPRINTF		/* sprintf() returns int */
+#undef HAVE_TCHARS		/* struct tchars present */
+#undef HAVE_LTCHARS		/* struct ltchars present */
+#undef HAVE_SGTTYB		/* struct sgttyb present */
+#undef HAVE_TERMIO		/* <termio.h> and struct termio present */
+#undef HAVE_TERMIOS
+#undef HAVE_TTYCHARS		/* <sys/ttychars.h> and struct ttychars */
+#undef HAVE_SGTTY_DECLARED	/* SGTTY is declared in curses.h */
+#undef USE_UNION_WAIT		/* need to use union wait brain-damage */
+
+#undef USE_USR_MAIL	/* mail is in /usr/mail */
+#undef USE_SPOOL_MAIL	/* mail is in /usr/spool/mail */
+
+#undef HAVE_GETHOSTID	/* we have gethostid() _and_ it works right */
+#undef HAVE_SETREUID	/* we have setreuid() that can swap ids */
+#undef HAVE_SETREGID	/* we have setregid() that can swap ids */
+#undef HAVE_SAVEDUID	/* will handle saved-set-uid setuid() */
+#undef HAVE_SAVEDGID	/* will handle saved-set-gid setgid() */
+
+#undef SYS_SIGLIST_DECLARED	/* is sys_siglist declared in a header? */
+
+#undef SYSV_SETPGRP	/* no arguments to setpgrp() */
+
+#undef pid_t		/* will be defined to "int" if not in <sys/types.h> */
+#undef GETGROUPS_T	/* will be defined to "int" or "gid_t" */
+
+#undef DECLARE_SIGNAL	/* Need to declare extern SIGRET (*signal())() */
+#undef HAVE_RDCHK	/* Has rdchk() and should use it */
+#undef HAVE_PROTOTYPES	/* Has ANSI C style prototypes _and_ we use them */
+#undef const		/* Does not fully support the "const" qualifier */
+#undef SAFE_REALLOC	/* realloc() is non-destructive on failure */
+#undef HAVE_QSORT	/* Has working qsort() */
+#undef HAVE_VARARGS_H	/* Has <varargs.h> and we should use it */
+#undef HAVE_STDARG_H	/* Has <stdarg.h> and it's better than <varargs.h> */
+#undef HAVE_VOID_FREE	/* Declares void free() */
+#undef HAVE_CHAR_FREE	/* Declares char *free() */
+#undef BROKEN_ENVIRON	/* Modifying environ corrupts children (Ultrix 4) */
+#undef USES_TIOCGLTC	/* Has TIOCGLTC and actually makes good use of it */
+#undef DECLARE_TTY	/* Need to declare _tty even for curses */
+#undef DEFINE_UNCTRL	/* Need to define and declare char *_unctrl[] */
+#undef MVINCH_WORKS	/* Can read from curses window with mvinch() */
+#undef PRINTW_WORKS	/* Can output to curses window with printw() */
+#undef UPLINE_CHECK	/* Can check UP variable for motion capability */
+#undef SYSV_CURSES_BUG	/* Has SysV curses bug with drawing top few lines */
+			/* SYSV_CURSES_BUG should be defined to 1 or 2 */
+#undef LOCK_FLOCK	/* Use flock() for file locks */
+#undef LOCK_FCNTL	/* Use fcntl() for locking */
+#undef LOCK_LK_LOCK	/* Use MMDF's lk_fopen() and lk_fclose() */
+#undef LOCK_LOCKING	/* Use locking() for locking, if present */
+#undef ML_KERNEL	/* Use kernel locking as defined above */
+#undef ML_DOTLOCK	/* Use file locking with .lock suffix */
+#undef ML_DOTMLK	/* Use file locking with .mlk suffix */
+#undef BLOCK_AGAIN	/* Deadlocked blocking locks return EAGAIN */
+#undef HAVE_BINMAIL	/* Uses /bin/mail for MTA */
+#undef HAVE_SENDMAIL	/* Uses /usr/lib/sendmail for MTA */
+#undef HAVE_EXECMAIL	/* Uses /usr/lib/mail/execmail for MTA */
+#undef HAVE_SUBMIT	/* Uses MMDF's /usr/mmdf/bin/submit for MTA */
+#undef PICKY_MAILER	/* MTA won't accept From: or Date: headers */
+#undef USE_HOMEMAIL	/* MTA puts mail in user's home directory */
+#undef MMDF		/* MTA writes folders in MMDF format */
+#undef BSD		/* Needed for X11 header files */
+#undef SYSV		/* Needed for X11 header files */
+#undef USG		/* Needed for X11 header files */
+#undef AUX		/* Special set42sig() call needed */
+#undef HPUX		/* Needed for X11 header files */
+#undef MIPS		/* Needed for X11 header files */
+#undef MOTOROLA		/* Needed for X11 header files */
+#undef TOSHIBA		/* Permit stacktracing on Toshiba 386 (SCO UNIX) */
+#undef WYSE		/* Needed for X11 header files */
+#undef pyrSVR4		/* Needed for X11 header files */
+#undef PYRAMID		/* Needed for license/zserver.c */
+#undef HAVE_STRCAT_STRCPY_DECLARED
+#undef HAVE_STRCMP_DECLARED
+#undef HAVE_STRLEN_DECLARED
+#undef HAVE_INDEX
+#undef DECLARE_INDEX
+#undef SAFE_CASE_CHANGE	/* May use tolower/toupper without range checks */
+
+/* to allocate an array of objects, must do
+ *   array = (foo *) malloc(n * ALIGN(sizeof (foo)));
+ * the MALIGN(n) (yuk yuk, it means "maybe align") macro in
+ * general/general.h expands to ALIGN(n) or (n) when appropriate.
+ */
+#undef MUST_ALIGN
+
+/* can't include <sys/stat.h> without first #including <sys/types.h> */
+#undef STAT_H_NEEDS_TYPES_H
+
+#undef TERM_USE_TERMIO
+#undef TERM_USE_TERMIOS
+#undef TERM_USE_SGTTYB
+#undef TERM_USE_NONE
+
+#undef DECLARE_ENVIRON
+
+#undef XLIB_ILLEGAL_ACCESS  /* special access to Xlib internals */
+#undef XT_R4_INCLUDES	    /* Xt R4 internal headers available */
+#undef HAVE_XT_BASE_TRANSLATIONS	/* XmNbaseTranslations resources */
+#undef XEDITRES_HANDLER		/* name of editres event handler */
+
+/* motif/xm/list.c gets compiled if either of these next two are defined */
+#undef SELECT_POS_LIST	/* use XmListSelectPositions from motif/xm/list.c */
+#undef USE_XM_LIST_C	/* use list widget from motif/xm/list.c */
+
+/* this is true if curses.h does not include any terminal #includes */
+#undef CURSES_NEEDS_INCLUDE_TERM
+
+#undef _ALL_SOURCE		/* needed for AIX */
+#undef _POSIX_SOURCE		/* needed for ISC, OSF/1, HP/UX */
+#undef _XOPEN_SOURCE		/* needed for OSF/1, HP/UX */
+#undef _HPUX_SOURCE		/* needed for HPUX */
+#undef _OSF_SOURCE		/* needed for OSF/1 */
+
+#define MSG_SEPARATOR "\001\001\001\001\n"
+
+/* special SGI features */
+#undef FAM_OPEN		/* which FAMOpen() to use, if any */
+#undef HAVE_HELP_BROKER	/* Insight-based help system */
+#undef OZ_DATABASE	/* drag & drop icons */
+#undef HAVE_IMPRESSARIO	/* Impressario print widget */
+

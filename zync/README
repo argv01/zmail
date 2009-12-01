@@ -1,0 +1,19 @@
+	                  Z-POP v1.1
+
+	Copyright (C) 1993-1998 NetManage Software.
+
+This distribution contains the Z-POP server.
+
+Z-POP is an enhanced version of the POP3 protocol, and zpop
+is a Unix implementation of a Z-POP server.
+
+For quick installation instructions, see the file INSTALL.TXT.
+For detailed installation and configuration information, see the
+file CONFIG.TXT.
+
+********* SPECIAL NOTE FOR MMDF SYSTEMS **********
+
+Z-POP does not currently handle MMDF-style folders.  This is a known
+problem, PR #6328 in our bug-tracking system.  Until that is fixed,
+you can only use Z-POP if you are using a mail transport agent such 
+as sendmail that uses V7-style folders.

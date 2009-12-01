@@ -1,0 +1,30 @@
+# SGI Graphics programs, using the SGI Graphics server.
+
+# Mime types
+TYPE	application/x-Showcase	"showcase '%s' &" "showcase '%s' &"	\
+	"Showcase document"
+TYPE	application/x-Jot	"jot '%s' &"	"jot '%s' &"	"Jot document"
+TYPE	video/x-sgi-movie     "movieplayer '%s' &" "moviemaker '%s' &" "SGI movie"
+TYPE	application/x-Inventor  "examine '%s' &" None           "Inventor file"
+TYPE	image/x-sgi-image	"ipaste '%s' &"		"imgworks '%s' &" \
+	"SGI image"
+BITMAP	application/x-Showcase	bitmaps/showcase.xbm
+BITMAP	application/x-Jot	bitmaps/jot.xbm
+BITMAP	video/x-sgi-movie	bitmaps/movie.xbm
+BITMAP	application/x-Inventor	bitmaps/inventor.xbm
+BITMAP	image/x-sgi-image	bitmaps/image.xbm
+
+# Older Z-Mail type, for viewing messages from Z-Mail 2.1 and earlier
+ALIAS	Showcase	application/x-Showcase
+ALIAS	Jot		application/x-Jot
+ALIAS	Image		image/x-sgi-image
+
+# type names which might be used by other MIME implentations
+ALIAS	application/Showcase	application/x-Showcase
+ALIAS	application/Jot		application/x-Jot
+ALIAS	image/sgi-image		image/x-sgi-image
+
+# PATH	/usr/sbin
+# TYPE	application/postscript	"xpsview '%s' &"	None	\
+	"PostScript document"
+

@@ -1,0 +1,802 @@
+# 
+# Some sample zmail functions.
+#
+# Execution (interpretation) of these functions can be speeded up slightly
+# by removing the embedded comments, which are otherwise parsed out at
+# interpret time.  Comments like this one (outside a function() body) will
+# be stripped when this file is read.
+#
+# A leading comment surrounded by lines beginning with "#%" (indentation is
+# permitted) will be read as help text for the function.  This text will be
+# stored separately from the function body and will be displayed when the
+# function is called with -? as the first argument.  In GUI mode, pressing
+# the `Help' key (or F1 if there is no help key) on a user-defined button
+# will also display the help for the function executed by that button.
+
+function bounce() {
+    #%
+    # Often, you send mail and mistype an address or something and it causes
+    # a "mailer daemon" to return your mail with an error like "host unknown"
+    # or "unknown user".  The "bounce" function (below) extracts your original
+    # message from the mailer-daemon and allows you to edit it again, if it
+    # needs it.  Otherwise, you can just send it again.
+    #%
+    if $(%t) == 0   # a convenient way to see if there are any messages.
+        echo No messages.
+        return -1
+    endif
+    # use the message specified ($1), if given.  Else, use the "current msg".
+    Pipe -p From: $1 "cat > $tmpdir/bnc$$"
+    if ! -z $tmpdir/bnc$$
+	# mail -u means "send unsigned" so it won't autosign the message
+	# this assumes you've already signed it the first time you sent it.
+        mail -u -h $tmpdir/bnc$$   # use the tmpfile as a template
+    endif
+    sh rm $tmpdir/bnc$$
+}
+button -n Bounce bounce
+
+function find_references() {
+#%
+# This is a function that follows message threads.
+# It finds all messages that have the Message-Id of the "current"
+# message (or, the one specified) in their References: headers.
+#%
+    # set the current message to one selected (or specified on cmd-line)
+    msg_list - $*
+    # find all the messages that have the message-id in their References: hdr.
+    # "eval -h" expands the %i into the message-id of the selected message.
+    # "msg_list ." includes the selected message in the output list.
+    eval -h pick -h references %i | msg_list .
+}
+
+function find_subjects() {
+#%
+# This function follows message threads by searching for similar subjects
+# rather than Reference: headers.  This is a crude way to follow threads,
+# but is useful for people who receive messages that do not contain the
+# References: header.  Z-Mail supplies References: when replying.
+#%
+    msg_list - $*
+    eval -h pick -s %s | msg_list .
+}
+
+function thread_next() {
+#%
+# Find the next message in the thread beginning with the current message.
+# It assumes that the messages have already been sorted by date sent.
+#%
+    if ! $?1
+      set _list = .
+    else
+      set _list = $*
+    endif
+    find_references $_list | msg_list {^-.} | pick +1 | next
+}
+button Next-Reference thread_next
+
+# One of the oddities of the "reply" command is that it takes more than one
+# message list -- first the list being replied-to, then a list of inclusions.
+# It's easy to forget that the current message is 5 and type "reply -ei 12"
+# expecting to reply to the author of message 12, and instead get the author
+# of message 5.  What you *wanted* to type was "reply 12 -ei".
+#
+# Front-end to the "reply" command to assure that the current message is in
+# the list of included messages, or that you really *meant* to leave it out.
+#
+# Bug: Quoted items in $* are not handled, so the -s option isn't useful.
+# It isn't generally used with "reply" ...
+#
+function reply() {
+    if $?1
+	set arg = "$1"
+	shift
+        if "$arg" =~ -*i*
+	    #
+	    # The  -i option was given.  Use the message list difference
+	    # operation to test for inclusion of the current message.
+	    #
+	    set _list = .
+	    unset _rest
+	    msg_list $* | set _list
+	    msg_list $_list {.} | set _rest
+	    if $?_rest
+		if "$_list" == "$_rest"
+		    ask "Current message not in include list -- OK?"
+		    if $status != 0
+			return -1
+		    endif
+		endif
+		unset _rest
+	    endif
+	    unset _list
+        endif
+	if $?input
+	    $input | builtin reply $arg $*
+	else
+	    builtin reply $arg $*
+	endif
+    else
+	if $?input
+	    $input | builtin reply $*
+	else
+	    builtin reply $*
+	endif
+    endif
+}
+
+function chrono() {
+#
+# Chronological sort, grouping by identical subject (message thread).
+#
+#%
+# This function groups messages by subject, sorts by date within the
+# subject, and sorts the subject groups by the first date in each
+# group.  This permits easy reading of related messages, in order.
+#
+# If chrono quits with a "Call stack too deep" error, you may run
+# it again -- it will resume where it left off and finish the sort.
+#%
+    # This is a recursive function!  Make sure $recursive is set.
+    if ! $?recursive
+	set recursive = $0  # set recursive as a hint for later.
+    endif
+    # If we are first entering, initialize the beginning and end
+    # of the range to sort.  If an argument was given, use that
+    # as the place to begin the sort.
+    # Also create a few useful command shorthands for later.
+    #
+    if ! $?begin
+	unmark *
+	if $?1
+	    set begin = "$1"
+	else
+	    set begin = 1
+	endif
+	msg_list $ | set end
+	cmd next_number 'msg_list +'
+	cmd first_number 'msg_list - ; msg_list .'
+	cmd last_number 'msg_list + ; msg_list .'
+    endif
+    #
+    # Now sort all the messages from the beginning point
+    # through the end, by date ....
+    #
+    $begin - $ | sort -d | msg_list -
+    #
+    # Find the messages with the same subject as the current message.
+    # If the current message has no subject, find all messages that
+    # reference the message ID of the current message.  We could do
+    # both, but the Subject: header is cached whereas the References:
+    # header is not, so a search for references is slower.
+    #
+    # Mark any messages that match, including the current message.
+    #
+    if $?[%s]
+	eval -h pick -r $begin - $ -s %s$ | mark
+    else
+	eval -h pick -r $begin - $ -h references %i | mark .
+    endif
+    #
+    # Sort by priority to move the marked messages to the top.
+    #
+    $begin - $ | sort -p
+    #
+    # Find the range boundaries of the set of marked messages,
+    # then unmark them.
+    #
+    :m | first_number | set first
+    :m | last_number | set last
+    unmark *
+    #
+    # If there is a range of more than one message,
+    # re-sort that range by date, and unset the vars.
+    #
+    if $first != $last
+	$first - $last | sort -d | next_number
+    endif
+    unset first last
+    #
+    # Advance the beginning point to the next message beyond those sorted.
+    #
+    next_number | set begin
+    #
+    # If we've reached the end of the list, clean up and return
+    #
+    if $begin == $end
+	unset begin end
+	if $recursive == $0
+	    unset recursive
+	endif
+	uncmd next_number first_number last_number
+	return 0
+    endif
+    #
+    # If we have more messages to sort, repeat.  This will abort
+    # without completing if there are more than 100 distinct subjects,
+    # because stack depth is limited.  The user can repeat the "chrono"
+    # command to continue sorting, because "begin" will still be set.
+    #
+    chrono
+}
+button -n Chrono chrono
+
+function uniq() {
+#%
+# Cull duplicate messages out of a folder.  Useful if you've saved the
+# same message more than once or merged together two folders that had
+# some overlap.  Removes duplicates of the argument message (e.g., the
+# selected message, if attached to a button in GUI mode).
+#
+# To apply this function to all the messages, just do:
+#
+#    each * uniq
+#%
+#
+# If you plan to use it that way regularly, you might check the comments
+# for suggestions on speeding it up.
+#
+    unset any same first	# Initialize variable state
+    set deleted=""
+    if $?1
+	msg_list - $1	# Set current message = first argument
+    else
+	msg_list - 1	# Set current message = first message
+    endif
+    if $status != 0
+	return
+    endif
+    #
+    # Get the deleted messages -- speeds up later operations.
+    # If .-$ is used in the pick range below, you can speed this
+    # up too by using:     msg_list .-$ | :d | set deleted
+    #
+    :d | set deleted
+    #
+    # If the current message is deleted, don't do anything
+    #
+    msg_list . { $deleted } | set any
+    if $?any == 0
+	return
+    endif
+    #
+    # Find all the messages with the same message-id as this message
+    # Restrict the pick to non-deleted messages for speed.  Faster
+    # still would be to replace * with .-$ (here to the end).
+    #
+    eval -h pick -r * { $deleted } -h message-id %i | set same
+    #
+    # If some of your messages don't have a message-id, you can apply
+    # this more time-consuming test (only in version 2.1 and later):
+    #
+    # eval -h pick -r .-$ { $deleted } -h date,subject %?date?, %?subject?
+    #
+    # Sanity check -- perhaps the header is missing?
+    #
+    if $?same
+	# Get the number of the first of the selected messages
+	pick +1 -r $same | set first
+	# Delete all the matches except that first message
+	delete $same { $first }
+	msg_list $first		# The "output" of uniq is $first
+    else
+	echo -p Skipping %m
+    endif
+    return 0
+}
+button -n Uniq uniq
+
+function update_as() {
+#%
+#       update_as newname
+#
+# Update the current folder to a new folder name.  Leaves the current
+# folder unchanged, and opens the new folder for further processing.
+#%
+    if $# == 0
+	ask -i newname "Update folder as:"
+	if $status == -1
+	    return -1
+	endif
+    else
+	set newname = $1
+    endif
+    if -e $newname
+	ask "Overwrite $newname?"
+	if $status
+	    return $status
+	endif
+    endif
+    if $?deletesave
+	builtin delete `builtin :s`
+    else
+	if $thisfolder =~ */mail/$user
+	    if ! $?keepsave
+		builtin delete `builtin :s`
+	    endif
+	endif
+    endif
+    builtin copy -f * {`builtin :d`} $newname
+    builtin close -n
+    builtin open $newname
+}
+button -n "Update As ..." update_as
+
+function reopen() {
+#%
+#       reopen [-f] [-N] [-r]
+#
+# Close the current folder without updating, then reopen it.
+#
+#   -f       apply the system mailbox (folder) filters
+#   -N       do not display the list of header summaries
+#   -r       read-only mode (cannot update changes)
+#%
+    eval "builtin close -n ; builtin open $* $thisfolder"
+}
+
+# The above function is not appropriate for use from a GUI button,
+# so we put a wrapper around it with slightly different help text.
+
+function call_reopen() {
+#%
+# Close the current folder without updating, then reopen it.
+#%
+    reopen
+}
+button -n "Re-Open Folder" call_reopen
+
+function searchit() {
+#%
+#   searchit [-c command] [-r] folder [pick-options] pattern
+#
+# Open the indicated folder (read-only if -r) and search it.  If the
+# pattern is found, leave the folder open.  Otherwise close it.  If
+# a command is specified, apply it to all the matching messages.
+#%
+    if $1 == -c
+	set _command="$2"
+	shift 2
+    else
+	set _command=msg_list
+    endif
+    if $1 == -r
+	set _open="open -r"
+	shift
+    else
+	set _open=open
+    endif
+    if $?savefolder
+	if $1 != $savefolder
+	    $_open -N $1
+	else
+	    folder -N $1
+	endif
+	if $status == -1
+	    return 0
+	endif
+    else
+	$_open $1
+    endif
+    shift
+    if $# == 0
+	error ${0}: No pattern specified.
+	return -1
+    endif
+    pick $* | $_command
+    if $status == -1
+	return -1
+    endif
+    if X$output == X
+	close -N
+    endif
+    unset _open _command
+    return 0
+}
+
+function find-all() {
+#%
+#   find-all [pick-options] pattern
+#
+# Search every file in $folder for the pattern.  Open all the folders
+# for which there is a match.  Mark all the matching messages in the
+# newly opened folders.  If there are matches in the current folder,
+# show the message summaries of (or select in GUI mode) the matches.
+#%
+    if $# == 0
+	error ${0}: No pattern specified.
+	return -1
+    endif
+    set savefolder=$thisfolder
+    ask 'WARNING:\n\
+This function updates and closes all folders that\n\
+do not contain messages matching the search pattern.\n\
+Proceed anyway?'
+    if $status != 0
+	return 0
+    endif
+    foreach _f (+*) 'searchit -c mark -r $_f $*'
+    if $status != 0
+	unset savefolder _f
+	return -1
+    else
+	unset savefolder _f
+    endif
+    if is_gui
+	# "folder -l" pops up Folders dialog in GUI mode, so we don't do it
+	:m | unmark				# Select 'em and unmark 'em
+    else
+	echo
+	echo Found matching messages in:
+	folder -l
+	echo
+	:m | unmark | from
+	if is_fullscreen
+	    echo				# Leave an extra blank line
+	endif
+    endif
+}
+
+function textset () {
+#%
+#      textset varname unixcommand
+#
+# This function sets the variable indicated by varname to the output of
+# the given unixcommand.  For example:
+#
+#     textset files ls -a
+#     ask -i filename "Which file would you like?" $files
+#
+# Shortcomings:
+#
+# Quotation marks in the arguments of the unix command are handled badly,
+# because the command passes through both Z-Mail and the Unix shell.
+#
+# Single quotes in the output of unixcommand will produce errors.
+# Output of more than 1000 characters may produce errors.
+#
+# Multi-line output from the unix command is joined into a single line.
+#%
+    # There must be at least two arguments
+    if $# < 2
+	echo usage: $0 varname unixcommand
+	return -1
+    endif
+    # Extract the variable name
+    set _textset = $1
+    shift
+    # Use the shell to create a Z-Mail command that sets the variable
+    sh "TEXT=`$*`;echo set $_textset = \'"'$TEXT'"\' > /tmp/zc$$"
+    unset _textset
+    # Execute the Z-mail command just created
+    source /tmp/zc$$
+    # Remove the temporary file
+    sh rm /tmp/zc$$
+}
+
+#
+# The next two functions implement a reply with all recipients
+# included on the Cc: line and only the senders on the To: line
+#
+
+function add_cc() {
+    msg_list - $1
+    #
+    # This works only in 2.1, not 2.0.5 ...
+    #
+    set cc_to += ",$[%?To?,%?Cc?]"
+}
+
+function cc_all() {
+#%
+#     cc_all [msg-list] [-r path] [mail-flags] [recipients]
+#
+# Reply to the messages indicated by the optional msg-list, placing all
+# recipients of the messages on the Cc: line and the senders of the
+# messages on the To: line.  Otherwise the same as "replyall".
+#%
+    set msgs cc_to		# Initialize
+    #
+    # Combine argument messages with piped input ...
+    #
+    shift -m | set msgs
+    if $?input
+       msg_list $msgs $input | set msgs
+    endif
+    #
+    # Generate Cc: addresses ...
+    #
+    each $msgs add_cc
+    #
+    # BUG:		(to be fixed in 2.2)
+    # Fails if there are more than 1000 characters in $cc_to ...
+    #
+    replysender $msgs -c "$cc_to" $*
+    set _stat = $status
+    #
+    # Sneaky way to clean up after ourself ...
+    #
+    msg_list $msgs | unset msgs cc_to
+    return $_stat
+}
+
+#
+# This is the "saveit" function from Version 2.0.5 of Z-Mail, enhanced
+# to use the new "ask -f" function, which adds a file Search button to
+# the dialog.  This has been replaced in Version 2.1 for consistency
+# with the new behavior of the Save Messages item in the File menu.
+#
+function old_saveit() {
+    set mymsgs
+    shift -m | set mymsgs
+    if X$mymsgs == X
+        msg_list . | set mymsgs
+    endif
+    if ! $?_filename
+        if ! $?mbox
+            set mbox = ~/mbox
+        endif
+        set _filename = "$mbox"
+        set _choices = "$_filename"
+    endif
+    if is_gui
+        ask -f _filename "Save: $mymsgs\nFilename:" $_choices
+    else
+        ask -f _filename "Save ${mymsgs} to:" $_choices
+    endif
+    if $status == 0
+        if " $_choices " !~ "* $_filename *"
+            set _choices = "$_filename $_choices"
+        endif
+        save $mymsgs $_filename
+    endif
+}
+
+function folder_to_button() {
+#%
+#       folder_to_button foldername
+#
+# Convert a folder name into a button that opens that folder
+#%
+    if $# == 0
+	error "usage: $0 foldername"
+	return -1
+    endif
+    if ! -F $1
+	echo "$1 is not a folder"
+	return 0			# Don't break loops
+    endif
+    if ! $?suffix
+	set suffix = _
+    endif
+    set base = $1:t
+    if "$base" =~ *[0-9.]*
+	set suffix = "${suffix}x"
+	set cmdname = folder$suffix
+    else
+	set cmdname = $base
+    endif
+    cmd $cmdname "open $1"
+    button -n "$base" $cmdname
+}
+
+function walk_tree() {
+    if $# < 2
+	return 0
+    endif
+    set next = $1
+    shift
+    if -e $next/.
+	foreach f ($next/*) 'walk_tree $f $*'
+	return 0
+    else
+	$* $next
+    endif
+    unset next
+}
+
+function folder_buttons() {
+#%
+#       folder_buttons 
+#
+#  Create a button on the main window for each file in the folder directory.
+#%
+    if $# == 0
+	if ! $?folder
+	    return -1
+	endif
+	set - $folder
+    endif
+    set recursive
+    walk_tree $1 folder_to_button
+    unset recursive
+}
+
+function prompt_folder_buttons() {
+    ask \
+"Create a button on the main window for\neach file in your folder directory?"
+    if $status == 0
+	folder_buttons
+	unbutton "Folder Buttons ..."
+    endif
+}
+button -n "Folder Buttons ..." prompt_folder_buttons
+
+function show_As() {
+#%
+#      show_As
+#
+# Show all messages that have been marked with an "A" status.
+#%
+    unset As
+    pick -p A | set As
+    if $?As
+	ask -l A "Important Messages" $As
+	if $status == 0
+	    display $A
+	endif
+	unset A
+    else
+	echo -d "No A's!!!"
+    endif
+}
+button -n "To Do" show_As
+
+function show_all_subjs() {
+    msg_list + $*
+    pick -s $[%s] | save +$[%s]:1
+    if X$output == X
+	eval -p error "Error trying to find messages with subject\n$[%s]"
+    else
+	open +[$%s]:1
+    endif
+}
+button "All Subjects" show_all_subjs
+
+function gui_edit_msg() {
+    copy $1 /tmp/msg$1.$$ | delete
+    sh $window_shell $visual /tmp/msg$1.$$
+    merge /tmp/msg$1.$$
+}
+function loop_edit_msg() {
+    foreach msg $* 'gui_edit_msg $msg'
+}
+button "Edit Message" loop_edit_msg
+
+function backtrack() {
+    pick -r ^-. -1 -h message-id $* | mark
+    return 0
+}
+
+function prev_reference() {
+    msg_list - $*   # set current message
+    unmark *        # clear temporary marks
+    foreach ref ($[%?references?]) 'backtrack $ref'
+    msg_list `:m`
+    if "X$output" == X
+	error "No previous reference found."
+    else
+	unmark `:m` | pick -1
+    endif
+}
+
+function read_prev_ref() {
+    prev_reference $*
+    if $status == 0
+	read $output
+    endif
+}
+button "Previous Reference" read_prev_ref
+
+function create_alias() {
+    msg_list - $*                       # Make sure current message is set
+    set name="$[%n]" address="$[%f]"    # Grab name and From: from message
+    if "X$name" == X
+	ask -i name \
+	"Can't find this sender's name.\nWhat should I call the alias?"
+	if $status != 0
+	    return -1
+	endif
+    endif
+    alias $name:1 "$address"    # alias person's first name to his address
+}
+button CreateAlias create_alias
+
+function use_as_composition() {
+#%
+#      use_as_composition [messagelist]
+#
+# Use each of the messages in messagelist (or the current message) as the
+# headers and body of a new composition.  Creates one composition for each
+# message in the list.  If attached to a GUI button, the selected messages
+# from the Main Window Message Summaries are used.
+#%
+    msg_list $*
+    foreach msg $output 'copy -f $msg /tmp/draft$$ ; mail -draft /tmp/draft$$'
+    sh rm /tmp/draft$$
+}
+button "Use As Composition" use_as_composition
+
+function msg_diff() {
+#%
+#      msg_diff [messagelist]
+#
+# Run the "diff" program on the two messages and display the result.
+# If more than two messages are passed to this function, the first and
+# last in the list are compared.
+#%
+    if $?input
+	set - $input
+    endif
+    pick +1 -r $* | write -f /tmp/msg$$ | flags -S
+    pick -1 -r $* | Pipe "diff - /tmp/msg$$ > /tmp/diff$$"
+    page /tmp/diff$$
+    sh rm /tmp/diff$$ /tmp/msg$$
+}
+button Diff msg_diff
+
+function set_reply_to() {
+#%
+#     set_reply_to [message-number]
+#
+# Sets the varible "$reply_to" to the reply address taken from the
+# indicated message.  BUG: Does not attempt to track $reply_to_hdr.
+#%
+    msg_list - $1
+    unset reply_to
+    if $?[%?reply-to?]
+	set reply_to = "$[%?reply-to?]"
+    else
+	if $?[%?from?]
+	    set reply_to = "$[%?from?]"
+	else
+	    if $?[%?return-path?]
+		set reply_to = "$[%?return-path?]"
+	    endif
+	endif
+    endif
+}
+
+function collect_addrs() {
+    set_reply_to $1
+    if $?reply_to
+	if $?addrs
+	    # Fast test for "Did I already use this address?"
+	    # Not always correct, but errs conservatively.
+	    if "$addrs" !~ *"$reply_to"*
+		set addrs = "$addrs, $reply_to"
+	    endif
+	else
+	    set addrs = "$reply_to"
+	endif
+    endif
+    return 0
+}
+
+function alias_to() {
+#%
+#     alias_to message-numbers alias-name
+#
+# Create an alias named alias-name that maps to the senders
+# of all the listed message-numbers.
+#%
+    unset addrs msgs
+    shift -m | set msgs
+    if $?msgs
+	each $msgs collect_addrs
+    else
+	error "usage: alias_to message-numbers alias-name"
+	return -1
+    endif
+    if $# == 0
+	ask -i name "Enter name for alias:"
+	if $status != 0
+	    return
+	endif
+    else
+	set name = "$*"
+    endif
+    alias "$name" "$addrs"
+    unset addrs msgs name reply_to
+}
+button "Alias To" alias_to

@@ -1,0 +1,1844 @@
+<HTML>
+<HEAD>
+<!-- This HTML file has been created by texi2html 1.35
+     from ../mstore/mstore-api.texi on 9 August 1996 -->
+
+<TITLE>Message Store API</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>Message Store API</H1>
+
+
+<H1><A NAME="SEC1" HREF="mstore-api_toc.html#SEC1">Introduction</A></H1>
+
+<P>
+This is a PROPRIETARY and CONFIDENTIAL DRAFT.  Comments and critique are
+urgently requested.
+
+</P>
+
+
+
+<H1><A NAME="SEC2" HREF="mstore-api_toc.html#SEC2">Overview</A></H1>
+
+<P>
+The Z-Mail Message Store API provides the application programmer with a
+unified, abstract view of folders and messages.  The details of
+format-specific I/O are relegated to an object termed the <STRONG>message
+store</STRONG> (mstore), which is to folders and messages what filesystems are
+to directories and files:  that is, the caller may "open" an entity
+without concern for whether that maps to the opening of a local file,
+the opening of a directory, the fetching of a remote index, the
+dialing-up of a serial server, etc.
+
+</P>
+<P>
+In fact, since the parallels between filesystem and mstore, directory
+and folder, and file and message are so strong, some decisions in this
+API were made, in the absence of other deciding factors, to strengthen
+the resemblance.
+
+</P>
+<P>
+These are the major concepts in this API:
+
+</P>
+<DL COMPACT>
+
+<DT>Message store (mstore)
+<DD>
+This is the entity which provides most of the functionality behind the
+folder and message abstractions.
+
+<DT>Mailobj
+<DD>
+This is a generic class for all the others in this API to inherit from.
+It provides the ability to register callbacks on individual instances.
+
+Folders, messages, and mstores are all subclasses (that is,
+specializations) of mailobj.  Subparts of messages are also mailobjs of
+various kinds.
+
+<DT>Message (mmsg)
+<DD>
+A message is a mailobj from which one can extract (and possibly modify)
+header and body data.
+
+Each message resides in one or more folders and has exactly one
+<STRONG>owner</STRONG>, which must be a real folder (as opposed to a "virtual
+folder," see below).
+
+<DT>Folder (mfldr)
+<DD>
+A folder is a mailobj containing a sequence of messages.  It optionally
+resides in a message store.  If it does, it is termed a <STRONG>real
+folder</STRONG>, because the message store provides the means for saving the
+folder to persistent storage.  If the folder is not in some message
+store, it is a <STRONG>virtual folder</STRONG> and cannot be written to persistent
+storage.  A virtual folder may not own messages, but unlike a real
+folder, it may contain messages originating in a variety of message
+stores.
+</DL>
+
+<P>
+Just as there are different kinds of filesystem corresponding to
+different devices and drivers, so there are different kinds of message
+store corresponding to different folder formats, access methods, and
+API's.  The "different kinds" of mstore are provided as SPOOR
+subclasses of an abstract mstore class.
+
+</P>
+<P>
+<A NAME="IDX1"></A>
+When an operation is invoked on an entity in this API, the entity may
+implement the operation itself or it may <STRONG>delegate</STRONG> the operation to
+its container (which may also delegate the operation to <EM>its</EM>
+container, and so on).  Which operations are handled at which level of
+abstraction will depend on the type of message store.  For instance,
+when manipulating a message in an MH folder, it is possible to write out
+changes to a single message without updating the whole folder; thus an
+"update message" operation can be implemented at the message level.
+In a V7 folder, however, the "update message" operation will need to
+be delegated to the containing folder, which can rewrite the entire
+folder (or which can cache the message's change until an update of the
+folder is forced).
+
+</P>
+<P>
+To expedite the delegation mechanism, each operation on an object has a
+corresponding operation on the object's container and the object,
+according to the following naming convention:
+
+</P>
+
+<UL>
+<LI>
+
+Calling a function
+
+
+<PRE>
+mmsg_<VAR>Foo</VAR>(<VAR>msg</VAR>, ...)
+</PRE>
+
+is equivalent to calling a function
+
+
+<PRE>
+mfldr_mmsg_<VAR>Foo</VAR>(mmsg_Owner(<VAR>msg</VAR>), <VAR>msg</VAR>, ...)
+</PRE>
+
+<LI>
+
+Calling a function
+
+
+<PRE>
+mfldr_<VAR>Bar</VAR>(<VAR>fldr</VAR>, ...)
+</PRE>
+
+is equivalent to calling a function
+
+
+<PRE>
+mstore_mfldr_<VAR>Bar</VAR>(mfldr_Mstore(<VAR>fldr</VAR>), <VAR>fldr</VAR>, ...)
+</PRE>
+
+</UL>
+
+<P>
+The generic folder and message types delegate most operations to the
+message store.
+
+</P>
+
+
+<H1><A NAME="SEC3" HREF="mstore-api_toc.html#SEC3">Initializing</A></H1>
+
+<P>
+<U>Function:</U> void <B>Zmail_Init</B> <I>()</I><P>
+<A NAME="IDX2"></A>
+Initializes the Z-Mail Message Store API.
+
+</P>
+
+
+<H1><A NAME="SEC4" HREF="mstore-api_toc.html#SEC4">Mailobj</A></H1>
+
+<P>
+<A NAME="IDX3"></A>
+<A NAME="IDX4"></A>
+A <STRONG>mailobj</STRONG> is an abstract object meant to be subclassed.  It
+provides the ability to register callbacks on instances.
+
+</P>
+<P>
+Messages, bodyparts, folders, and mstores are all subclasses of mailobj.
+
+</P>
+<P>
+All mailobjs share the ability to invoke callbacks when interesting
+changes and other events occur.  This chapter describes the functions
+that implement this feature.  A later version of this document will
+include a specification of exactly what event types are available as
+callback triggers and what data are associated with them.
+
+</P>
+<P>
+Among (many) other uses, messages install these callbacks on their
+bodyparts in order to be informed of changes which will have to be
+turned into update requests.
+
+</P>
+<P>
+<U>Function:</U> int <B>mailobj_AddCallback</B> <I>(struct mailobj *<VAR>mobj</VAR>, int <VAR>which</VAR>, void (*<VAR>func</VAR>)(struct mailobj *, int, void *, void *), void *<VAR>cbdata</VAR>)</I><P>
+<A NAME="IDX5"></A>
+Adds to <VAR>mobj</VAR> a callback on event <VAR>which</VAR> calling <VAR>func</VAR>
+which, when called back, is passed (among other things) <VAR>cbdata</VAR>.
+In particular, when <VAR>func</VAR> is called back, its arguments will be
+<VAR>mobj</VAR>, <VAR>event</VAR> (from the <CODE>mailobj_CallCallbacks</CODE>
+call), <VAR>cbdata</VAR>, and <VAR>evdata</VAR> (also from
+<CODE>mailobj_CallCallbacks</CODE>).  If <VAR>which</VAR> is 0, this callback
+is invoked for all events on <VAR>mobj</VAR>.
+
+</P>
+<P>
+Return value is an integer which identifies the callback in <VAR>mobj</VAR>'s
+list, and can be used in a call to <CODE>mailobj_RemoveCallback</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void * <B>mailobj_RemoveCallback</B> <I>(struct mailobj *<VAR>mobj</VAR>, int <VAR>num</VAR>)</I><P>
+<A NAME="IDX6"></A>
+Removes the callback on <VAR>mobj</VAR> whose number is <VAR>num</VAR> (as
+returned by <CODE>mailobj_AddCallback</CODE>).  Returns the pointer that was
+given to <CODE>mailobj_AddCallback</CODE> as <VAR>cbdata</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>mailobj_CallCallbacks</B> <I>(struct mailobj *<VAR>mobj</VAR>, int <VAR>event</VAR>, void *<VAR>evdata</VAR>)</I><P>
+<A NAME="IDX7"></A>
+Invokes all of <VAR>mobj</VAR>'s callbacks in no particular order, passing
+each one the arguments <VAR>mobj</VAR>, <VAR>event</VAR>, <VAR>cbdata</VAR> (from
+<CODE>mailobj_AddCallback</CODE>), and <VAR>evdata</VAR>.
+
+</P>
+
+
+<H1><A NAME="SEC5" HREF="mstore-api_toc.html#SEC5">Bodypart</A></H1>
+
+<P>
+<A NAME="IDX8"></A>
+<A NAME="IDX9"></A>
+One key subclass of mailobj is <CODE>bodypart</CODE>, which is the type of a
+single subpart of a message.  The <CODE>bodypart</CODE> class is itself
+subclassed into a rich type hierarchy which is derived from MIME.
+
+</P>
+<P>
+<U>Function:</U> char * <B>bodypart_Subtype</B> <I>(struct bodypart *<VAR>part</VAR>)</I><P>
+<A NAME="IDX10"></A>
+Returns the name of the most-specific subtype of
+<VAR>part</VAR>.<A NAME="FOOT1" HREF="mstore-api_foot.html#FOOT1">(1)</A>
+
+</P>
+
+
+
+<H2><A NAME="SEC6" HREF="mstore-api_toc.html#SEC6">Bodypart creation and parentage</A></H2>
+
+<P>
+<U>Function:</U> struct mailobj * <B>bodypart_Container</B> <I>(struct bodypart *<VAR>part</VAR>)</I><P>
+<A NAME="IDX11"></A>
+Returns the object containing <VAR>part</VAR>.  This will either be a message
+(if <VAR>part</VAR> is at top-level within the message), or it will be
+another bodypart which can contain subparts, such as
+<CODE>multipart_mixed</CODE>.  Returns <CODE>NULL</CODE> if <VAR>part</VAR> is a
+free-floating orphan.
+
+</P>
+<P>
+<U>Function:</U> struct mmsg * <B>bodypart_Mmsg</B> <I>(struct bodypart *<VAR>part</VAR>)</I><P>
+<A NAME="IDX12"></A>
+Returns the message in which <VAR>part</VAR> is ultimately contained.  If
+<VAR>part</VAR> is at top-level within the message, then this is the same as
+<CODE>bodypart_Container(<VAR>part</VAR>)</CODE>, otherwise it is equal to two or
+more nested calls to <CODE>bodypart_Container</CODE>.  Returns <CODE>NULL</CODE>
+if <VAR>part</VAR> is a free-floating orphan.
+
+</P>
+<P>
+<U>Function:</U> void <B>bodypart_Liberate</B> <I>(struct bodypart *<VAR>part</VAR>)</I><P>
+<A NAME="IDX13"></A>
+Removes <VAR>part</VAR> from its container.  The body part is placed into an
+orphaned state as though it had just been created.
+
+</P>
+
+
+<H2><A NAME="SEC7" HREF="mstore-api_toc.html#SEC7">Bodypart contents</A></H2>
+
+
+
+<H3><A NAME="SEC8" HREF="mstore-api_toc.html#SEC8">Bodypart content reading</A></H3>
+
+<P>
+<U>Function:</U> void <B>bodypart_Stream</B> <I>(struct bodypart *<VAR>part</VAR>, struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX14"></A>
+Provides the caller with read access to the data portion of <VAR>part</VAR>
+via the dpipe <VAR>dp</VAR>.  Initially, <VAR>dp</VAR> should point to an
+uninitialized dpipe, since <CODE>bodypart_Stream</CODE> will call
+<CODE>dpipe_Init</CODE> on it.
+
+</P>
+<P>
+Exactly what data the caller can read from <VAR>dp</VAR> depends on the
+particular subclass of <CODE>bodypart</CODE> being used.
+
+</P>
+<P>
+When the caller is finished with the dpipe, it should be discarded with
+<CODE>bodypart_DestroyStream</CODE>, <EM>not</EM> with <CODE>dpipe_Destroy</CODE>.
+This is because <CODE>bodypart_Stream</CODE> may place private data in the
+dpipe which it will need to finalize prior to the dpipe's destruction.
+
+</P>
+<P>
+Some mstore types will allow multiple concurrent dpipes reading from a
+bodypart, others will not.
+
+</P>
+<P>
+<U>Function:</U> void <B>bodypart_DestroyStream</B> <I>(struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX15"></A>
+Finalizes private data in, and calls <CODE>dpipe_Destroy</CODE> on <VAR>dp</VAR>,
+which must have been initialized via an earlier call to
+<CODE>bodypart_Stream</CODE>.
+
+</P>
+
+
+<H3><A NAME="SEC9" HREF="mstore-api_toc.html#SEC9">Bodypart content setting</A></H3>
+
+<P>
+Body parts may draw their actual content from a variety of sources.
+We outline some such sources here; additional sources may be deployed as
+the need arises.
+
+</P>
+<P>
+For each potential content source, the mstore must cope with varying
+restrictions on the availability of that data.  Some of these sources
+may only be available once; the mstore must cache the content internally
+if it intends to read the data multiple times.  Other sources may be
+directly available for multiple reads.
+
+</P>
+<P>
+Some sources may be external to the running application, such that they
+will tend to remain available across sessions.  Other sources may only
+be available within a single session; the mstore must cache the content
+externally if it intends to recreate the body part in a later session.
+This later distinction has particular bearing on how composition drafts
+are stored and restored.
+
+</P>
+<P>
+<U>Function:</U> void <B>bodypart_SetSource_Pipe</B> <I>(struct bodypart *<VAR>part</VAR>, struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX16"></A>
+Sets the content of <VAR>part</VAR> to the data that may be read from
+<VAR>dp</VAR>.
+
+</P>
+<P>
+This data is only available once; the pipe cannot be restarted.  The
+data will not remain available across sessions.
+
+</P>
+<P>
+<U>Function:</U> void <B>bodypart_SetSource_PipeFunc</B> <I>(struct bodypart *<VAR>part</VAR>, struct dpipe *<VAR>func</VAR>(struct bodypart *, void *), void *data, void <VAR>done</VAR>(void *))</I><P>
+<A NAME="IDX17"></A>
+Sets the content of <VAR>part</VAR> to the data that may be read by a pipe
+returned by the pipe-generating function <VAR>func</VAR>.
+
+</P>
+<P>
+The pipe may only be read once, but the generator may be called many
+times to produce many read-once pipes.  The opaque pointer <VAR>data</VAR> is
+passed as the second parameter to each such call; the first parameter is
+<VAR>part</VAR>.
+
+</P>
+<P>
+The data will not remain available across sessions.
+
+</P>
+<P>
+The function <VAR>done</VAR> will be called to destroy <VAR>data</VAR> when it is
+no longer needed by <VAR>part</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>bodypart_SetSource_Filename</B> <I>(struct bodypart *<VAR>part</VAR>, struct persistent *<VAR>name</VAR>)</I><P>
+<A NAME="IDX18"></A>
+Sets the content of <VAR>part</VAR> to the data that may be read from the
+named persistent object <VAR>name</VAR>.  The name is interpreted according
+to system-dependent conventions; it may contain a string filename or
+some device handle that is independent of the file's name.  In general,
+though, it is taken to represent some named entity in persistent
+storage.
+
+</P>
+<P>
+This data is available many times; it may be opened, closed, reopened,
+and otherwise manipulated freely within the capabilities of the host
+system.  The data will tend to remain available across sessions,
+although it may be spontaneously removed before a composition in
+progress is actually sent.
+
+</P>
+<P>
+<U>Function:</U> void <B>bodypart_SetSource_FilePtr</B> <I>(struct bodypart *<VAR>part</VAR>, struct FILE *<VAR>file</VAR>, void <VAR>done</VAR>(FILE *)))</I><P>
+<A NAME="IDX19"></A>
+Sets the content of <VAR>part</VAR> to the data that may be read from the
+open stream <VAR>file</VAR>.
+
+</P>
+<P>
+The data may be read many times by calling fseek(), assuming that
+<VAR>file</VAR> was opened in the appropriate manner.  In some cases, such as
+reading from a popen()'ed stream, the data may only be available once.
+The data will not remain available across sessions.
+
+</P>
+<P>
+The function <VAR>done</VAR> will be called to close <VAR>file</VAR> when it is no
+longer needed by <VAR>part</VAR>.
+
+</P>
+
+
+<H2><A NAME="SEC10" HREF="mstore-api_toc.html#SEC10">Bodypart subtypes</A></H2>
+
+<P>
+Here are the subtypes of <CODE>bodypart</CODE>.  It is possible to add new
+ones.  See section <A HREF="mstore-api.html#SEC26">New bodypart subtypes</A>.
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>bp_text</CODE>
+<DD>
+<A NAME="IDX20"></A>
+This is an abstract superclass for textual bodyparts.
+
+<U>Function:</U> char * <B>bp_text_Charset</B> <I>(struct bp_text *<VAR>part</VAR>)</I><P>
+<A NAME="IDX21"></A>
+Returns the name of the character set of <VAR>part</VAR>.
+<P>
+
+Here are the subtypes of <CODE>bp_text</CODE>.
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>bp_text_plain</CODE>
+<DD>
+<A NAME="IDX22"></A>
+Plain text.
+
+<DT><CODE>bp_text_other</CODE>
+<DD>
+<A NAME="IDX23"></A>
+Any other kind of text, such as RFC 1341 text/richtext.  All
+<CODE>bp_text_other</CODE> objects have a subtype field naming the particular
+subtype of bp_text, such as <CODE>"richtext"</CODE> or <CODE>"x-smelly"</CODE>.
+
+<U>Function:</U> char * <B>bp_text_other_Subtype</B> <I>(struct bp_text_other *<VAR>part</VAR>)</I><P>
+<A NAME="IDX24"></A>
+Returns the name of the text subtype of <VAR>part</VAR>.
+<P>
+
+</DL>
+
+<DT><CODE>bp_multipart</CODE>
+<DD>
+<A NAME="IDX25"></A>
+This is an abstract superclass for bodyparts which can contain subparts.
+
+<U>Function:</U> int <B>bodypart_PartNum</B> <I>(struct bodypart *<VAR>part</VAR>, struct bp_multipart *<VAR>mpart</VAR>)</I><P>
+<A NAME="IDX26"></A>
+Returns the index within <VAR>mpart</VAR> of the bodypart <VAR>part</VAR>.
+<P>
+
+<U>Function:</U> int <B>bp_multipart_NumParts</B> <I>(struct bp_multipart *<VAR>part</VAR>)</I><P>
+<A NAME="IDX27"></A>
+Returns the number of subparts contained in <VAR>part</VAR>.
+
+</P>
+<U>Function:</U> struct bodypart * <B>bp_multipart_Nth</B> <I>(struct bp_multipart *<VAR>part</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX28"></A>
+Returns the subpart of <VAR>part</VAR> numbered <VAR>n</VAR> (zero-based).
+<P>
+
+<U>Function:</U> void <B>bp_multipart_InsertPart</B> <I>(struct bp_multipart *<VAR>mpart</VAR>, struct bodypart *<VAR>part</VAR>, int <VAR>pos</VAR>)</I><P>
+<A NAME="IDX29"></A>
+Insert into <VAR>mpart</VAR> a bodypart <VAR>part</VAR> at position <VAR>pos</VAR>.
+The position <VAR>pos</VAR> may range from 0 through
+<CODE>bp_multipart_NumParts(<VAR>mpart</VAR>)</CODE>, inclusive; or it may be
+-1 as shorthand for <CODE>bp_multipart_NumParts(<VAR>mpart</VAR>)</CODE> (i.e.,
+appending a bodypart).
+
+</P>
+It is an error to insert a bodypart which is already contained within
+another bodypart elsewhere.
+<P>
+
+<U>Function:</U> void <B>bp_multipart_DeletePart</B> <I>(struct bp_multipart *<VAR>part</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX30"></A>
+Delete from <VAR>part</VAR> the sub-part numbered <VAR>n</VAR>.
+
+</P>
+Here are the subtypes of <CODE>bp_multipart</CODE>.
+
+<DL COMPACT>
+
+<DT><CODE>bp_multipart_mixed</CODE>
+<DD>
+<A NAME="IDX31"></A>
+Has a number of subparts to be presented in order.
+
+<DT><CODE>bp_multipart_alternative</CODE>
+<DD>
+<A NAME="IDX32"></A>
+Has a number of equivalent subparts in increasingly sophisticated
+representations.  The one presented to the user should be the farthest
+down the list whose type we recognize.
+
+<DT><CODE>bp_multipart_digest</CODE>
+<DD>
+<A NAME="IDX33"></A>
+The subparts are expected to be of type <CODE>message_rfc822</CODE>.  The
+entire <CODE>bp_multipart_digest</CODE> can be exported to a local file and
+thence opened as its own message store.
+
+<U>Function:</U> void <B>bp_multipart_digest_Export</B> <I>(struct bp_multipart_digest *<VAR>part</VAR>, char *<VAR>name</VAR>, void *<VAR>data</VAR>)</I><P>
+<A NAME="IDX34"></A>
+Export the subparts of <VAR>part</VAR> to a local file named <VAR>name</VAR>,
+with <VAR>data</VAR> as filesystem-specific extra mstore-creation data.  The
+resulting local entity is suitable for opening with <CODE>mstore_Open</CODE>.
+<P>
+
+<DT><CODE>bp_multipart_parallel</CODE>
+<DD>
+<A NAME="IDX35"></A>
+Has a number of subparts whose presentation order does not matter, but
+is intended to be as nearly simultaneous as possible.
+
+<DT><CODE>bp_multipart_enabledmail</CODE>
+<DD>
+<A NAME="IDX36"></A>
+As in the Safe-Tcl paper, has two expected subparts:  one unspecified,
+the other an <CODE>application_safetcl</CODE>.
+</DL>
+
+<DT><CODE>bp_message</CODE>
+<DD>
+<A NAME="IDX37"></A>
+An abstract superclass for bodyparts that are full-fledged nested mail
+messages.
+
+<DL COMPACT>
+
+<DT><CODE>bp_message_rfc822</CODE>
+<DD>
+<A NAME="IDX38"></A>
+An ordinary mail message.
+
+<DT><CODE>bp_message_externalbody</CODE>
+<DD>
+<A NAME="IDX39"></A>
+A few items of data indicating where else on the network the "real"
+contents may be found.
+
+<U>Function:</U> char * <B>bp_message_externalbody_AccessType</B> <I>(struct bp_message_externalbody *<VAR>part</VAR>)</I><P>
+<A NAME="IDX40"></A>
+Returns the access-type of the external body, such as
+<CODE>"local-file"</CODE> or <CODE>"anon-ftp"</CODE>.
+<P>
+
+<U>Function:</U> char * <B>bp_message_externalbody_Name</B> <I>(struct bp_message_externalbody *<VAR>part</VAR>)</I><P>
+<A NAME="IDX41"></A>
+Returns the name of the external entity containing the dereferenced body
+of <VAR>part</VAR>.
+
+</P>
+<DT><CODE>bp_message_partial</CODE>
+<DD>
+<A NAME="IDX42"></A>
+One in a series of messages meant to be reassembled in order to produce
+a single new message.
+
+<U>Function:</U> char * <B>bp_message_partial_Id</B> <I>(struct bp_message_partial *<VAR>part</VAR>)</I><P>
+<A NAME="IDX43"></A>
+Returns a unique identifier associated with <VAR>part</VAR> and (presumably)
+its companion parts.  This identifier is used for matching this part to
+its companions whenever and wherever they're found.
+<P>
+
+<U>Function:</U> int <B>bp_message_partial_Number</B> <I>(struct bp_message_partial *<VAR>part</VAR>)</I><P>
+<A NAME="IDX44"></A>
+Returns the sequence number of <VAR>part</VAR> among its companion parts
+(one-based).
+
+</P>
+<U>Function:</U> int <B>bp_message_partial_Total</B> <I>(struct bp_message_partial *<VAR>part</VAR>)</I><P>
+<A NAME="IDX45"></A>
+Returns the total number of parts in the sequence of which <VAR>part</VAR> is
+a member.  If <VAR>part</VAR> is not the last in the sequence, then this
+function may return zero; but if <VAR>part</VAR> is the last in the
+sequence, then <CODE>bp_message_partial_Total(<VAR>part</VAR>)</CODE> must equal
+<CODE>bp_message_partial_Number(<VAR>part</VAR>)</CODE>.
+<P>
+
+</DL>
+
+<DT><CODE>bp_application</CODE>
+<DD>
+<A NAME="IDX46"></A>
+An abstract superclass for bodyparts whose data is totally opaque (but
+which may be viewable by invoking some other viewer).  This section
+needs to be filed in.
+</DL>
+
+
+
+<H1><A NAME="SEC11" HREF="mstore-api_toc.html#SEC11">Message</A></H1>
+
+<P>
+<A NAME="IDX47"></A>
+<A NAME="IDX48"></A>
+This chapter describes operations on messages.  A message is a mailobj
+that resides in one or more folders and has single top-level bodypart.
+Exactly one of the folders in which a message resides is its <STRONG>owner</STRONG>
+and is responsible for providing access to it and for saving changes to it.
+
+</P>
+
+
+
+<H2><A NAME="SEC12" HREF="mstore-api_toc.html#SEC12">Message contents</A></H2>
+
+<P>
+<U>Function:</U> struct bodypart * <B>mmsg_Body</B> <I>(struct mmsg *<VAR>msg</VAR>)</I><P>
+<A NAME="IDX49"></A>
+Returns the top-level bodypart of <VAR>msg</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>mmsg_SetBody</B> <I>(struct mmsg *<VAR>msg</VAR>, struct bodypart *<VAR>part</VAR>)</I><P>
+<A NAME="IDX50"></A>
+Sets the top-level bodypart of <VAR>msg</VAR> to <VAR>part</VAR>.<A NAME="FOOT2" HREF="mstore-api_foot.html#FOOT2">(2)</A>
+
+</P>
+<P>
+The following functions constitute a means for accessing the "raw"
+data of a message without the overhead of parsing it.<A NAME="FOOT3" HREF="mstore-api_foot.html#FOOT3">(3)</A>
+
+</P>
+<P>
+<U>Function:</U> int <B>mmsg_BodyOffset</B> <I>(struct mmsg *<VAR>msg</VAR>)</I><P>
+<A NAME="IDX51"></A>
+Returns the number of bytes into the raw data of <VAR>msg</VAR> at which the
+bodypart begins (i.e., after the separator between the headers and the
+body).  This number is for use in calls to <CODE>mmsg_RawData</CODE>.
+
+</P>
+<P>
+<U>Function:</U> int <B>mmsg_Size</B> <I>(struct mmsg *<VAR>msg</VAR>)</I><P>
+<A NAME="IDX52"></A>
+Returns the number of bytes that can be read from <VAR>msg</VAR> using
+<CODE>mmsg_Stream</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>mmsg_Stream</B> <I>(struct mmsg *<VAR>msg</VAR>, struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX53"></A>
+Provides the caller with read access to the raw data of <VAR>msg</VAR>
+via the dpipe <VAR>dp</VAR>.  Initially, <VAR>dp</VAR> should point to an
+uninitialized dpipe, since <CODE>mmsg_Stream</CODE> will call
+<CODE>dpipe_Init</CODE> on it.
+
+</P>
+<P>
+Exactly what data the caller can read from <VAR>dp</VAR> depends on the
+particular subclass of <CODE>mmsg</CODE> being used.
+
+</P>
+<P>
+When the caller is finished with the dpipe, it should be discarded with
+<CODE>mmsg_DestroyStream</CODE>, <EM>not</EM> with
+<CODE>dpipe_Destroy</CODE>.  This is because <CODE>mmsg_Stream</CODE> may
+place private data in the dpipe which it will need to finalize prior to
+the dpipe's destruction.
+
+</P>
+<P>
+Some mstore types will allow multiple concurrent dpipes reading from a
+message, others will not.  Beware of attempts to concurrently read both
+a message and one of its (possibly nested) components.<A NAME="FOOT4" HREF="mstore-api_foot.html#FOOT4">(4)</A>
+
+</P>
+<P>
+<EM>Implementation Note:</EM>  <CODE>mmsg_DestroyStream</CODE> expects
+the <VAR>wrdata</VAR> parameter supplied to <CODE>dpipe_Init</CODE> to be of
+type <CODE>struct mmsgStream_data *</CODE>.  (The <VAR>rddata</VAR>
+parameter <EM>must</EM> be <CODE>NULL</CODE>, as it is reserved for use by the
+caller of <CODE>mmsg_Stream</CODE>.)  This means that generic dpipe
+writer functions may need to be wrapped in another function to extract
+the desired data from the <CODE>mmsgStream_data</CODE> object.
+
+</P>
+
+<BLOCKQUOTE>
+<P>
+<EM>Insert definition of <CODE>struct messsageStream_data</CODE> here.</EM>
+</BLOCKQUOTE>
+
+<P>
+
+<U>Function:</U> void <B>mmsg_DestroyStream</B> <I>(struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX54"></A>
+Finalizes private data in, and calls <CODE>dpipe_Destroy</CODE> on
+<VAR>dp</VAR>, which must have been initialized via an earlier call to
+<CODE>mmsg_Stream</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>mmsg_RawData</B> <I>(struct mmsg *<VAR>msg</VAR>, int <VAR>start</VAR>, int <VAR>len</VAR>, char *<VAR>buf</VAR>)</I><P>
+<A NAME="IDX55"></A>
+Fetch the raw text of <VAR>msg</VAR>, starting at offset <VAR>start</VAR> and
+continuing for <VAR>len</VAR> bytes, placing it in <VAR>buf</VAR> (which must be
+long enough to hold it).  For some mstore types, the raw text does not
+include the headers (usually it does); in such cases,
+<CODE>mmsg_BodyOffset(<VAR>msg</VAR>)</CODE> will return 0.
+
+</P>
+<P>
+Typically, one of <CODE>mmsg_RawData</CODE> and
+<CODE>mmsg_Stream</CODE> is implemented in terms of the other,
+depending on which is the most efficient way to access data in a
+particular <CODE>mstore</CODE> subclass.  Note, however, that
+<CODE>mmsg_RawData</CODE> permits random access, whereas
+<CODE>mmsg_Stream</CODE> requires sequential access.
+
+</P>
+
+
+<H2><A NAME="SEC13" HREF="mstore-api_toc.html#SEC13">Other message operations</A></H2>
+
+<P>
+<U>Function:</U> struct mfldr * <B>mmsg_Owner</B> <I>(struct mmsg *<VAR>msg</VAR>)</I><P>
+<A NAME="IDX56"></A>
+Returns the folder that owns <VAR>msg</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>mmsg_Summary</B> <I>(struct mmsg *<VAR>msg</VAR>, char *<VAR>fmt</VAR>, struct dynstr *<VAR>d</VAR>)</I><P>
+<A NAME="IDX57"></A>
+Generate a summary for <VAR>msg</VAR> according to the format specifier
+<VAR>fmt</VAR> and append it to the Dynstr pointed to by <VAR>d</VAR>.  The
+interpretation of <VAR>fmt</VAR> depends on the type of message store where
+<VAR>msg</VAR> resides.  If <VAR>fmt</VAR> is <CODE>NULL</CODE>, a default format is
+used.
+
+</P>
+<P>
+<A NAME="IDX58"></A>
+<A NAME="IDX59"></A>
+<U>Function:</U> void <B>mmsg_KeyHash</B> <I>(struct mmsg *<VAR>msg</VAR>, struct mailhash *<VAR>hashbuf</VAR>)</I><P>
+<A NAME="IDX60"></A>
+Computes the <STRONG>key hash</STRONG> of <VAR>msg</VAR> and fills in <VAR>hashbuf</VAR> with
+the value.  The key hash is constructed from the contents of the message
+body, and from the following <STRONG>key headers</STRONG>:
+
+</P>
+
+<PRE>
+Apparently-To; Cc; Date; From; Message-Id; Resent-Cc; Resent-Date;
+Resent-From; Resent-To; Subject; To.</PRE>
+
+<P>
+
+<U>Function:</U> void <B>mmsg_HeaderHash</B> <I>(struct mmsg *<VAR>msg</VAR>, struct mailhash *<VAR>hashbuf</VAR>)</I><P>
+<A NAME="IDX61"></A>
+Computes the <STRONG>header hash</STRONG> of <VAR>msg</VAR> and fills in <VAR>hashbuf</VAR>
+with the value.
+
+</P>
+<P>
+<U>Function:</U> void <B>mmsg_Update</B> <I>(struct mmsg *<VAR>msg</VAR>, int <VAR>force</VAR>)</I><P>
+<A NAME="IDX62"></A>
+Write changes to <VAR>msg</VAR> back to the mstore.  If this operation is
+delegated, changes may not actually get written until later, unless
+<VAR>force</VAR> is non-zero.
+
+</P>
+
+
+<H2><A NAME="SEC14" HREF="mstore-api_toc.html#SEC14">Compose subclass</A></H2>
+
+<P>
+A composition is a message that supports additional operations related
+to creating and manipulating its internal structure, and ultimately
+sending it via some mail transport agent.  For brevity, the class name
+is shortened to <STRONG>compose</STRONG>, those instances of this class will be
+described as <STRONG>compositions</STRONG> in this documentation.
+
+</P>
+
+
+
+<H3><A NAME="SEC15" HREF="mstore-api_toc.html#SEC15">Composition addressing</A></H3>
+
+<P>
+Each composition maintains a single unordered set of addresses, called
+an <STRONG>envelope</STRONG>.  When a composition is ultimately sent off, the
+transport agent uses these addresses to determine exactly where the
+composition should go.
+
+</P>
+<P>
+The envelope API itself is described elsewhere (see section <A HREF="mstore-api.html#SEC21">Envelope</A>).  The
+following interface defines the relationship between envelopes and
+compositions.
+
+</P>
+<P>
+Every composition directly contains exactly one envelope.  This envelope
+is automatically created when the composition is created; it will be
+automatically destroyed when the composition is destroyed.  There are no
+distinguished set/get operations to change a composition's envelope.
+Envelope manipulation should instead be done in-place using the
+referenced envelope returned by this call.<A NAME="FOOT5" HREF="mstore-api_foot.html#FOOT5">(5)</A>
+
+</P>
+<P>
+<U>Function:</U> struct envelope * <B>compose_Envelope</B> <I>(struct compose *<VAR>compose</VAR>)</I><P>
+<A NAME="IDX63"></A>
+Returns a reference to the envelope used by composition <VAR>compose</VAR>.
+The memory occupied by this envelope is still considered to be owned by
+the containing composition.  The contents of the referenced envelope may
+be manipulated in place by the caller, but the envelope itself must not
+be deallocated or destroyed.
+
+</P>
+<P>
+Some transports, such as SMTP+822, allow redundant specification of
+addressing information.  An outbound composition may show one set of
+addresses in its headers, but use a completely different set in the
+actual transport envelope.
+
+</P>
+<P>
+In such cases, a simple heuristic cascade is used.  If the composition
+has a nonempty envelope, that envelope is used regardless of any
+conflicting header information.  If the composition's envelope is empty,
+<EM>and</EM> a nonempty set of intended recipients can be deduced from the
+composition's headers, the implied addresses will be used as a fallback.
+We expect the fallback case to be the more common by far.
+
+</P>
+<P>
+<U>Function:</U> int <B>compose_Addressed</B> <I>(const struct composition *<VAR>compose</VAR>)</I><P>
+<A NAME="IDX64"></A>
+Determines if the composition <VAR>compose</VAR> is addressed fully enough to
+be sent.  This implies that either the envelope is nonempty or that a
+nonempty envelope can be deduced from other information contained in the
+composition.
+
+</P>
+<P>
+<U>Function:</U> struct envelope * <B>compose_ImpliedEnvelope</B> <I>(const struct composition *<VAR>compose</VAR>)</I><P>
+<A NAME="IDX65"></A>
+Allocates and returns an envelope containing the set of addresses that
+would be used to send the composition <VAR>compose</VAR>.  This may be a copy
+of the composition's envelope, or it may have been generated on-the-fly
+from other information contained in the composition.  The memory
+occupied by the returned envelope becomes the responsibility of the
+caller; the caller should release this memory using the envelope API
+when it is no longer needed.
+
+</P>
+
+
+<H1><A NAME="SEC16" HREF="mstore-api_toc.html#SEC16">Folder</A></H1>
+
+<P>
+<A NAME="IDX66"></A>
+This chapter describes operations on folders.  A folder is a mailobj
+containing a sequence of messages.
+
+</P>
+
+
+
+<H2><A NAME="SEC17" HREF="mstore-api_toc.html#SEC17">Messages in folders</A></H2>
+
+<P>
+<U>Function:</U> int <B>mfldr_MessageNum</B> <I>(struct mfldr *<VAR>fldr</VAR>, struct mmsg *<VAR>msg</VAR>)</I><P>
+<A NAME="IDX67"></A>
+Returns the index within <VAR>fldr</VAR> of the message whose handle is
+<VAR>msg</VAR>.
+
+</P>
+<P>
+<U>Function:</U> struct mmsg * <B>mfldr_NthMessage</B> <I>(struct mfldr *<VAR>fldr</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX68"></A>
+Returns a handle on the message in <VAR>fldr</VAR> whose index is <VAR>n</VAR>
+(zero-based).
+
+</P>
+<P>
+<U>Function:</U> int <B>mfldr_NumMessages</B> <I>(struct mfldr *<VAR>fldr</VAR>)</I><P>
+<A NAME="IDX69"></A>
+Returns the number of messages in <VAR>fldr</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>mfldr_Insert</B> <I>(struct mfldr *<VAR>fldr</VAR>, struct mmsg *<VAR>msg</VAR>, int <VAR>pos</VAR>)</I><P>
+<A NAME="IDX70"></A>
+Insert into <VAR>fldr</VAR> the message <VAR>msg</VAR> at position <VAR>pos</VAR>.
+This operation is only valid if <VAR>fldr</VAR> is virtual, or if <VAR>msg</VAR>
+and <VAR>fldr</VAR> reside on the same mstore.  The position <VAR>pos</VAR> may
+range from 0 through <CODE>mfldr_NumMessages(<VAR>fldr</VAR>)</CODE>, inclusive;
+or it may be -1 as shorthand for
+<CODE>mfldr_NumMessages(<VAR>fldr</VAR>)</CODE> (i.e., appending to the end of
+<VAR>fldr</VAR>).
+
+</P>
+<P>
+<U>Function:</U> struct mmsg * <B>mfldr_Import</B> <I>(struct mfldr *<VAR>fldr</VAR>, struct mmsg *<VAR>msg</VAR>, int <VAR>pos</VAR>)</I><P>
+<A NAME="IDX71"></A>
+Insert into <VAR>fldr</VAR> a copy of <VAR>msg</VAR> at position <VAR>pos</VAR>.  If
+<VAR>pos</VAR> is -1, appends <VAR>msg</VAR> to <VAR>fldr</VAR>.  This is like
+<CODE>mfldr_Insert</CODE> but can be used when the mstores of <VAR>fldr</VAR>
+and <VAR>msg</VAR> do not match; however, <VAR>msg</VAR> may undergo changes in
+translation.  Returns a handle to the new message.
+
+</P>
+<P>
+<U>Function:</U> void <B>mfldr_DeleteMsg</B> <I>(struct mfldr *<VAR>fldr</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX72"></A>
+Delete the message from <VAR>fldr</VAR> numbered <VAR>n</VAR>.
+
+</P>
+<P>
+Note that this is the operation that actually removes the message
+(modulo cached writes); most UI's will want to allow the user to set a
+"deleted" flag rather than delete the message outright; the flag would
+then be tested by the API at a later time to indicate that
+<CODE>mfldr_DeleteMsg</CODE> should be called.
+
+</P>
+<P>
+<U>Function:</U> int <B>mfldr_Select</B> <I>(struct mfldr *<VAR>fldr</VAR>, int (*<VAR>pred</VAR>) (struct mfldr *, struct mmsg *, void *), void *<VAR>data</VAR>, struct intset *<VAR>which</VAR>)</I><P>
+<A NAME="IDX73"></A>
+Selects messages from <VAR>fldr</VAR> according to the predicate <VAR>pred</VAR>
+and using selection criteria in <VAR>data</VAR>, returning a "map" of the
+selected messages in <VAR>which</VAR>.  The function <VAR>pred</VAR> takes
+<VAR>fldr</VAR>, a message in <VAR>fldr</VAR>, and <VAR>data</VAR> as arguments and
+returns non-zero iff the message should be selected.  The Intset
+<VAR>which</VAR> is <EM>not</EM> cleared before the position numbers of
+selected messages are added to it.  The return value is the number of
+messages which met the selection criteria.
+
+</P>
+<P>
+<U>Function:</U> void <B>mfldr_Sort</B> <I>(struct mfldr *<VAR>fldr</VAR>, int (*<VAR>cmp</VAR>) (struct mfldr *, struct mmsg *, struct mmsg *, void *), void *<VAR>data</VAR>)</I><P>
+<A NAME="IDX74"></A>
+Sort the messages in <VAR>fldr</VAR> according to the comparison predicate
+<VAR>cmp</VAR> and using comparison data <VAR>data</VAR>.  The function <VAR>cmp</VAR>
+takes <VAR>fldr</VAR>, a pair of messages in <VAR>fldr</VAR>, and <VAR>data</VAR> as
+arguments and returns an integer in the style of <CODE>strcmp</CODE>:  less
+than zero if the first message should come before the second, greater
+than zero if the first message should come after the second, and exactly
+0 if they should be considered the same for sorting purposes.
+
+</P>
+<P>
+<U>Function:</U> int <B>mfldr_NewMail</B> <I>(struct mfldr *<VAR>fldr</VAR>, struct intset *<VAR>new</VAR>)</I><P>
+<A NAME="IDX75"></A>
+Polls for new messages in <VAR>fldr</VAR>, inserting them as appropriate and
+returning a "map" of the new messages in <VAR>new</VAR>.  The Intset
+<VAR>new</VAR> is <EM>not</EM> cleared before the position numbers of messages
+that were new are added to it.  The return value is the number of new
+messages.
+
+</P>
+
+
+<H2><A NAME="SEC18" HREF="mstore-api_toc.html#SEC18">Other folder operations</A></H2>
+
+<P>
+<U>Function:</U> struct mstore * <B>mfldr_Mstore</B> <I>(struct mfldr *<VAR>fldr</VAR>)</I><P>
+<A NAME="IDX76"></A>
+Returns the mstore on which <VAR>fldr</VAR> resides.  If <VAR>fldr</VAR> is a
+virtual folder, returns <CODE>NULL</CODE>.
+
+</P>
+<P>
+<U>Function:</U> struct mfldr * <B>mfldr_Create</B> <I>(struct mstore *<VAR>mstore</VAR>, char *<VAR>name</VAR>, void *<VAR>data</VAR>)</I><P>
+<A NAME="IDX77"></A>
+Create a new, empty folder on <VAR>mstore</VAR> named <VAR>name</VAR> with
+mstore-specific creation data in <VAR>data</VAR>, and return it.  If
+<VAR>mstore</VAR> is <CODE>NULL</CODE>, the result is a virtual folder.
+
+</P>
+<P>
+<U>Function:</U> void <B>mfldr_SuperHash</B> <I>(struct mfldr *<VAR>fldr</VAR>, int <VAR>bits</VAR>, struct intset *<VAR>which</VAR>, struct glist *<VAR>hashbuf</VAR>, int <VAR>keyp</VAR>, struct intset *<VAR>subset</VAR>)</I><P>
+<A NAME="IDX78"></A>
+Compute the <STRONG>superhash</STRONG> for <VAR>fldr</VAR> partitioned using <VAR>bits</VAR>
+bits; then select the hash buckets indicated in <VAR>which</VAR> and append
+their hash values to <VAR>hashbuf</VAR>.  The superhash is computed using key
+hashes if <VAR>keyp</VAR> is non-zero and using header hashes otherwise.  If
+<VAR>subset</VAR> is non-zero, it is a set of message numbers to include in
+computing the superhash, and message numbers not appearing in this set
+do not participate.
+
+</P>
+<P>
+The available buckets are numbered 0 through 2^<VAR>bits</VAR> - 1.
+Passing <VAR>which</VAR> as <CODE>NULL</CODE> selects all buckets.  The selected
+hash values are appended to <VAR>hashbuf</VAR>, which is a Glist with
+elements of type <CODE>struct mailhash</CODE>, in ascending numerical
+order.  It is the caller's responsibility to keep track of which entries
+in <VAR>hashbuf</VAR> correspond to which hash buckets.  For example, if
+<VAR>which</VAR> contains the numbers 5, 8, and 12 (and presuming
+<VAR>hashbuf</VAR> starts out empty), then after a call to
+<CODE>mfldr_SuperHash</CODE> <CODE>glist_Nth(<VAR>hashbuf</VAR>, 0)</CODE> will
+contain the value for hash bucket 5, <CODE>glist_Nth(<VAR>hashbuf</VAR>,
+1)</CODE> will contain the value for hash bucket 8, and
+<CODE>glist_Nth(<VAR>hashbuf</VAR>, 2)</CODE> will contain the value for hash
+bucket 12.
+
+</P>
+<P>
+<A NAME="IDX79"></A>
+<A NAME="IDX80"></A>
+<A NAME="IDX81"></A>
+The superhash is constructed from the key hashes or headers hashes of
+all the messages in <VAR>fldr</VAR>.  Partitioning the superhash works by
+computing the hashes for all the messages in <VAR>fldr</VAR>, then dividing
+them up according to the first <VAR>bits</VAR> bits of each and hashing each
+subset into its own <STRONG>superhash bucket</STRONG>.  Note that the space of
+messages is not partitioned; the space of hashes is.
+
+</P>
+<P>
+<U>Function:</U> int <B>mailhash_bucket</B> <I>(struct mailhash *<VAR>hash</VAR>, int <VAR>bits</VAR>)</I><P>
+<A NAME="IDX82"></A>
+Given <VAR>hash</VAR>, determine the number of the bucket it belongs in when
+partitioning on <VAR>bits</VAR> bits.
+
+</P>
+<P>
+<U>Function:</U> void <B>mfldr_Update</B> <I>(struct mfldr *<VAR>fldr</VAR>)</I><P>
+<A NAME="IDX83"></A>
+Writes changes to <VAR>fldr</VAR> back out to its mstore.  Note that some
+mstore types will not cache changes at all--they'll get written
+straight through--in which cases <CODE>mfldr_Update</CODE> will be a no-op.
+
+</P>
+<P>
+<U>Function:</U> void <B>mfldr_Close</B> <I>(struct mfldr *<VAR>fldr</VAR>, int <VAR>flush</VAR>)</I><P>
+<A NAME="IDX84"></A>
+Release all resources associated with <VAR>fldr</VAR> and disallow further
+operations on it, updating first if <VAR>flush</VAR> is
+non-zero.<A NAME="FOOT6" HREF="mstore-api_foot.html#FOOT6">(6)</A>  Some mstores, especially ones opened read-only,
+will not permit flushing.
+
+</P>
+<P>
+<U>Function:</U> void <B>mfldr_Diff</B> <I>(struct mfldr *<VAR>fldr1</VAR>, struct mfldr *<VAR>fldr2</VAR>, struct dlist *<VAR>a</VAR>, struct dlist *<VAR>b</VAR>)</I><P>
+<A NAME="IDX85"></A>
+Compare <VAR>fldr1</VAR> with <VAR>fldr2</VAR>.  Messages which appear in
+<VAR>fldr1</VAR> and not in <VAR>fldr2</VAR> are recorded in <VAR>a</VAR>.  Messages
+which appear in <VAR>fldr2</VAR> and not in <VAR>fldr1</VAR> are recorded in
+<VAR>b</VAR>.  This function uses the <STRONG>partitioned superhash algorithm</STRONG>
+based on key-hashes to optimize the comparison.
+
+</P>
+<P>
+<A NAME="IDX86"></A>
+The arguments <VAR>a</VAR> and <VAR>b</VAR> are pointers to initialized Dlists,
+the type of whose elements is<CODE>struct mfldr_diff</CODE>, which is
+defined as follows:
+
+</P>
+
+<PRE>
+struct mfldr_diff {
+    int num, remove, apply;
+};
+</PRE>
+
+<P>
+These lists are meant to be passed to a subsequent call to
+<CODE>mfldr_Sync</CODE>.  In the <CODE>mfldr_diff</CODE> structure,
+<CODE>num</CODE> is the number of a message within its folder, <CODE>delete</CODE>
+indicates whether the message should be deleted rather than copied (see
+below), and <CODE>apply</CODE> indicates whether <CODE>mfldr_Sync</CODE>
+should apply the requested change (or ignore the record).
+
+</P>
+<P>
+<A NAME="IDX87"></A>
+If a <STRONG>ghost</STRONG> exists for a given message, then the <CODE>delete</CODE>
+field in that message's record will be set, otherwise it will be zero.
+A ghost indicates that the message was once seen and deleted.
+
+</P>
+<P>
+The <CODE>mfldr_diff</CODE> records are appended to <VAR>a</VAR> and <VAR>b</VAR>.
+Either <VAR>a</VAR> or <VAR>b</VAR> may be 0 to indicate that the corresponding
+information is not needed.
+
+</P>
+<P>
+<U>Function:</U> void <B>mfldr_RefineDiff</B> <I>(struct mfldr *<VAR>fldr1</VAR>, struct mfldr *<VAR>fldr2</VAR>, struct dlist *<VAR>a</VAR>, struct dlist *<VAR>b</VAR>, struct dlist *<VAR>d</VAR>)</I><P>
+<A NAME="IDX88"></A>
+Detect differences between pairs of messages considered "identical" in
+<VAR>fldr1</VAR> and <VAR>fldr2</VAR>.  The Dlists <VAR>a</VAR> and <VAR>b</VAR> are the
+lists computed by a prior call to <CODE>mfldr_Diff</CODE>.  Differences
+detected by this function are appended to <VAR>d</VAR>.  Messages that are
+"identical" according to <CODE>mfldr_Diff</CODE> may nevertheless have
+differences, such as in the Status and Priority headers, that do not
+affect their identity.
+
+</P>
+<P>
+<A NAME="IDX89"></A>
+The folders <VAR>fldr1</VAR> and <VAR>fldr2</VAR> must be unchanged since the call
+to <CODE>mfldr_Diff</CODE> which produced <VAR>a</VAR> and <VAR>b</VAR>.  The
+Dlist <VAR>d</VAR> ("differences") must be initialized to hold records of
+type <CODE>struct mfldr_refinedDiff</CODE>, defined as follows:
+
+</P>
+
+<PRE>
+struct mfldr_refinedDiff {
+    int num1, num2, apply1, apply2;
+};
+</PRE>
+
+<P>
+In this structure, <CODE>num1</CODE> is the number of a message in <VAR>fldr1</VAR>
+and <CODE>num2</CODE> is the number of the corresponding message in
+<VAR>fldr2</VAR> which has the same message identity as the first one but
+differs in some way or ways.  The fields <CODE>apply1</CODE> and <CODE>apply2</CODE>
+are used by <CODE>mfldr_Sync</CODE> (q.v., to which the list <VAR>d</VAR> as
+computed by this function is passed).
+
+</P>
+<P>
+Message identity is determined using a message's "key hash," which is
+computed from the contents of the message body and from the following
+"key" message headers:
+
+</P>
+
+<PRE>
+Apparently-To; Cc; Date; From; Message-Id; Resent-Cc;
+Resent-Date; Resent-From; Resent-To; Subject; To.</PRE>
+
+<P>
+Differences between "identical" messages are guaranteed not to be in
+the body or in the key headers (which means such differences will only
+be found in non-key headers).
+
+</P>
+<P>
+<U>Function:</U> void <B>mfldr_Sync</B> <I>(struct mfldr *<VAR>fldr1</VAR>, struct mfldr *<VAR>fldr2</VAR>, struct dlist *<VAR>a</VAR>, struct dlist *<VAR>b</VAR>, struct dlist *<VAR>d</VAR>, mfldr_SyncProgress_t <VAR>progress_fn</VAR>, void *<VAR>progress_data</VAR>)</I><P>
+<A NAME="IDX90"></A>
+Transfer data between <VAR>fldr1</VAR> and <VAR>fldr2</VAR> according to the
+instructions in <VAR>a</VAR>, <VAR>b</VAR>, and <VAR>d</VAR>.  The Dlists <VAR>a</VAR> and
+<VAR>b</VAR> must have been computed in a previous call to
+<CODE>mfldr_Diff</CODE>, and the Dlist <VAR>d</VAR> must have been computed
+in a previous call to <CODE>mfldr_RefineDiff</CODE>.  Each of the Dlist
+pointers may be zero to be ignored.
+
+</P>
+<P>
+If non-zero, <VAR>progress_fn</VAR> is a function to be called at each
+iteration of the loop.  It is called with three arguments: a zero-based
+counter (type <CODE>int</CODE>) that is incremented by one with each call; the
+total number of iterations that are expected (i.e., the sum of the
+lengths of <VAR>a</VAR>, <VAR>b</VAR>, and <VAR>d</VAR>), and <VAR>progress_data</VAR>.  The
+caller can use this callback function to update a progress meter.  Note
+that the callback is invoked <EM>prior</EM> to each iteration, and is not
+called upon completion of the last iteration.
+
+</P>
+<P>
+For each <CODE>struct mfldr_diff</CODE> in <VAR>a</VAR>, if the <CODE>apply</CODE>
+field is zero, the record is ignored.  Otherwise, if the <CODE>delete</CODE>
+field is zero, the corresponding message is copied from <VAR>fldr1</VAR> into
+<VAR>fldr2</VAR>.  Otherwise, the message is deleted from <VAR>fldr1</VAR>.
+
+</P>
+<P>
+For each <CODE>struct mfldr_diff</CODE> in <VAR>b</VAR>, if the <CODE>apply</CODE>
+field is zero, the record is ignored.  Otherwise, if the <CODE>delete</CODE>
+field is zero, the corresponding message is copied from <VAR>fldr2</VAR> into
+<VAR>fldr1</VAR>.  Otherwise, the message is deleted from <VAR>fldr2</VAR>.
+
+</P>
+<P>
+Note that when <CODE>mfldr_Diff</CODE> creates the records in <VAR>a</VAR>
+and <VAR>b</VAR>, <CODE>apply</CODE> is always initialized to zero, meaning that
+the caller must first traverse the lists and "turn on" each change it
+wishes <CODE>mfldr_Sync</CODE> to execute.  Also, <CODE>delete</CODE> is set
+to the result of a search for a "ghost" for the message, so the caller
+should probably double-check that field too before calling this
+function.
+
+</P>
+<P>
+For each <CODE>struct mfldr_refinedDiff</CODE> in <VAR>d</VAR>, if the
+<CODE>apply1</CODE> field is non-zero, the change is applied to
+<VAR>fldr1</VAR>---that is, the headers of the message are copied from
+<VAR>fldr2</VAR> to the corresponding message in <VAR>fldr1</VAR> (replacing the
+original headers).  If the <CODE>apply2</CODE> field is non-zero, the change
+is applied to <VAR>fldr2</VAR>, with headers from the message in <VAR>fldr1</VAR>
+replacing those in its counterpart in <VAR>fldr2</VAR>.  Only one of the
+<CODE>apply</CODE> fields should be set; in any case, the copy will only
+happen in at most one direction.<A NAME="FOOT7" HREF="mstore-api_foot.html#FOOT7">(7)</A>  As with <VAR>a</VAR>
+and <VAR>b</VAR>, the <CODE>apply</CODE> fields are initialized to zero by
+<CODE>mfldr_RefineDiff</CODE>, meaning that the caller must first
+traverse the lists and "turn on" each change it wishes
+<CODE>mfldr_Sync</CODE> to execute.
+
+</P>
+
+<H2>Folder synchronization discussion</H2>
+
+<P>
+The functions <CODE>mfldr_Diff</CODE>, <CODE>mfldr_RefineDiff</CODE>,
+and <CODE>mfldr_Sync</CODE> form a customizable three-step process for
+efficient folder synchronization.  A full synchronization should proceed
+something like this:
+
+</P>
+
+<PRE>
+struct dlist a, b, d;
+
+dlist_Init(&#38;a, (sizeof (struct mfldr_diff)), <VAR>growsize</VAR>);
+dlist_Init(&#38;b, (sizeof (struct mfldr_diff)), <VAR>growsize</VAR>);
+dlist_Init(&#38;d, (sizeof (struct mfldr_refinedDiff)), <VAR>growsize</VAR>);
+TRY {
+    mfldr_Diff(<VAR>fldr1</VAR>, <VAR>fldr2</VAR>, &#38;a, &#38;b);
+    mfldr_RefineDiff(<VAR>fldr1</VAR>, <VAR>fldr2</VAR>, &#38;a, &#38;b, &#38;d);
+    /* here the caller selects which changes in a, b, and d
+     * are desired by "turning on" the appropriate apply fields.
+     */
+    mfldr_Sync(<VAR>fldr1</VAR>, <VAR>fldr2</VAR>, &#38;a, &#38;b, &#38;d);
+} FINALLY {
+    dlist_Destroy(&#38;a);
+    dlist_Destroy(&#38;b);
+    dlist_Destroy(&#38;d);
+} ENDTRY;
+</PRE>
+
+<P>
+Note that <VAR>fldr1</VAR> and <VAR>fldr2</VAR> must not change between the call
+to <CODE>mfldr_Diff</CODE> and the call to <CODE>mfldr_Sync</CODE>, and
+that they must be passed in the same order to each function.
+
+</P>
+<P>
+This sequence may be altered if refined diffs are not desired:
+
+</P>
+
+<PRE>
+struct dlist a, b;
+
+dlist_Init(&#38;a, (sizeof (struct mfldr_diff)), <VAR>growsize</VAR>);
+dlist_Init(&#38;b, (sizeof (struct mfldr_diff)), <VAR>growsize</VAR>);
+TRY {
+    mfldr_Diff(<VAR>fldr1</VAR>, <VAR>fldr2</VAR>, &#38;a, &#38;b);
+    /* here the caller selects which changes in a and b
+     * are desired by "turning on" the appropriate apply fields.
+     */
+    mfldr_Sync(<VAR>fldr1</VAR>, <VAR>fldr2</VAR>, &#38;a, &#38;b, 0);
+} FINALLY {
+    dlist_Destroy(&#38;a);
+    dlist_Destroy(&#38;b);
+} ENDTRY;
+</PRE>
+
+<P>
+Selecting changes in <CODE>a</CODE> and <CODE>b</CODE> could be written like so:
+
+</P>
+
+<PRE>
+struct mfldr_diff *md;
+int i;
+
+dlist_FOREACH(&#38;a, struct mfldr_diff, md, i) {
+    if (user_approves(<VAR>fldr1</VAR>, md))
+        md-&#62;apply = 1;
+}
+dlist_FOREACH(&#38;b, struct mfldr_diff, md, i) {
+    if (user_approves(<VAR>fldr2</VAR>, md))
+        md-&#62;apply = 1;
+}
+</PRE>
+
+<P>
+where <CODE>user_approves</CODE> is a hypothetical function which queries
+the user about the proposed change.  Finally, selecting changes in
+<CODE>d</CODE> could be written like so:
+
+</P>
+
+<PRE>
+struct mfldr_refinedDiff *mrd;
+int i, direction;
+
+dlist_FOREACH(&#38;d, struct mfldr_refinedDiff, mrd, i) {
+    direction = user_chooses_direction(<VAR>fldr1</VAR>, <VAR>fldr2</VAR>, mrd);
+    if (direction &#60; 0)         /* copy towards <VAR>fldr1</VAR> */
+        mrd-&#62;apply1 = 1;
+    else if (direction &#62; 0)    /* copy towards <VAR>fldr2</VAR> */
+        mrd-&#62;apply2 = 1;
+}
+</PRE>
+
+<P>
+where <CODE>user_chooses_direction</CODE> is a hypothetical function which
+queries the user about the proposed change and returns 0 meaning "do
+not select the change," or a negative or positive number to indicate
+one or another direction for the copy.  Alternatively, the lists
+<CODE>a</CODE>, <CODE>b</CODE>, and <CODE>d</CODE> could be turned into GUI elements which
+can be interactively edited (turned on and off) before invoking
+<CODE>mfldr_Sync</CODE>.
+
+</P>
+
+
+<H2><A NAME="SEC19" HREF="mstore-api_toc.html#SEC19">Ghosts</A></H2>
+
+<P>
+<U>Function:</U> void <B>ghost_OpenTomb</B> <I>(const char *<VAR>tombname</VAR>)</I><P>
+<A NAME="IDX91"></A>
+Make <VAR>tombname</VAR> the name of the current tombfile and prepare it for
+writing.  Raises the exception <CODE>ghost_err_Unsealed</CODE> if called
+successively without an intervening call to <CODE>ghost_SealTomb</CODE>.
+(This function doesn't actually open the tombfile; that's handled
+lazily, e.g. by <CODE>ghost_Bury</CODE>.)
+
+</P>
+<P>
+<U>Function:</U> void <B>ghost_SealTomb</B> <I>()</I><P>
+<A NAME="IDX92"></A>
+Close the tombfile opened by <CODE>ghost_OpenTomb</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>ghost_Bury</B> <I>(struct mailhash *<VAR>keyhash</VAR>, time_t <VAR>interment</VAR>)</I><P>
+<A NAME="IDX93"></A>
+Bury the <VAR>keyhash</VAR> (obtained via a prior call to
+<CODE>mmsg_KeyHash</CODE>), recording its <VAR>interment</VAR> time, thus
+causing it to become a ghost.  Several keyhashes may be buried in
+succession, but a call to <CODE>ghost_SealTomb</CODE> must intervene
+between the last burial and any other ghost operation.
+
+</P>
+<P>
+<U>Function:</U> int <B>ghostp</B> <I>(struct mailhash *<VAR>keyhash</VAR>)</I><P>
+<A NAME="IDX94"></A>
+Returns nonzero if <VAR>keyhash</VAR> matches that of a ghost, zero
+otherwise.  If <CODE>ghost_OpenTomb</CODE> has never been called, this
+will always return zero.  If <CODE>ghost_Bury</CODE> or
+<CODE>ghost_Exorcise</CODE> has been called without a subsequent call to
+<CODE>ghost_SealTomb</CODE>, <CODE>ghostp</CODE> will raise the exception
+<CODE>ghost_err_Unsealed</CODE>.  We only commune with ghosts that have
+had a proper burial.
+
+</P>
+<P>
+<U>Function:</U> void <B>ghost_Exorcise</B> <I>(time_t <VAR>afterlife</VAR>)</I><P>
+<A NAME="IDX95"></A>
+Purges from the tombfile any ghosts that have been haunting us for
+longer than the specified <VAR>afterlife</VAR>.  May also raise the exception
+<CODE>ghost_err_Unsealed</CODE> if a burial or another exorcism has taken
+place without an intervening call to <CODE>ghost_SealTomb</CODE>.
+
+</P>
+
+
+<H1><A NAME="SEC20" HREF="mstore-api_toc.html#SEC20">Message store</A></H1>
+
+<P>
+<A NAME="IDX96"></A>
+A message store (mstore) is the manager for one or more folders.  It is
+responsible for providing the interface between the folder abstraction
+and the concrete representation of a folder on its persistent storage
+medium.  Whereas the folder is a data structure providing a
+format-independent container and sequencer for messages, the message
+store provides the format-specific access methods.
+
+</P>
+<P>
+<U>Function:</U> struct mstore * <B>mstore_Open</B> <I>(char *<VAR>name</VAR>, void *<VAR>data</VAR>)</I><P>
+<A NAME="IDX97"></A>
+Connect to the mstore named <VAR>name</VAR>,<A NAME="FOOT8" HREF="mstore-api_foot.html#FOOT8">(8)</A> with
+additional connect-time data contained in <VAR>data</VAR>.  The contents of
+the structure pointed to by <VAR>data</VAR> depend on the type of mstore
+being opened.  Returns a pointer to a new mstore object.
+
+</P>
+<P>
+<U>Function:</U> void <B>mstore_Setup</B> <I>(struct mstore *<VAR>mstore</VAR>, void *<VAR>data</VAR>)</I><P>
+<A NAME="IDX98"></A>
+Initialize <VAR>mstore</VAR> (obtained via <CODE>mstore_Open</CODE>) with additional
+data contained in <VAR>data</VAR>.  The contents of the structure pointed to
+by <VAR>data</VAR> depend on the type of mstore being initialized.
+
+</P>
+<P>
+This call is intended to perform functions such as authenticating with a
+server after connecting.  For some mstore types, repeated calls to
+<CODE>mstore_Setup</CODE> will be meaningful; other types will require closing
+and reopening the mstore before calling <CODE>mstore_Setup</CODE> again.
+
+</P>
+<P>
+<U>Function:</U> void <B>mstore_Update</B> <I>(struct mstore *<VAR>mstore</VAR>)</I><P>
+<A NAME="IDX99"></A>
+Writes changes to <VAR>mstore</VAR> to persistent storage.  This includes any
+pending cached changes to folders and messages contained within
+<VAR>mstore</VAR>, as well as attribute information and other
+mstore-type-specific state that may have changed.
+
+</P>
+<P>
+<U>Function:</U> void <B>mstore_Close</B> <I>(struct mstore *<VAR>mstore</VAR>, int <VAR>flush</VAR>)</I><P>
+<A NAME="IDX100"></A>
+Release all resources associated with <VAR>mstore</VAR> and disallow further
+operations on it, updating all changes to persistent storage if and only
+if <VAR>flush</VAR> is non-zero.
+
+</P>
+<P>
+<U>Function:</U> struct mfldr * <B>mstore_OpenFolder</B> <I>(struct mstore *<VAR>mstore</VAR>, char *<VAR>name</VAR>, void *<VAR>data</VAR>)</I><P>
+<A NAME="IDX101"></A>
+Opens the folder in <VAR>mstore</VAR> named <VAR>name</VAR> and requiring
+additional (opaque) data <VAR>data</VAR>, returning the resulting folder
+object.
+
+</P>
+<P>
+A particular mstore type may wish to subclass <CODE>mfldr</CODE> to express
+mstore-type-specific functionality at the folder level.
+
+</P>
+
+
+<H1><A NAME="SEC21" HREF="mstore-api_toc.html#SEC21">Envelope</A></H1>
+
+<P>
+A set of addresses.  Work in progress.
+
+</P>
+
+
+<H1><A NAME="SEC22" HREF="mstore-api_toc.html#SEC22">Additional operations</A></H1>
+
+<P>
+This chapter, when written, will describe the functionality attributed
+to the "meta-store" in the companion document, <i>Meta-Store API Requirements</i>.
+
+</P>
+
+
+
+<H2><A NAME="SEC23" HREF="mstore-api_toc.html#SEC23">Querying about capabilities</A></H2>
+
+<P>
+This section, when written, will describe an API allowing a caller to
+inquire about a particular mstore's capabilities.
+
+</P>
+
+
+<H1><A NAME="SEC24" HREF="mstore-api_toc.html#SEC24">Defining new subtypes</A></H1>
+
+
+
+<H2><A NAME="SEC25" HREF="mstore-api_toc.html#SEC25">New mailobj subtypes</A></H2>
+
+
+
+<H2><A NAME="SEC26" HREF="mstore-api_toc.html#SEC26">New bodypart subtypes</A></H2>
+
+
+
+<H2><A NAME="SEC27" HREF="mstore-api_toc.html#SEC27">New message subtypes</A></H2>
+
+
+
+<H2><A NAME="SEC28" HREF="mstore-api_toc.html#SEC28">New folder subtypes</A></H2>
+
+
+
+<H2><A NAME="SEC29" HREF="mstore-api_toc.html#SEC29">New mstore subtypes</A></H2>
+
+
+
+<H1><A NAME="SEC30" HREF="mstore-api_toc.html#SEC30">Subsystems</A></H1>
+
+<P>
+This chapter describes the subsystems used by the Mstore API.
+
+</P>
+
+
+
+<H2><A NAME="SEC31" HREF="mstore-api_toc.html#SEC31">SPOOR</A></H2>
+
+<P>
+SPOOR is the Simple, Poor-man's Object-Oriented Runtime.  It
+provides a portable object-oriented environment for programs written in
+C, featuring single inheritance of data and methods with method
+overriding and polymorphism.  A combination of compile-time notations
+and run-time initializations convert an ordinary C <CODE>struct</CODE> into a
+SPOOR class.
+
+</P>
+<P>
+The central data types in the Mstore API are SPOOR classes; they
+form an inheritance hierarchy that looks like this:
+
+</P>
+
+<PRE>
+mailobj
+        bodypart
+                 bp_text
+                         bp_text_plain
+                         bp_text_other
+                 bp_multipart
+                              bp_multipart_mixed
+                              bp_multipart_alternative
+                              bp_multipart_digest
+                              bp_multipart_parallel
+                              bp_multipart_enabledmail
+                 bp_message
+                            bp_message_rfc822
+                            bp_message_externalbody
+                            bp_message_partial
+                 bp_application
+        message
+        folder
+        mstore
+</PRE>
+
+
+
+<H2><A NAME="SEC32" HREF="mstore-api_toc.html#SEC32">Dynadt</A></H2>
+
+<P>
+Dynadt is the Dynamic Abstract Data Types library which features a variety
+of general-purpose, dynamically-resizing data types.
+
+</P>
+
+
+<H2><A NAME="SEC33" HREF="mstore-api_toc.html#SEC33">Except</A></H2>
+
+<P>
+Except is a library providing portable exception-handling constructs for
+programs written in C.
+
+</P>
+
+
+<H1><A NAME="SEC34" HREF="mstore-api_toc.html#SEC34">To-do</A></H1>
+
+<P>
+This appendix describes what remains to be done in completing this
+document.
+
+</P>
+
+
+
+<H2><A NAME="SEC35" HREF="mstore-api_toc.html#SEC35">Unresolved design issues</A></H2>
+
+<P>
+This section describes design issues that have not yet been resolved.
+
+</P>
+
+<UL>
+<LI>
+
+What are better names<A NAME="FOOT9" HREF="mstore-api_foot.html#FOOT9">(9)</A> for everything in this API?  In
+particular, the type name <CODE>message</CODE> is
+too likely to collide with something we include or link with;
+<CODE>mailobj</CODE> is hard to pronounce; and most of the other names lack
+aesthetic appeal.
+
+<LI>
+
+Under this new API, what will be the meaning of "opening" a folder as
+we now understand it?  On a related note, does parsing a folder happen
+when it's opened?
+
+Bob believes that a folder is "open" any time the caller has a handle
+to it.  Whether or not this maps directly to an open file depends on the
+mstore type.  Bart points out that this may be troublesome for the case
+of appending a message to a folder which is not otherwise "open."  In
+the present core, we simply open the file for appending, and write out
+the data.  Within the new framework, such an operation might entail
+parsing the entire folder merely for the purpose of appending a message!
+
+Bob counters that the right approach is to stick with the present
+framework, but allow folder-parsing to be a lazy (and even an
+incremental) operation; that is, no parsing happens until the app
+requests some info out of the folder.  Using this approach, a folder can
+be opened and a message appended without causing a parse.  Comments?
+
+<LI>
+
+In the SPOOR widget library, when a widget is removed from its
+parent widget, the most amazingly complex protocol begins.  The idea is
+to notify the parent and its parent hierarchy that the affected widget
+is leaving; <EM>and</EM> to notify every widget in the affected widget's
+child hierarchy that they're now no longer embedded in an app.  When you
+combine all this structure traversal with the fact that the mechanisms
+for doing this are object-oriented methods which may be overrides making
+"super" calls, the protocol, called <CODE>unEmbedNotice</CODE>, is
+triply-recursive!
+
+The reason I mention this is that I'm wondering whether something like
+that will be necessary for mstores and folders and messages and
+bodyparts, which may be deeply nested.  We might try to rely on the
+callback mechanism for this, but I think for this purpose, that might
+become unwieldy.  Anyone wishing to discuss this, please see me.
+
+<LI>
+
+An API for modifying bodyparts of the various types.
+
+<LI>
+
+An API for finding out what folders exist in an mstore, and for renaming
+and deleting them.
+
+<LI>
+
+Specify an API for accessing the list of presently-opened folders within
+an mstore (to be used, for instance, in the implementation of
+<CODE>mstore_Update</CODE> to traverse the folder list, looking for changes).
+
+<LI>
+
+Address mail transport and directory services.
+</UL>
+
+
+
+<H2><A NAME="SEC36" HREF="mstore-api_toc.html#SEC36">A small matter of writing</A></H2>
+
+<P>
+This section describes things that are missing from this document, but
+merely haven't gotten written yet.  They're not things that require
+lots of thought.
+
+</P>
+
+<UL>
+<LI>
+
+Specify exceptions.
+
+<LI>
+
+Specify built-in callbacks.
+
+<LI>
+
+Make an index-constructing pass.
+
+<LI>
+
+Specify which operations are essential (to implement in any mstore
+back-end) and which are optional.
+</UL>
+
+
+
+<H1><A NAME="SEC37" HREF="mstore-api_toc.html#SEC37">Programming Index</A></H1>
+
+<P>
+<H2>b</H2>
+<DIR>
+<LI><A HREF="mstore-api.html#IDX9">bodypart</A>
+<LI><A HREF="mstore-api.html#IDX11">bodypart_Container</A>
+<LI><A HREF="mstore-api.html#IDX15">bodypart_DestroyStream</A>
+<LI><A HREF="mstore-api.html#IDX13">bodypart_Liberate</A>
+<LI><A HREF="mstore-api.html#IDX12">bodypart_Mmsg</A>
+<LI><A HREF="mstore-api.html#IDX26">bodypart_PartNum</A>
+<LI><A HREF="mstore-api.html#IDX18">bodypart_SetSource_Filename</A>
+<LI><A HREF="mstore-api.html#IDX19">bodypart_SetSource_FilePtr</A>
+<LI><A HREF="mstore-api.html#IDX16">bodypart_SetSource_Pipe</A>
+<LI><A HREF="mstore-api.html#IDX17">bodypart_SetSource_PipeFunc</A>
+<LI><A HREF="mstore-api.html#IDX14">bodypart_Stream</A>
+<LI><A HREF="mstore-api.html#IDX10">bodypart_Subtype</A>
+<LI><A HREF="mstore-api.html#IDX46">bp_application</A>
+<LI><A HREF="mstore-api.html#IDX37">bp_message</A>
+<LI><A HREF="mstore-api.html#IDX39">bp_message_externalbody</A>
+<LI><A HREF="mstore-api.html#IDX40">bp_message_externalbody_AccessType</A>
+<LI><A HREF="mstore-api.html#IDX41">bp_message_externalbody_Name</A>
+<LI><A HREF="mstore-api.html#IDX42">bp_message_partial</A>
+<LI><A HREF="mstore-api.html#IDX43">bp_message_partial_Id</A>
+<LI><A HREF="mstore-api.html#IDX44">bp_message_partial_Number</A>
+<LI><A HREF="mstore-api.html#IDX45">bp_message_partial_Total</A>
+<LI><A HREF="mstore-api.html#IDX38">bp_message_rfc822</A>
+<LI><A HREF="mstore-api.html#IDX25">bp_multipart</A>
+<LI><A HREF="mstore-api.html#IDX32">bp_multipart_alternative</A>
+<LI><A HREF="mstore-api.html#IDX30">bp_multipart_DeletePart</A>
+<LI><A HREF="mstore-api.html#IDX33">bp_multipart_digest</A>
+<LI><A HREF="mstore-api.html#IDX34">bp_multipart_digest_Export</A>
+<LI><A HREF="mstore-api.html#IDX36">bp_multipart_enabledmail</A>
+<LI><A HREF="mstore-api.html#IDX29">bp_multipart_InsertPart</A>
+<LI><A HREF="mstore-api.html#IDX31">bp_multipart_mixed</A>
+<LI><A HREF="mstore-api.html#IDX28">bp_multipart_Nth</A>
+<LI><A HREF="mstore-api.html#IDX27">bp_multipart_NumParts</A>
+<LI><A HREF="mstore-api.html#IDX35">bp_multipart_parallel</A>
+<LI><A HREF="mstore-api.html#IDX20">bp_text</A>
+<LI><A HREF="mstore-api.html#IDX21">bp_text_Charset</A>
+<LI><A HREF="mstore-api.html#IDX23">bp_text_other</A>
+<LI><A HREF="mstore-api.html#IDX24">bp_text_other_Subtype</A>
+<LI><A HREF="mstore-api.html#IDX22">bp_text_plain</A>
+</DIR>
+<H2>c</H2>
+<DIR>
+<LI><A HREF="mstore-api.html#IDX64">compose_Addressed</A>
+<LI><A HREF="mstore-api.html#IDX63">compose_Envelope</A>
+<LI><A HREF="mstore-api.html#IDX65">compose_ImpliedEnvelope</A>
+</DIR>
+<H2>g</H2>
+<DIR>
+<LI><A HREF="mstore-api.html#IDX93">ghost_Bury</A>
+<LI><A HREF="mstore-api.html#IDX95">ghost_Exorcise</A>
+<LI><A HREF="mstore-api.html#IDX91">ghost_OpenTomb</A>
+<LI><A HREF="mstore-api.html#IDX92">ghost_SealTomb</A>
+<LI><A HREF="mstore-api.html#IDX94">ghostp</A>
+</DIR>
+<H2>m</H2>
+<DIR>
+<LI><A HREF="mstore-api.html#IDX82">mailhash_bucket</A>
+<LI><A HREF="mstore-api.html#IDX4">mailobj</A>
+<LI><A HREF="mstore-api.html#IDX5">mailobj_AddCallback</A>
+<LI><A HREF="mstore-api.html#IDX7">mailobj_CallCallbacks</A>
+<LI><A HREF="mstore-api.html#IDX6">mailobj_RemoveCallback</A>
+<LI><A HREF="mstore-api.html#IDX84">mfldr_Close</A>
+<LI><A HREF="mstore-api.html#IDX77">mfldr_Create</A>
+<LI><A HREF="mstore-api.html#IDX72">mfldr_DeleteMsg</A>
+<LI><A HREF="mstore-api.html#IDX86">mfldr_diff</A>
+<LI><A HREF="mstore-api.html#IDX85">mfldr_Diff</A>
+<LI><A HREF="mstore-api.html#IDX71">mfldr_Import</A>
+<LI><A HREF="mstore-api.html#IDX70">mfldr_Insert</A>
+<LI><A HREF="mstore-api.html#IDX67">mfldr_MessageNum</A>
+<LI><A HREF="mstore-api.html#IDX76">mfldr_Mstore</A>
+<LI><A HREF="mstore-api.html#IDX75">mfldr_NewMail</A>
+<LI><A HREF="mstore-api.html#IDX68">mfldr_NthMessage</A>
+<LI><A HREF="mstore-api.html#IDX69">mfldr_NumMessages</A>
+<LI><A HREF="mstore-api.html#IDX89">mfldr_refinedDiff</A>
+<LI><A HREF="mstore-api.html#IDX88">mfldr_RefineDiff</A>
+<LI><A HREF="mstore-api.html#IDX73">mfldr_Select</A>
+<LI><A HREF="mstore-api.html#IDX74">mfldr_Sort</A>
+<LI><A HREF="mstore-api.html#IDX78">mfldr_SuperHash</A>
+<LI><A HREF="mstore-api.html#IDX90">mfldr_Sync</A>
+<LI><A HREF="mstore-api.html#IDX83">mfldr_Update</A>
+<LI><A HREF="mstore-api.html#IDX49">mmsg_Body</A>
+<LI><A HREF="mstore-api.html#IDX51">mmsg_BodyOffset</A>
+<LI><A HREF="mstore-api.html#IDX54">mmsg_DestroyStream</A>
+<LI><A HREF="mstore-api.html#IDX61">mmsg_HeaderHash</A>
+<LI><A HREF="mstore-api.html#IDX60">mmsg_KeyHash</A>
+<LI><A HREF="mstore-api.html#IDX56">mmsg_Owner</A>
+<LI><A HREF="mstore-api.html#IDX55">mmsg_RawData</A>
+<LI><A HREF="mstore-api.html#IDX50">mmsg_SetBody</A>
+<LI><A HREF="mstore-api.html#IDX52">mmsg_Size</A>
+<LI><A HREF="mstore-api.html#IDX53">mmsg_Stream</A>
+<LI><A HREF="mstore-api.html#IDX57">mmsg_Summary</A>
+<LI><A HREF="mstore-api.html#IDX62">mmsg_Update</A>
+<LI><A HREF="mstore-api.html#IDX100">mstore_Close</A>
+<LI><A HREF="mstore-api.html#IDX97">mstore_Open</A>
+<LI><A HREF="mstore-api.html#IDX101">mstore_OpenFolder</A>
+<LI><A HREF="mstore-api.html#IDX98">mstore_Setup</A>
+<LI><A HREF="mstore-api.html#IDX99">mstore_Update</A>
+</DIR>
+<H2>z</H2>
+<DIR>
+<LI><A HREF="mstore-api.html#IDX2">Zmail_Init</A>
+</DIR>
+
+</P>
+
+
+<H1><A NAME="SEC38" HREF="mstore-api_toc.html#SEC38">Concept Index</A></H1>
+
+<P>
+<H2>b</H2>
+<DIR>
+<LI><A HREF="mstore-api.html#IDX8">bodypart</A>
+</DIR>
+<H2>d</H2>
+<DIR>
+<LI><A HREF="mstore-api.html#IDX1">delegating</A>
+</DIR>
+<H2>f</H2>
+<DIR>
+<LI><A HREF="mstore-api.html#IDX66">folder</A>
+</DIR>
+<H2>g</H2>
+<DIR>
+<LI><A HREF="mstore-api.html#IDX87">ghost</A>
+</DIR>
+<H2>k</H2>
+<DIR>
+<LI><A HREF="mstore-api.html#IDX58">key hash</A>
+<LI><A HREF="mstore-api.html#IDX59">key headers</A>
+</DIR>
+<H2>m</H2>
+<DIR>
+<LI><A HREF="mstore-api.html#IDX3">mailobj</A>
+<LI><A HREF="mstore-api.html#IDX47">message</A>
+<LI><A HREF="mstore-api.html#IDX96">message store</A>
+</DIR>
+<H2>o</H2>
+<DIR>
+<LI><A HREF="mstore-api.html#IDX48">owner</A>
+</DIR>
+<H2>p</H2>
+<DIR>
+<LI><A HREF="mstore-api.html#IDX81">partitioned superhash</A>
+</DIR>
+<H2>s</H2>
+<DIR>
+<LI><A HREF="mstore-api.html#IDX79">superhash</A>
+<LI><A HREF="mstore-api.html#IDX80">superhash bucket</A>
+</DIR>
+
+</P>
+
+</BODY>
+</HTML>

@@ -1,0 +1,147 @@
+# -%- File-Id:fwrdfix.zsc; Client-Rev:4.0.0; Seq-Num:1 -%-
+#======================================================================
+# DESCRIPTION:
+#	Forward messages as attachments if they are larger than 28k.
+#
+# BACKGROUND:
+#	Because Z-Mail 4.x compose window's text wiget can only
+#	hold 32k bytes of text, problems arise when a user tries to
+#	resend one of these large messages using the 
+#	Compose->"Forward Edited..." menu item.
+#	If a text message larger than 32k bytes is forwarded, only
+#	the first 32k bytes is passed on. This script works around
+#	this limitation by forwarding the large message as a RFC822 
+#	attachment.
+#
+# PLATFORMS SUPPORTED:
+#	MS Windows	Yes
+#	Macintosh	Needs ResEdit work to change menu items
+#	Unix Motif	Needs different button/menu commands
+#	Unix Lite	Needs different button/menu commands
+#
+# INSTALLATION:
+#	This file should be "sourced" from 
+#		c:\zmail\lib\custom.rc				on Windows
+#		$ZMLIB/custom.zmailrc				on Unix
+#
+#	It should not be sourced from the individual users' 
+#	zmail.rc file, since the 'source' command gets over-written when 
+#	the user saves the application settings.
+#
+# FILES:
+#	None
+#
+# PERMANENT VARIABLES:
+#	None
+#
+# TEMPORARY VARIABLES: (Should be unset immediately following use)
+#	__list
+#	__curr
+#	__flag
+#	__too_big
+#	__fwrdfix_is_loaded
+#	__threshold_size
+#	__curr_msg_size
+#
+# FUNCTIONS:
+#	__resend_edited_msg
+#
+# MODIFIED COMMANDS:
+#	None
+#
+# HISTORY:
+#	24Apr96 Paul Kincaid-Smith   Original. Thanks to Bart Schaefer
+#                                    for help with __cancel_compose().
+#	24Apr96 Bart Schaefer        Rewrote to precompute the message
+#                                    size rather than start a compose,
+#                                    kill it, and then start another
+#	25Apr96 Paul Kincaid-Smith   Fixed arithmetic comparison error
+#                                    for numbers > 32K: use "arith"
+#
+#======================================================================
+
+# prevent redundant reloads of this script
+if $?__fwrdfix_is_loaded
+    return 0
+endif
+
+echo sourced fwrdfix.zsc
+
+set __fwrdfix_is_loaded
+set __threshold_size = 28000    # messages bigger than this (in bytes)
+                                # are forwarded as attachments
+
+function __resend_edited_msg() {
+    # This function precomputes the size of a composition about to be sent.
+    # If it exceeds the threshold, it attaches the forwarded message(s) as 
+    # attachment(s).
+    if ! $?__threshold_size
+        return 0
+    endif
+
+    # Stash the piped input, the parameters (assumed to be a message list),
+    # or the selection if neither of those is provided, in $__list
+    if $?input
+	set __list = $input
+    else
+	msg_list $* | set __list
+    endif
+
+    # Stash the current message, for setting subject of new compose
+    msg_list . | set __curr
+
+    # Determine cumulative size of messages to be forwarded 
+    set __curr_msg_size = 0
+    foreach __m $__list 'msg_list - $__m ; arith __curr_msg_size += $[%c]'
+
+    # Restore the current message
+    msg_list - $__curr
+
+    # Compare the computed size to the threshold ("arith" for 32-bit ints)
+    arith __too_big = $__curr_msg_size >= $__threshold_size
+    if $__too_big
+
+        # Keep our grammar proper... single v.s. multiple messages
+        match ".*[,\-].*" "$__list"
+        if $status == 0
+            echo -d "The messages you are resending total $__curr_msg_size bytes and will be included as attachments."
+        else
+            echo -d "The message you are resending is $__curr_msg_size bytes and will be included as an attachment."
+        endif
+
+        # resend as an attachment
+        set __flag = "-M"
+    else
+	# forward the way the user requested
+	set __flag = "-f"
+    endif
+
+    unset __curr __curr_msg_size __too_big
+
+    # Do the "mail" command last so that the return status of this
+    # function is the return status of the "mail" command.
+    mail $__flag $__list
+}
+
+if is_mswin
+
+# these buttons for testing only
+# button -W main "FancyForward:$__threshold_size" __resend_edited_msg
+# remember to comment out "reload suppressor" at top of file
+# button -W main "Reload fwrdfix.zsc" "source $ZMLIB\zscript\fwrdfix.zsc"
+
+
+# main window toolbar items
+button -B MainChildToolbar
+button -n -label 'Forward' -icon fwd_tb_bmp __resend_edited_msg
+# message window toolbar items
+button -B MessageChildToolbar
+button -n -label 'Forward' -icon fwd_tb_bmp __resend_edited_msg
+button -W main
+
+# Compose Window Menu
+menu -B MainComposeMenu
+menu -name mcm_forward -mnemonic E -label 'Forward Edited' '__resend_edited_msg'
+menu -W main
+
+endif

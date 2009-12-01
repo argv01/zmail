@@ -1,0 +1,661 @@
+<HTML>
+<HEAD>
+<TITLE>Z-Mail UNIX Configuration Management</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>Z-Mail UNIX Configuration Management</H1>
+<P>
+<UL>
+<LI><A HREF="#configure">Automated Configuration Via <TT>configure</TT></A>
+<UL>
+<LI><A HREF="#additional">Additional Configuration</A>
+</UL>
+<LI><A HREF="#mkmakes"><TT>Makefile</TT> Assembly Via <TT>mkmakes</TT></A>
+<UL>
+<LI><A HREF="#macros-command">Macros For Command-Line Use</A>
+<LI><A HREF="#macros-override">Macros You May Override</A>
+<LI><A HREF="#macros-prohibited">Macros You Should <I>NEVER</I> Override</A>
+<LI><A HREF="#macros-reserved">Macros <I>Reserved</I> For Your Use</A>
+</UL>
+<LI><A HREF="#mappings">Mappings From <TT>ostype-name</TT> To Platform</A>
+</UL>
+<H2><A NAME="configure">Automated Configuration Via <TT>configure</TT></A></H2>
+<P>
+Platform configuration for UNIX Z-Mail is managed by a combination of CVS and GNU autoconf.
+Autoconf in turn depends upon GNU m4.
+<P>
+Briefly, <TT>autoconf</TT> reads the file <TT>configure.in</TT>, and processes it with <TT>m4</TT>
+to produce an executable shell script named <TT>configure</TT>.  The <TT>configure</TT> script is
+then run on the target build platform.  It is up to the developer to create an appropriate
+<TT>configure.in</TT> for the project whose configuration is being managed (in this case, Z-Mail).
+<I>Note that</I> <TT>m4</TT> <I>and</I> <TT>autoconf</TT> <I>need not exist on the target platform;
+the</I> <TT>configure</TT> <I>script is normally created in advance on a machine known to have these
+utilities.</I>
+<P>
+When <TT>configure</TT> runs, it examines directories, attempts to execute shell and compiler
+commands, compiles and executes test programs, and generally does whatever is necessary to find
+out what characteristics of the machine affect the build process.  It then reads a set of files,
+again named by convention with the suffix <tt>.in</tt>, and processes them (directly, with no
+recourse to <TT>m4</TT>, though possibly using common utilities like <TT>sed</TT>) to produce the
+actual files to be used by the build process.  It is typical to use configure to create Makefiles
+or other <TT>make</TT> components, header files, and other platform specific utility scripts.
+<P>
+The following files are processed by the Z-Mail <TT>configure</TT> script:
+<P>
+<UL>
+<LI><TT>osconfig.h.in</TT>
+<LI><TT>osmake.mk.in</TT>
+</UL>
+<P>
+The following files are <B><I>NOT USED</I></B> even though they exist:
+<UL>
+<LI><TT>Makefile.in</TT>
+<LI><TT>config.h.in</TT>
+<LI><TT>spoor/Makefile.in</TT>
+</UL>
+These files date from an experiment in reworking the configuration mechanism when moving from
+autoconf version 1.11 to version 2.10.  Neither the config rework nor the move to 2.10 was ever
+completed.
+<P>
+The following files are used by <B>other</B> <TT>autoconf</TT> or <TT>configure</TT> processes in
+the <TT>zmail</TT> source heirarchy (for example, by the ZPOP <TT>configure</TT>):
+<P>
+<UL>
+<LI><TT>zimap/Makefile.in</TT>
+<LI><TT>zimap/configure.in</TT>
+<LI><TT>zync/Makefile.in</TT>
+<LI><TT>zync/config.h.in</TT>
+<LI><TT>zync/configure.in</TT>
+<LI><TT>zync/zpop.config.in</TT>
+</UL>
+<P>
+The following files are processed by <B>other stages</B> of the build process and are not related
+to <TT>configure</TT>:
+<P>
+<UL>
+<LI><TT>config/distrib.sh.in</TT>
+<LI><TT>config/menudefs.sh.in</TT>
+</UL>
+<P>
+The following files are <B>output</B> by <TT>configure ostype</TT>:
+<P>
+<UL>
+<LI><TT>osconfig.h</TT> <I>(linked from</I> <TT>config/os-ostype.h</TT><I>)</I>
+<LI><TT>osmake.mk</TT> <I>(linked from</I> <TT>config/os-ostype.mk</TT><I>)</I>
+<LI><TT>config/os-ostype.h.old</TT>
+<LI><TT>config/os-ostype.mk.old</TT>
+</UL>
+<P>
+The <TT>.old</TT> files are generated for comparison purposes and to easily back out human errors
+(such as using the wrong <TT>ostype-name</TT>).  Each is <I>copied</I> from the corresponding
+<TT>.h</TT> or <TT>.mk</TT> file.  The new values then <I>overwrite</I> the originals.  This is
+done (rather than renaming the originals) so that new configurations are correctly written through
+symbolic links from a build tree into a corresponding CVS tree (see <A HREF="symlinks.html">symlink
+trees</A>).
+<P>
+<H3><A NAME=additional>Additional Configuration</A></H3><P>
+The <TT>configure</TT> process handles platform-specific configurations.  Additional configuration
+for product features and assorted compiled-in defaults is found in two other header files:
+<P>
+<UL>
+<LI><TT>config/config.h</TT>
+<LI><TT>config/features.h</TT>
+</UL>
+<P>
+Most of the configuration in <TT>features.h</TT> is platform-independent, though it may be
+product-dependent (<I>e.g.</I>, limited to MediaMail or to the freeware release that was once
+planned).  Much of the configuration in <TT>config.h</TT>, by contrast, is plaform-dependent
+and is selected by <CODE>#ifdef</CODE> blocks based on the constants defined in <TT>osconfig.h</TT>.
+<P>
+<HR>
+<P>
+<H2><A NAME=mkmakes><TT>Makefile</TT> Assembly Via <TT>mkmakes</TT></A></H2>
+<P>
+The <TT>mkmakes</TT> process assembles a <TT>Makefile</TT> in each of the
+subdirectories mentioned in the <TT>Files</TT> file, then finally assembles
+a top-level <TT>Makefile</TT>.  To construct these files, <TT>mkmakes</TT>
+combines the following other parts of the Z-Mail configuration, <I>in the
+order specified:</I>
+<P>
+<OL>
+<LI> <DL>
+<DT> Lists of files computed from <TT>Files</TT> entries
+<DD> <STRONG>These appear in the top-level <TT>Makefile</TT> only,</STRONG>
+in the macros <CODE>HEADERS</CODE>, <CODE>SOURCES</CODE>, <CODE>OBJECTS</CODE>,
+etc. <I>(see below)</I>.  Thus, <EM>only the top-level <TT>Makefile</TT> has
+all the necessary dependency information</EM> for the complete build.
+</DL>
+<LI> <DL>
+<DT> <TT>config/intro.mk</TT>
+<DD> A few macros that need to be defined early, particularly the
+<CODE>.PRECIOUS</CODE> list of files that over-aggressive <TT>make</TT>
+implementations should <I>not</I> delete upon error.  <EM>It may be
+necessary to update the <CODE>.PRECIOUS</CODE> list if new subdirectories
+or other computed files are added.</EM>  I'm not sure how important this
+directive is any longer, as it dates from a very early version of the
+build process.
+</DL>
+<LI> <DL>
+<DT> <TT>config/def-unix.mk</TT>
+<DD> Default instructions for how to perform compilations on UNIX so that
+the various different flavors of <TT>make</TT> all perform properly.
+</DL>
+<LI> <DL>
+<DT> <TT>osmake.mk</TT>
+<DD> The platform-specific information generated by <TT>configure</TT>,
+possibly modified manually for constraints <TT>configure</TT> doesn't
+know about.  This file normally is a link to
+<TT>config/os-<STRONG>ostype-name</STRONG>.mk</TT>.
+</DL>
+<LI> <DL>
+<DT> <TT>config/zm-<STRONG>uitype</STRONG>.mk</TT>
+<DD> UI-specific information, where <TT>uitype</TT> is one of <TT>lite</TT>,
+<TT>motif</TT>, or <TT>small</TT>, as passed to <TT>mkmakes</TT>.
+</DL>
+<LI> <DL>
+<DT> <TT>local.mk</TT> (if it exists)
+<DD> The top-level <TT>local.mk</TT> file is included in the <TT>Makefile</TT>
+in each subdirectory, as well as in the top-level <TT>Makefile</TT>.
+It thus represents build information that is local to
+the specific build machine or environment.  Anything defined in any of the
+<TT>.mk</TT> files loaded prior to this one may be overridden in
+<TT>local.mk</TT> (<I>see below</I> for what you <STRONG>should not</STRONG>
+override, and <I>how</I> to override other things).
+</DL>
+<LI> <DL>
+<DT> <TT>config/zm-gen.mk</TT>
+<DD> Defines assorted macros that are never to be overridden, and a few
+additional special targets.
+</DL>
+<LI> <DL>
+<DT> <TT>config/cxx.mk</TT>
+<DD> The equivalent of <TT>zm-gen.mk</TT> for C++ compilers.
+</DL>
+<LI> <DL>
+<DT> <TT>config/zm-dist.mk</TT>
+<DD> <STRONG>This is included in the top-level <TT>Makefile</TT> only,</STRONG>
+and defines how to run the <TT>make distribution</TT> process for both the
+<TT>zmail</TT> tree and the <TT>metamail</TT> and <TT>mp</TT> trees that are
+expected to share the same parent directory as <TT>zmail</TT>.
+</DL>
+<LI> <DL>
+<DT> Distribution actions computed from <TT>Files</TT> entries
+<DD> In each of the subdirectories, <TT>mkmakes</TT> adds instructions to
+the <TT>Makefile</TT> for distributing only that specific subdirectory's
+subset of the final distribution.  In the top-level directory, this means
+instructions for distributing the executables themselves.  These rules are
+fired by <TT>make distribution</TT>.
+</DL>
+<LI> <DL>
+<DT> <TT>config/zm-unix.mk</TT>
+<DD> <STRONG>This is included in the top-level <TT>Makefile</TT> only,</STRONG>
+and defines all the <I>targets</I> (including the default <CODE>all</CODE>
+target, which depends on <CODE>$(ZMAIL)</CODE> <I>(see below)</I>) needed to
+build any of the variants of <TT>zmail</TT> (static, shared, etc.).  It also contains
+the rule that checks whether <TT>Makefile</TT> is up to date with respect to
+the <TT>mkmakes</TT> program and all of the <CODE>$(MKFILES)</CODE> <I>(see
+below)</I>.
+</DL>
+<LI> <DL>
+<DT> <TT>config/zm-main.mk</TT>
+<DD> <STRONG>This is included in the top-level <TT>Makefile</TT> only,</STRONG>
+and provides rules for building other targets that are not necessarily UNIX
+specific (dating from the days when Windows used this system).
+</DL>
+<LI> <DL>
+<DT> <TT>config/subdirs.mk</TT>
+<DD> <STRONG>This is included in every <TT>Makefile</TT> <I>except</I> the
+top-level,</STRONG> and provides rules mostly for <TT>make depend</TT> and
+<TT>make clean</TT>.
+</DL>
+<LI> <DL>
+<DT> Subdirectory <TT>local.mk</TT> (if it exists)
+<DD> Every individual subdirectory may have it's own <TT>local.mk</TT> file
+which is <STRONG>included in the <TT>Makefile</TT> of that same subdirectory
+<I>only</I></STRONG>.  Thus the subdirectory <TT>local.mk</TT> files
+are for build instructions local to that directory or code module.
+</DL>
+<LI> <DL>
+<DT> Subdirectory <TT>depends.mk</TT> (if it exists)
+<DD> Running <TT>make depend</TT> creates <TT>depends.mk</TT> in each
+subdirectory; <TT>depends.mk</TT> is <STRONG>included in the <TT>Makefile</TT>
+of that same subdirectory <I>only</I></STRONG>.  It lists, for
+every object file in the subdirectory, the complete set of header files
+on which that object depends.
+</DL>
+</OL>
+<P>
+<H3><A NAME=macros-command>Macros For Command-Line Use</A></H3>
+<P>
+It is common usage of the <TT>make</TT> utility to expect to be able to
+modify the compilation process by defining <CODE>CC=</CODE> and
+<CODE>CFLAGS=</CODE> on the command line.  This functionality is carefully
+preserved by <TT>mkmakes</TT>.
+<P>
+<DL>
+<DT> <CODE>CC</CODE>
+<DD> <I>Replace</I> the default C compiler with the specified one.  The
+default C compiler is<BLOCKQUOTE>
+<CODE>$(COMPILER) $(OPTIMIZE)</CODE>
+</BLOCKQUOTE> <I>(see below)</I>.
+<DT> <CODE>CXX</CODE>
+<DD> Same as <CODE>CC</CODE>, but replaces the C++ compiler.
+<DT> <CODE>CFLAGS</CODE>
+<DD> <I>Additional</I> flags to be passed to the C compiler, beyond any
+already supplied automatically by the <TT>Makefile</TT>.
+<DT> <CODE>CXXFLAGS</CODE>
+<DD> Same as <CODE>CFLAGS</CODE>, but passed to the C++ compiler.
+<DT> <CODE>LDFLAGS</CODE>
+<DD> Flags passed to the loader (normally the same as the compiler, but
+only at the final link step).
+<DT> <CODE>DISTROOT</CODE>
+<DD> The directory inside which <TT>make distribution</TT> should create
+the <CODE>$(DISTDIR)</CODE> directory <I>(see below)</I>.
+</DL>
+<P>
+<H3><A NAME=macros-override>Macros You May Override</A></H3>
+<P>
+Typically, you would place the overrides for these macros either in the
+<TT>osmake.mk</TT> file (if you wish to permanently commit them for all
+future builds) or in the <TT>local.mk</TT> file (for use in a one-time
+build environment only).
+<P>
+<STRONG>In addition to the macros listed here,</STRONG> any of the macros in
+the <CODE>CONFIGURE INFO</CODE> section of the <TT>osmake.mk</TT> file may
+be overridden by placing a new definition below that section, as described
+in the <TT>osmake.mk</TT> file itself.
+<P>
+<DL>
+<DT> <CODE>OPTIMIZE</CODE>
+<DD> Normally not defined, this may be set to <CODE>-O</CODE> (or the local
+compiler's equivalent, which may be something strange like <CODE>-O3</CODE>)
+to produce an optimized build, or to <CODE>-g</CODE> (or <CODE>-ggdb</CODE>
+for GNU tools) to produce a debugging build.
+<DT> <CODE>DBFLAGS</CODE>
+<DD> Flags passed to the compiler by <TT>make debug</TT>, which attempts to
+automatically create a debugging build.  Normally you should use the
+<TT>local.mk</TT> file to change <CODE>OPTIMIZE</CODE> instead.
+<DT> <CODE>LDDBFLAGS</CODE>
+<DD> Same as <CODE>DBFLAGS</CODE>, buf for the final link step.
+<DT> <CODE>DEFAULT_INC_PATHS</CODE>
+<DD> The list of <I>all</I> directories (other than the default system ones)
+where the compiler should look for header (<CODE>#include</CODE>) files.
+<STRONG>Normally you should not change this</STRONG>, but if the compiler
+has trouble dealing with a large number of <CODE>-I</CODE> options, this
+macro is the place to attack.  See the Apollo build notes for an example.
+<DT> <CODE>ZMAIL</CODE>
+<DD> The name of the output binary executable; <TT>zmail</TT> by default.
+When executing <TT>make zmail.static</TT> or <TT>make zmail.shared</TT>,
+this name has a suffix appended to get the actual name.  <I>Note that if
+you change</I> <CODE>ZMAIL</CODE><I>, you have to use that new name as the
+name prefix when executing a static or shared</I> <TT>make</TT>.
+<DT> <CODE>GUI_TYPE</CODE>
+<DD> The set of constants that define the graphical user interface; this is
+empty for the <TT>small</TT> UI.  <STRONG>Normally you should not change
+this;</STRONG> however, on some platforms you may wish to leave out some
+special components, such as the <I>sane window</I> widget.
+<DT> <CODE>POSTLINKER</CODE>
+<DD> Any command to execute after the final link completes; defaults to a
+no-op.
+<DT> <CODE>DISTDIR</CODE>
+<DD> The directory name into which <TT>make distribution</TT> should copy
+the <TT>zmail</TT> binaries and library.  <STRONG>Normally you should not
+change this,</STRONG> as it is determined by <TT>mkmakes</TT> from
+<TT>config/distrib.dir</TT>, but you may need to in the case of a special
+custom build or the like.  <I>Be sure any name you choose is
+referenced in</I> <TT>install/work/scripts/*arch.sh</TT>
+<DT> <CODE>RENAME</CODE>
+<DD> The program used to rename files; <TT>mv</TT> by default.
+<DT> <CODE>MAKEDEPEND</CODE>
+<DD> The program used to create the <TT>depends.mk</TT> file in each
+subdirectory; <CODE>$(SRCDIR)/config/depend.pl</CODE> by default.
+<DT> <CODE>LINTFLAGS</CODE>
+<DD> <I>Additional</I> flags passed to <TT>lint</TT> by <TT>make lint</TT>
+(now hardly ever used, given good type-checking ANSI C compilers).
+</DL>
+<P>
+<H3><A NAME=macros-prohibited>Macros You Should <I>NEVER</I> Override</A></H3>
+<P>
+Although you should not alter these macros, many of them have
+<CODE>EXTRA_</CODE> or <CODE>LOCAL_</CODE> variants <I>(see below)</I>
+that can be used to <I>add to</I> their permanent counterparts.
+<P>
+<DL>
+<DT> <CODE>OSTYPE</CODE>
+<DD> The <TT>ostype-name</TT> passed to <TT>mkmakes</TT>; this should be the
+same as the <CODE>OSCONFIG</CODE> constant in <TT>osconfig.h</TT>.
+<DT> <CODE>SRCDIR</CODE>
+<DD> Different in each constructed <TT>Makefile</TT>, this gives the path
+back to the top-level directory of the source tree.
+<DT> <CODE>RELPATH</CODE>
+<DD> This gives the path from <CODE>$(SRCDIR)</CODE> to the subdirectory
+containing the individual <TT>Makefile</TT>.
+<DT> <CODE>SUBDIRS</CODE>
+<DD> The list of all subdirectories in which a recursive <TT>make</TT> needs
+to be run.
+<DT> <CODE>SETNAME</CODE>
+<DD> This doesn't seem to be used for anything after <TT>mkmakes</TT>,
+but don't touch it.
+<DT> <CODE>CONFIG_DEFS</CODE>
+<DD> The set of configuration constants for the UI type and options that you
+specified when running <TT>mkmakes</TT>.  If you think you need to change
+this macro, you probably need to run <TT>mkmakes</TT> differently instead.
+<DT> <CODE>INC_PATHS</CODE>
+<DD> Accumulates all macros that define where header files should be found.
+<DT> <CODE>SYS_TYPE</CODE>
+<DD> Definitions specific to the <TT>ostype-name</TT> that was passed
+to <TT>mkmakes</TT>.
+<DT> <CODE>ZCFLAGS</CODE>
+<DD> Like <CODE>CFLAGS</CODE>, but preset for builds of <CODE>$(ZMAIL)</CODE>.
+<DT> <CODE>SYSLIBS</CODE>
+<DD> Accumulates all the macros defining all libraries except those actually
+compiled by the <CODE>$(ZMAIL)</CODE> build process.
+<DT> <CODE>STATIC_SYSLIBS</CODE>
+<DD> Same as <CODE>SYSLIBS</CODE>, but for <TT>make zmail.static</TT>.
+<DT> <CODE>SHARED_SYSLIBS</CODE>
+<DD> Same as <CODE>SYSLIBS</CODE>, but for <TT>make zmail.shared</TT>.
+<DT> <CODE>UNIXZRC</CODE>
+<DD> The file extenstion to which processed output of files like
+<TT>system.zmailrc.src</TT> should be written.  This dates from when the
+Windows build used the same <TT>Makefile</TT> as UNIX.
+<DT> <CODE>ZMAIL_DEPENDS</CODE>
+<DD> The set of files on which a build of the <CODE>$(ZMAIL)</CODE> executable
+depends.
+<DT> <CODE>HEADERS</CODE>
+<DD> The list of all headers specified in the <TT>Files</TT> file for this
+UI type and platform.
+<DT> <CODE>LIBOJECTS</CODE>
+<DD> The list of all object files used to build <CODE>$(LIBRARIES)</CODE>,
+computed from the <CODE>$(LIBSOURCES)</CODE> by <TT>mkmakes</TT>.
+<DT> <CODE>LIBRARIES</CODE>
+<DD> The list of libraries specified in <TT>Files</TT>.
+<DT> <CODE>LIBSOURCES</CODE>
+<DD> The sources corresponding to <CODE>$(LIBRARIES)</CODE>, as specified
+in <TT>Files</TT>.
+<DT> <CODE>MKFILES</CODE>
+<DD> The set of files on which each constructed <TT>Makefile</TT> depends,
+as computed by <TT>mkmakes</TT> based on the specifications in <TT>Files</TT>.
+<DT> <CODE>OBJECTS</CODE>
+<DD> The set of object files on which <CODE>$(ZMAIL)</CODE> depends,
+computed from <CODE>$(SOURCES)</CODE> by <TT>mkmakes</TT>.
+<DT> <CODE>SOURCES</CODE>
+<DD> The sources corresponding to <CODE>$(OBJECTS)</CODE>, as specified
+in <TT>Files</TT>.
+<DT> <CODE>UTILITIES</CODE>
+<DD> A catch-all set of additional files specified in <TT>Files</TT> that
+aren't compiled by the build process but which should be distributed by
+<TT>make distribution</TT>.
+<DT> <CODE>DISTRIBUTE</CODE>
+<DD> The command run by <TT>make distribution</TT> to copy files into
+<CODE>$(DISTDIR)</CODE>.
+<DT> <CODE>CATSUP</CODE>
+<DD> The command to rebuild the XPG3 message catalogs.
+<DT> <CODE>LOCALEDIR</CODE>
+<DD> The directory where the XPG3 catalogs live.
+<DT> <CODE>EVERYTHING</CODE>
+<DD> All the files required to link <CODE>$(ZMAIL)</CODE> or any of its
+variants (<I>e.g.,</I> <TT>static</TT> and <TT>shared</TT>); specifically,
+<BLOCKQUOTE>
+<CODE>$(OBJECTS) $(LIBRARIES)</CODE>
+</BLOCKQUOTE>
+</DL>
+<P>
+<H3><A NAME=macros-reserved>Macros <I>Reserved</I> For Your Use</A></H3>
+<P>
+The following macros can be freely defined, on the command line, in
+<TT>local.mk</TT>, or in <TT>osmake.mk</TT>, without disrupting the rest
+of the build process.
+<P>
+<DL>
+<DT> <CODE>SENTINEL</CODE>
+<DD> A compiler prefix for passing the code through a memory checker such as
+<I>Sentinel</I> (which is now called something else) or <I>Purify</I>.  The
+program in <CODE>$(SENTINEL)</CODE> is passed the actual compiler command as
+its argument list.  Defaults to empty, thus running the actual compiler.
+<DT> <CODE>EXTRA_ZMAIL_DEPENDS</CODE>
+<DD> Additional dependencies for <CODE>$(ZMAIL)</CODE> and all variants.
+<DT> <CODE>LINK_MANUAL</CODE>
+<DD> Additional dependencies for the default link of <CODE>$(ZMAIL)</CODE>
+(<I>e.g.,</I> <TT>make</TT> with no arguments, or <TT>make zmail</TT>),
+applied only at the final link step.  For an example usage, see
+<TT>config/os-aix4.mk</TT> where it supplies a special build target.
+<DT> <CODE>STATIC_MANUAL</CODE>
+<DD> Same as <CODE>LINK_MANUAL</CODE>, but applied for <TT>make zmail.static</TT>.
+<DT> <CODE>SHARED_MANUAL</CODE>
+<DD> Same as <CODE>LINK_MANUAL</CODE>, but applied for <TT>make zmail.shared</TT>.
+<DT> <CODE>LIB_PATHS</CODE>
+<DD> List of directories (as compiler <CODE>-L</CODE> options) to search for
+libraries; used by plain <TT>make</TT> or <TT>make zmail</TT>.
+<DT> <CODE>STATIC_LIB_PATHS</CODE>
+<DD> Same as <TT>LIB_PATHS</TT>, but for static libraries; used by
+<TT>make zmail.static</TT>.
+<DT> <CODE>SHARED_LIB_PATHS</CODE>
+<DD> Same as <CODE>LIB_PATHS</CODE>, but for <TT>make zmail.shared</TT>.
+<DT> <CODE>MISC_LIBS</CODE>
+<DD> Actual libraries (<TT>.a</TT> files, <TT>.so</TT> files, <TT>-l</TT>
+compiler options, etc.) that should be added to the link.
+<DT> <CODE>STATIC_MISC_LIBS</CODE>
+<DD> Same as <CODE>MISC_LIBS</CODE>, but for <TT>make zmail.static</TT>.
+<DT> <CODE>SHARED_MISC_LIBS</CODE>
+<DD> Same as <CODE>MISC_LIBS</CODE>, but for <TT>make zmail.shared</TT>.
+<DT> <CODE>LOCAL_LIBS</CODE>
+<DD> Same as <CODE>MISC_LIBS</CODE>, but intended for more system-specific
+libraries or special one-time builds.  Also provides additional control over
+the order in which libraries appear on the link line; <CODE>MISC_LIBS</CODE>
+appear prior to <CODE>LOCAL_LIBS</CODE>.
+<DT> <CODE>STATIC_LOCAL_LIBS</CODE>
+<DD> Same as <CODE>LOCAL_LIBS</CODE>, but for <TT>make zmail.static</TT>.
+<DT> <CODE>SHARED_LOCAL_LIBS</CODE>
+<DD> Same as <CODE>LOCAL_LIBS</CODE>, but for <TT>make zmail.shared</TT>.
+<DT> <CODE>MISC_DEFS</CODE>
+<DD> Assorted compiler flags; intended to be used for <CODE>-D</CODE> options.
+<DT> <CODE>LOCAL_DEFS</CODE>
+<DD> Same as <CODE>MISC_DEFS</CODE> but following it on the command line.
+<DT> <CODE>LOCAL_INCS</CODE>
+<DD> Header file paths (<CODE>-I</CODE> compiler options) specific to this
+local build.
+<DT> <CODE>LOCAL_HEADERS</CODE>
+<DT> <CODE>LOCAL_LIBOBJECTS</CODE>
+<DT> <CODE>LOCAL_LIBRARIES</CODE>
+<DT> <CODE>LOCAL_LIBSOURCES</CODE>
+<DT> <CODE>LOCAL_MKFILES</CODE>
+<DT> <CODE>LOCAL_OBJECTS</CODE>
+<DT> <CODE>LOCAL_SOURCES</CODE>
+<DT> <CODE>LOCAL_UTILITIES</CODE>
+<DD> The above macros are appended to the corresponding
+<TT>mkmakes</TT>-generated macros, whose names are the same as the above
+except with the <CODE>LOCAL_</CODE> prefix deleted.  Use these macros if
+you absolutely have to alter something at that level of the build process.
+I know of no case where this is currently necessary, but the mechanism is
+there if you need it.
+</DL>
+<P>
+<HR>
+<P>
+<H2><A NAME=mappings>Mappings From <TT>ostype-name</TT> To Platform</A></H2>
+<P>
+
+
+<TABLE border="1">
+<TR align="left">
+<TH>Type</TH>	<TH>OS</TH>	<TH>Vendor</TH>	<TH>Hardware</TH>
+</TR>
+<TR>
+	<TD>aix</TD>	<TD>AIX 3.2.5</TD>	<TD>IBM</TD>	<TD>RS/6000</TD>
+</TR>
+<TR>
+	<TD>aix322</TD>	<TD>AIX 3.2.2</TD>	<TD>IBM</TD>	<TD>RS/6000</TD>
+</TR>
+<TR>
+	<TD>aix4</TD>	<TD>AIX 4.1</TD>	<TD>IBM</TD>	<TD>RS/6000 PowerPC</TD>
+</TR>
+<TR>
+	<TD>apolo</TD>	<TD>Apollo DomainOS</TD>	<TD>HP</TD>	<TD>HP 9000/300s (68020)</TD>
+</TR>
+<TR>
+	<TD>atari</TD>	<TD>Atari SVR4</TD>	<TD>Atari</TD>	<TD>Atari</TD>
+</TR>
+<TR>
+	<TD>aux</TD>	<TD>A/UX</TD>	<TD>Apple</TD>	<TD>Macintosh</TD>
+</TR>
+<TR>
+	<TD>bsd</TD>	<TD>BSD 4.3</TD>	<TD>UC Berkeley</TD>	<TD>Generic</TD>
+</TR>
+<TR>
+	<TD>bsd44</TD>	<TD>BSD 4.4 (pre-FreeBSD)</TD>	<TD>UC Berkeley</TD>	<TD>Generic</TD>
+</TR>
+<TR>
+	<TD>bsdi</TD>	<TD>BSDI</TD>	<TD>BSDI</TD>	<TD>Intel x86</TD>
+</TR>
+<TR>
+	<TD>caldera</TD>	<TD>Linux 1.2.x</TD>	<TD>Caldera (RedHat 2.0)</TD>	<TD>Intel x86</TD>
+</TR>
+<TR>
+	<TD>dgux</TD>	<TD>DG/UX</TD>	<TD>Data General</TD>	<TD>Motorola 88000</TD>
+</TR>
+<TR>
+	<TD>hp300</TD>	<TD>HP-UX 7.x</TD>	<TD>HP</TD>	<TD>HP 9000/300s (68020)</TD>
+</TR>
+<TR>
+	<TD>hp700</TD>	<TD>HP-UX 8.x</TD>	<TD>HP</TD>	<TD>HP 9000/700s (PA-RISC 1.1)</TD>
+</TR>
+<TR>
+	<TD>hp700_10</TD>	<TD>HP-UX 10.x</TD>	<TD>HP</TD>	<TD>HP 9000/700s (PA-RISC 1.1)</TD>
+</TR>
+<TR>
+	<TD>hp800</TD>	<TD>HP-UX 7.x</TD>	<TD>HP</TD>	<TD>HP 9000/800s (PA-RISC 1.0)</TD>
+</TR>
+<TR>
+	<TD>hp800_10</TD>	<TD>HP-UX 10.x</TD>	<TD>HP</TD>	<TD>HP 9000/800s (PA-RISC 1.0)</TD>
+</TR>
+<TR>
+	<TD>irix</TD>	<TD>IRIX 4.0.5f</TD>	<TD>SGI</TD>	<TD>MIPS R3000</TD>
+</TR>
+<TR>
+	<TD>irix5</TD>	<TD>IRIX 5.1</TD>	<TD>SGI</TD>	<TD>MIPS R3000 (R4000)</TD>
+</TR>
+<TR>
+	<TD>irix52</TD>	<TD>IRIX 5.2</TD>	<TD>SGI</TD>	<TD>MIPS R3000 (R4000)</TD>
+</TR>
+<TR>
+	<TD>irix53</TD>	<TD>IRIX 5.3</TD>	<TD>SGI</TD>	<TD>MIPS R4000</TD>
+</TR>
+<TR>
+	<TD>irix62</TD>	<TD>IRIX 6.2</TD>	<TD>SGI</TD>	<TD>MIPS R4000</TD>
+</TR>
+<TR>
+	<TD>inter</TD>	<TD>Interactive Unix</TD>	<TD>Interactive</TD>	<TD>Intel x86</TD>
+</TR>
+<TR>
+	<TD>linux</TD>	<TD>Linux 1.2.x</TD>	<TD>(generic)</TD>	<TD>Intel x86</TD>
+</TR>
+<TR>
+	<TD>mips</TD>	<TD>RISC/OS 4.x (BSD universe)</TD>	<TD>MIPS</TD>	<TD>MIPS R3000</TD>
+</TR>
+<TR>
+	<TD>mips-abi</TD>	<TD>Generic MIPS Application Binary Interface</TD>	<TD>SGI</TD>	<TD>MIPS R4000</TD>
+</TR>
+<TR>
+	<TD>mipsv</TD>	<TD>RISC/OS 4.x (SysV universe)</TD>	<TD>MIPS</TD>	<TD>MIPS R3000</TD>
+</TR>
+<TR>
+	<TD>motor</TD>	<TD>Delta/88 (88/Open)</TD>	<TD>Motorola</TD>	<TD>Motorola 88000</TD>
+</TR>
+<TR>
+	<TD>m88k4</TD>	<TD>System V Release 4</TD>	<TD>Motorola</TD>	<TD>Motorola 88000</TD>
+</TR>
+<TR>
+	<TD>ncr</TD>	<TD>System V Release 4</TD>	<TD>NCR (AT&T)</TD>	<TD>NCR 3000 (Intel x86)</TD>
+</TR>
+<TR>
+	<TD>newsb</TD>	<TD>BSD 4.3</TD>	<TD>Sony</TD>	<TD>Sony NeWS (68020)</TD>
+</TR>
+<TR>
+	<TD>osf1</TD>	<TD>OSF/1 v1.3</TD>	<TD>DEC</TD>	<TD>DEC Alpha</TD>
+</TR>
+<TR>
+	<TD>osf1v3</TD>	<TD>OSF/1 v3.x (Digital Unix 3.x)</TD>	<TD>DEC</TD>	<TD>DEC Alpha</TD>
+</TR>
+<TR>
+	<TD>pyr</TD>	<TD>OSx</TD>	<TD>Pyramid</TD>	<TD>Pyramid</TD>
+</TR>
+<TR>
+	<TD>pyr4</TD>	<TD>DC/OSx (SVR4)</TD>	<TD>Pyramid</TD>	<TD>Pyramid</TD>
+</TR>
+<TR>
+	<TD>qdxhc</TD>	<TD>QDX (DOS, High-C compiler)</TD>	<TD>QuarterDeck</TD>	<TD>Intel x86</TD>
+</TR>
+<TR>
+	<TD>sco</TD>	<TD>SCO UNIX 3.2v5.x</TD>	<TD>SCO</TD>	<TD>Intel x86</TD>
+</TR>
+<TR>
+	<TD>sgib</TD>	<TD>IRIX 3.x (BSD universe)</TD>	<TD>SGI</TD>	<TD>MIPS R3000</TD>
+</TR>
+<TR>
+	<TD>sol21</TD>	<TD>Solaris 2.1</TD>	<TD>Sun</TD>	<TD>Sparc</TD>
+</TR>
+<TR>
+	<TD>sol23</TD>	<TD>Solaris 2.3</TD>	<TD>Sun (OSF/Motif 1.2.4, GNU C)</TD>	<TD>Sparc</TD>
+</TR>
+<TR>
+	<TD>sol23cc</TD>	<TD>Solaris 2.3</TD>	<TD>Sun (OSF/Motif 1.2.4, SunSoft C)</TD>	<TD>Sparc</TD>
+</TR>
+<TR>
+	<TD>sol23mtf11</TD>	<TD>Solaris 2.3</TD>	<TD>Sun (OSF/Motif 1.1.4, GNU C)</TD>	<TD>Sparc</TD>
+</TR>
+<TR>
+	<TD>sol24</TD>	<TD>Solaris 2.4</TD>	<TD>Sun (OSF/Motif 1.2.4, GNU C)</TD>	<TD>Sparc</TD>
+</TR>
+<TR>
+	<TD>sol25</TD>	<TD>Solaris 2.5</TD>	<TD>Sun (OSF/Motif 1.2.4, GNU C)</TD>	<TD>Sparc</TD>
+</TR>
+<TR>
+	<TD>sol25cc</TD>	<TD>Solaris 2.5</TD>	<TD>Sun (OSF/Motif 1.2.4, SunSoft C)</TD>	<TD>Sparc</TD>
+</TR>
+<TR>
+	<TD>sol24x86</TD>	<TD>Solaris 2.4 and 2.5</TD>	<TD>Sun (Motif?  CC?)</TD>	<TD>Intel x86</TD>
+</TR>
+<TR>
+	<TD>sony</TD>	<TD>???</TD>	<TD>Sony</TD>	<TD>???</TD>
+</TR>
+<TR>
+	<TD>sptx</TD>	<TD>PT/X 1.3</TD>	<TD>Sequent</TD>	<TD>Sequent (Intel x86)</TD>
+</TR>
+<TR>
+	<TD>sptx21</TD>	<TD>PT/X 2.1</TD>	<TD>Sequent</TD>	<TD>Sequent (Intel x86)</TD>
+</TR>
+<TR>
+	<TD>sun411</TD>	<TD>SunOS 4.1.1</TD>	<TD>Sun (OSF/Motif 1.1.4, X11R4, standard cc)</TD>	<TD>Sparc</TD>
+</TR>
+<TR>
+	<TD>sun411ow</TD>	<TD>SunOS 4.1.1</TD>	<TD>Sun (OSF/Motif 1.1.4, OpenWindows X11, standard cc)</TD>	<TD>Sparc</TD>
+</TR>
+<TR>
+	<TD>sun413</TD>	<TD>SunOS 4.1.3</TD>	<TD>Sun (OSF/Motif 1.2.4, X11R5, standard cc)</TD>	<TD>Sparc</TD>
+</TR>
+<TR>
+	<TD>sun414</TD>	<TD>SunOS 4.1.4</TD>	<TD>Sun (OSF/Motif 1.2.4, OpenWindows X11, standard cc)</TD>	<TD>Sparc</TD>
+</TR>
+<TR>
+	<TD>sun41v</TD>	<TD>SunOS 4.1.1 (SysV universe)</TD>	<TD>Sun (OSF/Motif 1.1.4, X11R4, standard cc)</TD>	<TD>Sparc</TD>
+</TR>
+<TR>
+	<TD>sysv</TD>	<TD>Generic SVR3</TD>	<TD>???</TD>	<TD>???</TD>
+</TR>
+<TR>
+	<TD>sysv2</TD>	<TD>Generic SVR2</TD>	<TD>???</TD>	<TD>???</TD>
+</TR>
+<TR>
+	<TD>ultrx</TD>	<TD>Ultrix</TD>	<TD>DEC</TD>	<TD>MicroVax (?)</TD>
+</TR>
+<TR>
+	<TD>unixw</TD>	<TD>UnixWare (SVR4)</TD>	<TD>Novell</TD>	<TD>Intel x86</TD>
+</TR>
+<TR>
+	<TD>wyse</TD>	<TD>System V Release 4</TD>	<TD>Wyse</TD>	<TD>Intel x86</TD>
+</TR>
+</TABLE>
+
+
+</BODY>
+</HTML>

@@ -1,0 +1,37 @@
+# novice.zmailrc
+
+# This file demonstrates how sysadmins with novice users
+# might want to set things up.
+
+if -e $HOME/.zmailexpert
+    set quiet
+    return
+endif
+if ! -e $HOME/.zmailuser
+    echo "I see you've never used the Z-Mail program before."
+    echo "I'll set some special variables to help you out."
+    echo "After you've used Z-Mail a few times, you can type the command:"
+    echo ""
+    echo "	expert"
+    echo ""
+    echo "and the variables will no longer be set unless you put them"
+    echo "in your $HOME/$MAILRC file."
+    echo ""
+    sh touch $HOME/.zmailuser	# Use sh in case $unix is not set.
+    if $?quiet
+	unset quiet		# Show the help message on startup.
+    endif
+endif
+# At this point some helpful variables should be set.  See the list above,
+# marked as "helpful for new users", for suggestions.
+#
+# Create the "expert" command mentioned in the message above.
+cmd expert 'sh touch $HOME/.zmailexpert'
+
+# These variables are helpful for new users:
+#	ask		-- always prompt for Subject: of mail
+#	ignoreeof	-- ignore end-of-file from keyboard
+#	verify		-- query that all is well before sending mail
+#	warning		-- report miscellaneous possible problems
+set ask verify warning
+set ignoreeof="echo 'Use "'"quit"'" to quit.'"

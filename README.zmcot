@@ -1,0 +1,45 @@
+-*- Text -*-
+
+* Z-Mail Lite menus are now canceled with the keysequence `esc esc',
+not a single `esc' as in previous versions.
+
+* The Z-Script variable `master_user_file' must be set to the name of
+a file in the following format, one entry per line:
+
+    userid:fullname:nickname:host:phone
+
+The file must be sorted by "sort -f".  The Z-Script variable
+`msg_groups_file' must be set to the name of a file in the following
+format, one entry per line:
+
+    group:description:member, member, [...], member
+
+This file must also be sorted by "sort -f".  Neither file may contain
+a double-colon (`::').
+
+* The following files in the distribution directory are not part of
+the standard zmlite distribution:
+
+    README.zmcot
+    lib/bin/cotlookup
+    lib/bin/cotlookup.sh
+    lib/bin/cotpurge
+    lib/cotpurge.zm
+    lib/system.zmcotrc
+    zmcot
+
+Of these, only zmcot should need manual installation; place it in
+/usr/local/bin.
+
+* The files lib/bin/cotpurge and lib/bin/cotpurge.zm implement the
+nightly daemon which deletes old, "opened" messages from users'
+folders.  The file "cotpurge" should be edited so that ZMLIB is the
+correct path to the Z-Mail Lite library directory (which is
+/usr/lib/Zmlite by default), and USERLIST is the correct path to a
+file naming all users to be affected by the script.  Use "cron" to
+have "cotpurge" run as root once a day, or however often you like.
+
+* There is a known bug relating to printing messages.  When using F7
+to print messages, the program can crash!  To avoid this, make sure
+that the Z-Script variable `$printer' is set to exactly one printer
+name.

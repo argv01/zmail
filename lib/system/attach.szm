@@ -1,0 +1,8 @@
+# Support for MIME format messages -- X-ZM-Mime is a built-in type
+if is_gui
+    attach -type X-ZM-Mime "|metamail -B -P -d -q -x -m zmail" None \
+	"Multipurpose Internet Mail Extensions"
+else
+    attach -type X-ZM-Mime "|metamail -p -m zmail" None \
+	"Multipurpose Internet Mail Extensions"
+endif

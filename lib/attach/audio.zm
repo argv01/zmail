@@ -1,0 +1,11 @@
+# Z-Mail audio attachments -- most machines can't handle this.
+# Note, "playit" and "recordit" are Z-Script commands not supported until
+# zmail version 2.2.
+#
+# MIME audio type
+# TYPE	audio/basic	":playit '%s'"	":recordit '%s'"	"sound"
+# TYPE	audio/basic	"showaudio '%s'"	None	"sound"
+
+# Older Z-Mail audio type, for viewing messages from Z-Mail 2.1 and earlier
+# TYPE	sound	":playit '%s'"	None	"sound"
+# BITMAP	sound	bitmaps/sound.xbm

@@ -1,0 +1,17 @@
+20006 ascii		us-ascii
+20004 iso-646-gb
+20010 iso-646-se1
+20011 iso-646-se2
+20060 iso-646-no
+20141 iso-646-yu
+20100 iso-8859-1
+20101 iso-8859-2
+20144 iso-8859-5
+30437 ibm-437
+30850 ibm-850
+35000 apple-1		x-macintosh
+40000 x-iso-10646-2-1
+40001 x-iso-646-se1
+40002 x-iso-646-se2
+40003 x-ibm-437
+40004 x-ibm-850

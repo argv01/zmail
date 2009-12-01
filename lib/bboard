@@ -1,0 +1,88 @@
+function bboard() {
+#% usage: bboard folder
+# This function opens the given folder as a shared bulletin board.
+# This is just like a regular folder, but it is opened as "read-only"
+# so you can't actually update the folder (delete messages, etc).
+# Instead, this information is saved in a file called ".<foldername>"
+# in your home directory.  When you call "update", the folder is not
+# actually updated, but the message status information as if you were
+# to update is written to the dot-file.  Note, this means that the
+# only way to exit a bulletin board is to call "update" rather than
+# "close", etc... (Of course, you could write a "close" function.)
+#%
+    if X$1 == X
+	usage: $0 folder-name
+    endif
+    open -N -r $1
+    if $status == -1
+	return -1
+    endif
+    set _file = $1:t
+    if -e $HOME/.$1
+	source $HOME/.$1
+    endif
+    touch $HOME/.$1
+    unset _file
+    folder	# Show the "title"
+    headers
+}
+
+function update() {
+    set file = $thisfolder:t
+    if "$(%f)" =~ "*read-only*"   # $(%f) may expand to "filename [read-only]"
+	if ! -e $HOME/.$file
+	    error $thisfolder is read-only.
+	    return -1
+	else
+	    :d | set deleted
+	    :u | set unread
+	    :n | set new
+	    :r | set replied
+	    :s | set saved
+	    :f | set forwarded
+	    pick -p A | set pri_A
+	    pick -p B | set pri_B
+	    pick -p C | set pri_C
+	    pick -p D | set pri_D
+	    pick -p E | set pri_E
+	    set text
+	    if $?deleted
+		set text = "$text flags +D $deleted $(\n)"
+	    endif
+	    if $?unread
+		set text = "$text flags +U $unread $(\n)"
+	    endif
+	    if $?new
+		set text = "$text flags +N $new $(\n)"
+	    endif
+	    if $?replied
+		set text = "$text flags +r $replied $(\n)"
+	    endif
+	    if $?saved
+		set text = "$text flags +S $saved $(\n)"
+	    endif
+	    if $?forwarded
+		set text = "$text flags +f $forwarded $(\n)"
+	    endif
+	    if $?pri_A
+		set text = "$text mark -A $pri_A $(\n)"
+	    endif
+	    if $?pri_B
+		set text = "$text mark -B $pri_B $(\n)"
+	    endif
+	    if $?pri_C
+		set text = "$text mark -C $pri_C $(\n)"
+	    endif
+	    if $?pri_D
+		set text = "$text mark -D $pri_D $(\n)"
+	    endif
+	    if $?pri_E
+		set text = "$text mark -E $pri_E $(\n)"
+	    endif
+	    sh "echo '$text' > $HOME/.$file"
+	    close -n
+	endif
+    else
+	builtin update
+    endif
+}

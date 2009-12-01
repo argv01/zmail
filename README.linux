@@ -1,0 +1,14 @@
+
+BUILDING ZMAIL ON LINUX:
+
+You'll need the devel package for libc-client.
+On Debian: apt-get install libc-client-dev
+On Ubuntu 9.10 Karmic: apt-get install libc-client2007b-dev
+
+sh configure linux_glibc
+sh mkmakes linux_glibc motif
+make
+
+To run in place:
+export ZMLIB=/path/to/lib
+

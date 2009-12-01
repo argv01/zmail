@@ -1,0 +1,684 @@
+<HTML>
+<HEAD>
+<!-- This HTML file has been created by texi2html 1.35
+     from ../general/regexpr.texi on 9 August 1996 -->
+
+<TITLE>REGEXPR</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>REGEXPR</H1>
+
+
+<H1><A NAME="SEC1" HREF="regexpr_toc.html#SEC1">Introduction</A></H1>
+
+<P>
+This document describes the application programmer's interface to the
+REGEXPR library package for regular expression searching.
+
+</P>
+
+
+
+<H1><A NAME="SEC2" HREF="regexpr_toc.html#SEC2">Regular Expressions Overview</A></H1>
+
+<P>
+This overview assumes some level of basic computer science knowledge
+on the part of the reader.  Only the specifics of this particular regular
+expression package are discussed.  If you don't know what a regular
+expression is, go get a textbook.
+
+</P>
+<P>
+In the text that follows, <STRONG>intercharacter space</STRONG> refers to a position
+between two characters in the plain-text string being compared against the
+regular expression pattern.  This may include positions at the beginning
+or end of the buffer, that is, to the left of the first character or to
+the right of the last character.  It does <EM>not</EM> refer to the ASCII
+character <SAMP>` '</SAMP> (a space).
+
+</P>
+<P>
+Special tokens (<STRONG>escapes</STRONG>) interpreted in patterns by this regular
+expression library:
+
+</P>
+<DL COMPACT>
+
+<DT><SAMP>`\'</SAMP>
+<DD>
+Backslash always introduces another character.  If the character that
+follows the backslash is another special character, the backslash
+causes it to be treated as a normal (plain text) character.  If the
+character that follows is not a special character, it may become special;
+see "Special characters that must be preceded with a backslash" below.
+
+In particular, <SAMP>`\\'</SAMP> <EM>always</EM> must be used to match a plain-text
+backslash.
+
+<DT><SAMP>`^'</SAMP>
+<DD>
+Beginning of line.  Matches no characters; instead, it matches
+<EM>between</EM> a newline and the first character of the next line, or it
+matches before the first character of the string being matched.
+
+<DT><SAMP>`$'</SAMP>
+<DD>
+End of line.  Matches no characters; instead, it matches <EM>between</EM>
+the last non-newline character of the line and the newline that follows,
+or it matches after last character of the string being matched.
+
+<DT><SAMP>`.'</SAMP>
+<DD>
+Any single character except a newline.  The simplest wildcard.
+
+<DT><SAMP>`[<VAR>set</VAR>]'</SAMP>
+<DD>
+<DT><SAMP>`[^<VAR>set</VAR>]'</SAMP>
+<DD>
+In the first form, any single character in <VAR>set</VAR>, which may
+contain abbreviations for ranges such as <SAMP>`A-Z'</SAMP> (meaning any capital
+letter).  In the second form, any single character <EM>not</EM> in
+<VAR>set</VAR>.  To include a hyphen (<SAMP>`-'</SAMP>) in <VAR>set</VAR>, it should be
+preceded by a backslash (<SAMP>`\'</SAMP>), or must not be the first or last
+character (so it's not interpreted as a range).  To include a caret
+(<SAMP>`^'</SAMP>) in the first form (<SAMP>`[<VAR>set</VAR>]'</SAMP>), precede it by a
+backslash or place it anywhere but in the first position, where it
+would cause thep expression to be mistaken for the second form
+(<SAMP>`[^<VAR>set</VAR>]'</SAMP>).
+
+<DT><SAMP>`*'</SAMP>
+<DD>
+Zero or more occurrences of the immediately preceding pattern.  This
+character is treated as plain text if not preceded by another pattern.
+
+Note that in the regular expression <SAMP>`abcd*'</SAMP>, the <SAMP>`*'</SAMP> modifies
+<SAMP>`d'</SAMP>, not <SAMP>`abcd'</SAMP>, so this expression matches the characters
+<SAMP>`abc'</SAMP> followed by zero or more repetitions of <SAMP>`d'</SAMP> (<SAMP>`abc'</SAMP>,
+<SAMP>`abcd'</SAMP>, <SAMP>`abcdd'</SAMP>, etc.).  See <SAMP>`\('</SAMP> and <SAMP>`\)'</SAMP> for
+grouping.
+
+<DT><SAMP>`+'</SAMP>
+<DD>
+One or more occurrences of the immediately preceding pattern.  Except
+that the pattern must appear at least once, this is the same as
+<SAMP>`*'</SAMP>; i.e., <SAMP>`abcd+'</SAMP> matches <SAMP>`abcd'</SAMP> and <SAMP>`abcdd'</SAMP> (but
+not <SAMP>`abc'</SAMP>).
+
+<DT><SAMP>`?'</SAMP>
+<DD>
+Zero or one occurrence of the immediately preceding pattern; i.e.,
+<SAMP>`abcd?'</SAMP> matches <SAMP>`abc'</SAMP> and <SAMP>`abcd'</SAMP> only.
+</DL>
+
+
+<H2>Special characters that must be preceded with a backslash</H2>
+
+<DL COMPACT>
+
+<DT><SAMP>`\|'</SAMP>
+<DD>
+Alternate patterns.  If the pattern to the left of <SAMP>`\|'</SAMP> does not
+match, the pattern to the right is attempted.
+
+Alternation is <EM>not</EM> a modifier like <SAMP>`*'</SAMP> or <SAMP>`+'</SAMP>!!  The
+entire subpattern to the left is tried, and then the entire subpattern
+to the right.  Example: <SAMP>`abc\|def'</SAMP> matches <SAMP>`abc'</SAMP> or <SAMP>`def'</SAMP>
+only.
+
+<DT><SAMP>`\(<VAR>subpattern</VAR>\)'</SAMP>
+<DD>
+Pattern grouping.  The entire <VAR>subpattern</VAR> enclosed in <SAMP>`\('</SAMP> and
+<SAMP>`\)'</SAMP> becomes a single pattern for purposes of repetition by the
+<SAMP>`*'</SAMP>, <SAMP>`+'</SAMP>, and <SAMP>`?'</SAMP> modifiers.
+
+Substrings matched by subpatterns enclosed in the grouping syntax are
+loaded into indexed positions in the <STRONG>memory registers</STRONG> maintained
+by the regular expression library.  There are nine such registers;
+grouped patterns are numbered 1 through 9, left to right, and matching
+substrings are recorded (by starting and ending offset) in the
+correspondingly-numbered register.  Example: the pattern
+<SAMP>`ab\(cd\|ef\)gh'</SAMP> matches the string <SAMP>`abcdgh'</SAMP>, and records the
+position of the substring <SAMP>`cd'</SAMP> in register 1.
+
+Note that when a grouped subpattern is modified by one of the repetition
+modifiers, it is <EM>not</EM> loaded into a corresponding register.
+Example: the pattern <SAMP>`ab\(cd\|ef\)*gh'</SAMP> matches the string
+<SAMP>`abefefcdcdgh'</SAMP>, but nothing is assigned to register 1 because the
+grouped subpattern is modified by <SAMP>`*'</SAMP>.
+
+<DT><SAMP>`\1'</SAMP>
+<DD>
+<DT><SAMP>`\2'</SAMP>
+<DD>
+<DT><SAMP>`\3'</SAMP>
+<DD>
+<DT><SAMP>`...'</SAMP>
+<DD>
+<DT><SAMP>`\9'</SAMP>
+<DD>
+These special tokens are replaced by strings previously loaded into
+"memory registers" by matching a grouped subpattern.
+Example: the pattern <SAMP>`ab\(cd\|ef\)gh\1'</SAMP> matches the string
+<SAMP>`abcdghcd'</SAMP> but not <SAMP>`abcdghef'</SAMP>.
+
+<DT><SAMP>`\w'</SAMP>
+<DD>
+Word character; shorthand for the set <SAMP>`[a-zA-Z0-9]'</SAMP>.
+
+Note that this is unlike Perl, in that <SAMP>`_'</SAMP> is a word character in
+Perl but is <EM>not</EM> a word character here.
+
+<DT><SAMP>`\W'</SAMP>
+<DD>
+Not a word character; shorthand for the set <SAMP>`[^a-zA-Z0-9]'</SAMP>.
+
+<DT><SAMP>`\&#60;'</SAMP>
+<DD>
+Beginning of word; matches the intercharacter space between any
+character not in the set <SAMP>`[a-zA-Z0-9]'</SAMP> and any character in that
+set.
+
+<DT><SAMP>`\&#62;'</SAMP>
+<DD>
+End of word; matches the intercharacter space between any character in
+the set <SAMP>`[a-zA-Z0-9]'</SAMP> and any character not in that set.
+
+<DT><SAMP>`\b'</SAMP>
+<DD>
+Word boundary (beginning or end); matches where either of <SAMP>`\&#60;'</SAMP> or
+<SAMP>`\&#62;'</SAMP> would match.
+
+<DT><SAMP>`\B'</SAMP>
+<DD>
+Not word boundary; matches where neither <SAMP>`\&#60;'</SAMP> nor <SAMP>`\&#62;'</SAMP> would
+match.
+
+<DT><SAMP>`\`'</SAMP>
+<DD>
+Beginning of buffer; like <SAMP>`^'</SAMP> but only at the beginning of the entire
+string, not at the beginning of each embedded line.
+
+<DT><SAMP>`\''</SAMP>
+<DD>
+End of buffer; like <SAMP>`$'</SAMP> but only at the end of the entire string,
+not at the end of each embedded line.
+</DL>
+
+<P>
+The following additional special tokens are enabled if the package is
+compiled with the constant <CODE>emacs</CODE> defined to the C preprocessor:
+
+</P>
+<DL COMPACT>
+
+<DT><SAMP>`\='</SAMP>
+<DD>
+Matches if the offset of the current character is equal to <CODE>point</CODE>,
+which is a global variable defined outside this module.
+
+<DT><SAMP>`\s<VAR>x</VAR>'</SAMP>
+<DD>
+The character <VAR>x</VAR> is a <STRONG>syntax code</STRONG>.  The entry for <VAR>x</VAR> is
+looked up in the global table <CODE>syntax_spec_code</CODE>, which
+indicates what should be matched.
+
+<DT><SAMP>`\S<VAR>x</VAR>'</SAMP>
+<DD>
+The character <VAR>x</VAR> is a <STRONG>syntax code</STRONG> (see above).
+This is the inverse of <SAMP>`\s<VAR>x</VAR>'</SAMP>, matching anything <EM>not</EM>
+matched by that.
+</DL>
+
+<P>
+See section <A HREF="regexpr.html#SEC3">Initializing</A>, for additional special syntactic tokens that can be
+enabled or disabled.
+
+</P>
+
+
+<H1><A NAME="SEC3" HREF="regexpr_toc.html#SEC3">Initializing</A></H1>
+
+<P>
+<U>Function:</U> int <B>re_set_syntax</B> <I>(int <VAR>syntax</VAR>)</I><P>
+<A NAME="IDX1"></A>
+This sets the syntax to use and returns the previous syntax.  The syntax
+is set globally for all uses of the library, but is referenced only
+during compilation of the pattern (see section <A HREF="regexpr.html#SEC4">Compiling a Pattern</A>).  Thus
+it is possible to perform simultaneous searches with two or more
+different syntaxes, as long as the patterns have not been recompiled
+since the syntax was changed.
+
+</P>
+<P>
+The syntax is specified by a bit mask of the following defined bits:
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>RE_NO_BK_PARENS</CODE>
+<DD>
+Parentheses are used for grouping subpatterns.  With this syntax set,
+parens are always "special" and are interpreted as part of the plain
+text <EM>only</EM> when "protected" by preceding them with a backslash,
+e.g. <SAMP>`\('</SAMP> and <SAMP>`\)'</SAMP>.
+
+The default syntax (without <CODE>RE_NO_BK_PARENS</CODE>) is for parens to
+be treated as plain text, with <SAMP>`\('</SAMP> and <SAMP>`\)'</SAMP> reserved for
+subpattern grouping.
+
+<DT><CODE>RE_NO_BK_VBAR</CODE>
+<DD>
+Vertical bar (<SAMP>`|'</SAMP>) is used for delimiting alternate subpatterns.  With
+this syntax set, vertical bar is always "special" and is interpreted as
+part of the plain text <EM>only</EM> when "protected" by preceding it with
+a backslash, e.g. <SAMP>`\|'</SAMP>.
+
+The default syntax (without <CODE>RE_NO_BK_VBAR</CODE>) is for vertical
+bar to be treated as plain text, with <SAMP>`\|'</SAMP> reserved for delimiting
+alternatives.
+
+<DT><CODE>RE_BK_PLUS_QM</CODE>
+<DD>
+Plus (<SAMP>`+'</SAMP>) indicates one or more occurrences of the preceding
+subpattern; question mark (<SAMP>`?'</SAMP>) indicates zero or one occurrence of
+the preceding subpattern.  With this syntax set, plus and question mark
+are treated as plain text, and are special <EM>only</EM> when "escaped"
+by preceding them with a backslash, e.g. <SAMP>`\+'</SAMP> and <SAMP>`\?'</SAMP>.
+
+The default syntax (without <CODE>RE_BK_PLUS_QM</CODE>) is for plus and
+question mark to always be special, with <SAMP>`\+'</SAMP> and <SAMP>`\?'</SAMP>
+required to match plain-text plus and question mark.<A NAME="FOOT1" HREF="regexpr_foot.html#FOOT1">(1)</A>
+
+<DT><CODE>RE_TIGHT_VBAR</CODE>
+<DD>
+With this syntax set, vertical bars that delimit alternate subpatterns
+bind more tightly than caret (<SAMP>`^'</SAMP>, beginning of line) and dollar
+(<SAMP>`$'</SAMP>, end of line).
+
+This should mean that (for example)
+
+
+<PRE>
+^patONE\|patTWO
+</PRE>
+
+is interpreted as
+
+<PRE>
+^\(patONE\|patTWO\)
+</PRE>
+
+whereas without this syntax it would be interpreted as
+
+<PRE>
+\(^patONE\)\|\(patTWO\)
+</PRE>
+
+but neither behavior has been verified.
+
+<DT><CODE>RE_NEWLINE_OR</CODE>
+<DD>
+With this syntax set, a newline appearing in the pattern is treated as
+separating alternate patterns, as if it were a vertical bar.
+
+<DT><CODE>RE_CONTEXT_INDEP_OPS</CODE>
+<DD>
+With this syntax set, the special characters <SAMP>`^'</SAMP>, <SAMP>`$'</SAMP>,
+<SAMP>`?'</SAMP>, <SAMP>`*'</SAMP>, and <SAMP>`+'</SAMP> are special in <EM>all</EM> contexts.
+This means that if one of these characters is used at a point in the
+pattern where it does not make sense (e.g, placing <SAMP>`^'</SAMP> or <SAMP>`$'</SAMP>
+in the middle of a word; placing <SAMP>`*'</SAMP>, <SAMP>`\?'</SAMP> or <SAMP>`\+'</SAMP> at the
+beginning of a word), then compiling the pattern is an error.
+
+The default behavior (without <CODE>RE_CONTEXT_INDEP_OPS</CODE>) is to
+treat any special character that occurs out of context as if it were
+plain text.
+
+<DT><CODE>RE_ANSI_HEX</CODE>
+<DD>
+This syntax specifies that ANSI character escapes and hexadecimal
+sequences be interpreted in the pattern.  In each case the escapes are
+replaced by a single character.<A NAME="FOOT2" HREF="regexpr_foot.html#FOOT2">(2)</A>  The ANSI character escapes are as follows:
+
+<DL COMPACT>
+
+<DT><SAMP>`\a'</SAMP>
+<DD>
+<DT><SAMP>`\A'</SAMP>
+<DD>
+Audible bell, ASCII value 7.
+
+<DT><SAMP>`\b'</SAMP>
+<DD>
+<DT><SAMP>`\B'</SAMP>
+<DD>
+Backspace, ASCII value 8.
+
+<DT><SAMP>`\f'</SAMP>
+<DD>
+<DT><SAMP>`\F'</SAMP>
+<DD>
+Form feed, ASCII value 12 (decimal).
+
+<DT><SAMP>`\n'</SAMP>
+<DD>
+<DT><SAMP>`\N'</SAMP>
+<DD>
+Line feed, ASCII value 10 (decimal).
+
+<DT><SAMP>`\r'</SAMP>
+<DD>
+<DT><SAMP>`\R'</SAMP>
+<DD>
+Carriage return, ASCII value 13 (decimal).
+
+<DT><SAMP>`\t'</SAMP>
+<DD>
+<DT><SAMP>`\T'</SAMP>
+<DD>
+Horizontal tab, ASCII value 9.
+
+<DT><SAMP>`\V'</SAMP>
+<DD>
+Vertical tab, ASCII value 11 (decimal).  (Note that <SAMP>`\v'</SAMP> is pre-empted,
+see below.)
+
+<DT><SAMP>`\x<VAR>hh</VAR>'</SAMP>
+<DD>
+<DT><SAMP>`\X<VAR>hh</VAR>'</SAMP>
+<DD>
+A hexadecimal sequence, that is, a four-character string beginning with
+<SAMP>`\x'</SAMP> or <SAMP>`\X'</SAMP> followed by two hexadecimal digits (<SAMP>`0-9'</SAMP>,
+<SAMP>`a-f'</SAMP>).  The entire sequence is replaced by the single character
+whose ASCII value is given by the two hex digits <VAR>hh</VAR>.
+</DL>
+
+This syntax also extends the number of registers (recorded matches of
+subpatterns) that can be referenced from 9 to 99.  The syntax for
+referencing registers 10-99 is <SAMP>`\v<VAR>dd</VAR>'</SAMP>, where <VAR>dd</VAR> are
+two decimal digits (<SAMP>`0-9'</SAMP>).  <EM>However</EM>, as currently compiled,
+the library supports no more than 9 registers, so references using
+<SAMP>`\v'</SAMP> always generate a pattern compilation error.
+
+<DT><CODE>RE_NO_GNU_EXTENSIONS</CODE>
+<DD>
+With this syntax set, the special patterns <SAMP>`\w'</SAMP>, <SAMP>`\W'</SAMP>,
+<SAMP>`\&#60;'</SAMP>, <SAMP>`\&#62;'</SAMP>, <SAMP>`\b'</SAMP>, <SAMP>`\B'</SAMP>, <SAMP>`\`'</SAMP>, and <SAMP>`\''</SAMP> are
+<EM>not</EM> recognized.<A NAME="FOOT3" HREF="regexpr_foot.html#FOOT3">(3)</A>
+</DL>
+
+<P>
+The following predefined combinations duplicate the behavior of some common
+programs that each use slightly differing regular expression syntax:
+
+</P>
+
+<UL>
+<LI><CODE>RE_SYNTAX_AWK</CODE>
+
+<LI><CODE>RE_SYNTAX_EGREP</CODE>
+
+<LI><CODE>RE_SYNTAX_GREP</CODE>
+
+<LI><CODE>RE_SYNTAX_EMACS</CODE>
+
+</UL>
+
+<P>
+
+
+
+<H1><A NAME="SEC4" HREF="regexpr_toc.html#SEC4">Compiling a Pattern</A></H1>
+
+<P>
+To speed searching, the library requires that the regular expression be
+precompiled into an efficient format stored in the following structure:
+
+</P>
+<P>
+<A NAME="IDX2"></A>
+<A NAME="IDX3"></A>
+
+<PRE>
+typedef struct re_pattern_buffer {
+    char *buffer;          /* compiled pattern */
+    int allocated;         /* allocated size of compiled pattern */
+    int used               /* actual length of compiled pattern */
+    char *fastmap;         /* fastmap[ch] true if ch can start pattern */
+    char *translate;       /* translation to apply */
+    char fastmap_accurate; /* true if fastmap is valid */
+    char can_be_null;      /* true if can match empty string */
+    char uses_registers;   /* registers used and must be initialized */
+    char anchor;           /* anchor: 0=none 1=begline 2=begbuf */
+} *regexp_t;
+</PRE>
+
+<P>
+The structure should normally be initialized with all fields zeroed
+before calling <CODE>re_compile_pattern</CODE> to parse the regular
+expression.  Some fields may be initialized to other values to change
+the behavior of the compilation; this is noted below.
+
+</P>
+<P>
+<U>Function:</U> char * <B>re_compile_pattern</B> <I>(const char *<VAR>pattern</VAR>, int <VAR>pattern_length</VAR>, regexp_t <VAR>compiled</VAR>)</I><P>
+<A NAME="IDX4"></A>
+Compile the regexp given by <VAR>pattern</VAR> with length <VAR>pattern_length</VAR>.
+Note that <CODE>NUL</CODE> bytes may appear in the pattern and can be matched
+by the library; strings are not treated as <CODE>NUL</CODE>-terminated.
+
+</P>
+<P>
+Returns <CODE>NULL</CODE> if the pattern compiled successfully, or an error
+message if an error was encountered.
+
+</P>
+<P>
+The <CODE>buffer</CODE> field of <VAR>compiled</VAR> must be initialized to a memory
+area allocated by <CODE>malloc</CODE> (or to <CODE>NULL</CODE>) before use, and the
+<CODE>allocated</CODE> field must be set to the size of the allocated space (or
+0 if <CODE>buffer</CODE> is <CODE>NULL</CODE>).
+
+</P>
+<P>
+The <CODE>translate</CODE> field must be set to point to a valid translation
+table, or to <CODE>NULL</CODE> if no translation is to be done.  A translation
+table is a 256-character mapping table which is applied to both the pattern
+at compile time and to the string being matched at search time.  It can be
+used, for example, to map upper case onto lower case.  The table <EM>must</EM>
+have a valid entry for each of the 256 ASCII characters (0-255 decimal).
+
+</P>
+<P>
+The <CODE>fastmap</CODE> field must be set to point to a 256-character space
+for use as a mapping table, or to <CODE>NULL</CODE> if fast mappings are not
+to be used.
+
+</P>
+<P>
+<U>Function:</U> void <B>re_compile_fastmap</B> <I>(regexp_t <VAR>compiled</VAR>)</I><P>
+<A NAME="IDX5"></A>
+Computes the "fastmap" for the regexp.  For this to have any effect,
+the calling program must have initialized the <CODE>fastmap</CODE> field of
+<VAR>compiled</VAR> to point to an array of 256 characters.
+
+</P>
+<P>
+The fastmap is automatically computed during a search if the <CODE>fastmap</CODE>
+field is non-<CODE>NULL</CODE>; this function may be called to precompute the
+mapping if that is desired.
+
+</P>
+
+
+<H1><A NAME="SEC5" HREF="regexpr_toc.html#SEC5">Using Compiled Patterns</A></H1>
+<P>
+<A NAME="IDX6"></A>
+<A NAME="IDX7"></A>
+
+</P>
+<P>
+Substrings matched by grouped subpatterns (<SAMP>`\('</SAMP> and <SAMP>`\)'</SAMP>) are
+recorded in the <STRONG>re_registers</STRONG> structure, which is defined as:
+
+</P>
+
+<PRE>
+typedef struct re_registers {
+    int start[RE_NREGS];  /* start offset of region */
+    int end[RE_NREGS];    /* end offset of region */
+} *regexp_registers_t;
+</PRE>
+
+
+
+<H2><A NAME="SEC6" HREF="regexpr_toc.html#SEC6">Searching</A></H2>
+
+<P>
+<U>Function:</U> int <B>re_search</B> <I>(regexp_t <VAR>compiled</VAR>, const char *<VAR>string</VAR>, int <VAR>size</VAR>, int <VAR>startpos</VAR>, int <VAR>range</VAR>, regexp_registers_t <VAR>regs</VAR>)</I><P>
+<A NAME="IDX8"></A>
+Search for a substring of <VAR>string</VAR> matching the regular expression
+represented by <VAR>compiled</VAR>.  The search begins at <VAR>startpos</VAR> and
+is attempted repeatedly for <VAR>range</VAR> positions, extending no farther
+than the offset <VAR>size</VAR>.  Positive values of <VAR>range</VAR> indicate
+searching forwards from <VAR>startpos</VAR>, and negative values indicate
+searching backwards.  As with <CODE>re_match</CODE>, strings are <EM>not</EM>
+treated as <CODE>NUL</CODE>-terminated.
+
+</P>
+<P>
+Returns the offset of the first match found, or less than zero on any error.
+Error values are as for <CODE>re_match</CODE>.
+
+</P>
+<P>
+Substrings matched by grouped subpatterns (<SAMP>`\('</SAMP> and <SAMP>`\)'</SAMP>) are
+recorded in the structure pointed to by <VAR>regs</VAR>.
+
+</P>
+<P>
+<U>Function:</U> int <B>re_search_2</B> <I>(regexp_t <VAR>compiled</VAR>, const char *<VAR>string1</VAR>, int <VAR>size1</VAR>, const char *<VAR>string2</VAR>, int <VAR>size2</VAR>, int <VAR>startpos</VAR>, int <VAR>range</VAR>, regexp_registers_t <VAR>regs</VAR>, int <VAR>mstop</VAR>)</I><P>
+<A NAME="IDX9"></A>
+Search for a substring of the concatenation of <VAR>string1</VAR> and
+<VAR>string2</VAR> matching the regular expression represented by
+<VAR>compiled</VAR>.  As with <CODE>re_search</CODE>, positive values of
+<VAR>range</VAR> search forwards and negative values search backwards.
+Matching begins at the offset <VAR>startpos</VAR> in the concatenated string,
+and any match must end at or before the offset
+<VAR>mstop</VAR>.<A NAME="FOOT4" HREF="regexpr_foot.html#FOOT4">(4)</A>
+
+</P>
+<P>
+Return values are as for <CODE>re_search</CODE>.
+
+</P>
+<P>
+Substrings matched by grouped subpatterns are recorded in the structure
+pointed to by <VAR>regs</VAR>.
+
+</P>
+
+
+<H2><A NAME="SEC7" HREF="regexpr_toc.html#SEC7">Matching</A></H2>
+<P>
+These functions are primarily useful for constructing other pattern
+searching algorithms; matching is anchored to the starting position
+(the <CODE>anchor</CODE> field of the <CODE>regexp_t</CODE> is not used).
+
+</P>
+<P>
+<U>Function:</U> int <B>re_match</B> <I>(regexp_t <VAR>compiled</VAR>, char *<VAR>string</VAR>, int <VAR>size</VAR>, int <VAR>pos</VAR>, regexp_registers_t <VAR>regs</VAR>)</I><P>
+<A NAME="IDX10"></A>
+Match the regular expression represented by <VAR>compiled</VAR> against the given
+<VAR>string</VAR> beginning at the offset <VAR>pos</VAR> and searching no farther than
+the offset <VAR>size</VAR>.  Note that <VAR>string</VAR> is <EM>not</EM> considered to
+be <CODE>NUL</CODE> terminated, so zero-valued characters may appear and be matched
+within the space indicated by <VAR>size</VAR>.
+
+</P>
+<P>
+Returns the length of the matched portion (which may be zero), or less
+than zero on any error.  A return of -1 means the regular expression
+does not match the string; -2 means a real error (such as failure
+stack overflow) was encountered.
+
+</P>
+<P>
+Substrings matched by grouped subpatterns are recorded in the structure
+pointed to by <VAR>regs</VAR>.
+
+</P>
+<P>
+<U>Function:</U> int <B>re_match_2</B> <I>(regexp_t <VAR>compiled</VAR>, const char *<VAR>string1</VAR>, int <VAR>size1</VAR>, const char *<VAR>string2</VAR>, int <VAR>size2</VAR>, int <VAR>pos</VAR>, regexp_registers_t <VAR>regs</VAR>, int <VAR>mstop</VAR>)</I><P>
+<A NAME="IDX11"></A>
+Match the regular expression comiled in <VAR>compiled</VAR> against the
+concatenation of <VAR>string1</VAR> and <VAR>string2</VAR>.  The length of each
+string is given by <VAR>size1</VAR> and <VAR>size2</VAR>, respectively; the strings
+are <EM>not</EM> treated as <CODE>NUL</CODE>-terminated.
+
+</P>
+<P>
+Matching begins at the offset <VAR>pos</VAR> in the concatenated string, and any
+match must end at or before the offset <VAR>mstop</VAR>.
+
+</P>
+<P>
+Return values are as for <CODE>re_match</CODE>.
+
+</P>
+<P>
+Substrings matched by grouped subpatterns are recorded in the structure
+pointed to by <VAR>regs</VAR>.
+
+</P>
+
+
+<H1><A NAME="SEC8" HREF="regexpr_toc.html#SEC8">Convenience Routines</A></H1>
+
+<P>
+<U>Function:</U> char * <B>re_comp</B> <I>(const char *<VAR>pattern</VAR>)</I><P>
+<A NAME="IDX12"></A>
+Emulate the BSD 4.2 regex library routine <CODE>re_comp</CODE>.  This compiles
+the regular expression <VAR>pattern</VAR> into an internal buffer, so at most
+one search may be active at a time when using this function.  Returns
+<CODE>NULL</CODE> if <VAR>pattern</VAR> was compiled successfully, or an error message
+if there was an error.
+
+</P>
+<P>
+<U>Function:</U> int <B>re_exec</B> <I>(const char *<VAR>string</VAR>)</I><P>
+<A NAME="IDX13"></A>
+Emulate the BSD 4.2 regexp library routine <CODE>re_exec</CODE>.  This returns
+nonzero if <VAR>string</VAR> matches the regular expression most recently compiled
+with <CODE>re_comp</CODE> (that is, a matching substring is found anywhere in
+<VAR>string</VAR>).
+
+</P>
+
+
+<H1><A NAME="SEC9" HREF="regexpr_toc.html#SEC9">Index</A></H1>
+
+<P>
+<H2>r</H2>
+<DIR>
+<LI><A HREF="regexpr.html#IDX12">re_comp</A>
+<LI><A HREF="regexpr.html#IDX5">re_compile_fastmap</A>
+<LI><A HREF="regexpr.html#IDX4">re_compile_pattern</A>
+<LI><A HREF="regexpr.html#IDX13">re_exec</A>
+<LI><A HREF="regexpr.html#IDX10">re_match</A>
+<LI><A HREF="regexpr.html#IDX11">re_match_2</A>
+<LI><A HREF="regexpr.html#IDX8">re_search</A>
+<LI><A HREF="regexpr.html#IDX9">re_search_2</A>
+<LI><A HREF="regexpr.html#IDX1">re_set_syntax</A>
+<LI><A HREF="regexpr.html#IDX7">regexp_registers_t</A>
+<LI><A HREF="regexpr.html#IDX3">regexp_t</A>
+</DIR>
+<H2>s</H2>
+<DIR>
+<LI><A HREF="regexpr.html#IDX2">struct re_pattern_buffer</A>
+<LI><A HREF="regexpr.html#IDX6">struct re_registers</A>
+</DIR>
+
+</P>
+</BODY>
+</HTML>

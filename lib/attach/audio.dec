@@ -1,0 +1,10 @@
+# Sound attachments for the dec.  The au program
+# is slightly more sophisticated than the example playsoundfile program,
+# in that it discards the header if there is one.
+
+# MIME audio type
+TYPE	audio/basic	"au '%s' &"	None	"sound"
+
+# Older Z-Mail audio type, for viewing messages from Z-Mail 2.1 and earlier
+TYPE	sound	"au '%s' &"	None	"sound"
+BITMAP	sound	bitmaps/sound.xbm

@@ -1,0 +1,52 @@
+# Sample Z-Script function: reply
+
+# One of the oddities of the builtin "reply" command is that it takes
+# more than one message list -- first the list being replied-to, then
+# a list of inclusions.  It's easy to forget that the current message
+# is 5 and type "reply -ei 12" expecting to reply to the author of
+# message 12, and instead get the author of message 5.  What you
+# *wanted* to type was "reply 12 -ei".
+#
+# Front-end to the "reply" command to assure that the current message is in
+# the list of included messages, or that you really *meant* to leave it out.
+#
+# Bug: Quoted items in $* are not handled, so the -s option isn't useful.
+# It isn't generally used with "reply" ...
+#
+function reply() {
+    if $?1
+	set arg = "$1"
+	shift
+        if "$arg" =~ -*i*
+	    #
+	    # The  -i option was given.  Use the message list difference
+	    # operation to test for inclusion of the current message.
+	    #
+	    set _list = .
+	    unset _rest
+	    msg_list $* | set _list
+	    msg_list $_list {.} | set _rest
+	    if $?_rest
+		if "$_list" == "$_rest"
+		    ask "Current message not in include list -- OK?"
+		    if $status != 0
+			return -1
+		    endif
+		endif
+		unset _rest
+	    endif
+	    unset _list
+        endif
+	if $?input
+	    $input | builtin reply $arg $*
+	else
+	    builtin reply $arg $*
+	endif
+    else
+	if $?input
+	    $input | builtin reply $*
+	else
+	    builtin reply $*
+	endif
+    endif
+}

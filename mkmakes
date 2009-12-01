@@ -1,0 +1,345 @@
+#!/bin/sh
+
+
+# Function show_usage takes no arguments.  It prints a message to
+# stdout briefly describing the invocation format of this script
+
+show_usage='echo "usage: $0 ostype-name ui-name [ options ]"'
+
+
+# Function show_ostypes takes no arguments.  It prints a message to
+# stdout listing the valid operating system type names.
+
+show_ostypes='{ echo "possible ostype names are:"; cat $configdir/ostype_list; }'
+
+
+# Function show_uitypes takes no arguments.  It prints a message to
+# stdout listing the valid user interface type names.
+
+show_uitypes='echo "Specify one of the following for ui-name:  motif, lite, olit, small."'
+
+
+# Function show_options takes no arguments.  It prints a message to
+# stdout listing the valid optional arguments to this script.
+
+show_options='echo "Specify zero or more of the following for options:  nopop3 nointl zpop zync zmcot mmail cclient localizable."'
+
+
+# Function put_prologue takes no arguments.  It prints on stdout the
+# common opening prologue shared by all makefiles, both in
+# subdirectories and at the root.
+
+put_prologue='{
+  echo "# note, DISTDIR != zmail.$OSTYPE"
+  echo "OSTYPE = $ostype"
+  for var in SRCDIR RELPATH DISTDIR SUBDIRS SETNAME CONFIG_DEFS; do
+    echo $var = `eval echo \\$"$var"`;
+  done
+  echo
+  cat $configdir/intro.mk				\
+      $configdir/def-unix.mk			\
+      osmake.mk						\
+      $configdir/zm-$uitype.mk			\
+      ${local=`test -f $srcdir/local.mk && echo $srcdir/local.mk`}	\
+      $configdir/zm-gen.mk					\
+      $configdir/cxx.mk
+  echo
+}'
+
+
+# Use argument 0 to guess where the sources live.
+
+srcdir=`echo $0 | sed 's:/[^/][^/]*$::'`
+test -z "$srcdir" && srcdir=.
+test "$srcdir" = "$0" && srcdir=.
+configdir=$srcdir/config
+
+# Argument 1 to this script is the operating system type; argument 2
+# is the user interface type.
+
+ostype=$1
+uitype=$2
+
+if test -f osconfig.h && test -f osmake.mk
+then :
+else
+  echo 'Please run configure first.'
+  exit 1
+fi
+
+if test "$uitype" = "lite"
+then
+    distrootname=zmlite
+else
+    distrootname=zmail
+fi
+
+# validate the ostype
+
+case $ostype in
+  '')
+    eval "$show_usage"
+    echo
+    eval "$show_ostypes"
+    echo
+    eval "$show_uitypes"
+    echo
+    eval "$show_options"
+    echo
+    exit 1
+  ;;
+  *)
+    if grep $ostype $configdir/ostype_list > /dev/null; then
+      OSTYPE=`echo $ostype | tr '[a-z]' '[A-Z]'`
+      DISTDIR=$distrootname.`awk '$1 == "'$ostype'" { print $2; exit }' $configdir/distrib.dir`
+      test -n "$DISTDIR" || echo warning: no distribution directory defined for $ostype
+    else
+      eval "$show_ostypes"
+      echo
+      echo 'If this is a new ostype, add it to $configdir/ostype_list, then rerun this script.'
+      echo
+      exit 1
+    fi
+  ;;
+esac
+
+# avoid unsightly macro redefinition warnings
+if egrep "^#define[ 	]+$OSTYPE\$" osconfig.h >/dev/null 2>&1; then
+  CONFIG_DEFS=""
+else
+  CONFIG_DEFS="-D$OSTYPE"
+fi
+
+
+# validate the uitype
+
+case $uitype in
+  motif) CONFIG_DEFS="$CONFIG_DEFS -DGUI -DMOTIF";;
+  olit)	 CONFIG_DEFS="$CONFIG_DEFS -DGUI -DOLIT";;
+  lite)	 CONFIG_DEFS="$CONFIG_DEFS -DGUI -DVUI -DLITE";;
+  small) ;;
+  '')
+    eval "$show_usage"
+    echo
+    eval "$show_uitypes"
+    echo
+    eval "$show_options"
+    echo
+    exit 1;;
+  *)
+    echo 'Unknown ui name.'
+    eval "$show_uitypes"
+    exit 1;;
+esac
+
+pop3=true
+imap=true
+intl=true
+zpop=false
+zync=false
+zmcot=false
+mmail=false
+ccl=false
+l10n=false
+
+shift ; shift
+while test $# -gt 0
+do
+  case $1 in
+    '')     ;;
+    nopop3) pop3=false;;
+    nointl) intl=false;;
+    zpop)   zpop=true;;
+    zync)   zync=true;;
+    zmcot)  zmcot=true;;
+    mmail)  mmail=true;;
+    ccl*)   ccl=true;;
+    local*) l10n=true;;
+    *)      eval "$show_options"; exit 1;;
+  esac
+  shift;
+done
+
+case $pop3 in
+true) CONFIG_DEFS="$CONFIG_DEFS -DPOP3_SUPPORT";;
+esac
+
+case $imap in
+true) CONFIG_DEFS="$CONFIG_DEFS -DIMAP";;
+esac
+
+case $intl in
+true) CONFIG_DEFS="$CONFIG_DEFS -DZMAIL_INTL";;
+esac
+
+case $zpop in
+true) CONFIG_DEFS="$CONFIG_DEFS -DZPOP_SYNC";;
+esac
+
+case $zync in
+true) CONFIG_DEFS="$CONFIG_DEFS -DZYNC_CLIENT";;
+esac
+
+case $zmcot in
+true) CONFIG_DEFS="$CONFIG_DEFS -DZMCOT";;
+esac
+
+case $mmail in
+true) CONFIG_DEFS="$CONFIG_DEFS -DMEDIAMAIL";;
+esac
+
+case $ccl in
+true) CONFIG_DEFS="$CONFIG_DEFS -DC_CLIENT";;
+esac
+
+case $l10n in
+true) CONFIG_DEFS="$CONFIG_DEFS -DLOCALIZABLE";;
+esac
+
+# warn of conflicts
+sed -n 's/^[ 	]*\([^ 	]*\)[ 	]*=[ 	]*\(.*\)$/\1@\2/p' osmake.mk /dev/null |
+  awk -F@ '
+  { if (vars[$1] != "" && vars[$1] != $2 && warned[$1] != 1) {
+      printf "warning: conflicting definitions of %s in os-specific .mk file\n", $1
+      warned[$1] = 1;
+    }
+    vars[$1] = $2;
+  }'
+
+# XFree86 hack
+test -z "$OPENWINHOME" -a -d /usr/X11R6 && OPENWINHOME=/usr/X11R6
+
+INCLUDES="-I. -I$srcdir -I$configdir -I$srcdir/general -I$srcdir/include "${OPENWINHOME+"-I$OPENWINHOME/include"}"`sed -n 's/^EXTRA_INCLUDES[ 	]*=//p' osmake.mk`"
+
+# extract lists of various types of files
+
+pool="${TMPDIR-/tmp}/pool$$"
+cpp=`sed -n 's/^CPP[ 	]*=//p' osmake.mk | sed -n '$p'`
+awk=`cd $srcdir; pwd`/config/pool.awk
+groups=`sh $configdir/ifdef.sh $srcdir/Files - $cpp $CONFIG_DEFS $INCLUDES |
+	( rm -rf $pool; mkdir $pool; cd $pool; touch MKFILES OBJECTS LIBOBJECTS; awk -f $awk; echo * )`
+cat $pool/SOURCES    | sed -n -e 's/\.cc*$/.$O/p' >> $pool/OBJECTS
+cat $pool/LIBSOURCES | sed -n -e 's/\.cc*$/.$O/p' >> $pool/LIBOBJECTS
+
+# build Makefiles in subdirectories
+
+for dir in `awk '{ print $1 }' $pool/* | sed -n -e 's:/[^/ 	]*$::p' | sort -u`; do
+  if test -d $srcdir/$dir; then
+    SUBDIRS="$SUBDIRS $dir"
+  else
+    echo warning: $dir is missing
+  fi
+done
+
+for dir in . $SUBDIRS; do
+  test -r $srcdir/$dir/local.mk && echo $dir/local.mk >>$pool/MKFILES
+done
+
+for RELPATH in $SUBDIRS; do
+  echo Composing $RELPATH/Makefile
+  SRCDIR=`echo $RELPATH | sed 's,[^/][^/]*,..,g'`
+  UPPER=`echo $RELPATH | tr '[a-z]/' '[A-Z]_'`
+
+  # simpleminded mkdirhier
+  if test ! -d $RELPATH; then
+    need=.
+    for part in `echo $RELPATH | tr / ' '`; do
+      need=$need/$part; test -d $need || mkdir $need
+    done
+  fi
+  {
+    eval "$put_prologue"
+   
+    for group in $groups; do
+      case $group in
+	
+	DISTRIBS)
+	  echo 'distribution : $(SRCDIR)/config/distrib.sh' "\\"
+	  sed -n -e "s:^$RELPATH"'/\([^/ 	]*\)$:	\1 \\:p' \
+		 -e "s:^$RELPATH"'/\([^/ 	]*\)[ 	].*$:	\1 \\:p' $pool/$group
+	  echo "\$(${UPPER}_LOCAL_$group)"
+	  sed -n -e "s:^$RELPATH"'/\([^/ 	]*\)$:	@$(DISTRIBUTE) \1:p' \
+		 -e "s:^$RELPATH"'/\([^/ 	]*\)[ 	]\(.*\)$:	@$(DISTRIBUTE) \1 \2:p' $pool/$group
+	  echo
+	;;
+	  
+	*)
+	  echo "$group = \\"
+	  sed -n "s:^$RELPATH/"'\([^/]*\)$:	\1 \\:p' $pool/$group | sort -u
+	  echo "\$(${UPPER}_LOCAL_$group)"
+	  echo
+	;;
+      esac
+    done
+    
+    cat $configdir/subdirs.mk
+    cat $srcdir/$RELPATH/local.mk 2>/dev/null
+    cat $RELPATH/depends.mk 2>/dev/null
+  } > $RELPATH/Makefile
+done
+  
+
+# build Makefile in root directory
+
+echo Composing Makefile
+{
+  SRCDIR=.
+  RELPATH=.
+  SETNAME=ROOT
+
+  for group in $groups; do
+    case $group in
+      
+      DISTRIBS)
+        # DISTRIBS is delayed until after eval "$put_prologue"
+      ;;
+
+      *)
+	echo "$group = \\"
+	sed 's:.*:	./& \\:' $pool/$group |
+	case $group in
+	  LIBRARIES) cat;;
+	  *)	     sort -u;;
+	esac
+	echo "\$(LOCAL_$group)"
+	echo
+      ;;
+    esac
+  done
+
+  eval "$put_prologue"
+  
+  for group in $groups; do
+    case $group in
+      
+      DISTRIBS)
+	cat $configdir/zm-dist.mk
+	echo
+	echo 'distrib-toplevel : config/distrib.sh' "\\"
+	sed -n	-e 's:^\([^/ 	][^/ 	]*\)$:	\1 \\:p' \
+		-e 's:^\([^/ 	][^/ 	]*\)[ 	]..*$:	\1 \\:p' $pool/$group
+	echo "\$(LOCAL_$group)"
+	cat <<END
+	@echo Distributing .
+	@\$(SHELL) -c 'if test -f zmail.small; then \$(DISTRIBUTE) zmail.small; fi'
+	@\$(SHELL) -c 'if test -f zmail.static; then \$(DISTRIBUTE) zmail.static; fi'
+	@\$(SHELL) -c 'if test -f zmail.shared; then \$(DISTRIBUTE) zmail.shared; fi'
+END
+	sed -n	-e 's:^\([^/ 	]*\)[ 	]\(.*\)$:	@$(DISTRIBUTE) \1 \2:p' \
+		-e 's:^\([^/ 	]*\)$:	@$(DISTRIBUTE) \1:p' $pool/$group
+	echo
+	echo 'distribution : distrib-toplevel distrib-subdirs distrib-utils'
+	echo
+      ;;
+
+      *)
+        # everything except DISTRIBS now happens before eval "$put_prologue"
+      ;;
+    esac
+  done
+  
+  echo
+  cat $configdir/zm-unix.mk $configdir/zm-main.mk
+} > Makefile
+
+rm -rf $pool

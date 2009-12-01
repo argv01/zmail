@@ -1,0 +1,125 @@
+SOFTWARE LICENSE AGREEMENT
+
+          THIS LICENSE AGREEMENT (the "Agreement") is entered into by
+and between Z-CODE SOFTWARE CORPORATION (the "Licensor") and the person or
+persons reading this document (the "Licensee") with regard to the
+following:
+
+          A.  Licensor owns a set of computer programs called "Z-MAIL"
+which comprise an electronic mail package including application
+programs, network license software, and related documentation
+deliverable hereunder as more specifically identified in licensor's
+invoicing to licensee (the "Software") for use on certain computer
+hardware (the "Hardware") for the number of authorized users, both of
+which are identified in an activation key provided by Licensor (the
+"Password") and only for the Version of the Software identified by the
+Password;
+
+          B.  Licensee desires to install and use the Software in object
+code form at the Site on the Hardware authorized under this Agreement
+solely for the purposes described in the documentation and not for any
+design, development or other competitive purposes; and,
+
+          C.  The parties agree that all of the terms and conditions
+applicable to the Software are set forth in this Agreement as follows:
+
+          1.  Grant of License.  Licensor grants Licensee a
+non-exclusive, non-transferable license to install and use the Software
+on the Hardware for no more than the number of authorized users
+permitted by the Password and to make up to three backup copies for
+archival purposes only.  The Software is not, however, authorized for
+use in any aviation, nuclear, or other risk sensitive applications.  As
+a condition hereof, Licensee shall not remove any of Licensor's
+copyright notices or other proprietary legends and Licensee shall not
+reverse-engineer, decompile, disassemble, modify, translate, lease,
+loan, resell, transfer, or otherwise distribute or disclose the
+Software, in whole or in part, nor shall the Licensee attempt to decrypt
+any Passwords that may enable the Software's functionality.  Use,
+duplication, and disclosure by or on behalf of the U.S. Government is
+subject to the restrictions set forth in subparagraph (c)(1)(ii) of the
+Rights in Technical Data and Computer Software Clause of Section
+252.227-7013 of the Federal Acquisition Regulations.
+
+          2.  Reservation of Rights.  Ownership of the Software and
+Documentation and all proprietary rights therein and in all
+modifications, improvements, translations, and enhancements thereto and
+copies thereof shall remain the sole and exclusive property of Licensor.
+No title or right of ownership to the Software or any copies thereof is
+transferred to Licensee by this Agreement or otherwise.
+
+          3.  Delivery and Acceptance.  Licensor shall be deemed to have
+delivered the Software immediately upon providing the Password to the
+Licensee, and Licensee shall be deemed to have accepted the Software
+immediately upon registering the Password to activate the Software,
+unless, within ten (10) days thereafter, Licensee provides written
+notice specifically setting forth why the Software is not acceptable and
+returns the Software to Licensor.
+
+          4.  Payment.  All license fees for the Software are due and
+payable upon acceptance in accordance with licensor's invoicing for
+same.
+
+          5.  Limited Warranty.  For a period of thirty (30) days
+following delivery, Licensor warrants that, if properly installed by
+Licensee, the Software will operate in accordance with its
+documentation.  LICENSOR HEREBY DISCLAIMS ALL OTHER WARRANTIES, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+          6.  EXCLUSIVE REMEDIES.  IN THE EVENT OF ANY CLAIM OF BREACH
+OF WARRANTY, LICENSOR MAY REPAIR OR REPLACE THE SOFTWARE OR, AT
+LICENSOR'S SOLE OPTION, REFUND LICENSEE'S PURCHASE PRICE. THE FOREGOING
+ARE LICENSEE'S SOLE AND EXCLUSIVE REMEDIES HEREUNDER.
+
+          7.  LIMITATION OF LIABILITY. IT IS AGREED THAT THE PRICING
+ESTABLISHED HEREUNDER IS BASED ON THE FACT THAT THE LICENSOR SHALL NOT
+BE LIABLE FOR ANY CONSEQUENTIAL, INCIDENTAL, DIRECT, INDIRECT, SPECIAL
+OR OTHER DAMAGES EVEN IF THE LICENSOR HAS BEEN ADVISED OF THE
+POSSIBILITY OF THE SAME; LICENSOR SHALL IN NO EVENT BE LIABLE FOR MORE
+THAN THE AMOUNT RECEIVED FROM LICENSEE.
+
+          8.  Indemnification.  In the event that Licensee installs or
+uses the Software in any manner not authorized by this Agreement,
+Licensee shall defend, indemnify and hold Licensor entirely harmless
+from and against any claims, liabilities, damages, costs and expenses
+(including attorney's fees and costs) arising from or in connection with
+Licensee's acts or omissions.
+
+          9.  Term and Termination.  The license granted hereunder shall
+continue unless and until terminated by either party. Licensee may
+terminate the license granted hereunder immediately upon deinstallation
+and return of the Software to Licensor. Licensor may terminate the
+license granted immediately hereunder if Licensee breaches any term or
+condition of this Agreement and fails to cure the same within ten (10)
+days of written notice by Licensor to Licensee.
+
+          10.  Arbitration.  Except for claims for which injunctive
+relief is sought, all disputes and disagreements between the parties
+shall be resolved by binding arbitration before a neutral retired judge
+appointed by the parties or by appointed by the Superior Court of San
+Francisco or the United States District Court for the Northern District
+of California upon the request of either party.  The decision of the
+arbitrator shall be final and binding on both parties and may be entered
+as a judgment in any court of competent jurisdiction.
+
+          11.  Attorney's Fees.  The prevailing party in any litigation,
+arbitration or other proceeding shall, in addition to all other
+remedies, be entitled to recover reasonable attorney's fees and costs
+incurred in the proceeding.
+
+          12.  Governing Law.  This Agreement shall be governed and
+interpreted under the laws of the State of California.  The venue for
+any arbitration or other proceeding shall be in San Francisco,
+California unless otherwise agreed by the parties in writing.
+
+          13.  General.  If any part of this Agreement is declared
+invalid or unenforceable, all other provisions shall remain in full
+force.  No waiver of any breach or default hereunder shall be effective
+unless in writing and signed by the other party.
+
+          14.  Entire Agreement.  This Agreement constitutes the
+complete and entire understanding and agreement of the parties with
+respect to the subject matter hereof and this Agreement may only be
+modified, supplemented or otherwise amended in writing signed by both
+parties.  No representations have been made by either party to the other
+except as expressly set forth in this Agreement.

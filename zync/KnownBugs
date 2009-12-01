@@ -1,0 +1,215 @@
+    			       Zync
+			Consolidated Bug List
+
+Error == bug, error, or omission that causes Z-Mail to perform in an
+unexpected manner or otherwise not in accordance with specs/doc.
+
+Severity class
+    1. Crash or loss of data
+    2. Incorrect behavior, no workaround
+    3. Incorrect behavior, workaround exists - even if workaround
+       is ignoring Z-Mail
+    4. Correct behavior, inadequate user feedback
+    5. Error in documentation
+    6. Performance
+    7. Enhancement
+
+Obscurity rating
+    A. Every user is likely to experience it
+    B. Casual user may experience it
+    C. Unlikely to recur often
+
+###################################
+#
+#CLASS ONE (Crash or loss of data)
+#
+###################################
+
+###################################
+#
+#CLASS TWO (Incorrect behavior, no workaround)
+#
+###################################
+
+
+###################################
+#
+#CLASS THREE (Incorrect behavior, workaround exists - even if workaround
+#             is ignoring Zync)
+#
+###################################
+-------------------------------------------------------------------------------
+Alice - When the password entry on the POP server is NIS, I get the
+following error:
+   Error opening connection with post office
+   -ERR Password supplied for ataguma is incorrect
+
+When I changed the entry to be local, then it worked fine.
+Maybe the POP program needs to be compiled with the -lsun option??
+
+11/24 Carlyn - You'll need to ask David Pike; we can't test this.
+-------------------------------------------------------------------------------
+
+
+###################################
+#
+#CLASS FOUR (Correct behavior, inadequate user feedback) 
+#
+###################################
+----------------------------------------------------------------------
+srw  <9311231227.ZM2330@zen.z-code.com>
+
+  I guess 'unknown command' is the standard thing for popper to say when
+you issue a command while in the wrong state.  But I still don't like it.
+ I'd prefer an error that says what you have to do to correct the
+condition, e.g.,
+
+zen 47% telnet zex 110
+Trying 192.82.56.53...
+Connected to zex.
+Escape character is '^]'.
++OK Welcome to Z-Mail Zync server  v.5a
+zwho
+-ERR Invalid command "zwho"; you must authenticate with USER/PASS first.
+
+---
+BRL  <9311231348.ZM25454@zex.z-code.com>
+We could conceivably pull this off.  We would have to add extra entries in the
+command dispatch table so that *every* valid command has a transition from
+*every* state.  Then we supply handlers that print the error messages.  So, for
+example, the way we report that "zwho" is invalid before "user" and "pass"
+would be to have a "zwho" command for the "auth1" state that just prints a
+hardcoded error message like in your example, and returns an error code to the
+central dispatcher.
+
+Is this something we want to do?  Is it worth it?  Do we only want to do it for
+common mistakes, i.e. specific common but illegal combinations of command and
+state?
+---
+srw  <9311231354.ZM2820@zen.z-code.com>
+
+Yes, that's the idea.  The analysis of what state/command pairs should
+have specific error messages is also best saved until later, but I
+would suggest, at least, that any command other than USER or PASS or
+QUIT which is issued while in the authentication state gives an error
+like the one above.  (If it's easy, <20 min)
+
+----------------------------------------------------------------------
+###################################
+#
+#CLASS FIVE (Error in documentation) 
+#
+###################################
+---------------------------------------------------------------------------
+12/09 SRW - It might be necessary to say that Zync is based on popper, but
+I don't think so.
+---------------------------------------------------------------------------
+
+###################################
+#
+#CLASS SIX (Performance)
+#
+###################################
+
+###################################
+#
+#CLASS SEVEN (Enhancement)
+#
+###################################
+----------------------------------------------------------------------
+BES  <9311221044.ZM7143@zyrcon.z-code.com>
+(Regarding ZWHO verb)
+
+Incidentally, we've got people from AT&T complaining that DG and other
+SysVr4 systems now put a whole lot of garbage in a special format in
+the GECOS "name" field, so it isn't reasonable to use that directly as
+the full name.  An example of the way it looks is:
+
+    0000-Admin(0000)
+
+That is, some sort of number (I'm not sure what), then a hyphen, then the
+actual name, and then another number in parentheses.  Mark Horton keeps
+asking me whether we're going to add something to parse this, though he's
+happy setting $realname to override it for now.
+
+I can't find any documentation for this format on any of the machines
+around here that have it in some entries, but apparently even "real"
+user names as well as administrative psuedo-users are getting put in
+this form on some platforms.
+---
+BRL  <9311221109.ZM14972@zex.z-code.com>
+
+Urk.  If this becomes a problem, we may have to move to a more general method
+for locating the actual name.  I could see Zync eventually supporting a
+configuration parameter, call it "gecos_regexp", which would default to:
+
+	\([^,]*\)
+
+But which DG users would set to:
+
+	-\([^(]*\)
+
+The regexp library that Z-Mail uses is fairly modular and fairly well ported.
+ Let's note this as a possible future enhancement if the customers demand it.
+
+---------------------------------------------------------------------------
+GSF 11/12
+
+Prefs
+- strip comments when downloading prefs (esp. over serial)
+- monolithic ifdef'd rc file (motif/lite/mac) in home directory? (done)
+- local vs. remote saveopts behavior  (colors, fonts, etc.) (getting there)
+
+Non-zync folder handling
+- header in index for zync folder recognition:
+	if no zync connection, prompt to open read-only
+
+Backup folders
+- write recovery message
+- apply external index to spool
+
+Synchronizing
+- warn on quit/close no update
+- flags don't count, only message presence/absence
+- multiple message of same id  (e.g., double pop retrieve)
+- sort messages by id, step through lists to match
+- download index from server
+- *much* better interface (maybe in conjunction w/better multiple
+   folders/groups in future versions).  something like gdiff?
+
+multiple managed remote folders.
+- interface?
+- cross-synchronization & deletion arbitration
+
+multi-protocol service
+
+mills:
+  mac interface to manage unix mail.  never want to refer to local
+  folders, always want remote storage.  security problems.  don't
+  want mail that can be gotten at.
+---------------------------------------------------------------------------
+(This error is also in mac/KnownBugs)
+
+12/06 Terry:
+Also, the user wishes to be able to change her password at will.  The
+one generated for her is impossible to remember, not to mention she
+would like to change it periodically for security's sake.  What can
+be done about this?  (I think this might be for Scott Henry, I will 
+cc him.  Or would be a way to create a button, that could change
+the user's yp entry with ypc
+
+12/09 SRW - I don't think we can do this via Zync.  Maybe as an rsh
+client.
+---------------------------------------------------------------------------
+srw  <9312011055.ZM13643@zen.z-code.com> 12/1
+
+(This message has lots of Zync wishing, mostly regarding capability
+negotiation.)
+----------------------------------------------------------------------
+
+###################################
+#
+#CLASS ?????? - BUG OR FEATURE???????
+#
+###################################
+

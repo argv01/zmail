@@ -1,0 +1,70 @@
+<HTML>
+<HEAD>
+<TITLE>ZPOP Synchronization User Interface</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<pre>
+Incoming Mail pane of the Configuration UI
+
+	                                 
+
+Selecting "POP3" results in "pop_options -= use_sync."
+Selecting "ZPOP Synchronization" results in "pop_options 
++= use_sync."
+
+
+Variables File
+
+Add use_sync to pop_options entry.  Default to unset.
+
+
+"New Mail Check" Scenario
+
+Add a new system scenario called "New Mail Check" that 
+consists of the following settings:
+
+Common Messages:
+  For messages that are on both the PC and 
+the host:
+	p do not propagate changes
+
+Host-only Messages:
+  For messages that are on the host but 
+are not on the PC:
+  Messages marked read:
+	p Ignore
+  Unread messages:
+	p Copy from host to PC
+
+PC-only messages:
+  For messages that are on the PC but not 
+on the host:
+  Messages marked read:
+	p Ignore
+  Unread messages:
+	p Ignore
+
+Deleted Messages:
+  For messages that are on the host but 
+have been deleted from the PC:
+	p Leave on the host
+
+Preview
+  When synchronizing with this scenario:
+	p Never Preview
+
+This scenario's Description should explain how and when 
+this scenario is used.
+
+
+System Scenario vs. User Scenario
+
+	System scenarios cannot be edited.  This is a major 
+drawback, since some users will want to change the 
+default new mail sync behavior.  However, system 
+scenarios also can't be deleted, which is a major bonus.  
+Given this choice, it is probably better to provide the 
+new mail check scenario as a system scenario.  Opinions?
+</pre>
+</BODY>
+</HTML>

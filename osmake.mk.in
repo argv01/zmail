@@ -1,0 +1,49 @@
+# START OF CONFIGURE INFO
+# Please do not remove the preceding line.  Do not make any changes to this
+# file before the END OF CONFIGURE INFO line.  OS-specific make information
+# should go after that line.
+
+SHELL = @SHELL@
+LN_S = @LN_S@
+RANLIB = @RANLIB@
+YACC = @YACC@
+LEX = @LEX@
+LEXLIB = @LEXLIB@
+AWK = @AWK@
+XT_R4_INCLUDES = @XT_R4_INCLUDES@
+MOTIF_LIBS = @MOTIF_LIBS@
+LOCAL_LIBS = @LOCAL_LIBS@
+CURSES_LIB = @CURSES_LIB@
+TERM_LIB = @TERM_LIB@
+DASH_L = @DASH_L@
+EXTRA_INCLUDES = @EXTRA_INCLUDES@
+TEST_LINK = @TEST_LINK@
+TAR_CHASE = @TAR_CHASE@
+FIND_CHASE = @FIND_CHASE@
+USE_CP_DASH_P = @USE_CP_DASH_P@
+TAR_NO_CHOWN = @TAR_NO_CHOWN@
+DASH_C_WITH_DASH_O = @DASH_C_WITH_DASH_O@
+
+CPP = @CPP@
+COMPILER = cc
+CXX = @CXX@
+LINKER = @LINKER@
+
+# set up some defaults for static/shared linking
+# these can be overridden later in the hand-tweaking section
+STATIC_MOTIF_LIBS = $(MOTIF_LIBS)
+SHARED_MOTIF_LIBS = $(MOTIF_LIBS)
+STATIC_LOCAL_LIBS = $(LOCAL_LIBS)
+SHARED_LOCAL_LIBS = $(LOCAL_LIBS)
+STATIC_CURSES_LIB = $(CURSES_LIB)
+SHARED_CURSES_LIB = $(CURSES_LIB)
+STATIC_TERM_LIB = $(TERM_LIB)
+SHARED_TERM_LIB = $(TERM_LIB)
+
+# If you define any of the following macros, be sure to define their
+# STATIC_ and SHARED_ counterparts!
+#
+# LDFLAGS, LIB_PATHS, SHELL_LIBS, MISC_LIBS, LOCAL_LIBS, CURSES_LIB,
+# TERM_LIB, MOTIF_LIBS
+#
+# END OF CONFIGURE INFO - add extra make information after this line

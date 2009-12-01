@@ -1,0 +1,7 @@
+# video attachments -- most machines can't handle this.
+
+# MIME video
+#TYPE	video/mpeg		None	None	"MPEG video"
+TYPE	video/mpeg		":sh mpeg_play -quiet '%s' 2>&1 > /dev/null" \
+	None	"MPEG video"
+

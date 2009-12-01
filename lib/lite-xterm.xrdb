@@ -1,0 +1,76 @@
+! This file contains a number of key-sym rebindings used by
+! zmlite.keys that should be loaded into your X resource database by
+! either copying them to your ~/.Xdefaults or executing
+! xrdb -merge <thisfilename>
+! You should then run a new xterm with
+! xterm -name lite-xterm
+! to pick up these rebindings.  Then run Z-Mail Lite in the
+! xterm.
+
+lite-xterm*vt100*translations: #override Shift <Key>F1: string("\033[s01~") \n\
+			            Shift <Key>F2: string("\033[s02~") \n\
+			            Shift <Key>F3: string("\033[s03~") \n\
+			            Shift <Key>F4: string("\033[s04~") \n\
+			            Shift <Key>F5: string("\033[s05~") \n\
+			            Shift <Key>F6: string("\033[s06~") \n\
+			            Shift <Key>F7: string("\033[s07~") \n\
+			            Shift <Key>F8: string("\033[s08~") \n\
+			            Shift <Key>F9: string("\033[s09~") \n\
+			            Shift <Key>F10: string("\033[s10~") \n\
+			            Shift <Key>F11: string("\033[s11~") \n\
+			            Shift <Key>F12: string("\033[s12~") \n\
+			            Shift <Key>F13: string("\033[s13~") \n\
+			            Shift <Key>F14: string("\033[s14~") \n\
+			            Shift <Key>F15: string("\033[s15~") \n\
+			            Shift <Key>F16: string("\033[s16~") \n\
+			            Shift <Key>F17: string("\033[s17~") \n\
+			            Shift <Key>F18: string("\033[s18~") \n\
+			            Shift <Key>F19: string("\033[s19~") \n\
+			            Shift <Key>F20: string("\033[s20~") \n\
+			            Shift <Key>F21: string("\033[s21~") \n\
+			            Shift <Key>F22: string("\033[s22~") \n\
+			            Shift <Key>F23: string("\033[s23~") \n\
+			            Shift <Key>F24: string("\033[s24~") \n\
+			            Shift <Key>F25: string("\033[s25~") \n\
+			            Shift <Key>F26: string("\033[s26~") \n\
+			            Shift <Key>F27: string("\033[s27~") \n\
+			            Shift <Key>F28: string("\033[s28~") \n\
+			            Shift <Key>F29: string("\033[s29~") \n\
+			            Shift <Key>F30: string("\033[s30~") \n\
+			            Shift <Key>F31: string("\033[s31~") \n\
+			            Ctrl <Key>F1: string("\033[c01~") \n\
+			            Ctrl <Key>F2: string("\033[c02~") \n\
+			            Ctrl <Key>F3: string("\033[c03~") \n\
+			            Ctrl <Key>F4: string("\033[c04~") \n\
+			            Ctrl <Key>F5: string("\033[c05~") \n\
+			            Ctrl <Key>F6: string("\033[c06~") \n\
+			            Ctrl <Key>F7: string("\033[c07~") \n\
+			            Ctrl <Key>F8: string("\033[c08~") \n\
+			            Ctrl <Key>F9: string("\033[c09~") \n\
+			            Ctrl <Key>F10: string("\033[c10~") \n\
+			            Ctrl <Key>F11: string("\033[c11~") \n\
+			            Ctrl <Key>F12: string("\033[c12~") \n\
+			            Ctrl <Key>F13: string("\033[c13~") \n\
+			            Ctrl <Key>F14: string("\033[c14~") \n\
+			            Ctrl <Key>F15: string("\033[c15~") \n\
+			            Ctrl <Key>F16: string("\033[c16~") \n\
+			            Ctrl <Key>F17: string("\033[c17~") \n\
+			            Ctrl <Key>F18: string("\033[c18~") \n\
+			            Ctrl <Key>F19: string("\033[c19~") \n\
+			            Ctrl <Key>F20: string("\033[c20~") \n\
+			            Ctrl <Key>F21: string("\033[c21~") \n\
+			            Ctrl <Key>F22: string("\033[c22~") \n\
+			            Ctrl <Key>F23: string("\033[c23~") \n\
+			            Ctrl <Key>F24: string("\033[c24~") \n\
+			            Ctrl <Key>F25: string("\033[c25~") \n\
+			            Ctrl <Key>F26: string("\033[c26~") \n\
+			            Ctrl <Key>F27: string("\033[c27~") \n\
+			            Ctrl <Key>F28: string("\033[c28~") \n\
+			            Ctrl <Key>F29: string("\033[c29~") \n\
+			            Ctrl <Key>F30: string("\033[c30~") \n\
+			            Ctrl <Key>F31: string("\033[c31~") \n\
+			 	   Shift <Key>Tab: string("\033[stab") \n\
+				    Ctrl <Key>Tab: string("\033[ctab") \n\
+				Shift Ctrl <Key>s: string("\033[c31~") \n\
+				      Ctrl <Key>c: string("\033[^c") \n\
+				      Ctrl <Key>z: string("\033[^z")

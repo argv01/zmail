@@ -1,0 +1,26 @@
+# Sample Z-Script functions: reopen, call_reopen
+#	 	     button: Re-Open Folder
+
+function reopen() {
+#%
+#       reopen [-f] [-N] [-r]
+#
+# Close the current folder without updating, then reopen it.
+#
+#   -f       apply the system mailbox (folder) filters
+#   -N       do not display the list of header summaries
+#   -r       read-only mode (cannot update changes)
+#%
+    eval "builtin close -n ; builtin open $* $thisfolder"
+}
+
+# The above function is not appropriate for use from a GUI button,
+# so we put a wrapper around it with slightly different help text.
+
+function call_reopen() {
+#%
+# Close the current folder without updating, then reopen it.
+#%
+    reopen
+}
+button -n "Re-Open Folder" call_reopen

@@ -1,0 +1,7 @@
+CC = @CC@
+CFLAGS = @CFLAGS@
+RANLIB = @RANLIB@
+
+@SET_MAKE@
+
+@os_mk@

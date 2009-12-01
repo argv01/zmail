@@ -1,0 +1,20 @@
+
+                     README for zyncd
+                          v. 0.79dev
+     Copyright (C) 1993-4 Z-Code Software, an NCD company.
+
+This distribution contains the zyncd Zync server.  Zync is an enhanced
+version of the POP3 protocol, and zyncd is a UNIX implementation of a
+Zync server.
+
+This version of zyncd is an ALPHA release; Z-Code hereby disclaims any
+fitness of this software for any purpose other than taking up disk
+space.  Don't come complaining to us if zyncd eats your mail spool.
+Use this software with caution.  You get the idea.
+
+See the file install.txt in this directory for installation instructions.
+
+Send e-mail to support@z-code.com if you have any questions or find
+any bugs.
+
+Zync is a registered trademark of Z-Code Software Corp, an NCD company.

@@ -1,0 +1,5097 @@
+%!
+%%BoundingBox: (atend)
+%%Pages: (atend)
+%%DocumentFonts: (atend)
+%%EndComments
+%
+% FrameMaker PostScript Prolog 3.0, for use with FrameMaker 3.0
+% Copyright (c) 1986,87,89,90,91 by Frame Technology Corporation.
+% All rights reserved.
+%
+% Known Problems:
+%	Due to bugs in Transcript, the 'PS-Adobe-' is omitted from line 1
+/FMversion (3.0) def 
+% Set up Color vs. Black-and-White
+	/FMPrintInColor systemdict /colorimage known
+		systemdict /currentcolortransfer known or def
+% Uncomment this line to force b&w on color printer
+%   /FMPrintInColor false def
+/FrameDict 195 dict def 
+systemdict /errordict known not {/errordict 10 dict def
+		errordict /rangecheck {stop} put} if
+% The readline in 23.0 doesn't recognize cr's as nl's on AppleTalk
+FrameDict /tmprangecheck errordict /rangecheck get put 
+errordict /rangecheck {FrameDict /bug true put} put 
+FrameDict /bug false put 
+mark 
+% Some PS machines read past the CR, so keep the following 3 lines together!
+currentfile 5 string readline
+00
+0000000000
+cleartomark 
+errordict /rangecheck FrameDict /tmprangecheck get put 
+FrameDict /bug get { 
+	/readline {
+		/gstring exch def
+		/gfile exch def
+		/gindex 0 def
+		{
+			gfile read pop 
+			dup 10 eq {exit} if 
+			dup 13 eq {exit} if 
+			gstring exch gindex exch put 
+			/gindex gindex 1 add def 
+		} loop
+		pop 
+		gstring 0 gindex getinterval true 
+		} def
+	} if
+/FMVERSION {
+	FMversion ne {
+		/Times-Roman findfont 18 scalefont setfont
+		100 100 moveto
+		(FrameMaker version does not match postscript_prolog!)
+		dup =
+		show showpage
+		} if
+	} def 
+/FMLOCAL {
+	FrameDict begin
+	0 def 
+	end 
+	} def 
+	/gstring FMLOCAL
+	/gfile FMLOCAL
+	/gindex FMLOCAL
+	/orgxfer FMLOCAL
+	/orgproc FMLOCAL
+	/organgle FMLOCAL
+	/orgfreq FMLOCAL
+	/yscale FMLOCAL
+	/xscale FMLOCAL
+	/manualfeed FMLOCAL
+	/paperheight FMLOCAL
+	/paperwidth FMLOCAL
+/FMDOCUMENT { 
+	array /FMfonts exch def 
+	/#copies exch def
+	FrameDict begin
+	0 ne dup {setmanualfeed} if
+	/manualfeed exch def
+	/paperheight exch def
+	/paperwidth exch def
+	/yscale exch def
+	/xscale exch def
+	currenttransfer cvlit /orgxfer exch def
+	currentscreen cvlit /orgproc exch def
+	/organgle exch def /orgfreq exch def
+	setpapername 
+	manualfeed {true} {papersize} ifelse 
+	{manualpapersize} {false} ifelse 
+	{desperatepapersize} if
+	end 
+	} def 
+	/pagesave FMLOCAL
+	/orgmatrix FMLOCAL
+	/landscape FMLOCAL
+/FMBEGINPAGE { 
+	FrameDict begin 
+	/pagesave save def
+	3.86 setmiterlimit
+	/landscape exch 0 ne def
+	landscape { 
+		90 rotate 0 exch neg translate pop 
+		}
+		{pop pop}
+		ifelse
+	xscale yscale scale
+	/orgmatrix matrix def
+	gsave 
+	} def 
+/FMENDPAGE {
+	grestore 
+	pagesave restore
+	end 
+	showpage
+	} def 
+/FMFONTDEFINE { 
+	FrameDict begin
+	findfont 
+	ReEncode 
+	1 index exch 
+	definefont 
+	FMfonts 3 1 roll 
+	put
+	end 
+	} def 
+/FMFILLS {
+	FrameDict begin
+	array /fillvals exch def
+	end 
+	} def 
+/FMFILL {
+	FrameDict begin
+	 fillvals 3 1 roll put
+	end 
+	} def 
+/FMNORMALIZEGRAPHICS { 
+	newpath
+	0.0 0.0 moveto
+	1 setlinewidth
+	0 setlinecap
+	0 0 0 sethsbcolor
+	0 setgray 
+	} bind def
+	/fx FMLOCAL
+	/fy FMLOCAL
+	/fh FMLOCAL
+	/fw FMLOCAL
+	/llx FMLOCAL
+	/lly FMLOCAL
+	/urx FMLOCAL
+	/ury FMLOCAL
+/FMBEGINEPSF { 
+	end 
+	/FMEPSF save def 
+	/showpage {} def 
+	FMNORMALIZEGRAPHICS 
+	[/fy /fx /fh /fw /ury /urx /lly /llx] {exch def} forall 
+	fx fy translate 
+	rotate
+	fw urx llx sub div fh ury lly sub div scale 
+	llx neg lly neg translate 
+	} bind def
+/FMENDEPSF {
+	FMEPSF restore
+	FrameDict begin 
+	} bind def
+FrameDict begin 
+/setmanualfeed {
+%%BeginFeature *ManualFeed True
+	 statusdict /manualfeed true put
+%%EndFeature
+	} def
+/max {2 copy lt {exch} if pop} bind def
+/min {2 copy gt {exch} if pop} bind def
+/inch {72 mul} def
+/pagedimen { 
+	paperheight sub abs 16 lt exch 
+	paperwidth sub abs 16 lt and
+	{/papername exch def} {pop} ifelse
+	} def
+	/papersizedict FMLOCAL
+/setpapername { 
+	/papersizedict 14 dict def 
+	papersizedict begin
+	/papername /unknown def 
+		/Letter 8.5 inch 11.0 inch pagedimen
+		/LetterSmall 7.68 inch 10.16 inch pagedimen
+		/Tabloid 11.0 inch 17.0 inch pagedimen
+		/Ledger 17.0 inch 11.0 inch pagedimen
+		/Legal 8.5 inch 14.0 inch pagedimen
+		/Statement 5.5 inch 8.5 inch pagedimen
+		/Executive 7.5 inch 10.0 inch pagedimen
+		/A3 11.69 inch 16.5 inch pagedimen
+		/A4 8.26 inch 11.69 inch pagedimen
+		/A4Small 7.47 inch 10.85 inch pagedimen
+		/B4 10.125 inch 14.33 inch pagedimen
+		/B5 7.16 inch 10.125 inch pagedimen
+	end
+	} def
+/papersize {
+	papersizedict begin
+		/Letter {lettertray letter} def
+		/LetterSmall {lettertray lettersmall} def
+		/Tabloid {11x17tray 11x17} def
+		/Ledger {ledgertray ledger} def
+		/Legal {legaltray legal} def
+		/Statement {statementtray statement} def
+		/Executive {executivetray executive} def
+		/A3 {a3tray a3} def
+		/A4 {a4tray a4} def
+		/A4Small {a4tray a4small} def
+		/B4 {b4tray b4} def
+		/B5 {b5tray b5} def
+		/unknown {unknown} def
+	papersizedict dup papername known {papername} {/unknown} ifelse get
+	end
+	/FMdicttop countdictstack 1 add def 
+	statusdict begin stopped end 
+	countdictstack -1 FMdicttop {pop end} for 
+	} def
+/manualpapersize {
+	papersizedict begin
+		/Letter {letter} def
+		/LetterSmall {lettersmall} def
+		/Tabloid {11x17} def
+		/Ledger {ledger} def
+		/Legal {legal} def
+		/Statement {statement} def
+		/Executive {executive} def
+		/A3 {a3} def
+		/A4 {a4} def
+		/A4Small {a4small} def
+		/B4 {b4} def
+		/B5 {b5} def
+		/unknown {unknown} def
+	papersizedict dup papername known {papername} {/unknown} ifelse get
+	end
+	stopped 
+	} def
+/desperatepapersize {
+	statusdict /setpageparams known
+		{
+		paperwidth paperheight 0 1 
+		statusdict begin
+		{setpageparams} stopped pop 
+		end
+		} if
+	} def
+/savematrix {
+	orgmatrix currentmatrix pop
+	} bind def
+/restorematrix {
+	orgmatrix setmatrix
+	} bind def
+/dmatrix matrix def
+/dpi    72 0 dmatrix defaultmatrix dtransform
+    dup mul exch   dup mul add   sqrt def
+/freq dpi 18.75 div 8 div round dup 0 eq {pop 1} if 8 mul dpi exch div def
+/sangle 1 0 dmatrix defaultmatrix dtransform exch atan def
+/DiacriticEncoding [
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef
+/.notdef /.notdef /.notdef /.notdef /space /exclam /quotedbl
+/numbersign /dollar /percent /ampersand /quotesingle /parenleft
+/parenright /asterisk /plus /comma /hyphen /period /slash /zero /one
+/two /three /four /five /six /seven /eight /nine /colon /semicolon
+/less /equal /greater /question /at /A /B /C /D /E /F /G /H /I /J /K
+/L /M /N /O /P /Q /R /S /T /U /V /W /X /Y /Z /bracketleft /backslash
+/bracketright /asciicircum /underscore /grave /a /b /c /d /e /f /g /h
+/i /j /k /l /m /n /o /p /q /r /s /t /u /v /w /x /y /z /braceleft /bar
+/braceright /asciitilde /.notdef /Adieresis /Aring /Ccedilla /Eacute
+/Ntilde /Odieresis /Udieresis /aacute /agrave /acircumflex /adieresis
+/atilde /aring /ccedilla /eacute /egrave /ecircumflex /edieresis
+/iacute /igrave /icircumflex /idieresis /ntilde /oacute /ograve
+/ocircumflex /odieresis /otilde /uacute /ugrave /ucircumflex
+/udieresis /dagger /.notdef /cent /sterling /section /bullet
+/paragraph /germandbls /registered /copyright /trademark /acute
+/dieresis /.notdef /AE /Oslash /.notdef /.notdef /.notdef /.notdef
+/yen /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef
+/ordfeminine /ordmasculine /.notdef /ae /oslash /questiondown
+/exclamdown /logicalnot /.notdef /florin /.notdef /.notdef
+/guillemotleft /guillemotright /ellipsis /.notdef /Agrave /Atilde
+/Otilde /OE /oe /endash /emdash /quotedblleft /quotedblright
+/quoteleft /quoteright /.notdef /.notdef /ydieresis /Ydieresis
+/fraction /currency /guilsinglleft /guilsinglright /fi /fl /daggerdbl
+/periodcentered /quotesinglbase /quotedblbase /perthousand
+/Acircumflex /Ecircumflex /Aacute /Edieresis /Egrave /Iacute
+/Icircumflex /Idieresis /Igrave /Oacute /Ocircumflex /.notdef /Ograve
+/Uacute /Ucircumflex /Ugrave /dotlessi /circumflex /tilde /macron
+/breve /dotaccent /ring /cedilla /hungarumlaut /ogonek /caron
+] def
+/ReEncode { 
+	dup 
+	length 
+	dict begin 
+	{
+	1 index /FID ne 
+		{def} 
+		{pop pop} ifelse 
+	} forall 
+	0 eq {/Encoding DiacriticEncoding def} if 
+	currentdict 
+	end 
+	} bind def
+/graymode true def
+	/bwidth FMLOCAL
+	/bpside FMLOCAL
+	/bstring FMLOCAL
+	/onbits FMLOCAL
+	/offbits FMLOCAL
+	/xindex FMLOCAL
+	/yindex FMLOCAL
+	/x FMLOCAL
+	/y FMLOCAL
+/setpattern {
+	 /bwidth  exch def
+	 /bpside  exch def
+	 /bstring exch def
+	 /onbits 0 def  /offbits 0 def
+	 freq sangle landscape {90 add} if 
+		{/y exch def
+		 /x exch def
+		 /xindex x 1 add 2 div bpside mul cvi def
+		 /yindex y 1 add 2 div bpside mul cvi def
+		 bstring yindex bwidth mul xindex 8 idiv add get
+		 1 7 xindex 8 mod sub bitshift and 0 ne
+		 {/onbits  onbits  1 add def 1}
+		 {/offbits offbits 1 add def 0}
+		 ifelse
+		}
+		setscreen
+	 {} settransfer
+	 offbits offbits onbits add div FMsetgray
+	/graymode false def
+	} bind def
+/grayness {
+	FMsetgray
+	graymode not {
+		/graymode true def
+		orgxfer cvx settransfer
+		orgfreq organgle orgproc cvx setscreen
+		} if
+	} bind def
+	/HUE FMLOCAL
+	/SAT FMLOCAL
+	/BRIGHT FMLOCAL
+	/Colors FMLOCAL
+FMPrintInColor 
+	
+	{
+	/HUE 0 def
+	/SAT 0 def
+	/BRIGHT 0 def
+	% array of arrays Hue and Sat values for the separations [HUE BRIGHT]
+	/Colors   
+	[[0    0  ]    % black
+	 [0    0  ]    % white
+	 [0.00 1.0]    % red
+	 [0.37 1.0]    % green
+	 [0.60 1.0]    % blue
+	 [0.50 1.0]    % cyan
+	 [0.83 1.0]    % magenta
+	 [0.16 1.0]    % comment / yellow
+	 ] def
+      
+	/BEGINBITMAPCOLOR { 
+		BITMAPCOLOR} def
+	/BEGINBITMAPCOLORc { 
+		BITMAPCOLORc} def
+	/BEGINBITMAPTRUECOLOR { 
+		BITMAPTRUECOLOR } def
+	/BEGINBITMAPTRUECOLORc { 
+		BITMAPTRUECOLORc } def
+	/K { 
+		Colors exch get dup
+		0 get /HUE exch store 
+		1 get /BRIGHT exch store
+		  HUE 0 eq BRIGHT 0 eq and
+			{1.0 SAT sub setgray}
+			{HUE SAT BRIGHT sethsbcolor} 
+		  ifelse
+		} def
+	/FMsetgray { 
+		/SAT exch 1.0 exch sub store 
+		  HUE 0 eq BRIGHT 0 eq and
+			{1.0 SAT sub setgray}
+			{HUE SAT BRIGHT sethsbcolor} 
+		  ifelse
+		} bind def
+	}
+	
+	{
+	/BEGINBITMAPCOLOR { 
+		BITMAPGRAY} def
+	/BEGINBITMAPCOLORc { 
+		BITMAPGRAYc} def
+	/BEGINBITMAPTRUECOLOR { 
+		BITMAPTRUEGRAY } def
+	/BEGINBITMAPTRUECOLORc { 
+		BITMAPTRUEGRAYc } def
+	/FMsetgray {setgray} bind def
+	/K { 
+		pop
+		} def
+	}
+ifelse
+/normalize {
+	transform round exch round exch itransform
+	} bind def
+/dnormalize {
+	dtransform round exch round exch idtransform
+	} bind def
+/lnormalize { 
+	0 dtransform exch cvi 2 idiv 2 mul 1 add exch idtransform pop
+	} bind def
+/H { 
+	lnormalize setlinewidth
+	} bind def
+/Z {
+	setlinecap
+	} bind def
+	/fillvals FMLOCAL
+/X { 
+	fillvals exch get
+	dup type /stringtype eq
+	{8 1 setpattern} 
+	{grayness}
+	ifelse
+	} bind def
+/V { 
+	gsave eofill grestore
+	} bind def
+/N { 
+	stroke
+	} bind def
+/M {newpath moveto} bind def
+/E {lineto} bind def
+/D {curveto} bind def
+/O {closepath} bind def
+	/n FMLOCAL
+/L { 
+ 	/n exch def
+	newpath
+	normalize
+	moveto 
+	2 1 n {pop normalize lineto} for
+	} bind def
+/Y { 
+	L 
+	closepath
+	} bind def
+	/x1 FMLOCAL
+	/x2 FMLOCAL
+	/y1 FMLOCAL
+	/y2 FMLOCAL
+	/rad FMLOCAL
+/R { 
+	/y2 exch def
+	/x2 exch def
+	/y1 exch def
+	/x1 exch def
+	x1 y1
+	x2 y1
+	x2 y2
+	x1 y2
+	4 Y 
+	} bind def
+/RR { 
+	/rad exch def
+	normalize
+	/y2 exch def
+	/x2 exch def
+	normalize
+	/y1 exch def
+	/x1 exch def
+	newpath
+	x1 y1 rad add moveto
+	x1 y2 x2 y2 rad arcto
+	x2 y2 x2 y1 rad arcto
+	x2 y1 x1 y1 rad arcto
+	x1 y1 x1 y2 rad arcto
+	closepath
+	16 {pop} repeat
+	} bind def
+/C { 
+	grestore
+	gsave
+	R 
+	clip
+	} bind def
+	/FMpointsize FMLOCAL
+/F { 
+	FMfonts exch get
+	FMpointsize scalefont
+	setfont
+	} bind def
+/Q { 
+	/FMpointsize exch def
+	F 
+	} bind def
+/T { 
+	moveto show
+	} bind def
+/RF { 
+	rotate
+	0 ne {-1 1 scale} if
+	} bind def
+/TF { 
+	gsave
+	moveto 
+	RF
+	show
+	grestore
+	} bind def
+/P { 
+	moveto
+	0 32 3 2 roll widthshow
+	} bind def
+/PF { 
+	gsave
+	moveto 
+	RF
+	0 32 3 2 roll widthshow
+	grestore
+	} bind def
+/S { 
+	moveto
+	0 exch ashow
+	} bind def
+/SF { 
+	gsave
+	moveto
+	RF
+	0 exch ashow
+	grestore
+	} bind def
+/B { 
+	moveto
+	0 32 4 2 roll 0 exch awidthshow
+	} bind def
+/BF { 
+	gsave
+	moveto
+	RF
+	0 32 4 2 roll 0 exch awidthshow
+	grestore
+	} bind def
+/G { 
+	gsave
+	newpath
+	normalize translate 0.0 0.0 moveto 
+	dnormalize scale 
+	0.0 0.0 1.0 5 3 roll arc 
+	closepath fill
+	grestore
+	} bind def
+/A { 
+	gsave
+	savematrix
+	newpath
+	2 index 2 div add exch 3 index 2 div sub exch 
+	normalize 2 index 2 div sub exch 3 index 2 div add exch 
+	translate 
+	scale 
+	0.0 0.0 1.0 5 3 roll arc 
+	restorematrix
+	stroke
+	grestore
+	} bind def
+	/x FMLOCAL
+	/y FMLOCAL
+	/w FMLOCAL
+	/h FMLOCAL
+	/xx FMLOCAL
+	/yy FMLOCAL
+	/ww FMLOCAL
+	/hh FMLOCAL
+	/FMsaveobject FMLOCAL
+	/FMoptop FMLOCAL
+	/FMdicttop FMLOCAL
+/BEGINPRINTCODE { 
+	/FMdicttop countdictstack 1 add def 
+	/FMoptop count 4 sub def 
+	/FMsaveobject save def
+	userdict begin 
+	/showpage {} def 
+	FMNORMALIZEGRAPHICS 
+	3 index neg 3 index neg translate
+	} bind def
+/ENDPRINTCODE {
+	count -1 FMoptop {pop pop} for 
+	countdictstack -1 FMdicttop {pop end} for 
+	FMsaveobject restore 
+	} bind def
+/gn { 
+	0 
+	{	46 mul 
+		cf read pop 
+		32 sub 
+		dup 46 lt {exit} if 
+		46 sub add 
+		} loop
+	add 
+	} bind def
+	/str FMLOCAL
+/cfs { 
+	/str sl string def 
+	0 1 sl 1 sub {str exch val put} for 
+	str def 
+	} bind def
+/ic [ 
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0223
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0223
+	0
+	{0 hx} {1 hx} {2 hx} {3 hx} {4 hx} {5 hx} {6 hx} {7 hx} {8 hx} {9 hx}
+	{10 hx} {11 hx} {12 hx} {13 hx} {14 hx} {15 hx} {16 hx} {17 hx} {18 hx}
+	{19 hx} {gn hx} {0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12}
+	{13} {14} {15} {16} {17} {18} {19} {gn} {0 wh} {1 wh} {2 wh} {3 wh}
+	{4 wh} {5 wh} {6 wh} {7 wh} {8 wh} {9 wh} {10 wh} {11 wh} {12 wh}
+	{13 wh} {14 wh} {gn wh} {0 bl} {1 bl} {2 bl} {3 bl} {4 bl} {5 bl} {6 bl}
+	{7 bl} {8 bl} {9 bl} {10 bl} {11 bl} {12 bl} {13 bl} {14 bl} {gn bl}
+	{0 fl} {1 fl} {2 fl} {3 fl} {4 fl} {5 fl} {6 fl} {7 fl} {8 fl} {9 fl}
+	{10 fl} {11 fl} {12 fl} {13 fl} {14 fl} {gn fl}
+	] def
+	/sl FMLOCAL
+	/val FMLOCAL
+	/ws FMLOCAL
+	/im FMLOCAL
+	/bs FMLOCAL
+	/cs FMLOCAL
+	/len FMLOCAL
+	/pos FMLOCAL
+/ms { 
+	/sl exch def 
+	/val 255 def 
+	/ws cfs 
+	/im cfs 
+	/val 0 def 
+	/bs cfs 
+	/cs cfs 
+	} bind def
+400 ms 
+/ip { 
+	is 
+	0 
+	cf cs readline pop 
+	{	ic exch get exec 
+		add 
+		} forall 
+	pop 
+	
+	} bind def
+/wh { 
+	/len exch def 
+	/pos exch def 
+	ws 0 len getinterval im pos len getinterval copy pop
+	pos len 
+	} bind def
+/bl { 
+	/len exch def 
+	/pos exch def 
+	bs 0 len getinterval im pos len getinterval copy pop
+	pos len 
+	} bind def
+/s1 1 string def
+/fl { 
+	/len exch def 
+	/pos exch def 
+	/val cf s1 readhexstring pop 0 get def
+	pos 1 pos len add 1 sub {im exch val put} for
+	pos len 
+	} bind def
+/hx { 
+	3 copy getinterval 
+	cf exch readhexstring pop pop 
+	} bind def
+	/h FMLOCAL
+	/w FMLOCAL
+	/d FMLOCAL
+	/lb FMLOCAL
+	/bitmapsave FMLOCAL
+	/is FMLOCAL
+	/cf FMLOCAL
+/wbytes { 
+	dup 
+	8 eq {pop} {1 eq {7 add 8 idiv} {3 add 4 idiv} ifelse} ifelse
+	} bind def
+/BEGINBITMAPBWc { 
+	1 {} COMMONBITMAPc
+	} bind def
+/BEGINBITMAPGRAYc { 
+	8 {} COMMONBITMAPc
+	} bind def
+/BEGINBITMAP2BITc { 
+	2 {} COMMONBITMAPc
+	} bind def
+/COMMONBITMAPc { 
+	/r exch def
+	/d exch def
+	gsave
+	translate rotate scale /h exch def /w exch def
+	/lb w d wbytes def 
+	sl lb lt {lb ms} if 
+	/bitmapsave save def 
+	r                    
+	/is im 0 lb getinterval def 
+	ws 0 lb getinterval is copy pop 
+	/cf currentfile def 
+	w h d [w 0 0 h neg 0 h] 
+	{ip} image 
+	bitmapsave restore 
+	grestore
+	} bind def
+/BEGINBITMAPBW { 
+	1 {} COMMONBITMAP
+	} bind def
+/BEGINBITMAPGRAY { 
+	8 {} COMMONBITMAP
+	} bind def
+/BEGINBITMAP2BIT { 
+	2 {} COMMONBITMAP
+	} bind def
+/COMMONBITMAP { 
+	/r exch def
+	/d exch def
+	gsave
+	translate rotate scale /h exch def /w exch def
+	/bitmapsave save def 
+	r                    
+	/is w d wbytes string def
+	/cf currentfile def 
+	w h d [w 0 0 h neg 0 h] 
+	{cf is readhexstring pop} image
+	bitmapsave restore 
+	grestore
+	} bind def
+	/proc1 FMLOCAL
+	/proc2 FMLOCAL
+	/newproc FMLOCAL
+/Fmcc {
+    /proc2 exch cvlit def
+    /proc1 exch cvlit def
+    /newproc proc1 length proc2 length add array def
+    newproc 0 proc1 putinterval
+    newproc proc1 length proc2 putinterval
+    newproc cvx
+} bind def
+/ngrayt 256 array def
+/nredt 256 array def
+/nbluet 256 array def
+/ngreent 256 array def
+	/gryt FMLOCAL
+	/blut FMLOCAL
+	/grnt FMLOCAL
+	/redt FMLOCAL
+	/indx FMLOCAL
+	/cynu FMLOCAL
+	/magu FMLOCAL
+	/yelu FMLOCAL
+	/k FMLOCAL
+	/u FMLOCAL
+/colorsetup {
+	currentcolortransfer
+	/gryt exch def
+	/blut exch def
+	/grnt exch def
+	/redt exch def
+	0 1 255 {
+		/indx exch def
+		/cynu 1 red indx get 255 div sub def
+		/magu 1 green indx get 255 div sub def
+		/yelu 1 blue indx get 255 div sub def
+		/k cynu magu min yelu min def
+		/u k currentundercolorremoval exec def
+		nredt indx 1 0 cynu u sub max sub redt exec put
+		ngreent indx 1 0 magu u sub max sub grnt exec put
+		nbluet indx 1 0 yelu u sub max sub blut exec put
+		ngrayt indx 1 k currentblackgeneration exec sub gryt exec put
+	} for
+	{255 mul cvi nredt exch get}
+	{255 mul cvi ngreent exch get}
+	{255 mul cvi nbluet exch get}
+	{255 mul cvi ngrayt exch get}
+	setcolortransfer
+	{pop 0} setundercolorremoval
+	{} setblackgeneration
+	} bind def
+	/tran FMLOCAL
+/fakecolorsetup {
+	/tran 256 string def
+	0 1 255 {/indx exch def 
+		tran indx
+		red indx get 77 mul
+		green indx get 151 mul
+		blue indx get 28 mul
+		add add 256 idiv put} for
+	currenttransfer
+	{255 mul cvi tran exch get 255.0 div}
+	exch Fmcc settransfer
+} bind def
+/BITMAPCOLOR { 
+	/d 8 def
+	gsave
+	translate rotate scale /h exch def /w exch def
+	/bitmapsave save def 
+	colorsetup
+	/is w d wbytes string def
+	/cf currentfile def 
+	w h d [w 0 0 h neg 0 h] 
+	{cf is readhexstring pop} {is} {is} true 3 colorimage 
+	bitmapsave restore 
+	grestore
+	} bind def
+/BITMAPCOLORc { 
+	/d 8 def
+	gsave
+	translate rotate scale /h exch def /w exch def
+	/lb w d wbytes def 
+	sl lb lt {lb ms} if 
+	/bitmapsave save def 
+	colorsetup
+	/is im 0 lb getinterval def 
+	ws 0 lb getinterval is copy pop 
+	/cf currentfile def 
+	w h d [w 0 0 h neg 0 h] 
+	{ip} {is} {is} true 3 colorimage
+	bitmapsave restore 
+	grestore
+	} bind def
+/BITMAPTRUECOLORc { 
+        gsave
+        translate rotate scale /h exch def /w exch def
+        /bitmapsave save def 
+        
+        /is w string def
+        
+        ws 0 w getinterval is copy pop 
+        /cf currentfile def 
+        w h 8 [w 0 0 h neg 0 h] 
+        {ip} {gip} {bip} true 3 colorimage
+        bitmapsave restore 
+        grestore
+        } bind def
+/BITMAPTRUECOLOR { 
+        gsave
+        translate rotate scale /h exch def /w exch def
+        /bitmapsave save def 
+        /is w string def
+        /gis w string def
+        /bis w string def
+        /cf currentfile def 
+        w h 8 [w 0 0 h neg 0 h] 
+        { cf is readhexstring pop } 
+        { cf gis readhexstring pop } 
+        { cf bis readhexstring pop } 
+        true 3 colorimage 
+        bitmapsave restore 
+        grestore
+        } bind def
+/BITMAPTRUEGRAYc { 
+        gsave
+        translate rotate scale /h exch def /w exch def
+        /bitmapsave save def 
+        
+        /is w string def
+        
+        ws 0 w getinterval is copy pop 
+        /cf currentfile def 
+        w h 8 [w 0 0 h neg 0 h] 
+        {ip gip bip w gray} image
+        bitmapsave restore 
+        grestore
+        } bind def
+/ww FMLOCAL
+/r FMLOCAL
+/g FMLOCAL
+/b FMLOCAL
+/i FMLOCAL
+/gray { 
+        /ww exch def
+        /b exch def
+        /g exch def
+        /r exch def
+        0 1 ww 1 sub { /i exch def r i get .299 mul g i get .587 mul
+			b i get .114 mul add add r i 3 -1 roll floor cvi put } for
+        r
+        } bind def
+/BITMAPTRUEGRAY { 
+        gsave
+        translate rotate scale /h exch def /w exch def
+        /bitmapsave save def 
+        /is w string def
+        /gis w string def
+        /bis w string def
+        /cf currentfile def 
+        w h 8 [w 0 0 h neg 0 h] 
+        { cf is readhexstring pop 
+          cf gis readhexstring pop 
+          cf bis readhexstring pop w gray}  image
+        bitmapsave restore 
+        grestore
+        } bind def
+/BITMAPGRAY { 
+	8 {fakecolorsetup} COMMONBITMAP
+	} bind def
+/BITMAPGRAYc { 
+	8 {fakecolorsetup} COMMONBITMAPc
+	} bind def
+/ENDBITMAP {
+	} bind def
+end 
+	/ALDsave FMLOCAL
+	/ALDmatrix matrix def ALDmatrix currentmatrix pop
+/StartALD {
+	/ALDsave save def
+	 savematrix
+	 ALDmatrix setmatrix
+	} bind def
+/InALD {
+	 restorematrix
+	} bind def
+/DoneALD {
+	 ALDsave restore
+	} bind def
+%%EndProlog
+%%BeginSetup
+(3.0) FMVERSION
+1 1 612 792 0 1 25 FMDOCUMENT
+0 0 /Palatino-Bold FMFONTDEFINE
+1 0 /Palatino-Roman FMFONTDEFINE
+2 0 /Palatino-BoldItalic FMFONTDEFINE
+3 0 /Palatino-Italic FMFONTDEFINE
+4 0 /Helvetica-Oblique FMFONTDEFINE
+5 0 /AvantGarde-Demi FMFONTDEFINE
+6 0 /Helvetica-Narrow FMFONTDEFINE
+7 0 /Helvetica-Bold FMFONTDEFINE
+8 0 /Helvetica-BoldOblique FMFONTDEFINE
+9 0 /Helvetica-Narrow-Oblique FMFONTDEFINE
+10 0 /Helvetica-Narrow-BoldOblique FMFONTDEFINE
+11 0 /Helvetica-Narrow-Bold FMFONTDEFINE
+12 0 /Helvetica FMFONTDEFINE
+32 FMFILLS
+0 0 FMFILL
+1 0.1 FMFILL
+2 0.3 FMFILL
+3 0.5 FMFILL
+4 0.7 FMFILL
+5 0.9 FMFILL
+6 0.97 FMFILL
+7 1 FMFILL
+8 <0f1e3c78f0e1c387> FMFILL
+9 <0f87c3e1f0783c1e> FMFILL
+10 <cccccccccccccccc> FMFILL
+11 <ffff0000ffff0000> FMFILL
+12 <8142241818244281> FMFILL
+13 <03060c183060c081> FMFILL
+14 <8040201008040201> FMFILL
+16 1 FMFILL
+17 0.9 FMFILL
+18 0.7 FMFILL
+19 0.5 FMFILL
+20 0.3 FMFILL
+21 0.1 FMFILL
+22 0.03 FMFILL
+23 0 FMFILL
+24 <f0e1c3870f1e3c78> FMFILL
+25 <f0783c1e0f87c3e1> FMFILL
+26 <3333333333333333> FMFILL
+27 <0000ffff0000ffff> FMFILL
+28 <7ebddbe7e7dbbd7e> FMFILL
+29 <fcf9f3e7cf9f3f7e> FMFILL
+30 <7fbfdfeff7fbfdfe> FMFILL
+%%EndSetup
+%%Page: "1" 1
+%%BeginPaperSize: Letter
+%%EndPaperSize
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+54 396 324 567 C
+54 396 324 567 R
+7 X
+0 K
+V
+0 9.33 657.83 557.24 791.81 474.3 115.98 81 423 FMBEGINEPSF
+%%BeginDocument: /usr/people/steve/zmail/ig/Z-and-box.epsi
+%!PS-Adobe-2.0 EPSF-2.0
+%%Title: /usr/people/steve/Z-and-box.epsi
+%%Creator: IslandDraw for steve
+%%CreationDate: Mon Oct  5 15:10:56 1992
+%%Pages: 1
+%%BoundingBox: 9.33174 657.834 557.245 791.814
+%%EndComments
+save
+
+userdict /IslandDrawDict 300 dict dup begin put
+
+%% catch nocurrentpoint error for:
+%% pathbbox
+    /ncpoint errordict /nocurrentpoint get def
+    errordict begin
+    /nocurrentpoint {
+	dup /pathbbox load eq
+	{ pop 0 0 1 1 }
+	{ ncpoint }
+	ifelse
+    } bind def
+    end
+
+    /image_raster { %% sw sh dw dh xs ys
+	translate scale /sh exch def /sw exch def
+	/imagebuf sw 7 add 8 idiv string def
+	sw sh 1 [sw 0 0 sh 0 0] { currentfile imagebuf readhexstring pop }
+	image
+    } bind def
+    /m {moveto} bind def
+    /l {lineto} bind def
+    /c {curveto} bind def
+    /n {newpath} bind def
+    /cl {closepath} bind def
+    /ar { %% sa ea sx sy rot tx ty
+	matrix currentmatrix 8 1 roll translate rotate scale
+	n 0 0 1 5 3 roll arc setmatrix
+    } bind def
+    /arn { %% sa ea sx sy rot tx ty
+	matrix currentmatrix 8 1 roll translate rotate scale
+	n 0 0 1 5 3 roll arcn setmatrix
+    } bind def
+    /el { %% sx sy rot tx ty
+	matrix currentmatrix 6 1 roll translate rotate scale
+	n 0 0 1 0 360 arc setmatrix cl
+    } bind def
+    /bp {setlinejoin setlinewidth setrgbcolor} bind def
+    /bpbw {setlinejoin setlinewidth setgray} bind def
+    /lw {setlinewidth} bind def
+    /lj {setlinejoin} bind def
+    /gr {setgray} bind def
+%% pattern stuff
+    /BPSIDE 32 def	%% pixels per pattern side
+    /PATFREQ 3.0 def	%% pattern pixels per mm
+    /dp_mat [PATFREQ 0 0 PATFREQ 0 0] def
+    /dp_pw BPSIDE def	%% pattern pixel width
+    /dp_ph BPSIDE def	%% pattern pixel height
+    /dp_w dp_pw PATFREQ div def	%% pattern mm width
+    /dp_h dp_ph PATFREQ div def	%% pattern mm height
+    /dp_bs 1 def		%% pattern bits per pixel
+
+    /savemat matrix def
+    /topmat matrix def
+    /patmat matrix def
+
+    /patpath {
+	/inv exch def
+	topmat setmatrix
+	pathbbox	%% get lo - hi indecies
+	/hy exch dp_h div floor cvi def
+	/hx exch dp_w div floor cvi def
+	/ly exch dp_h div floor cvi def
+	/lx exch dp_w div floor cvi def
+	lx 1 hx {
+	    dp_w mul
+	    ly 1 hy {
+		dp_h mul
+		exch dup 3 1 roll exch
+		patmat currentmatrix pop
+		translate
+		dp_pw dp_ph inv
+		dp_mat dp_proc imagemask
+		patmat setmatrix
+	    } for
+	    pop
+	} for
+    } bind def
+% setpattern  brush of patterns instead of gray
+   /setpattern {
+         /blue    exch def
+         /green    exch def
+         /red    exch def
+         /freq    exch def
+         /bwidth  exch def
+         /bpside  exch def
+         /bstring exch def
+         /onbits 0 def  /offbits 0 def
+         freq 0 {/y exch def
+                 /x exch def
+                 /xindex x 1 add 2 div bpside mul cvi def
+                 /yindex y 1 add 2 div bpside mul cvi def
+                 bstring yindex bwidth mul xindex 8 idiv add get not
+                 1 7 xindex 8 mod sub bitshift and 0 ne
+                 {/onbits  onbits  1 add def 1}
+                 {/offbits offbits 1 add def 0}
+                 ifelse
+                }
+                setscreen
+         {} settransfer
+         systemdict /setcmykcolor known
+         { /fact 1 onbits offbits onbits add div sub def
+           1 red sub fact mul 1 green sub fact mul 1 blue sub fact mul 0
+           setcmykcolor
+         }
+         { offbits offbits onbits add div setgray
+}         ifelse
+        } bind def
+    /dmatrix matrix def
+    /dpi    72 0 dmatrix defaultmatrix dtransform
+        dup mul exch   dup mul add   sqrt
+    def
+
+    /B {gsave bp stroke grestore} bind def %% brush: gr lw lj
+    /Bbw {gsave bpbw stroke grestore} bind def %% brush: gr lw lj
+    /F {gsave setrgbcolor eofill grestore} bind def %% fill: gr
+    /Fbw {gsave setgray eofill grestore} bind def %% fill: gr
+    /PB {gsave setlinejoin setlinewidth setpattern stroke grestore} bind def
+    /PF {gsave eoclip patpath grestore} bind def
+    /BB { gsave setrgbcolor setlinejoin setlinewidth strokepath
+          clip patpath grestore
+        } bind def
+%! IslandDraw text prolog Version 1.0
+%%
+/BLACK { 0.0 } bind def
+/CP {closepath} bind def
+/FI {eofill} bind def
+/E {exch} bind def
+/FF {findfont} bind def
+/GR {grestore} bind def
+/GS {gsave} bind def
+/MF {makefont} bind def
+/NP {newpath} bind def
+/RO {rotate} bind def
+/ST {stroke} bind def
+/SC {scale} bind def
+/SF {setfont} bind def
+/SG {setgray} bind def
+/SLC {setlinecap} bind def
+/SLJ {setlinejoin} bind def
+/SLW {setlinewidth} bind def
+/TR {translate} bind def
+/WHITE { 1.0 } bind def
+/m {moveto} bind def
+/r {rmoveto} bind def
+/l {lineto} bind def
+/sp {x 0 rmoveto} bind def
+/rl {rlineto} bind def
+/s {show} bind def
+/box { NP m l l l CP } bind def
+/pageboundary { NP m l l l CP } bind def
+/BS {   % black stroke
+GS SLJ SLW BLACK SG ST GR
+} bind def
+/WS {   % white stroke
+GS SLJ SLW WHITE SG ST GR
+} bind def
+/reencode_small_dict 12 dict def
+/ReencodeSmall {
+reencode_small_dict begin
+/new_codes_and_names E def
+/new_font_name E def
+/base_font_name E def
+/base_font_dict base_font_name FF def
+/newfont base_font_dict maxlength dict def
+base_font_dict {
+E dup /FID ne
+{ dup /Encoding eq
+{ E dup length array copy newfont 3 1 roll put }
+{ E newfont 3 1 roll put }
+ifelse
+}
+{ pop pop }
+ifelse
+} forall
+newfont /FontName new_font_name put
+new_codes_and_names aload pop
+new_codes_and_names length 2 idiv
+{ newfont /Encoding get 3 1 roll put }
+repeat
+new_font_name newfont definefont pop
+end     %reencode_small_dict
+} def
+/extended_Zapf [
+8#223 /a89
+8#224 /a90
+8#225 /a93
+8#226 /a94
+8#227 /a91
+8#230 /a92
+8#231 /a205
+8#232 /a85
+8#233 /a206
+8#234 /a86
+8#235 /a87
+8#236 /a88
+8#237 /a95
+8#240 /a96
+] def
+/extended_Standard [
+29 /thorn
+30 /yacute
+31 /divide
+128 /Acircumflex
+129 /Adieresis
+130 /Agrave
+131 /Aring
+132 /Atilde
+133 /Ccedilla
+134 /Eacute
+135 /Ecircumflex
+136 /Edieresis
+137 /Egrave
+138 /Iacute
+139 /Icircumflex
+140 /Idieresis
+141 /Igrave
+142 /Ntilde
+143 /Oacute
+144 /Ocircumflex
+145 /Odieresis
+146 /Ograve
+147 /Otilde
+148 /Scaron
+149 /Uacute
+150 /Ucircumflex
+151 /Udieresis
+152 /Ugrave
+153 /Ydieresis
+154 /Zcaron
+155 /aacute
+156 /acircumflex
+157 /adieresis
+158 /agrave
+159 /aring
+160 /atilde
+161 /exclamdown
+162 /cent
+163 /sterling
+164 /fraction
+165 /yen
+166 /florin
+167 /section
+168 /currency
+169 /quotesingle
+170 /quotedblleft
+171 /guillemotleft
+172 /guilsinglleft
+173 /guilsinglright
+174 /fi
+175 /fl
+176 /plusminus
+177 /endash
+178 /dagger
+179 /daggerdbl
+180 /periodcentered
+181 /twosuperior
+182 /paragraph
+183 /bullet
+184 /quotesinglebase
+185 /quotedblbase
+186 /quotedblright
+187 /guillemotright
+188 /ellipsis
+189 /perthousand
+190 /threesuperior
+191 /questiondown
+192 /mu
+193 /grave
+194 /acute
+195 /circumflex
+196 /tilde
+197 /macron
+198 /breve
+199 /dotaccent
+200 /dieresis
+201 /onesuperior
+202 /ring
+203 /cedilla
+204 /onequarter
+205 /hungarumlaut
+206 /ogonek
+207 /caron
+208 /emdash
+209 /ccedilla
+210 /copyright
+211 /eacute
+212 /ecircumflex
+213 /edieresis
+214 /egrave
+215 /iacute
+216 /icircumflex
+217 /idieresis
+218 /igrave
+219 /logicalnot
+220 /minus
+221 /ntilde
+222 /oacute
+223 /ocircumflex
+224 /odieresis
+225 /AE
+226 /onehalf
+227 /ordfeminine
+228 /ograve
+229 /otilde
+230 /registered
+231 /scaron
+232 /Lslash
+233 /Oslash
+234 /OE
+235 /ordmasculine
+236 /trademark
+237 /uacute
+238 /ucircumflex
+239 /udieresis
+240 /ugrave
+241 /ae
+242 /ydieresis
+243 /zcaron
+244 /Aacute
+245 /dotlessi
+246 /threequarters
+247 /Eth
+248 /lslash
+249 /oslash
+250 /oe
+251 /germandbls
+252 /multiply
+253 /Yacute
+254 /Thorn
+255 /eth
+] def
+/extended_Symbol [
+] def
+/extend_font {  % stack: fontname newfontname
+E dup (ZapfDingbats) eq
+{ cvn E cvn extended_Zapf ReencodeSmall }
+{ dup (Symbol) eq
+{ cvn E cvn extended_Symbol ReencodeSmall }
+{ cvn E cvn extended_Standard ReencodeSmall }
+ifelse
+}
+ifelse
+} bind def
+/getfont {
+/f E def f cvn where
+% { begin f cvx cvn exec SF end }
+{ begin f cvn load exec SF end }
+% { f 0 f length 8 sub getinterval (LocalFont) extend_font
+%/LocalFont FF
+{ f 0 f length 8 sub getinterval dup
+dup length 1 add string /localfont exch def
+localfont exch 0 exch putinterval
+localfont dup length 1 sub (X) putinterval
+localfont extend_font
+localfont FF
+/xsz f f length 4 sub 4 getinterval cvi def
+/ysz f f length 8 sub 4 getinterval cvi def
+[ xsz 0 0 ysz neg 0 0 ] MF dup f cvn E def
+SF
+}
+ifelse
+} bind def
+/ul { % space drop thickness
+GS currentpoint currentlinewidth 
+currentpoint NP m 6 -3 roll 
+SLW 0 E r
+0 rl ST SLW m
+GR 
+} bind def
+/ss { currentpoint pop E m } bind def
+/image_raster { % sw sh dw dh xs ys
+TR SC /sh E def /sw E def
+/imagebuf sw 7 add 8 idiv string def
+sw sh 1 [sw 0 0 sh 0 0] { currentfile imagebuf readhexstring pop }
+image
+} bind def
+/imagemask_raster {
+TR SC /sh E def /sw E def
+/imagebuf sw 7 add 8 idiv string def
+sw sh false [sw 0 0 sh 0 0] { currentfile imagebuf readhexstring pop }
+imagemask
+} bind def
+/image_color_raster { % sw sh sd dw dh xs ys
+systemdict /colorimage known not {
+/colorimage /colimg load def
+} if
+TR SC /sd E def /sh E def /sw E def
+/imagebuf sw 3 mul sd mul 7 add 8 idiv string def
+sw sh sd [sw 0 0 sh 0 0] { currentfile imagebuf readhexstring pop }
+false 3 colorimage
+} bind def
+/nx { /x E def } bind def
+0. nx
+%%EndFixedProlog
+%%EndProlog
+
+%%Page: 1 1
+gsave
+2.83465 -2.83465 scale 0 -279.4 translate
+topmat currentmatrix pop
+% Irpoly
+n 48.398 44.02 m
+9.2188 44.02 l
+9.2188 6.6836 l
+48.398 6.6836 l
+cl
+0 0 0 F
+1 1 1 setrgbcolor
+/pat0 {<55555555AAAAAAAA55555555AAAAAAAA55555555AAAAAAAA55555555AAAAAA
+AA55555555AAAAAAAA55555555AAAAAAAA55555555AAAAAAAA55555555AAAAAAAA555555
+55AAAAAAAA55555555AAAAAAAA55555555AAAAAAAA55555555AAAAAAAA55555555AAAAAA
+AA55555555AAAAAAAA55555555AAAAAAAA55555555AAAAAAAA>} def
+/dp_proc pat0 def
+false PF
+gsave
+0 0 0 0 0 B
+grestore
+% Group
+gsave
+n 136.08 26.601 m 129.04 1.947 l
+204.41 1.947 l
+204.41 26.601 l
+136.08 26.601 l
+cl eoclip
+n savemat currentmatrix pop [1.026 0 0 1 139.603 21.142] concat
+25.4 1440 div 1.000000 mul dup scale 0 0 m
+
+0 0 m 0 ss (NewCenturySchlbk-Bold12601260) getfont () s
+0.00 0.00 0.00 setrgbcolor  (Mail) s
+savemat setmatrix
+grestore
+% Irpoly
+n 8.5273 5.0703 m
+46.785 5.0703 l
+46.785 42.637 l
+8.5273 42.637 l
+cl
+1 1 1 F
+gsave
+0 0 0 0 0 B
+grestore
+% Group
+n 3.292 19.039 m 5.207 18.008 l
+7.282 16.829 l
+9.357 15.65 l
+11.592 14.324 l
+13.826 13.145 l
+15.901 12.114 l
+17.816 11.082 l
+19.572 10.346 l
+21.008 9.7557 l
+22.285 9.3137 l
+23.402 9.0187 l
+24.52 8.5767 l
+25.637 8.2817 l
+26.754 7.9877 l
+28.031 7.6927 l
+29.627 7.3977 l
+31.862 6.9557 l
+34.096 6.6607 l
+35.054 6.5137 l
+36.012 6.5137 l
+36.81 6.5137 l
+37.288 6.5137 l
+37.927 6.5137 l
+38.405 6.8087 l
+38.565 6.9557 l
+38.725 7.2507 l
+38.885 7.6927 l
+38.885 8.2817 l
+38.885 9.0187 l
+38.885 9.4617 l
+38.885 9.7557 l
+38.885 10.05 l
+38.885 10.346 l
+38.885 10.492 l
+38.885 10.64 l
+38.885 10.788 l
+38.885 11.082 l
+38.725 11.377 l
+38.725 11.819 l
+38.565 12.261 l
+38.246 12.851 l
+37.927 13.44 l
+37.448 13.882 l
+36.491 15.061 l
+35.373 15.945 l
+34.256 16.829 l
+33.298 17.566 l
+32.34 18.45 l
+31.383 19.334 l
+30.425 20.365 l
+29.308 21.544 l
+28.031 22.87 l
+26.594 24.491 l
+24.999 26.259 l
+23.881 28.175 l
+22.764 29.943 l
+21.966 31.417 l
+21.487 32.743 l
+21.168 33.627 l
+21.008 34.069 l
+21.008 34.364 l
+20.849 34.511 l
+21.008 34.511 l
+21.328 34.364 l
+21.806 34.069 l
+22.285 33.774 l
+23.083 33.48 l
+24.041 33.038 l
+24.999 32.596 l
+26.116 32.153 l
+28.67 31.269 l
+31.543 30.385 l
+34.575 29.501 l
+37.607 29.059 l
+39.842 28.911 l
+41.917 28.911 l
+43.992 29.206 l
+45.748 29.501 l
+47.344 30.091 l
+48.94 30.827 l
+50.217 31.564 l
+51.493 32.301 l
+52.451 33.185 l
+53.409 33.922 l
+54.207 34.658 l
+54.845 35.395 l
+55.324 35.985 l
+55.643 36.427 l
+55.803 36.721 l
+55.803 36.869 l
+55.484 36.721 l
+54.845 36.721 l
+54.207 36.574 l
+53.409 36.427 l
+52.291 36.279 l
+51.174 36.132 l
+49.897 35.985 l
+46.865 35.837 l
+43.672 35.69 l
+40.161 35.837 l
+36.65 36.279 l
+33.618 36.721 l
+30.585 37.605 l
+27.552 38.637 l
+24.52 39.815 l
+21.487 41.289 l
+18.614 42.762 l
+15.741 44.531 l
+13.028 46.299 l
+12.071 46.889 l
+11.273 47.183 l
+10.793 47.331 l
+10.314 47.331 l
+9.836 47.183 l
+9.517 47.036 l
+9.198 46.889 l
+8.879 46.593 l
+8.24 46.299 l
+7.92 46.005 l
+7.601 45.709 l
+7.441 45.267 l
+7.441 44.678 l
+7.441 43.941 l
+7.601 43.057 l
+7.92 41.878 l
+8.4 40.258 l
+8.879 38.637 l
+9.517 37.016 l
+10.155 35.395 l
+10.953 33.774 l
+11.752 32.153 l
+12.39 30.827 l
+13.187 29.501 l
+15.263 26.406 l
+17.338 23.607 l
+19.412 21.102 l
+21.328 19.186 l
+22.126 18.302 l
+22.764 17.566 l
+23.562 16.829 l
+24.041 16.387 l
+24.52 15.945 l
+24.839 15.65 l
+25.158 15.503 l
+25.158 15.355 l
+24.999 15.355 l
+24.839 15.503 l
+24.2 15.65 l
+23.562 15.797 l
+22.605 16.092 l
+21.328 16.534 l
+19.891 17.271 l
+18.136 18.008 l
+15.582 19.186 l
+13.187 20.07 l
+12.23 20.365 l
+11.273 20.66 l
+10.314 20.66 l
+9.517 20.807 l
+8.24 20.66 l
+6.963 20.513 l
+5.846 20.218 l
+5.047 19.923 l
+4.249 19.628 l
+3.611 19.334 l
+3.292 19.186 l
+3.292 19.039 l
+cl 0 0 0 F
+n 3.292 15.599 m 5.207 14.568 l
+7.282 13.389 l
+9.357 12.21 l
+11.592 10.884 l
+13.826 9.7047 l
+15.901 8.6737 l
+17.816 7.6427 l
+19.572 6.9057 l
+21.008 6.3157 l
+22.285 5.8737 l
+23.402 5.5797 l
+24.52 5.1377 l
+25.637 4.8427 l
+26.754 4.5477 l
+28.031 4.2537 l
+29.627 3.9587 l
+31.862 3.5167 l
+34.097 3.2217 l
+35.054 3.0747 l
+36.012 3.0747 l
+36.81 3.0747 l
+37.288 3.0747 l
+37.927 3.0747 l
+38.405 3.3687 l
+38.565 3.5167 l
+38.725 3.8107 l
+38.885 4.2537 l
+38.885 4.8427 l
+38.885 5.5797 l
+38.885 6.0217 l
+38.885 6.3157 l
+38.885 6.6107 l
+38.885 6.9057 l
+38.885 7.0527 l
+38.885 7.1997 l
+38.885 7.3477 l
+38.885 7.6427 l
+38.725 7.9367 l
+38.725 8.3787 l
+38.565 8.8207 l
+38.246 9.4107 l
+37.927 9.9997 l
+37.448 10.442 l
+36.491 11.621 l
+35.373 12.505 l
+34.256 13.389 l
+33.298 14.126 l
+32.34 15.01 l
+31.383 15.894 l
+30.425 16.925 l
+29.308 18.105 l
+28.031 19.431 l
+26.594 21.052 l
+24.999 22.82 l
+23.881 24.735 l
+22.764 26.503 l
+21.966 27.977 l
+21.487 29.303 l
+21.168 30.187 l
+21.008 30.629 l
+21.008 30.924 l
+20.849 31.071 l
+21.008 31.071 l
+21.328 30.924 l
+21.806 30.629 l
+22.285 30.334 l
+23.083 30.04 l
+24.041 29.598 l
+24.999 29.156 l
+26.116 28.714 l
+28.67 27.83 l
+31.543 26.945 l
+34.575 26.061 l
+37.608 25.619 l
+39.842 25.472 l
+41.917 25.472 l
+43.992 25.767 l
+45.748 26.061 l
+47.344 26.651 l
+48.94 27.388 l
+50.217 28.124 l
+51.493 28.861 l
+52.451 29.745 l
+53.409 30.482 l
+54.207 31.218 l
+54.845 31.955 l
+55.324 32.545 l
+55.643 32.987 l
+55.803 33.281 l
+55.803 33.429 l
+55.484 33.281 l
+54.845 33.281 l
+54.207 33.135 l
+53.409 32.987 l
+52.291 32.839 l
+51.174 32.692 l
+49.897 32.545 l
+46.865 32.397 l
+43.672 32.251 l
+40.161 32.397 l
+36.65 32.839 l
+33.618 33.281 l
+30.585 34.165 l
+27.552 35.197 l
+24.52 36.376 l
+21.487 37.85 l
+18.614 39.323 l
+15.741 41.091 l
+13.028 42.86 l
+12.071 43.449 l
+11.273 43.743 l
+10.793 43.891 l
+10.314 43.891 l
+9.836 43.743 l
+9.517 43.596 l
+9.198 43.449 l
+8.879 43.154 l
+8.24 42.86 l
+7.92 42.565 l
+7.601 42.27 l
+7.441 41.828 l
+7.441 41.239 l
+7.441 40.502 l
+7.601 39.618 l
+7.92 38.439 l
+8.4 36.818 l
+8.879 35.197 l
+9.517 33.577 l
+10.155 31.955 l
+10.953 30.334 l
+11.752 28.714 l
+12.39 27.388 l
+13.187 26.061 l
+15.263 22.967 l
+17.338 20.167 l
+19.412 17.663 l
+21.328 15.746 l
+22.126 14.863 l
+22.764 14.126 l
+23.562 13.389 l
+24.041 12.947 l
+24.52 12.505 l
+24.839 12.21 l
+25.158 12.063 l
+25.158 11.916 l
+24.999 11.916 l
+24.839 12.063 l
+24.2 12.21 l
+23.562 12.358 l
+22.605 12.652 l
+21.328 13.094 l
+19.891 13.831 l
+18.136 14.568 l
+15.582 15.746 l
+13.187 16.631 l
+12.23 16.925 l
+11.273 17.22 l
+10.314 17.22 l
+9.517 17.367 l
+8.24 17.22 l
+6.963 17.073 l
+5.846 16.779 l
+5.047 16.483 l
+4.249 16.189 l
+3.611 15.894 l
+3.292 15.746 l
+3.292 15.599 l
+cl 1 0 0 F
+grestore
+
+%%Trailer
+end
+restore
+
+
+%%EndDocument
+FMENDEPSF
+0 0 612 792 C
+0 10 Q
+0 X
+0 K
+(About This Guide) 72 398.33 T
+1 F
+(This guide describes the equipment and operating envir) 198 398.33 T
+(onment you need to) 445.4 398.33 T
+(r) 198 386.33 T
+(un Z-Mail, and pr) 201.87 386.33 T
+(ovides step-by-step instr) 280.67 386.33 T
+(uctions for installing Z-Mail suc-) 389.21 386.33 T
+(cessfully) 198 374.33 T
+(. The instr) 235.32 374.33 T
+(uctions work for installing Z-Mail versions r) 279.64 374.33 T
+(unning under) 475.29 374.33 T
+(the Motif window manager or standar) 198 362.33 T
+(d character interfaces.) 367.24 362.33 T
+-0.22 (This document is intended for system administrators or knowledgeable users) 198 345.33 P
+(r) 198 333.33 T
+(esponsible for installing Z-Mail. It assumes you ar) 201.77 333.33 T
+(e familiar with the Unix) 422.53 333.33 T
+(operating envir) 198 321.33 T
+(onment, the Motif window manager) 266.16 321.33 T
+(, and your har) 426.04 321.33 T
+(dwar) 488.52 321.33 T
+(e.) 511.73 321.33 T
+2 F
+(Note for sites that alr) 198 299.33 T
+(eady use Z-) 294.44 299.33 T
+(Mail) 345.53 299.33 T
+1 F
+(The installation pr) 198 287.33 T
+(ocedur) 278.98 287.33 T
+(e changed slightly with versions 2.1.2 and later of) 309.56 287.33 T
+(Z-) 198 275.33 T
+(Mail. Ther) 207.99 275.33 T
+(e is now an additional option in the installation scripts to per-) 253.76 275.33 T
+(form an) 198 263.33 T
+3 F
+(upgrade) 235.37 263.33 T
+1 F
+(, rather than a complete overwrite of your existing Z-) 268.13 263.33 T
+(Mail) 502.7 263.33 T
+(\336les.) 198 251.33 T
+(This Installation Guide has the following sections:) 198 234.33 T
+(\245) 198 217.33 T
+0 F
+(Read This First) 212.4 217.33 T
+1 F
+(, which describes the contents of the Z-) 281.79 217.33 T
+(Mail package and) 453.65 217.33 T
+(the har) 212.4 205.33 T
+(dwar) 243.34 205.33 T
+(e and softwar) 266.55 205.33 T
+(e r) 326.64 205.33 T
+(equir) 337.69 205.33 T
+(ements for Z-) 360.78 205.33 T
+(Mail.) 420.22 205.33 T
+(\245) 198 191.33 T
+0 F
+(Preparation) 212.4 191.33 T
+1 F
+(, which describes some pr) 265.7 191.33 T
+(eparatory steps to take befor) 379.57 191.33 T
+(e pr) 505.23 191.33 T
+(o-) 522.29 191.33 T
+(ceeding with the actual installation.) 212.4 179.33 T
+(\245) 198 165.33 T
+0 F
+(Copy Z-Mail Files) 212.4 165.33 T
+1 F
+(, which describes the pr) 295.12 165.33 T
+(ocedur) 399.55 165.33 T
+(e for placing the Z-Mail) 430.13 165.33 T
+(distribution onto your computer) 212.4 153.33 T
+(\325s disk.) 356.72 153.33 T
+(\245) 198 139.33 T
+0 F
+(Automatic Installation) 212.4 139.33 T
+1 F
+(, which describes the pr) 315.37 139.33 T
+(ocedur) 419.8 139.33 T
+(e for using the) 450.38 139.33 T
+(installation scripts that ar) 212.4 127.33 T
+(e pr) 324.5 127.33 T
+(ovided with the distribution.) 341.56 127.33 T
+(\245) 198 113.33 T
+0 F
+(Manual Installation) 212.4 113.33 T
+1 F
+(, which describes the pr) 303.16 113.33 T
+(ocedur) 407.58 113.33 T
+(e for installing Z-) 438.17 113.33 T
+(Mail) 514.49 113.33 T
+(on your computer \322by hand\323 instead of using the installation scripts.) 212.4 101.33 T
+(\245) 198 87.33 T
+0 F
+(Z-) 212.4 87.33 T
+(Mail Files) 222.4 87.33 T
+1 F
+(, which describes all of the \336les and dir) 268.19 87.33 T
+(ectories that ar) 440.11 87.33 T
+(e) 505.03 87.33 T
+72 615.02 540 720 R
+7 X
+V
+1 30 Q
+0 X
+(Z) 198 700 T
+-1.5 (-M) 218.01 700 S
+(ail) 253.38 700 T
+1 8 Q
+(\252) 285.84 697.5 T
+1 30 Q
+(Installation) 198 664 T
+-0.9 (Gu) 355.37 664 S
+(ide) 394.55 664 T
+4 18 Q
+(VERSION 2) 198 628 T
+-1.8 (.1) 293.98 628 S
+0 10 Q
+(W) 72 539.38 T
+(elcome to Z-Mail) 81.25 539.38 T
+1 F
+-0.05 (Z-) 198 503.38 P
+-0.05 (Mail\325s point-and-click graphical interface. If you have a character terminal,) 207.99 503.38 P
+(you can use Z-Mail\325s fullscr) 198 491.36 T
+(een character interface. For advanced users,) 320.23 491.36 T
+(Z-) 198 479.33 T
+(Mail of) 207.99 479.33 T
+(fers a command-line interface and Z-) 239.37 479.33 T
+(Script) 402.56 479.33 T
+1 8 Q
+(,) 428.36 479.33 T
+1 6 Q
+(\252) 430.36 482.53 T
+1 10 Q
+( a scripting language) 436.23 479.33 T
+(for cr) 207 467.38 T
+(eating message \336lters, functions, and interface buttons that help you) 230.44 467.38 T
+(automatically manage your mail. But \336rst, you need to install Z-) 216 455.36 T
+(Mail) 499.29 455.36 T
+(pr) 216 443.36 T
+(operly) 225.77 443.36 T
+(, and this guide is designed to help you do just that.) 253.33 443.36 T
+(mail mor) 198 515.33 T
+(e ef) 238.19 515.33 T
+(\336ciently) 253.41 515.33 T
+(. If you have a workstation or X terminal, you can use) 288.02 515.33 T
+(allows you to send and r) 198 527.36 T
+(eceive messages, but enables you to manage your) 306.73 527.36 T
+(Z-Mail is a compr) 198 539.38 T
+(ehensive electr) 276.4 539.38 T
+(onic mail management system that not only) 341.63 539.38 T
+FMENDPAGE
+%%EndPage: "1" 2
+%%Page: "2" 2
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+69.98 44.06 540.94 59.04 R
+V
+1 9 Q
+0 X
+(Z-Mail Installation Guide) 69.98 53.04 T
+(2 of 18) 514.12 53.04 T
+72 68.04 540 720 R
+7 X
+V
+1 10 Q
+0 X
+(included in the Z-) 212.4 713.33 T
+(Mail installation.) 291.58 713.33 T
+(\245) 198 699.33 T
+0 F
+(Platform-Speci\336c Notes) 212.4 699.33 T
+1 F
+(, which describes some special considerations for) 320.37 699.33 T
+(installing Z-) 212.4 687.33 T
+(Mail onto certain platforms.) 266.21 687.33 T
+(\245) 198 673.33 T
+0 F
+(Copyrights, W) 212.4 673.33 T
+(arranties, and Disclaimers) 277.73 673.33 T
+1 F
+(; which contains various legal) 396.8 673.33 T
+(information r) 212.4 661.33 T
+(egar) 271.39 661.33 T
+(ding the Z-) 290.5 661.33 T
+(Mail package.) 339.74 661.33 T
+(Y) 198 644.33 T
+(ou should understand the operation of your system\325s storage facilities and) 203.75 644.33 T
+(the operating system\325s \336le naming conventions befor) 198 632.33 T
+(e continuing with these) 431.68 632.33 T
+(installation pr) 198 620.33 T
+(ocedur) 259.75 620.33 T
+(es. Depending on your speci\336c envir) 290.33 620.33 T
+(onment, you will) 451.92 620.33 T
+(pr) 198 608.33 T
+(obably need access to the) 207.77 608.33 T
+3 F
+(r) 321.45 608.33 T
+(oot) 325.16 608.33 T
+1 F
+( account to successfully install Z-Mail.) 337.36 608.33 T
+0 F
+(Related Documents) 72 567.33 T
+1 F
+-0.41 (The Z-Mail Quick Installation Guide is a gr) 198 567.33 P
+-0.41 (eatly abbr) 385.22 567.33 P
+-0.41 (eviated set of installation) 428.63 567.33 P
+-0.16 (instr) 198 555.33 P
+-0.16 (uctions included with your Z-) 218.09 555.33 P
+-0.16 (Mail package. If you ar) 350 555.33 P
+-0.16 (e performing a stan-) 450.97 555.33 P
+-0.25 (dar) 198 543.33 P
+-0.25 (d, automatic installation; or if you ar) 212.87 543.33 P
+-0.25 (e an experienced Z-Mail installer) 372.55 543.33 P
+-0.25 (, you) 515.97 543.33 P
+(may \336nd those instr) 198 531.33 T
+(uctions suf) 286.49 531.33 T
+(\336cient.) 334.55 531.33 T
+(The README.NLS \336le describes the installation, con\336guration, and use of) 198 514.33 T
+(the Network License Server \050NLS\051; you can \336nd it in) 198 502.33 T
+3 F
+(zcnls) 431.91 502.33 T
+1 F
+( dir) 452.64 502.33 T
+(ectory of the) 467.92 502.33 T
+(Z-) 198 490.33 T
+(Mail distribution. Y) 207.99 490.33 T
+(ou should r) 293.87 490.33 T
+(efer to README.NLS if you plan to use the) 344.67 490.33 T
+(NLS.) 198 478.33 T
+0 F
+(T) 72 454.33 T
+(echnical Support) 77.56 454.33 T
+1 F
+(Y) 198 454.33 T
+(our Z-Mail license includes 30 days of technical support to help you get) 203.75 454.33 T
+-0.45 (Z-) 198 442.33 P
+-0.45 (Mail installed and con\336gur) 207.99 442.33 P
+-0.45 (ed for your computing envir) 326.36 442.33 P
+-0.45 (onment. If you have) 450.37 442.33 P
+(a pr) 198 430.33 T
+(oblem installing Z-Mail, call Z-Code Softwar) 215.27 430.33 T
+(e in San Rafael, California at) 412.42 430.33 T
+-0.38 (415-898-8649. Y) 198 418.33 P
+-0.38 (ou can also send e-mail to) 265 418.33 P
+3 F
+-0.38 (support@z-code.com) 379.49 418.33 P
+1 F
+-0.38 ( to get answers to) 461.99 418.33 P
+(technical support questions.) 198 406.33 T
+(For technical support beyond the initial 30-day period, you need to pur) 198 389.33 T
+(chase) 512.33 389.33 T
+(a support contract fr) 198 377.33 T
+(om Z-Code. For mor) 288.14 377.33 T
+(e information call 415-898-8649 or) 378.86 377.33 T
+(send e-mail to) 198 365.33 T
+3 F
+( info@z-code.com) 260.42 365.33 T
+1 F
+(.) 329.87 365.33 T
+FMENDPAGE
+%%EndPage: "2" 3
+%%Page: "3" 3
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+69.98 44.06 540.94 59.04 R
+V
+1 9 Q
+0 X
+(Z-Mail Installation Guide) 69.98 53.04 T
+(3 of 18) 514.12 53.04 T
+72 72 540 720 R
+7 X
+V
+72 701.71 540 720 C
+72 701.71 540 720 R
+7 X
+0 K
+V
+71.21 710.06 199.51 719.21 R
+0 X
+V
+0.5 H
+0 Z
+N
+0 0 612 792 C
+5 16 Q
+0 X
+0 K
+(Read This First) 72 691.04 T
+1 10 Q
+(Befor) 198 666.04 T
+(e you begin, make sur) 221.45 666.04 T
+(e you have everything you need to install Z-Mail) 318.56 666.04 T
+(corr) 198 654.04 T
+(ectly) 215.61 654.04 T
+(.) 235.45 654.04 T
+0 F
+(Y) 72 630.04 T
+(our Z-Mail Package) 77.93 630.04 T
+1 F
+(Y) 198 630.04 T
+(our Z-Mail package consists of the following items:) 203.75 630.04 T
+(\245) 198 613.04 T
+-0.17 (Several Z-Mail installation diskettes \050actual number depends on your plat-) 212.4 613.04 P
+(form\051, or one tape.) 212.4 601.04 T
+(\245) 198 589.04 T
+(One) 212.4 589.04 T
+3 F
+( Z-Mail Installation Guide) 230.86 589.04 T
+1 F
+( \050this document\051) 338.85 589.04 T
+3 F
+(.) 411.44 589.04 T
+1 F
+(\245) 198 577.04 T
+(One) 212.4 577.04 T
+3 F
+( Z-Mail User Guide) 230.86 577.04 T
+1 F
+(for each Z-Mail user) 314.15 577.04 T
+(.) 402.95 577.04 T
+(\245) 198 565.04 T
+(One) 212.4 565.04 T
+3 F
+(Z-Mail Softwar) 233.36 565.04 T
+(e License Agr) 296.74 565.04 T
+(eemen) 351.17 565.04 T
+1 F
+(t.) 376.17 565.04 T
+(\245) 198 553.05 T
+(One) 212.4 553.05 T
+3 F
+(Z-Mail Quick Installation Guide.) 233.36 553.05 T
+1 F
+(If you obtained Z-) 198 536.05 T
+(Mail via FTP fr) 278.09 536.05 T
+(om one of our Internet sites, you\325ll have a) 344.22 536.05 T
+(single lar) 198 524.05 T
+(ge) 238.39 524.05 T
+6 F
+(tar) 251.23 524.05 T
+1 F
+( \336le instead of the items listed above.) 260.8 524.05 T
+0 F
+(Z-Mail System) 72 500.05 T
+(Recommendations) 72 488.05 T
+1 F
+-0.05 (The various versions of Z-Mail r) 198 500.05 P
+-0.05 (equir) 340.04 500.05 P
+-0.05 (e speci\336c har) 363.13 500.05 P
+-0.05 (dwar) 420.26 500.05 P
+-0.05 (e and softwar) 443.46 500.05 P
+-0.05 (e to r) 503.45 500.05 P
+-0.05 (un) 525.71 500.05 P
+(pr) 198 488.05 T
+(operly) 207.77 488.05 T
+(. Y) 235.33 488.05 T
+(ou should be sur) 246.07 488.05 T
+(e you have the minimum r) 319.95 488.05 T
+(ecommended con\336gu-) 437.29 488.05 T
+(ration for the version you plan to use and r) 198 476.05 T
+(eview) 387.5 476.05 T
+3 F
+(Platform-Speci\336c Notes) 416.46 476.05 T
+1 F
+(on) 514.27 476.05 T
+(page 15 befor) 198 464.05 T
+(e you begin installing Z-Mail.) 257.21 464.05 T
+2 F
+-0.27 (Note:) 198 446.05 P
+1 F
+-0.27 (Z-Mail uses the virtual memory of your Unix computer) 226.89 446.05 P
+-0.27 (. The amount of) 468.68 446.05 P
+-0.14 (random access memory \050RAM\051 you make available for Z-Mail dir) 198 434.05 P
+-0.14 (ectly af) 486.14 434.05 P
+-0.14 (fects) 517.59 434.05 P
+(the performance of the pr) 198 422.05 T
+(oduct.) 310.62 422.05 T
+2 F
+(Motif V) 122.43 402.05 T
+(ersion) 156.4 402.05 T
+1 F
+(T) 198 402.05 T
+(o r) 203.21 402.05 T
+(un the Motif version of Z-Mail you need:) 215.03 402.05 T
+(\245) 198 385.05 T
+(Any computer certi\336ed by Z-Code Softwar) 212.4 385.05 T
+(e to r) 401.98 385.05 T
+(un Z-Mail.) 424.34 385.05 T
+(\245) 198 371.05 T
+(5 MB available har) 212.4 371.05 T
+(d disk space.) 294.71 371.05 T
+3 F
+-0.09 (Y) 212.4 359.05 P
+-0.09 (ou initially need 10 MB to install the softwar) 217.96 359.05 P
+-0.09 (e since all Z-Mail \336les ar) 398.6 359.05 P
+-0.09 (e \336rst cop-) 498.09 359.05 P
+(ied to a temporary dir) 212.4 347.05 T
+(ectory and then copied to their corr) 299.38 347.05 T
+(ect locations. If you ar) 439.65 347.05 T
+(e) 528.39 347.05 T
+(upgrading an Z-) 212.4 335.05 T
+(Mail installation, you\325ll only need space for the temporary dir) 279.59 335.05 T
+(ec-) 527.24 335.05 T
+(tory; about 5MB.) 212.4 323.05 T
+1 F
+(\245) 198 309.05 T
+(150 MB cartridge tape drive, DA) 212.4 309.05 T
+(T drive, or 3.5-inch \337oppy disk drive;) 355.11 309.05 T
+(depending on your distribution media.) 212.4 297.05 T
+(\245) 198 283.05 T
+(A system r) 212.4 283.05 T
+(unning X W) 259.94 283.05 T
+(indows.) 312.99 283.05 T
+3 F
+(V) 212.4 271.05 T
+(ersion 1) 218.7 271.05 T
+(1, r) 250.08 271.05 T
+(elease 3 or higher) 263.78 271.05 T
+(. Release 4 or Release 5 ar) 332.17 271.05 T
+(e r) 435 271.05 T
+(ecommended for their) 445.09 271.05 T
+(many performance impr) 212.4 259.05 T
+(ovements over Release 3. Release 4 or above is r) 309.03 259.05 T
+(equir) 498.93 259.05 T
+(ed if) 519.49 259.05 T
+(you plan to use Shar) 212.4 247.05 T
+(ed Folders.) 294.95 247.05 T
+2 F
+(Character V) 103.91 227.05 T
+(ersion) 156.4 227.05 T
+1 F
+(Y) 198 227.05 T
+(ou may choose to r) 203.75 227.05 T
+(un the version of Z-Mail that only includes its character) 287.38 227.05 T
+(interface, called) 198 215.05 T
+3 F
+(zmail.small) 269.91 215.05 T
+1 F
+(. This version takes signi\336cantly less memory to) 316.27 215.05 T
+(r) 198 203.05 T
+(un since it doesn\325t use Motif) 201.87 203.05 T
+(\325s lar) 327.01 203.05 T
+(ge libraries. T) 348.2 203.05 T
+(o r) 407.42 203.05 T
+(un the character version of) 419.24 203.05 T
+(Z-Mail, including its command-line and fullscr) 198 191.05 T
+(een interfaces, you need:) 404.9 191.05 T
+(\245) 198 174.05 T
+(Any computer certi\336ed by Z-Code Softwar) 212.4 174.05 T
+(e to r) 401.98 174.05 T
+(un Z-Mail.) 424.34 174.05 T
+(\245) 198 160.05 T
+(2 MB available har) 212.4 160.05 T
+(d disk space.) 294.71 160.05 T
+3 F
+-0.2 (Y) 212.4 148.05 P
+-0.2 (ou initially need 10 MB to install the softwar) 217.96 148.05 P
+-0.2 (e since both the lar) 397.71 148.05 P
+-0.2 (ge and small ver-) 471.48 148.05 P
+(sions of Z-Mail ar) 212.4 136.05 T
+(e on your media. If you ar) 285.23 136.05 T
+(e upgrading an Z-) 388.6 136.05 T
+(Mail installation,) 462.18 136.05 T
+(you\325ll only need space for the temporary dir) 212.4 124.05 T
+(ectory; about 5MB.) 387.03 124.05 T
+1 F
+(\245) 198 110.05 T
+(150 MB cartridge tape drive, DA) 212.4 110.05 T
+(T drive, or 3.5-inch \337oppy disk drive;) 355.11 110.05 T
+(depending on your distribution media.) 212.4 98.05 T
+FMENDPAGE
+%%EndPage: "3" 4
+%%Page: "4" 4
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+69.98 44.06 540.94 59.04 R
+V
+1 9 Q
+0 X
+(Z-Mail Installation Guide) 69.98 53.04 T
+(4 of 18) 514.12 53.04 T
+72 72 540 720 R
+7 X
+V
+0 10 Q
+0 X
+(V) 72 713.33 T
+(erify A) 78.67 713.33 T
+(vailable) 109.9 713.33 T
+(Disk Space) 72 701.33 T
+1 F
+(Use the command) 198 713.33 T
+7 9 Q
+( df) 278.13 713.33 T
+1 10 Q
+(\050BSD Unix\051 or) 291.61 713.33 T
+7 9 Q
+(df -t) 355.91 713.33 T
+1 10 Q
+( \050A) 372.88 713.33 T
+(T&T Unix System V\051 to verify that) 385.74 713.33 T
+(you have enough disk space in the) 198 701.33 T
+3 F
+(/usr) 353.11 701.33 T
+1 F
+( dir) 369.4 701.33 T
+(ectory to load Z-Mail on your sys-) 384.68 701.33 T
+(tem. Note that System V r) 198 689.33 T
+(eports fr) 311.9 689.33 T
+(ee disk space in 512KB blocks.) 349.19 689.33 T
+72 645.71 540 664 C
+72 645.71 540 664 R
+7 X
+0 K
+V
+71.21 654.06 199.51 663.21 R
+0 X
+V
+0.5 H
+0 Z
+N
+0 0 612 792 C
+5 16 Q
+0 X
+0 K
+(Pr) 72 635.04 T
+(eparation) 85.94 635.04 T
+1 10 Q
+(This section describes some initial steps to take befor) 198 610.04 T
+(e you begin the pr) 430.68 610.04 T
+(oce-) 510.74 610.04 T
+-0.04 (dur) 198 598.04 P
+-0.04 (e for installing Z-Mail on your system. Read this material car) 213.9 598.04 P
+-0.04 (efully befor) 481.9 598.04 P
+-0.04 (e) 532.75 598.04 P
+-0.32 (installing Z-Mail. Once you have \336nished this pr) 198 586.04 P
+-0.32 (eparation section, allow 20 to) 410.22 586.04 P
+(30 minutes for installation and system con\336guration. Y) 198 574.04 T
+(ou don\325t have to com-) 439.35 574.04 T
+(plete the entir) 198 562.05 T
+(e Z-Mail installation pr) 259.15 562.05 T
+(ocedur) 360.94 562.05 T
+(e at once.) 391.52 562.05 T
+(Befor) 198 545.05 T
+(e you install Z-Mail, perform the following steps:) 221.45 545.05 T
+7 F
+(1.) 198 528.05 T
+1 F
+(Determine the device name of your tape drive or \337oppy disk drive. For) 212.4 528.05 T
+(example, the tape drive on a SP) 212.4 516.05 T
+(ARCstation is usually named) 350.3 516.05 T
+3 F
+-0.1 (/dev/rst8) 214.8 504.05 P
+1 F
+-0.1 (. This name is r) 250.7 504.05 P
+-0.1 (eferr) 317.23 504.05 P
+-0.1 (ed to below as) 337.85 504.05 P
+8 9 Q
+-0.1 ( devicename) 400.91 504.05 P
+1 10 Q
+-0.1 (. \050Y) 454.76 504.05 P
+-0.1 (ou can skip this) 468.73 504.05 P
+(step if you obtained the Z-) 212.4 492.05 T
+(Mail distribution via FTP) 329.18 492.05 T
+(.\051) 439.29 492.05 T
+7 F
+(2.) 198 475.05 T
+1 F
+(Obtain the passwor) 212.4 475.05 T
+(d of the) 298.66 475.05 T
+3 F
+(r) 334.91 475.05 T
+(oot) 338.62 475.05 T
+1 F
+( account. Some of the dir) 350.82 475.05 T
+(ectories wher) 459.99 475.05 T
+(e) 519.02 475.05 T
+(you need to install Z-Mail\325s \336les may r) 212.4 463.05 T
+(equir) 382.59 463.05 T
+(e r) 405.67 463.05 T
+(oot privileges to write to) 416.73 463.05 T
+(them. The installation script will pr) 212.4 451.05 T
+(ompt you for the r) 367.92 451.05 T
+(oot passwor) 448.86 451.05 T
+(d if nec-) 502.57 451.05 T
+(essary) 212.4 439.05 T
+(.) 239.05 439.05 T
+7 F
+(3.) 198 422.05 T
+1 F
+(V) 212.4 422.05 T
+(erify that your operating system and window manager meet the r) 218.51 422.05 T
+(equir) 508.08 422.05 T
+(e-) 531.16 422.05 T
+(ments speci\336ed in) 212.4 410.05 T
+3 F
+(Z-Mail System Recommendations) 294.86 410.05 T
+1 F
+(on page 3.) 434.7 410.05 T
+7 F
+(4.) 198 393.05 T
+1 F
+(T) 212.4 393.05 T
+(o start Z-Mail, you must have a valid \322local activation key\323 that works) 217.61 393.05 T
+(with your speci\336c computer) 212.4 381.05 T
+(, or a \322network activation key\323 if you will be) 336.07 381.05 T
+(using the Network License Server \050NLS\051. Activation keys ar) 212.4 369.05 T
+(e not shipped) 476.08 369.05 T
+(with the Z-) 212.4 357.05 T
+(Mail package or distribution media. T) 261.57 357.05 T
+(o obtain an activation) 427.77 357.05 T
+(key) 212.4 345.05 T
+(, call Z-Code Softwar) 227.19 345.05 T
+(e Customer Service. When you call, please have) 320.26 345.05 T
+(the following information available:) 212.4 333.05 T
+(\245) 212.4 316.05 T
+(The) 226.8 316.05 T
+3 F
+(hostid) 246.03 316.05 T
+1 F
+( or) 270.46 316.05 T
+3 F
+(hostname) 284.86 316.05 T
+1 F
+( for each system that will be r) 323.17 316.05 T
+(unning Z-Mail.) 452.91 316.05 T
+(\245) 212.4 304.05 T
+(The total number of Z-Mail users for each system.) 226.8 304.05 T
+(\245) 212.4 292.05 T
+(Whether or not you plan to use the NLS.) 226.8 292.05 T
+(Demonstration \050time-limited\051 activation keys ar) 212.4 275.05 T
+(e available.) 422.95 275.05 T
+(Y) 212.4 258.05 T
+(ou can r) 218.15 258.05 T
+(each Z-Code Softwar) 253.65 258.05 T
+(e at +1 415.898.8649, Monday thr) 346.51 258.05 T
+(ough Fri-) 490.8 258.05 T
+(day fr) 212.4 246.05 T
+(om 9 AM to 5 PM U.S. Paci\336c time. Y) 238.66 246.05 T
+(ou may also send e-mail to) 401.77 246.05 T
+3 F
+(support@z-code.com) 212.4 234.05 T
+1 F
+(for timely technical support.) 297.39 234.05 T
+72 190.43 540 208.71 C
+72 190.43 540 208.71 R
+7 X
+0 K
+V
+71.21 198.78 199.51 207.92 R
+0 X
+V
+0.5 H
+0 Z
+N
+0 0 612 792 C
+5 16 Q
+0 X
+0 K
+(Copy Z-Mail Files) 72 179.76 T
+1 10 Q
+-0.27 (The next step in the installation pr) 198 154.76 P
+-0.27 (ocess copies the Z-) 347.23 154.76 P
+-0.27 (Mail distribution to your) 428.76 154.76 P
+(har) 198 142.76 T
+(d disk. If you obtained Z-Mail via FTP) 212.58 142.76 T
+(, instead of r) 380.33 142.76 T
+(eceiving it on media) 434.99 142.76 T
+(fr) 198 130.76 T
+(om Z-) 205.1 130.76 T
+(Code, you should untar your Z-Mail tar \336le and skip to) 231.87 130.76 T
+3 F
+(Automatic) 478.48 130.76 T
+(Installation) 198 118.76 T
+1 F
+(on page 5 or) 247.13 118.76 T
+3 F
+(Manual Installation) 304.15 118.76 T
+1 F
+(on page 7. If you r) 387.99 118.76 T
+(eceived Z-Mail) 468.1 118.76 T
+(on some kind of media, perform the steps in this section to place the Z-) 198 106.76 T
+(Mail) 511.11 106.76 T
+(tar \336le on your har) 198 94.76 T
+(d disk.) 280.78 94.76 T
+FMENDPAGE
+%%EndPage: "4" 5
+%%Page: "5" 5
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+69.98 44.06 540.94 59.04 R
+V
+1 9 Q
+0 X
+(Z-Mail Installation Guide) 69.98 53.04 T
+(5 of 18) 514.12 53.04 T
+72 72 540 720 R
+7 X
+V
+1 10 Q
+0 X
+-0.23 (Z-Mail \336les ar) 198 713.33 P
+-0.23 (e stor) 259.54 713.33 P
+-0.23 (ed in) 283.32 713.33 P
+3 F
+-0.23 (tar) 307.48 713.33 P
+1 F
+-0.23 ( format on the tape or diskettes you r) 319.13 713.33 P
+-0.23 (eceived fr) 480.62 713.33 P
+-0.23 (om) 523.45 713.33 P
+(Z-Code. T) 198 701.33 T
+(o extract them fr) 241.64 701.33 T
+(om the distribution media, perform the following) 314.22 701.33 T
+(steps:) 198 689.33 T
+7 F
+(1.) 198 672.33 T
+1 F
+(Insert the media \050diskette number one, DA) 212.4 672.33 T
+(T) 400.79 672.33 T
+(, or cartridge\051 into the drive.) 406.17 672.33 T
+7 F
+(2.) 198 655.33 T
+1 F
+(Log in as the) 212.4 655.33 T
+3 F
+(r) 271.34 655.33 T
+(oot) 275.05 655.33 T
+1 F
+( user of your system.) 287.25 655.33 T
+7 F
+(3.) 198 638.33 T
+1 F
+-0.22 (Cr) 212.4 638.33 P
+-0.22 (eate a dir) 223.25 638.33 P
+-0.22 (ectory called) 263.43 638.33 P
+3 F
+-0.22 (/usr/tmp/install) 321.58 638.33 P
+1 F
+-0.22 (. \050If this dir) 385.44 638.33 P
+-0.22 (ectory alr) 433.81 638.33 P
+-0.22 (eady exists, or) 475.21 638.33 P
+(if ther) 212.4 626.33 T
+(e is insuf) 238.77 626.33 T
+(\336cient fr) 277.83 626.33 T
+(ee space on the) 314.68 626.33 T
+3 F
+(/usr) 383.86 626.33 T
+1 F
+( \336lesystem, you may choose a) 400.15 626.33 T
+(dif) 212.4 614.33 T
+(fer) 224.56 614.33 T
+(ent name. Make sur) 236.45 614.33 T
+(e you substitute your new name wher) 323.56 614.33 T
+(ever) 490.97 614.33 T
+3 F
+(/usr/tmp/install) 212.4 602.33 T
+1 F
+( appears below) 276.26 602.33 T
+(.\051) 342.33 602.33 T
+7 9 Q
+(mkdir) 223.2 586 T
+( /usr/tmp/install) 252.67 586 T
+7 10 Q
+(4.) 198 569.83 T
+1 F
+(Move to the) 212.4 569.83 T
+3 F
+(install) 267.82 569.83 T
+1 F
+( dir) 293.36 569.83 T
+(ectory you just cr) 308.65 569.83 T
+(eated, with the command:) 384.7 569.83 T
+7 9 Q
+(cd) 223.2 553.5 T
+(/usr/tmp/install) 241.18 553.5 T
+7 10 Q
+(5.) 198 537.33 T
+1 F
+(Copy the) 212.4 537.33 T
+3 F
+(unpack.sh) 255.37 537.33 T
+1 F
+( script fr) 295.8 537.33 T
+(om the distribution media to your system\325s) 332.69 537.33 T
+(disk by entering the command:) 212.4 525.33 T
+7 9 Q
+(tar) 223.2 509 T
+(xvf) 239.68 509 T
+8 F
+(devicename) 257.67 509 T
+7 F
+(unpack.sh) 314.12 509 T
+6 F
+(\050see) 403.99 509 T
+9 F
+(Preparation) 420.38 509 T
+6 F
+( above for) 458.48 509 T
+10 F
+(devicename) 493.3 509 T
+6 F
+(.\051) 535.5 509 T
+7 10 Q
+(6.) 198 492.83 T
+1 F
+(T) 212.4 492.83 T
+(o copy the r) 217.61 492.83 T
+(est of the distribution to your system\325s disk, enter the com-) 269.65 492.83 T
+(mand:) 212.4 480.83 T
+7 9 Q
+(sh) 223.2 464.5 T
+(unpack.sh) 238.68 464.5 T
+1 10 Q
+-0.17 (and wait until all the \336les ar) 198 448.33 P
+-0.17 (e extracted fr) 320.74 448.33 P
+-0.17 (om the tar ar) 378.02 448.33 P
+-0.17 (chive. If you ar) 434.12 448.33 P
+-0.17 (e extract-) 499.71 448.33 P
+-0.21 (ing fr) 198 436.33 P
+-0.21 (om diskettes, you may be asked to insert additional diskettes during the) 221.67 436.33 P
+-0.13 (extraction pr) 198 424.33 P
+-0.13 (ocess. The) 254.17 424.33 P
+3 F
+-0.13 (sh) 301.3 424.33 P
+-0.13 (unpack.sh) 312.55 424.33 P
+1 F
+-0.13 (command performs the following actions:) 355.36 424.33 P
+(\245) 198 407.33 T
+(Extracts all volume \336les, e.g.,) 212.4 407.33 T
+3 F
+(vol-XXXXX.n) 343.08 407.33 T
+1 F
+(, wher) 402.76 407.33 T
+(e) 430.46 407.33 T
+3 F
+(XXXXX) 437.75 407.33 T
+1 F
+( is a unique) 473.83 407.33 T
+(number and) 212.4 395.33 T
+3 F
+(n) 269.25 395.33 T
+1 F
+( is the volume number) 274.81 395.33 T
+(, fr) 373.65 395.33 T
+(om the media.) 385.74 395.33 T
+(\245) 198 381.33 T
+-0.04 (Catenates the volume \336les in volume number or) 212.4 381.33 P
+-0.04 (der into a single, possibly) 424.87 381.33 P
+(compr) 212.4 369.33 T
+(essed,) 240.89 369.33 T
+3 F
+(tar) 270.05 369.33 T
+1 F
+( \336le.) 281.7 369.33 T
+(\245) 198 355.33 T
+(Uncompr) 212.4 355.33 T
+(esses the tar \336le with the) 254.49 355.33 T
+3 F
+(uncompr) 365.76 355.33 T
+(ess) 401.86 355.33 T
+1 F
+( pr) 413.52 355.33 T
+(ogram if the tar \336le is in) 425.79 355.33 T
+-0.26 (compr) 212.4 343.33 P
+-0.26 (essed form. The) 240.89 343.33 P
+3 F
+-0.26 (uncompr) 312.56 343.33 P
+-0.26 (ess) 348.66 343.33 P
+1 F
+-0.26 ( pr) 360.33 343.33 P
+-0.26 (ogram is pr) 372.34 343.33 P
+-0.26 (ovided on the distribution) 422.53 343.33 P
+(media if it is not standar) 212.4 331.33 T
+(d with your operating system.) 319.78 331.33 T
+(\245) 198 317.33 T
+(Extracts the contents of the tar \336le with) 212.4 317.33 T
+6 F
+(tar xvf) 387.63 317.33 T
+9 F
+(tar) 412.23 317.33 T
+(-\336le-name) 421.65 317.33 T
+1 F
+( into a subdir) 458.08 317.33 T
+(ec-) 516.59 317.33 T
+(tory of the curr) 212.4 305.33 T
+(ent dir) 278.94 305.33 T
+(ectory named) 308.09 305.33 T
+3 F
+( zmail.type) 368.56 305.33 T
+1 F
+(, wher) 412.98 305.33 T
+(e) 440.68 305.33 T
+3 F
+(type) 447.97 305.33 T
+1 F
+( is the name of) 465.18 305.33 T
+(your har) 212.4 293.33 T
+(dwar) 250.47 293.33 T
+(e platform. For example, a version of Z-Mail for the Sun 4) 273.68 293.33 T
+(platform is placed into the) 212.4 281.33 T
+3 F
+(zmail.sun4) 331.32 281.33 T
+1 F
+( dir) 376.02 281.33 T
+(ectory) 391.3 281.33 T
+(. Z-Mail identi\336es the plat-) 417.64 281.33 T
+(form name so you can stor) 212.4 269.33 T
+(e Z-) 329.59 269.33 T
+(Mail distributions for dif) 346.87 269.33 T
+(fer) 456.13 269.33 T
+(ent kinds of) 468.01 269.33 T
+(computers on one server) 212.4 257.33 T
+(.) 320.83 257.33 T
+(After all of the \336les have been extracted to your \336lesystem,) 198 240.33 T
+3 F
+(unpack) 459.78 240.33 T
+1 F
+( will ask) 488.83 240.33 T
+(you:) 198 228.33 T
+7 9 Q
+(Continue installation by running doinstall.sh ?) 223.2 212 T
+3 10 Q
+(Doinstall) 198 195.83 T
+1 F
+( is the main Z-Mail installation script. It copies the various \336les and) 235.76 195.83 T
+(dir) 198 183.83 T
+(ectories for Z-) 210.78 183.83 T
+(Mail to their pr) 272.33 183.83 T
+(oper places. Y) 339.3 183.83 T
+(ou may wish to r) 400.12 183.83 T
+(ead the next) 474.76 183.83 T
+(section befor) 198 171.83 T
+(e answering the above question, especially if you have a non-) 254.27 171.83 T
+(standar) 198 159.83 T
+(d Unix or X W) 231.18 159.83 T
+(indows con\336guration on your computer) 294.46 159.83 T
+(. If you answer) 471.31 159.83 T
+-0.33 (\322no,\323 unpack will stop, and you can r) 198 147.83 P
+-0.33 (un doinstall later at your convenience. If) 361.36 147.83 P
+(you answer \322yes,\323 unpack will start) 198 135.83 T
+3 F
+(doinstall) 358.83 135.83 T
+1 F
+( for you.) 393.81 135.83 T
+FMENDPAGE
+%%EndPage: "5" 6
+%%Page: "6" 6
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+69.98 44.06 540.94 59.04 R
+V
+1 9 Q
+0 X
+(Z-Mail Installation Guide) 69.98 53.04 T
+(6 of 18) 514.12 53.04 T
+72 72 540 720 R
+7 X
+V
+72 701.71 540 720 C
+72 701.71 540 720 R
+7 X
+0 K
+V
+71.21 710.06 199.51 719.21 R
+0 X
+V
+0.5 H
+0 Z
+N
+0 0 612 792 C
+5 16 Q
+0 X
+0 K
+(Automatic Installation) 72 691.04 T
+1 10 Q
+(Next you must move the various Z-Mail \336les to their appr) 198 666.04 T
+(opriate dir) 454.14 666.04 T
+(ectories.) 500.78 666.04 T
+(Z-Mail pr) 198 654.04 T
+(ovides a script,) 240.54 654.04 T
+3 F
+(doinstall) 309.47 654.04 T
+1 F
+(, that performs all the necessary actions) 344.45 654.04 T
+(automatically) 198 642.04 T
+(.) 257.43 642.04 T
+2 F
+(Note:) 198 625.04 T
+1 F
+( If you have modi\336ed your Unix or X W) 224.65 625.04 T
+(indows installation so it has) 400.53 625.04 T
+(non-standar) 198 613.04 T
+(d dir) 251.6 613.04 T
+(ectory names, Z-Mail\325s automatic installer may not work) 272.99 613.04 T
+(pr) 198 601.04 T
+(operly for you. Instead of following the instr) 207.77 601.04 T
+(uctions in this section, you) 404.19 601.04 T
+(may wish to skip to) 198 589.04 T
+3 F
+(Manual Installation) 287.31 589.04 T
+1 F
+(on page 7.) 371.14 589.04 T
+0 F
+(Move Files to) 72 548.04 T
+(Proper Directories) 72 536.05 T
+1 F
+(Z-Mail pr) 198 548.05 T
+(ovides you with a shell script called) 240.54 548.05 T
+3 F
+(doinstall) 401.13 548.05 T
+1 F
+( that copies all Z-Mail) 436.11 548.05 T
+(\336les to their pr) 198 536.05 T
+(oper dir) 262.68 536.05 T
+(ectories. Y) 298.17 536.05 T
+(ou need to be the) 342.73 536.05 T
+3 F
+(r) 421.1 536.05 T
+(oot) 424.8 536.05 T
+1 F
+( user to r) 437.01 536.05 T
+(un this shell) 476.09 536.05 T
+-0.05 (script. Doinstall will automatically ask you for the r) 198 524.05 P
+-0.05 (oot passwor) 424.9 524.05 P
+-0.05 (d if necessary) 478.56 524.05 P
+-0.05 (.) 537.5 524.05 P
+(Y) 198 506.05 T
+(ou may choose to modify the doinstall script if your system is set up in a) 203.75 506.05 T
+(highly non-standar) 198 494.05 T
+(d con\336guration. Note that the doinstall script can handle) 282.66 494.05 T
+(minor variations fr) 198 482.05 T
+(om standar) 281.22 482.05 T
+(d con\336guration. If you don\325t want to modify) 331.19 482.05 T
+(doinstall and have a highly non-standar) 198 470.05 T
+(d con\336guration, you can instead fol-) 374.42 470.05 T
+(low the instr) 198 458.05 T
+(uctions in) 253.65 458.05 T
+3 F
+(Manual Installation) 299.51 458.05 T
+1 F
+(on page 7.) 383.35 458.05 T
+(Befor) 198 441.05 T
+(e r) 221.45 441.05 T
+(unning doinstall, make sur) 232.6 441.05 T
+(e that your) 351.34 441.05 T
+3 F
+(P) 401.94 441.05 T
+(A) 406.76 441.05 T
+(TH) 413.42 441.05 T
+1 F
+( envir) 427.3 441.05 T
+(onment variable) 452.73 441.05 T
+(includes the dir) 198 429.05 T
+(ectory wher) 266.87 429.05 T
+(e you\325ll be installing the Z-Mail binary \050main pr) 319.52 429.05 T
+(o-) 530.1 429.05 T
+(gram\051.Usually) 198 417.05 T
+(, this is the) 260.46 417.05 T
+3 F
+(/usr/local/bin) 310.18 417.05 T
+1 F
+(dir) 366.35 417.05 T
+(ectory) 379.13 417.05 T
+3 F
+(.) 406.21 417.05 T
+1 F
+( Edit r) 411.2 417.05 T
+(oot\325s) 438.35 417.05 T
+3 F
+(.cshr) 462.04 417.05 T
+(c) 481.19 417.05 T
+1 F
+(,) 485.26 417.05 T
+3 F
+(.login) 490.26 417.05 T
+1 F
+(, or) 513.31 417.05 T
+3 F
+(.pr) 198 405.05 T
+(o\336le) 209.2 405.05 T
+1 F
+( \336le, whichever is appr) 225.59 405.05 T
+(opriate, to make this change permanent.) 326.23 405.05 T
+(T) 198 388.05 T
+(o r) 203.21 388.05 T
+(un doinstall, type:) 215.03 388.05 T
+7 9 Q
+(cd) 223.2 371.71 T
+(/usr/tmp/install/zmail) 241.18 371.71 T
+8 F
+(.type) 330.09 371.71 T
+6 F
+(Where) 374.1 371.71 T
+9 F
+(type) 397.86 371.71 T
+6 F
+( is the name of your hardware platform.) 411.79 371.71 T
+7 F
+(sh) 223.2 360.21 T
+(doinstall.sh) 241.18 360.21 T
+1 10 Q
+(And follow the instr) 198 344.05 T
+(uctions. Note that you may elect to upgrade an existing) 287.54 344.05 T
+(installation of Z-) 198 332.05 T
+(Mail, install the new version in a separate dir) 271.25 332.05 T
+(ectory) 470.17 332.05 T
+(, or over-) 496.51 332.05 T
+(write your existing Z-) 198 320.05 T
+(Mail. Y) 294.35 320.05 T
+(ou can r) 325.36 320.05 T
+(un doinstall several times, if needed. At) 360.96 320.05 T
+(the end of the installation pr) 198 308.05 T
+(ocess, doinstall will ask you a few questions:) 322.96 308.05 T
+(\245) 198 291.05 T
+(If you have or) 212.4 291.05 T
+(der) 274.11 291.05 T
+(ed the Network License Server \050NLS\051 softwar) 288.77 291.05 T
+(e along) 489.31 291.05 T
+(with Z-) 212.4 279.05 T
+(Mail, doinstall will ask whether you wish to install it. See \322The) 245.21 279.05 T
+(Network License Server) 212.4 267.05 T
+(,\323 below) 317.75 267.05 T
+(, for mor) 353.84 267.05 T
+(e information about the NLS.) 392.12 267.05 T
+(\245) 198 253.05 T
+(If you have your activation key\050s\051 in hand, doinstall will ask whether you) 212.4 253.05 T
+(want to go ahead and r) 212.4 241.05 T
+(egister Z-) 314.42 241.05 T
+(Mail users. If you do not have your key) 356.4 241.05 T
+(,) 529.26 241.05 T
+(you must call Z-) 212.4 229.05 T
+(Code at \050415\051 898-8649 to obtain it. See \322Register Users\323) 284.53 229.05 T
+(below for mor) 212.4 217.05 T
+(e information about r) 275.2 217.05 T
+(egistering users.) 369.23 217.05 T
+0 F
+(The Network License) 72 193.05 T
+(Server) 72 181.05 T
+1 F
+(The Network License Server \050NLS\051 is a new featur) 198 193.05 T
+(e in Z-) 419.38 193.05 T
+(Mail 2.1 that allows) 447.88 193.05 T
+-0.17 (Z-) 198 181.05 P
+-0.17 (Mail sites to have mor) 207.99 181.05 P
+-0.17 (e \337exible distribution of Z-Mail licenses among users) 305.02 181.05 P
+(and machines. If you have licensed the NLS along with Z-Mail, the doinstall) 198 169.05 T
+(script will ask you whether you wish to install the NLS. Y) 198 157.05 T
+(ou may choose to) 451.78 157.05 T
+(install the NLS softwar) 198 145.05 T
+(e in doinstall, or may postpone installation until later) 299.43 145.05 T
+(.) 533.4 145.05 T
+-0.09 (If you elect to postpone installation of the NLS, you may install it later by log-) 198 127.05 P
+(ging in as r) 198 115.05 T
+(oot and entering the following commands:) 247.06 115.05 T
+7 9 Q
+(cd /usr/tmp/zmail.) 223.2 97.71 T
+8 F
+(type) 299.12 97.71 T
+7 F
+(/zcnls) 317.6 97.71 T
+7 8 Q
+(\050where) 411.14 97.71 T
+8 F
+(type) 439.14 97.71 T
+7 F
+( is your machine type\051) 455.57 97.71 T
+7 9 Q
+(sh nlsinstall.sh) 223.2 86.21 T
+108 571.04 180 643.04 C
+108 571.04 180 643.04 R
+7 X
+0 K
+V
+133.99 631.74 155.95 631.74 169.99 616.76 169.99 596.75 155.95 581.77 135 581.77 119.95 596.75
+ 119.95 616.76 8 Y
+V
+1 H
+0 Z
+0 X
+N
+135.07 629.65 154.87 629.65 167.54 616.12 167.54 598.04 154.87 584.51 135.94 584.51 122.4 598.04
+ 122.4 616.12 8 Y
+V
+N
+11 14 Q
+7 X
+1 K
+(ST) 129.96 601.72 T
+(OP) 144.43 601.72 T
+0 0 612 792 C
+FMENDPAGE
+%%EndPage: "6" 7
+%%Page: "7" 7
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+69.98 44.06 540.94 59.04 R
+V
+1 9 Q
+0 X
+(Z-Mail Installation Guide) 69.98 53.04 T
+(7 of 18) 514.12 53.04 T
+72 72 540 720 R
+7 X
+V
+1 10 Q
+0 X
+(Follow the instr) 198 701.83 T
+(uctions pr) 267.57 701.83 T
+(esented by nlsinstall to complete the NLS installa-) 311.99 701.83 T
+(tion. If you wish to install the NLS manually) 198 689.83 T
+(, see the \336le:) 393.16 689.83 T
+7 9 Q
+(/usr/tmp/install/zcnls/README.NLS) 223.2 672.5 T
+3 10 Q
+(Note:) 198 656.33 T
+1 F
+( If you have acquir) 219.93 656.33 T
+(ed a) 302.64 656.33 T
+3 F
+(local) 323.53 656.33 T
+1 F
+( activation key fr) 342.03 656.33 T
+(om Z-Code, you do not) 416.21 656.33 T
+(need the NLS to r) 198 644.33 T
+(un Z-Mail, and the dir) 275.6 644.33 T
+(ectory) 373.76 644.33 T
+6 F
+(/usr/lib/Zmail/license) 403.71 644.33 T
+3 F
+(must) 480.43 644.33 T
+1 F
+( exist) 500.98 644.33 T
+(befor) 198 632.33 T
+(e you can r) 220.87 632.33 T
+(egister users. This dir) 269.21 632.33 T
+(ectory is normally cr) 363.8 632.33 T
+(esated for you by) 454.51 632.33 T
+(doinstall unless you tell doinstall that you plan to install the NLS.) 198 620.33 T
+(Conversely) 198 603.33 T
+(, if you have acquir) 247.12 603.33 T
+(ed a) 331.88 603.33 T
+3 F
+(network) 352.77 603.33 T
+1 F
+( activation key) 385.52 603.33 T
+(, you must have) 448.99 603.33 T
+(installed and started the NLS, and set the) 198 591.33 T
+6 F
+(ZCNLSER) 382.52 591.33 T
+(V) 420.63 591.33 T
+1 F
+( envir) 426.1 591.33 T
+(onment variable) 451.52 591.33 T
+-0.11 (befor) 198 579.33 P
+-0.11 (e users can use Z-Mail \050however) 220.87 579.33 P
+-0.11 (, you can still r) 362.76 579.33 P
+-0.11 (egister users\051. See the \336le) 427.09 579.33 P
+(README.NLS for mor) 198 567.33 T
+(e detailed information about con\336guring and using) 299.79 567.33 T
+(the NLS.) 198 555.33 T
+0 F
+(Register Users) 72 531.33 T
+1 F
+-0.14 (Once you have obtained a valid activation key fr) 198 531.33 P
+-0.14 (om Z-Code, you ar) 411.13 531.33 P
+-0.14 (e r) 494.22 531.33 P
+-0.14 (eady to) 505.13 531.33 P
+(r) 198 519.33 T
+(un Z-Mail in r) 201.87 519.33 T
+(egistration mode. The r) 263.96 519.33 T
+(egistration mode of Z-Mail is started) 366.77 519.33 T
+(automatically for you at the end of doinstall \050the main installation script\051 or) 198 507.33 T
+(nlsinstall \050the NLS installation script\051.) 198 495.33 T
+(Y) 198 478.33 T
+(ou may r) 203.75 478.33 T
+(un Z-Mail in r) 243.48 478.33 T
+(egistration mode at any time after you\325ve r) 305.57 478.33 T
+(un doin-) 494.22 478.33 T
+-0.18 (stall to add mor) 198 466.33 P
+-0.18 (e users and keys to your installation. Y) 267.24 466.33 P
+-0.18 (ou start Z-) 435.97 466.33 P
+-0.18 (Mail in r) 481.78 466.33 P
+-0.18 (egis-) 519.18 466.33 P
+(tration mode with the command:) 198 454.33 T
+7 9 Q
+(zmail -register) 223.2 438 T
+1 10 Q
+(Regar) 198 421.83 T
+(dless of whether you let doinstall or nlsinstall start r) 223.79 421.83 T
+(egistration mode) 453.55 421.83 T
+(for you, or if you start r) 198 409.83 T
+(egistration mode yourself, follow the instr) 301.41 409.83 T
+(uctions) 487.31 409.83 T
+(Z-) 198 397.83 T
+(Mail pr) 207.99 397.83 T
+(esents to you to complete the r) 240.54 397.83 T
+(egistration pr) 375.22 397.83 T
+(ocess.) 434.63 397.83 T
+(Registration information is usually stor) 198 380.83 T
+(ed in the \336le) 371.05 380.83 T
+7 9 Q
+(/usr/lib/Zmail/license/license.data) 223.2 364.5 T
+1 10 Q
+(If you have a lar) 198 348.33 T
+(ge number of users to r) 269.65 348.33 T
+(egister) 371.92 348.33 T
+(, you may wish to edit the) 400.67 348.33 T
+3 F
+(license.data) 198 336.33 T
+1 F
+(\336le by hand. The format of license.data is described in) 247.04 336.33 T
+3 F
+(Format of) 487.88 336.33 T
+-0.38 (license.data) 198 324.33 P
+1 F
+-0.38 (on page 13. It\325s a good idea to make a backup of license.data befor) 246.66 324.33 P
+-0.38 (e) 533.1 324.33 P
+(you edit it.) 198 312.33 T
+3 F
+(Note) 198 295.33 T
+1 F
+(: Ther) 217.43 295.33 T
+(e ar) 242.93 295.33 T
+(e two kinds of Z-) 258.98 295.33 T
+(Mail activation keys, both of which may be in) 334.21 295.33 T
+(use at your installation:) 198 283.33 T
+(\245) 198 266.33 T
+(local. This kind of key allows a number of users to r) 212.4 266.33 T
+(un Z-) 440.64 266.33 T
+(Mail on a single) 464.97 266.33 T
+(machine.) 212.4 254.33 T
+(\245) 198 240.33 T
+(network. This kind of key allows a number of users to r) 212.4 240.33 T
+(un Z-) 457.09 240.33 T
+(Mail on a) 481.42 240.33 T
+(number of machines. This kind of key r) 212.4 228.33 T
+(equir) 385.86 228.33 T
+(es a Network License Server) 408.95 228.33 T
+(\050NLS\051 to be installed and r) 212.4 216.33 T
+(unning befor) 328.96 216.33 T
+(e users can r) 386.26 216.33 T
+(un Z-) 440.9 216.33 T
+(Mail. However) 465.24 216.33 T
+(,) 531.04 216.33 T
+-0.21 (you can still r) 212.4 204.33 P
+-0.21 (egister users befor) 271.56 204.33 P
+-0.21 (e the NLS is installed or r) 351.73 204.33 P
+-0.21 (unning. See \322The) 462.13 204.33 P
+(Network License Server) 212.4 192.33 T
+(,\323 above, for mor) 317.75 192.33 T
+(e information about the NLS.) 392.44 192.33 T
+0 F
+(Start Z-Mail) 72 168.33 T
+1 F
+(Y) 198 168.33 T
+(ou ar) 203.75 168.33 T
+(e now r) 226.49 168.33 T
+(eady to start Z-Mail. Y) 259.66 168.33 T
+(ou can select one of thr) 358.02 168.33 T
+(ee interfaces:) 459.36 168.33 T
+8 9 Q
+(T) 234 152 T
+(o start this interface:) 239.16 152 T
+(Enter this command:) 360 152 T
+12 F
+(Motif) 234 134 T
+7 F
+(zmail) 360 134 T
+( \320motif) 387.48 134 T
+12 F
+(Fullscreen) 234 122 T
+7 F
+(zmail) 360 122 T
+( \320fullscreen) 387.48 122 T
+12 F
+(Command-Line) 234 110 T
+7 F
+(zmail) 360 110 T
+1 10 Q
+-0.24 (For mor) 198 93.33 P
+-0.24 (e information on starting Z-Mail with various command-line options,) 233.27 93.33 P
+(see the section called) 198 81.33 T
+3 F
+(Starting Z-Mail) 292.72 81.33 T
+1 F
+( in the) 358.51 81.33 T
+3 F
+( Z-Mail Refer) 386.1 81.33 T
+(ence Manual) 441.45 81.33 T
+1 F
+(.) 493.55 81.33 T
+FMENDPAGE
+%%EndPage: "7" 8
+%%Page: "8" 8
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+69.98 44.06 540.94 59.04 R
+V
+1 9 Q
+0 X
+(Z-Mail Installation Guide) 69.98 53.04 T
+(8 of 18) 514.12 53.04 T
+72 72 540 720 R
+7 X
+V
+0 10 Q
+0 X
+(Clean Up) 72 713.33 T
+1 F
+(Once you ar) 198 713.33 T
+(e con\336dent you have installed all the Z-Mail \336les appr) 251.7 713.33 T
+(opriately) 490.62 713.33 T
+(and that Z-Mail is r) 198 701.33 T
+(unning pr) 283.52 701.33 T
+(operly) 327.74 701.33 T
+(, you can r) 355.29 701.33 T
+(emove the) 401.35 701.33 T
+3 F
+(install) 449.71 701.33 T
+1 F
+( dir) 475.26 701.33 T
+(ectory and) 490.54 701.33 T
+(all its associated \336les. At the shell pr) 198 689.33 T
+(ompt, type:) 357.94 689.33 T
+7 9 Q
+(rm) 223.2 673 T
+( \320r) 239.68 673 T
+( /usr/tmp/install) 255.67 673 T
+1 10 Q
+(Y) 198 656.83 T
+(ou have now \336nished the installation and con\336guration pr) 203.75 656.83 T
+(ocess. Next you) 461.55 656.83 T
+(should r) 198 644.83 T
+(ead the Z-Mail User) 234.82 644.83 T
+(\325s Guide to learn how to get the most out of Z-) 323.82 644.83 T
+-0.19 (Mail. If you wish to quickly check your installation and pr) 198 632.83 P
+-0.19 (oper functioning of) 452.77 632.83 P
+(Z-Mail, type the command) 198 620.83 T
+7 9 Q
+(zmail -shell) 223.2 604.5 T
+1 10 Q
+(to start zmail in character \050line\051 mode. Use the \324help\325 command in Z-Mail for) 198 588.33 T
+(instr) 198 576.33 T
+(uctions on basic operations, such as sending and r) 218.09 576.33 T
+(eceiving messages. T) 438.65 576.33 T
+(o) 529.87 576.33 T
+(quit Z-Mail, use the \324quit\325 command.) 198 564.33 T
+72 520.71 540 539 C
+72 520.71 540 539 R
+7 X
+0 K
+V
+71.21 529.06 199.51 538.21 R
+0 X
+V
+0.5 H
+0 Z
+N
+0 0 612 792 C
+5 16 Q
+0 X
+0 K
+(Manual Installation) 72 510.05 T
+1 10 Q
+(If you have a non-standar) 198 485.05 T
+(d Unix or X W) 311.58 485.05 T
+(indows installation, or if you do not) 374.85 485.05 T
+(want to use Z-Mail\325s automatic installation script) 198 473.05 T
+3 F
+( doinstall,) 414.88 473.05 T
+1 F
+( you can install) 454.86 473.05 T
+(Z-) 198 461.05 T
+(Mail manually) 207.99 461.05 T
+(.) 271.69 461.05 T
+(First, you need to cr) 198 444.05 T
+(eate a dir) 285.86 444.05 T
+(ectory called) 326.47 444.05 T
+3 F
+(/usr/lib/Zmail) 385.06 444.05 T
+1 F
+( and copy all the \336les) 441.89 444.05 T
+(located in) 198 432.05 T
+3 F
+(/install/zmail.type/lib) 243.68 432.05 T
+1 F
+( to this new dir) 330.2 432.05 T
+(ectory) 396.85 432.05 T
+(. Y) 423.19 432.05 T
+(ou may need to be) 433.93 432.05 T
+-0.23 (logged on as the) 198 420.05 P
+3 F
+-0.23 (r) 271.81 420.05 P
+-0.23 (oot) 275.52 420.05 P
+1 F
+-0.23 ( account to cr) 287.73 420.05 P
+-0.23 (eate this new dir) 345.88 420.05 P
+-0.23 (ectory) 418.45 420.05 P
+-0.23 (. At the shell pr) 444.79 420.05 P
+-0.23 (ompt,) 511.69 420.05 P
+(type:) 198 408.05 T
+7 9 Q
+(mkdir) 223.2 391.71 T
+(/usr/lib/Zmail) 255.17 391.71 T
+(cd) 223.2 380.21 T
+( /usr/tmp/install/zmail) 238.68 380.21 T
+8 F
+(.type) 330.09 380.21 T
+6 F
+(Where) 374.1 380.21 T
+9 F
+(type) 397.86 380.21 T
+6 F
+( is the name of your hardware platform.) 411.79 380.21 T
+7 F
+(cp) 223.2 368.71 T
+(\320r) 241.18 368.71 T
+( lib/*) 254.67 368.71 T
+( /usr/lib/Zmail) 278.65 368.71 T
+2 10 Q
+(ZMLIB) 72 345.55 T
+0 F
+( V) 104.76 345.55 T
+(ariable) 113.93 345.55 T
+1 F
+-0.06 (Each time you start Z-Mail, it looks for con\336guration \336les in the) 198 345.55 P
+3 F
+-0.06 (/usr/lib/Zmail) 480.73 345.55 P
+1 F
+(dir) 198 333.55 T
+(ectory on your system. If you elect not to stor) 210.78 333.55 T
+(e these \336les in) 410.26 333.55 T
+3 F
+(/usr/lib/Zmail) 474.64 333.55 T
+1 F
+(,) 531.47 333.55 T
+-0.27 (then you must set the the envir) 198 321.55 P
+-0.27 (onment variable) 333.35 321.55 P
+3 F
+-0.27 (ZMLIB) 407.48 321.55 P
+1 F
+-0.27 ( to the dir) 438.58 321.55 P
+-0.27 (ectory wher) 480.61 321.55 P
+-0.27 (e) 532.99 321.55 P
+-0.13 (the \336les ar) 198 309.55 P
+-0.13 (e stor) 243.34 309.55 P
+-0.13 (ed. Each Z-Mail user must also set the) 267.22 309.55 P
+3 F
+-0.13 (ZMLIB) 436.27 309.55 P
+1 F
+-0.13 ( variable as part) 467.36 309.55 P
+(of their envir) 198 297.55 T
+(onment.) 255.43 297.55 T
+(For example, if you want to stor) 198 280.55 T
+(e the con\336guration) 339.04 280.55 T
+(\336les in a dir) 424.92 280.55 T
+(ectory called) 476.9 280.55 T
+3 F
+(/home/zmail/lib) 200.5 268.55 T
+1 F
+(, you must set the) 262.86 268.55 T
+3 F
+(ZMLIB) 343.39 268.55 T
+1 F
+( variable appr) 374.48 268.55 T
+(opriately) 435.98 268.55 T
+(. At the csh) 474.7 268.55 T
+(pr) 198 256.55 T
+(ompt, type) 207.77 256.55 T
+7 9 Q
+(setenv) 223.2 240.21 T
+(ZMLIB) 259.17 240.21 T
+(/home/zmail/lib) 294.12 240.21 T
+1 10 Q
+(or) 198 224.05 T
+(, at the sh pr) 206.66 224.05 T
+(ompt, type:) 261.11 224.05 T
+7 9 Q
+(ZMLIB=/home/zmail/lib ; export ZMLIB) 223.2 207.71 T
+1 10 Q
+(Y) 198 191.55 T
+(ou should permanently place this command in your) 203.75 191.55 T
+3 F
+(.cshr) 436.02 191.55 T
+(c) 455.18 191.55 T
+1 F
+(,) 459.25 191.55 T
+3 F
+(.login) 464.24 191.55 T
+1 F
+(, or) 487.29 191.55 T
+3 F
+(.pr) 504.19 191.55 T
+(o\336le) 515.4 191.55 T
+1 F
+(\336le.) 198 179.55 T
+3 F
+(Note: The r) 198 162.55 T
+(egistration pr) 243.62 162.55 T
+(ocess demands that, if you ar) 298.14 162.55 T
+(e using any local key\050s\051, you) 413.62 162.55 T
+(must place the) 198 150.55 T
+2 F
+(license) 258.43 150.55 T
+3 F
+( dir) 288.39 150.55 T
+(ectory in) 302.37 150.55 T
+2 F
+(/usr/lib/Zmail) 340.31 150.55 T
+3 F
+(, r) 402.87 150.55 T
+(egardless of your ZMLIB vari-) 411.57 150.55 T
+(able setting. If you ar) 198 138.55 T
+(e using network keys exclusively) 283.23 138.55 T
+(, this r) 414.1 138.55 T
+(estriction doesn\325) 440.3 138.55 T
+(t apply) 505.91 138.55 T
+(to you.) 198 126.55 T
+0 F
+(Z-Mail Programs) 72 102.55 T
+1 F
+(Next, copy the Z-Mail pr) 198 102.55 T
+(ograms to the) 307.36 102.55 T
+3 F
+(/usr/local/bin) 370.45 102.55 T
+1 F
+( \050or your chosen equiva-) 424.13 102.55 T
+(lent\051 dir) 198 90.55 T
+(ectory) 233.38 90.55 T
+(. At the shell pr) 259.72 90.55 T
+(ompt, type:) 327.54 90.55 T
+112.29 602.77 184.29 674.77 C
+112.29 602.77 184.29 674.77 R
+7 X
+0 K
+V
+138.28 663.46 160.24 663.46 174.28 648.49 174.28 628.47 160.24 613.5 139.29 613.5 124.24 628.47
+ 124.24 648.49 8 Y
+V
+1 H
+0 Z
+0 X
+N
+139.36 661.38 159.16 661.38 171.83 647.84 171.83 629.77 159.16 616.23 140.22 616.23 126.69 629.77
+ 126.69 647.84 8 Y
+V
+N
+11 14 Q
+7 X
+1 K
+(ST) 134.25 633.44 T
+(OP) 148.71 633.44 T
+0 0 612 792 C
+FMENDPAGE
+%%EndPage: "8" 9
+%%Page: "9" 9
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+69.98 44.06 540.94 59.04 R
+V
+1 9 Q
+0 X
+(Z-Mail Installation Guide) 69.98 53.04 T
+(9 of 18) 514.12 53.04 T
+72 72 540 720 R
+7 X
+V
+7 F
+0 X
+(cp) 223.2 714 T
+(zmail) 241.18 714 T
+(/usr/local/bin) 271.16 714 T
+(cp) 223.2 702.5 T
+(zmail.small) 241.18 702.5 T
+( /usr/local/bin) 294.14 702.5 T
+1 10 Q
+(Make sur) 198 686.33 T
+(e that your) 239.33 686.33 T
+3 F
+(P) 289.93 686.33 T
+(A) 294.75 686.33 T
+(TH) 301.41 686.33 T
+1 F
+( variable includes) 315.3 686.33 T
+3 F
+(/usr/local/bin) 395.74 686.33 T
+1 F
+( so you can r) 449.41 686.33 T
+(un) 505.26 686.33 T
+(Z-) 198 674.33 T
+(Mail. Edit your) 207.99 674.33 T
+3 F
+(.cshr) 277.63 674.33 T
+(c) 296.79 674.33 T
+1 F
+(,) 300.85 674.33 T
+3 F
+(.login) 305.85 674.33 T
+1 F
+(, or) 328.9 674.33 T
+3 F
+( .pr) 343.3 674.33 T
+(o\336le) 357 674.33 T
+1 F
+( \336le appr) 373.38 674.33 T
+(opriately) 412.9 674.33 T
+(.) 451.62 674.33 T
+0 F
+(Application Default File) 72 650.33 T
+1 F
+(Z-Mail r) 198 650.33 T
+(equir) 234.53 650.33 T
+(es you to place the \336le) 257.62 650.33 T
+3 F
+(/usr/tmp/install/zmail.type/lib/Zmail) 358.13 650.33 T
+1 F
+( in the) 507.4 650.33 T
+3 F
+(/usr/lib/X1) 198 638.33 T
+(1/app-defaults) 242.06 638.33 T
+1 F
+( dir) 299.42 638.33 T
+(ectory) 314.71 638.33 T
+(. This is a dir) 341.04 638.33 T
+(ectory used by Motif and the X) 397.55 638.33 T
+-0.35 (W) 198 626.33 P
+-0.35 (indow system to pr) 207.45 626.33 P
+-0.35 (ovide the pr) 291.92 626.33 P
+-0.35 (oper r) 344.76 626.33 P
+-0.35 (esour) 370.88 626.33 P
+-0.35 (ces for the GUI modes of Z-Mail.) 395.15 626.33 P
+(Y) 198 609.33 T
+(ou may install the Z-) 203.75 609.33 T
+(Mail app-defaults in a dif) 295.5 609.33 T
+(fer) 407.64 609.33 T
+(ent dir) 419.52 609.33 T
+(ectory if you wish;) 448.66 609.33 T
+(you must set the) 198 597.33 T
+6 F
+(XAPPLRESDIR) 273.53 597.33 T
+1 F
+( envir) 330.92 597.33 T
+(onment variable to this dir) 356.34 597.33 T
+(ectory befor) 473.74 597.33 T
+(e) 526.55 597.33 T
+(you r) 198 585.33 T
+(un Z-) 221.41 585.33 T
+(Mail in GUI mode. Y) 245.74 585.33 T
+(ou may also need to unset the) 336.92 585.33 T
+6 F
+(XFILESEARCH-) 471.08 585.33 T
+(P) 198 573.33 T
+(A) 202.87 573.33 T
+(TH) 207.74 573.33 T
+1 F
+( and/or) 218.66 573.33 T
+6 F
+(XUSERFILESEARCHP) 256.04 573.33 T
+(A) 340.6 573.33 T
+(TH) 345.47 573.33 T
+1 F
+( envir) 356.39 573.33 T
+(onment variables, depending upon) 381.82 573.33 T
+(your window system.) 198 561.33 T
+(T) 198 544.33 T
+(o install the app-defaults in the standar) 203.21 544.33 T
+(d location, at the pr) 376.31 544.33 T
+(ompt, type:) 462.05 544.33 T
+7 9 Q
+(cd) 223.2 528 T
+( /usr/tmp/install/zmail.) 238.68 528 T
+8 F
+(type) 332.59 528 T
+6 F
+(Where) 373.65 528 T
+9 F
+(type) 397.4 528 T
+6 F
+( is the name of your hardware platform) 411.34 528 T
+8 F
+(.) 537.5 528 T
+7 F
+(cp) 223.2 516.5 T
+(lib/Zmail) 241.18 516.5 T
+( /usr/lib/X1) 285.14 516.5 T
+(1/app-defaults) 330.11 516.5 T
+1 10 Q
+-0.09 (Y) 198 500.33 P
+-0.09 (ou can change all Z-Mail colors and fonts by modifying the r) 203.75 500.33 P
+-0.09 (esour) 470.09 500.33 P
+-0.09 (ces in this) 494.37 500.33 P
+(\336le. These r) 198 488.33 T
+(esour) 248.76 488.33 T
+(ces will apply globally for all users unless users cr) 273.04 488.33 T
+(eate) 493.59 488.33 T
+-0.12 (entries in their personal) 198 476.33 P
+3 F
+-0.12 (.Xdefaults) 304.86 476.33 P
+1 F
+-0.12 ( \336les to override these defaults. Any Z-Mail) 346.23 476.33 P
+(\322named r) 198 464.33 T
+(esour) 239.8 464.33 T
+(ces\323 not explicitly de\336ned in this \336le ar) 264.07 464.33 T
+(e subject to change in) 436.5 464.33 T
+(futur) 198 452.33 T
+(e versions. See the) 220.41 452.33 T
+3 F
+( X W) 300.91 452.33 T
+(indow System User) 322.36 452.33 T
+(\325) 401.59 452.33 T
+(s Guide) 403.82 452.33 T
+1 F
+( \050available fr) 434.64 452.33 T
+(om) 489.74 452.33 T
+(O\325Reilly & Associates, Inc.\051 for mor) 198 440.33 T
+(e information about changing X defaults) 353.71 440.33 T
+(for X applications.) 198 428.33 T
+0 F
+(The Network License) 72 387.33 T
+(Server) 72 375.33 T
+1 F
+(If you have licensed the Network License Server \050NLS\051 along with Z-) 198 387.33 T
+(Mail,) 502.78 387.33 T
+(you can install it manually by following the instr) 198 375.33 T
+(uctions in) 413.23 375.33 T
+7 9 Q
+(/usr/tmp/install/zmail.type/zcnls/README.NLS) 223.2 358 T
+1 10 Q
+-0.2 (Y) 198 341.83 P
+-0.2 (ou do not need to install the NLS to r) 203.75 341.83 P
+-0.2 (egister users, nor do you need to install) 365.29 341.83 P
+-0.04 (the NLS at all if you have obtained only \322local\323 activation keys fr) 198 329.83 P
+-0.04 (om Z-) 484.87 329.83 P
+-0.04 (Code.) 511.6 329.83 P
+(However) 198 317.83 T
+(, if you have obtained a network activation key fr) 238.54 317.83 T
+(om Z-) 455.75 317.83 T
+(Code for) 482.52 317.83 T
+(your Z-) 198 305.83 T
+(Mail users, you must install and con\336gur) 231.48 305.83 T
+(e the NLS befor) 412.93 305.83 T
+(e users can) 481.6 305.83 T
+(r) 198 293.83 T
+(un Z-) 201.87 293.83 T
+(Mail.) 226.2 293.83 T
+0 F
+(Register Users) 72 269.83 T
+1 F
+(T) 198 269.83 T
+(o set up the license, start Z-Mail with the) 203.21 269.83 T
+3 F
+(-r) 385.86 269.83 T
+(egister) 392.89 269.83 T
+1 F
+( option. At the shell) 419.55 269.83 T
+-0.03 (pr) 198 257.83 P
+-0.03 (ompt, type \050r) 207.77 257.83 P
+-0.03 (eplace) 265.46 257.83 P
+3 F
+-0.03 (/usr/local/bin) 295.85 257.83 P
+1 F
+-0.03 ( with the dir) 349.52 257.83 P
+-0.03 (ectory wher) 403.89 257.83 P
+-0.03 (e you installed the) 456.51 257.83 P
+(Z-) 198 245.83 T
+(Mail pr) 207.99 245.83 T
+(ogram\051:) 240.54 245.83 T
+7 9 Q
+(/usr/local/bin/zmail) 223.2 229.5 T
+(\320register) 308.62 229.5 T
+1 10 Q
+(Z-Mail pr) 198 213.33 T
+(ompts you for the activation key you r) 240.54 213.33 T
+(eceived fr) 409.84 213.33 T
+(om Z-Code. T) 452.9 213.33 T
+(ype) 513.34 213.33 T
+-0.11 (the activation key and pr) 198 201.33 P
+-0.11 (ess) 307.7 201.33 P
+7 9 Q
+-0.11 (Enter) 323.35 201.33 P
+1 10 Q
+-0.11 (. If you make a mistake and enter the activa-) 345.58 201.33 P
+(tion key incorr) 198 189.33 T
+(ectly) 262.67 189.33 T
+(, Z-Mail tells you the key is incorr) 282.51 189.33 T
+(ect and quits the pr) 431.15 189.33 T
+(o-) 516.22 189.33 T
+(gram. Y) 198 177.33 T
+(ou must r) 232.07 177.33 T
+(e-enter the command shown above to start the r) 274.67 177.33 T
+(egistration) 485.82 177.33 T
+(pr) 198 165.33 T
+(ocess again.) 207.77 165.33 T
+(If you enter the same activation key and users as you had on a pr) 198 148.33 T
+(evious invo-) 485.01 148.33 T
+(cation of) 198 136.33 T
+3 F
+(zmail -r) 238.66 136.33 T
+(egister) 270.4 136.33 T
+1 F
+(, nothing bad will happen.) 296.32 136.33 T
+(After you enter the activation key) 198 119.33 T
+(, Z-Mail pr) 345.57 119.33 T
+(ompts for the names of all valid) 393.1 119.33 T
+(Z-Mail users. When you ar) 198 107.33 T
+(e \336nished, Z-Mail writes the users\325 names and an) 316.21 107.33 T
+(encrypted key into a special \336le called) 198 95.33 T
+3 F
+( license.data) 366.21 95.33 T
+1 F
+( and stor) 415.25 95.33 T
+(es it in the) 453.89 95.33 T
+3 F
+(/usr/lib/Zmail/license/) 198 83.33 T
+1 F
+( dir) 287.59 83.33 T
+(ectory) 302.87 83.33 T
+(.) 329.21 83.33 T
+FMENDPAGE
+%%EndPage: "9" 10
+%%Page: "10" 10
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+69.98 44.06 540.94 59.04 R
+V
+1 9 Q
+0 X
+(Z-Mail Installation Guide) 69.98 53.04 T
+(10 of 18) 509.63 53.04 T
+72 72 540 720 R
+7 X
+V
+1 10 Q
+0 X
+(Y) 198 713.33 T
+(ou may edit the) 203.75 713.33 T
+3 F
+(license.data) 275.53 713.33 T
+1 F
+(\336le by hand if you wish, but you must be) 324.57 713.33 T
+(extr) 198 701.33 T
+(emely car) 214.97 701.33 T
+(eful to maintain the format of the \336le\325s entries. See) 257.54 701.33 T
+3 F
+(Format of) 481.96 701.33 T
+(license.data) 198 689.33 T
+1 F
+(on page 13 for mor) 247.04 689.33 T
+(e information.) 330.44 689.33 T
+0 F
+(Permissions) 72 665.33 T
+1 F
+-0.23 (T) 198 665.33 P
+-0.23 (o ensur) 203.21 665.33 P
+-0.23 (e that permissions ar) 235.57 665.33 P
+-0.23 (e set appr) 326.64 665.33 P
+-0.23 (opriately on Z-) 369.02 665.33 P
+-0.23 (Mail\325s \336les, type the fol-) 434.66 665.33 P
+(lowing commands:) 198 653.33 T
+7 9 Q
+(chmod) 223.2 637 T
+(755) 257.66 637 T
+( /usr/lib/Zmail) 277.65 637 T
+(chmod) 223.2 625.5 T
+(755) 257.66 625.5 T
+( /usr/lib/Zmail/license) 277.65 625.5 T
+(chmod) 223.2 614 T
+(644) 257.66 614 T
+(/usr/lib/Zmail/license/license.data) 280.14 614 T
+1 10 Q
+-0.04 (If your mail delivery agent uses lock \336les, rather than \336le-locking, to synchr) 198 597.83 P
+-0.04 (o-) 531.22 597.83 P
+(nize mail delivery) 198 585.83 T
+(, and the mail-delivery dir) 276.69 585.83 T
+(ectory on your system is) 392.36 585.83 T
+3 F
+(not) 502.61 585.83 T
+1 F
+(world-writable \050see) 198 573.83 T
+3 F
+(Note) 286.89 573.83 T
+1 F
+( below if you ar) 306.32 573.83 T
+(e unsur) 375.37 573.83 T
+(e\051, you should issue the fol-) 408.53 573.83 T
+(lowing two commands to give Z-) 198 561.83 T
+(Mail the ability to cr) 344.84 561.83 T
+(eate lock \336les:) 433.95 561.83 T
+7 9 Q
+(chgrp) 223.2 545.5 T
+8 F
+(mail-area-group-name) 253.16 545.5 T
+7 F
+(/usr/local/bin/zmail) 352.55 545.5 T
+1 10 Q
+(Wher) 198 529.33 T
+(e) 222.37 529.33 T
+3 F
+( mail-ar) 227.15 529.33 T
+(ea-gr) 258.9 529.33 T
+(oup-name) 279.26 529.33 T
+1 F
+( is the name of the gr) 319.23 529.33 T
+(oup that owns the dir) 411.63 529.33 T
+(ectory) 506.94 529.33 T
+(wher) 198 517.33 T
+(e mail is deliver) 220.71 517.33 T
+(ed, which is usually) 290.69 517.33 T
+3 F
+(/usr/mail) 381.2 517.33 T
+1 F
+( or) 418.22 517.33 T
+3 F
+(/usr/spool/mail) 432.62 517.33 T
+1 F
+(. Then,) 493.14 517.33 T
+7 9 Q
+(chmod) 223.2 501 T
+(g+s) 257.66 501 T
+( /usr/local/bin/zmail) 278.39 501 T
+1 10 Q
+(to give Z-Mail the set-gr) 198 484.83 T
+(oup permission. Z-Mail can now cr) 304.67 484.83 T
+(eate lock \336les.) 459.62 484.83 T
+3 F
+-0.08 (Note for concerned system administrators) 198 467.83 P
+1 F
+-0.08 (: Z-) 365.74 467.83 P
+-0.08 (Mail only uses its set-gr) 380.65 467.83 P
+-0.08 (oup capabil-) 484.98 467.83 P
+(ity when absolutely necessary) 198 455.83 T
+(, and r) 329.34 455.83 T
+(everts to the user) 357.52 455.83 T
+(\325s gr) 434 455.83 T
+(oup as soon as pos-) 452.84 455.83 T
+(sible.) 198 443.83 T
+-0.36 (Next, r) 198 426.83 P
+-0.36 (egar) 227.91 426.83 P
+-0.36 (dless of whether the mail delivery dir) 247.02 426.83 P
+-0.36 (ectory is world-writable, you) 410.58 426.83 P
+(will also need to place the following line into the) 198 414.83 T
+3 F
+(/usr/lib/Zmail/system.zmailr) 415.26 414.83 T
+(c) 531.23 414.83 T
+1 F
+(\336le:) 198 402.83 T
+7 9 Q
+(set dot_lock) 223.2 386.5 T
+1 10 Q
+(This tells Z-) 198 370.33 T
+(Mail to use lock \336les as well as \336le-locking.) 250.18 370.33 T
+3 F
+(Note) 198 353.33 T
+1 F
+(: if you ar) 217.43 353.33 T
+(e unsur) 259.47 353.33 T
+(e whether your mail delivery dir) 292.63 353.33 T
+(ectory is world-writ-) 436.72 353.33 T
+(able, issue the command) 198 341.33 T
+7 9 Q
+(ls -ld) 223.2 325 T
+8 F
+(mail-delivery-directory) 246.68 325 T
+1 10 Q
+(wher) 198 308.83 T
+(e) 220.71 308.83 T
+3 F
+(mail-delivery-dir) 227.99 308.83 T
+(ectory) 296.12 308.83 T
+1 F
+( is the name of your system\325s mail delivery dir) 320.72 308.83 T
+(ec-) 525.41 308.83 T
+(tory) 198 296.83 T
+(. This command will display the permissions that ar) 215.11 296.83 T
+(e set for the mail) 444.27 296.83 T
+(delivery dir) 198 284.83 T
+(ectory) 249.93 284.83 T
+(. The \336rst few characters of the output will look something) 276.27 284.83 T
+(like this:) 198 272.83 T
+7 9 Q
+(drwxrwsrwt) 223.2 256.5 T
+1 10 Q
+(If the w is pr) 198 240.33 T
+(esent as the ninth character) 253.81 240.33 T
+(, then your mail delivery dir) 373.29 240.33 T
+(ectory is) 498.02 240.33 T
+(world-writable, and you should skip the) 198 228.33 T
+6 F
+(chgrp) 379.33 228.33 T
+1 F
+( and) 399.83 228.33 T
+6 F
+(chmod) 421.75 228.33 T
+1 F
+( commands above.) 446.34 228.33 T
+(\050Note that if) 198 216.33 T
+6 F
+(t) 254.2 216.33 T
+1 F
+( is) 256.48 216.33 T
+3 F
+(not) 268.62 216.33 T
+1 F
+( pr) 281.94 216.33 T
+(esent at the tenth character as well, then you have a) 294.22 216.33 T
+(security pr) 198 204.33 T
+(oblem, since users will be able to modify and delete each other) 245.43 204.33 T
+(\325s) 522.44 204.33 T
+(mailboxes!\051) 198 192.33 T
+0 F
+(Start Z-Mail) 72 168.33 T
+1 F
+(Y) 198 168.33 T
+(ou have completed manual installation, and ar) 203.75 168.33 T
+(e r) 409.27 168.33 T
+(eady to start Z-Mail. Y) 420.33 168.33 T
+(ou) 518.69 168.33 T
+(can select one of thr) 198 156.33 T
+(ee interfaces:) 285.35 156.33 T
+8 9 Q
+(T) 234 140 T
+(o start this interface:) 239.16 140 T
+(Enter this command:) 360 140 T
+12 F
+(Motif) 234 122 T
+7 F
+(zmail) 360 122 T
+(\320motif) 387.48 122 T
+12 F
+(Fullscreen) 234 110 T
+7 F
+(zmail) 360 110 T
+(\320fullscreen) 387.48 110 T
+12 F
+(Command-Line) 234 98 T
+7 F
+(zmail) 360 98 T
+FMENDPAGE
+%%EndPage: "10" 11
+%%Page: "11" 11
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+69.98 44.06 540.94 59.04 R
+V
+1 9 Q
+0 X
+(Z-Mail Installation Guide) 69.98 53.04 T
+(1) 510.13 53.04 T
+(1 of 18) 514.12 53.04 T
+72 72 540 720 R
+7 X
+V
+1 10 Q
+0 X
+-0.24 (For mor) 198 713.33 P
+-0.24 (e information on starting Z-Mail with various command-line options,) 233.27 713.33 P
+(see the section called) 198 701.33 T
+3 F
+(Starting Z-Mail) 292.72 701.33 T
+1 F
+( in the) 358.51 701.33 T
+3 F
+( Z-Mail Refer) 386.1 701.33 T
+(ence Manual) 441.45 701.33 T
+1 F
+(.) 493.55 701.33 T
+0 F
+(Clean Up) 72 677.33 T
+1 F
+(Once you ar) 198 677.33 T
+(e con\336dent you have installed all the Z-Mail \336les appr) 251.7 677.33 T
+(opriately) 490.62 677.33 T
+-0.13 (and that Z-Mail is r) 198 665.33 P
+-0.13 (unning pr) 283.01 665.33 P
+-0.13 (operly) 327.1 665.33 P
+-0.13 (, you can r) 354.66 665.33 P
+-0.13 (emove the) 400.33 665.33 P
+3 F
+-0.13 (/usr/tmp/install) 448.44 665.33 P
+1 F
+-0.13 ( dir) 512.29 665.33 P
+-0.13 (ec-) 527.45 665.33 P
+(tory and all its associated \336les. At the shell pr) 198 653.33 T
+(ompt, type:) 398.08 653.33 T
+7 9 Q
+(rm) 223.2 637 T
+(\320r) 242.18 637 T
+(/usr/tmp/install) 258.17 637 T
+3 10 Q
+(Y) 198 620.83 T
+(ou have now \336nished the installation and initial con\336guration pr) 203.56 620.83 T
+(ocess. Next you) 463.7 620.83 T
+(should r) 198 608.83 T
+(ead the Z-Mail User) 230.86 608.83 T
+(\325) 313.13 608.83 T
+(s Guide and Z-Mail Refer) 315.36 608.83 T
+(ence Manual to learn how to) 419.02 608.83 T
+(get the most out of Z-Mail, and to perform advanced con\336guration.) 198 596.83 T
+108 581.23 180 653.23 C
+133.99 641.93 155.95 641.93 169.99 626.95 169.99 606.94 155.95 591.96 135 591.96 119.95 606.94
+ 119.95 626.95 8 Y
+7 X
+0 K
+V
+1 H
+0 Z
+0 X
+N
+135.07 639.84 154.87 639.84 167.54 626.3 167.54 608.23 154.87 594.7 135.94 594.7 122.4 608.23
+ 122.4 626.3 8 Y
+V
+N
+11 14 Q
+7 X
+1 K
+(ST) 129.96 611.9 T
+(OP) 144.43 611.9 T
+0 0 612 792 C
+FMENDPAGE
+%%EndPage: "11" 12
+%%Page: "12" 12
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+69.98 44.06 540.94 59.04 R
+V
+1 9 Q
+0 X
+(Z-Mail Installation Guide) 69.98 53.04 T
+(12 of 18) 509.63 53.04 T
+72 72 540 720 R
+7 X
+V
+72 701.71 540 720 C
+72 701.71 540 720 R
+7 X
+0 K
+V
+71.21 710.06 199.51 719.21 R
+0 X
+V
+0.5 H
+0 Z
+N
+0 0 612 792 C
+5 16 Q
+0 X
+0 K
+(Z-Mail Files) 72 691.04 T
+1 10 Q
+(The following table identi\336es the dir) 198 666.04 T
+(ectories and \336les installed on your sys-) 358.88 666.04 T
+-0.17 (tem by the) 198 654.04 P
+3 F
+-0.17 (doinstall) 246.79 654.04 P
+1 F
+-0.17 ( shell script. If you chose dif) 281.77 654.04 P
+-0.17 (fer) 404.3 654.04 P
+-0.17 (ent dir) 416.19 654.04 P
+-0.17 (ectories for the instal-) 445.16 654.04 P
+(lation, please r) 198 642.04 T
+(eplace the dir) 262.33 642.04 T
+(ectory names below with the ones you used. If) 321.9 642.04 T
+(you installed Z-) 198 630.04 T
+(Mail using the) 267.96 630.04 T
+3 F
+(upgrade) 334.14 630.04 T
+1 F
+( option, old versions of the \336les listed) 366.9 630.04 T
+(below will also be pr) 198 618.04 T
+(esent, with names that end in a dash \050\324-\325\051.) 289.76 618.04 T
+8 9 Q
+(/etc/) 198 601.71 T
+12 F
+(mailcap) 198 589.71 T
+(\050Optional\051 Support \336le for the Metamail multimedia mail) 306 589.71 T
+(program.) 306 578.71 T
+8 F
+(/usr/local/bin/) 198 546.71 T
+12 F
+(zmail) 198 534.71 T
+(Z-Mail binary \050program\051 for both Motif and character inter-) 306 534.71 T
+(faces) 306 523.71 T
+(zmail.small) 198 511.71 T
+(Z-Mail binary \050program\051 for character interface only) 306 511.71 T
+8 F
+(/usr/lib/Zmail/) 198 479.71 T
+12 F
+(COPYRIGHTS) 198 467.71 T
+(T) 306 467.71 T
+(ext \336le containing copyright statements for various parts) 310.49 467.71 T
+(of the Z-Mail distribution) 306 456.71 T
+(Install.ps) 198 444.71 T
+(This installation guide, in PostScript form) 306 444.71 T
+(RELNOTES) 198 432.71 T
+(T) 306 432.71 T
+(ext \336le containing Z-Mail version 2.1 release information) 310.49 432.71 T
+(SLA) 198 420.71 T
+(T) 306 420.71 T
+(ext \336le containing Software License Agreement for Z-Mail) 310.49 420.71 T
+(Zmail) 198 408.71 T
+(Default X application resource \336le for Z-Mail. Copied into) 306 408.71 T
+4 F
+(/usr/lib/X1) 306 397.71 T
+(1/app-defaults) 345.29 397.71 T
+12 F
+(/.) 402.25 397.71 T
+(Mail.zmailrc) 198 385.71 T
+(Initialization \336le for character mode to emulate BSD Mail.) 306 385.71 T
+(attach.types) 198 373.71 T
+(File de\336ning attachment types recognized by Z-Mail) 306 373.71 T
+(chrono) 198 361.71 T
+(Z-Script function to sort messages chronologically) 306 361.71 T
+(command.hlp) 198 349.71 T
+(Help \336le for Z-Mail\325) 306 349.71 T
+(s command-line interface) 380.74 349.71 T
+(convert.mh) 198 337.71 T
+-0.19 (Z-Script function that converts) 306 337.71 P
+4 F
+-0.19 (mh) 427.1 337.71 P
+12 F
+-0.19 ( folders into Z-Mail folder) 439.58 337.71 P
+(format) 306 326.71 T
+(digest) 198 314.71 T
+(Z-Script function that combines multiple messages into a) 306 314.71 T
+(digest) 306 303.71 T
+(emacs.zmailrc) 198 291.71 T
+(Key bindings for fullscreen mode to simulate) 306 291.71 T
+4 F
+(emacs.) 484.82 291.71 T
+12 F
+(hostid) 198 279.71 T
+(\050Motorola 88K only\051 Program that returns the computer) 306 279.71 T
+(\325) 524.61 279.71 T
+(s) 526.44 279.71 T
+(hostid) 306 268.71 T
+(keymap.hlp) 198 256.71 T
+(Help \336le for Motif keybindings on various workstations) 306 256.71 T
+(mailcap) 198 244.71 T
+(Support \336le for Metamail multimedia mail program. Option-) 306 244.71 T
+(ally copied into) 306 233.71 T
+4 F
+(/etc/) 367.94 233.71 T
+12 F
+(mailx.zmailrc) 198 221.71 T
+(Initialization) 306 221.71 T
+(\336le for character mode to emulate) 355.45 221.71 T
+4 F
+(mailx) 491.82 221.71 T
+12 F
+(mh2zm) 198 209.71 T
+(Z-Mail script that converts) 306 209.71 T
+4 F
+(mh) 411.38 209.71 T
+12 F
+( folders to Z-) 423.86 209.71 T
+(Mail format) 474.31 209.71 T
+(\050Runs from the Unix command line.\051) 306 198.71 T
+(motif.hlp) 198 186.71 T
+(Help \336le for the Motif mode) 306 186.71 T
+(sample.lib) 198 174.71 T
+(Samples of Z-Mail functions) 306 174.71 T
+(sample.zmailrc) 198 162.71 T
+(Sample) 306 162.71 T
+4 F
+(.zmailrc) 338.97 162.71 T
+12 F
+( \336le) 369.92 162.71 T
+(summary) 198 150.71 T
+(Partial summary of Z-Mail\325) 306 150.71 T
+(s commands) 410.2 150.71 T
+(system.zmailrc) 198 138.71 T
+(File containing global Z-Mail settings) 306 138.71 T
+(vacation) 198 126.71 T
+(Function that provides user-vacation facilities) 306 126.71 T
+(variables) 198 114.71 T
+(Help \336le for Z-Mail variables) 306 114.71 T
+FMENDPAGE
+%%EndPage: "12" 13
+%%Page: "13" 13
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+69.98 44.06 540.94 59.04 R
+V
+1 9 Q
+0 X
+(Z-Mail Installation Guide) 69.98 53.04 T
+(13 of 18) 509.63 53.04 T
+72 72 540 720 R
+7 X
+V
+8 F
+0 X
+(/usr/lib/Zmail/bin/) 198 714 T
+12 F
+(atob) 198 702 T
+(Converts \336les from ASCII to binary) 306 702 T
+(audiocompose) 198 690 T
+(\050Metamail\051 Composes an audio fragment for inclusion in a) 306 690 T
+(metamail message) 306 679 T
+(audiosend) 198 667 T
+(\050Metamail\051 Sends an audio metamail message) 306 667 T
+(btoa) 198 655 T
+(Converts \336les from binary to ASCII) 306 655 T
+(compface) 198 643 T
+(Compresses 48x48 bitmaps for use in X-Face headers) 306 643 T
+(compress) 198 631 T
+(File compression program \050only installed on systems that) 306 631 T
+(do not already have) 306 620 T
+4 F
+(compress) 387.43 620 T
+12 F
+(\051) 426.39 620 T
+(echo-n) 198 608 T
+(Script that performs) 306 608 T
+4 F
+(echo) 386.91 608 T
+12 F
+( without a newline) 406.4 608 T
+(ezview) 198 596 T
+(\050Metamail\051 V) 306 596 T
+(iewer for Andrew) 356.77 596 T
+4 F
+(ez) 426.69 596 T
+12 F
+(-format documents) 436.18 596 T
+(facetohdr) 198 584 T
+(Script that converts an X-Face \050generated with compface\051) 306 584 T
+(to a properly-formatted X-Face header) 306 573 T
+(.) 458.36 573 T
+(get\336lename) 198 561 T
+(\050Metamail\051 Asks user for formatted \336lenames) 306 561 T
+(island_rq) 198 549 T
+(\050Some systems\051 T) 306 549 T
+(ool for data interchange between Z-Mail) 377.91 549 T
+(and Island products) 306 538 T
+(mailto) 198 526 T
+(\050Metamail\051 Simple multimedia mail-sending program) 306 526 T
+(metamail) 198 514 T
+(\050Metamail\051 MIME mail-reading program) 306 514 T
+(metasend) 198 502 T
+(\050Metamail\051 \322Crude\323 interface for sending non-text MIME-) 306 502 T
+(format mail) 306 491 T
+(mmencode) 198 479 T
+(\050Metamail\051 T) 306 479 T
+(ranslator for MIME formats) 356.1 479 T
+(richtext) 198 467 T
+(\050Metamail\051 V) 306 467 T
+(iewer for richtext-formatted \336les) 356.77 467 T
+(richtoatk) 198 455 T
+(\050Metamail\051 T) 306 455 T
+(ranslator for richtext to Andrew T) 356.1 455 T
+(oolKit format) 485.46 455 T
+(showaudio) 198 443 T
+(\050Metamail\051 Plays audio Metamail messages) 306 443 T
+(showexternal) 198 431 T
+(\050Metamail\051 Handles \336les that are included by reference in) 306 431 T
+(Metamail messages) 306 420 T
+(shownonascii) 198 408 T
+(\050Metamail\051 V) 306 408 T
+(iewer for non-ASCII format Metamail) 356.77 408 T
+(showpartial) 198 396 T
+(\050Metamail\051 Accumulator for parts of Metamail messages) 306 396 T
+(showpicture) 198 384 T
+(\050Metamail\051 V) 306 384 T
+(iewer for Metamail messages with pictures) 356.77 384 T
+(splitmail) 198 372 T
+(\050Metamail\051 Splits a message into MIME-compliant partial) 306 372 T
+(messages) 306 361 T
+(splitsend) 198 349 T
+(\050Metamail\051 Sends a split MIME message) 306 349 T
+(sun-audio-\336le) 198 337 T
+(\050Metamail\051 V) 306 337 T
+(iewer for Sun-format audio \336les) 356.77 337 T
+(sun-to-mime) 198 325 T
+(\050Metamail\051 V) 306 325 T
+(iewer for) 356.77 325 T
+4 F
+(mailtool) 393.73 325 T
+12 F
+( attachments in Metamail) 424.69 325 T
+(uncompress) 198 313 T
+(Uncompresses \336les compressed with) 306 313 T
+4 F
+(compress) 456.83 313 T
+12 F
+( \050only) 495.78 313 T
+-0.03 (installed on systems that do not already have) 306 302 P
+4 F
+-0.03 (uncompress) 488.06 302 P
+12 F
+-0.03 (\051) 537.01 302 P
+(uudecode) 198 290 T
+(Decoder for \336les encoded with) 306 290 T
+4 F
+(uuencode) 429.38 290 T
+12 F
+(uudepipe) 198 278 T
+(Decodes) 306 278 T
+4 F
+(uuencode) 343.96 278 T
+12 F
+(d \336les) 383.44 278 T
+(uuencode) 198 266 T
+(File encoder for binary \336le transport through the mail) 306 266 T
+(uuenpipe) 198 254 T
+(Encodes \336les via the) 306 254 T
+4 F
+(uuencode) 390.92 254 T
+12 F
+( utility) 430.39 254 T
+(zxwd) 198 242 T
+(Z-Mail version of) 306 242 T
+4 F
+(xwd) 374.92 242 T
+12 F
+( \050X Window Dump maker\051) 390.89 242 T
+(zxwud) 198 230 T
+(Z-Mail version of) 306 230 T
+4 F
+(xwud) 374.92 230 T
+12 F
+( \050X Window Dump viewer\051) 395.89 230 T
+8 F
+(/usr/lib/Zmail/bin/sh-versions/) 198 198 T
+12 F
+(This directory contains modi\336ed versions of certain Meta-) 306 186 T
+(mail-related programs to support) 306 175 T
+4 F
+(sh) 438.36 175 T
+12 F
+(-only \050non-) 447.85 175 T
+4 F
+(csh) 490.8 175 T
+12 F
+(\051 sys-) 504.78 175 T
+(tems. These programs should be placed in) 306 164 T
+4 F
+(/usr/lib/Zmail/) 478.33 164 T
+(bin) 306 153 T
+12 F
+(/ for use if necessary) 317.99 153 T
+(.) 400.24 153 T
+8 F
+(/usr/lib/Zmail/bitmaps/) 198 121 T
+4 F
+(various) 198 109 T
+12 F
+(.xbm) 226.97 109 T
+(This directory contains various xbm-format bitmaps, used) 306 109 T
+(in icons for message attachment buttons.) 306 98 T
+FMENDPAGE
+%%EndPage: "13" 14
+%%Page: "14" 14
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+69.98 44.06 540.94 59.04 R
+V
+1 9 Q
+0 X
+(Z-Mail Installation Guide) 69.98 53.04 T
+(14 of 18) 509.63 53.04 T
+72 72 540 720 R
+7 X
+V
+8 F
+0 X
+(/usr/lib/Zmail/forms/) 198 714 T
+12 F
+(bugs) 198 702 T
+(T) 306 702 T
+(emplate to submit support questions) 310.49 702 T
+(phone) 198 690 T
+(T) 306 690 T
+(emplate for phone messages) 310.49 690 T
+8 F
+(/usr/lib/Zmail/license/) 198 658 T
+12 F
+(license.data) 198 646 T
+(License server data \336le. \050If you are not using the NLS, this) 306 646 T
+(\336le must reside in the) 306 635 T
+4 F
+(/usr/lib/Zmail/license) 393.41 635 T
+12 F
+( directory) 474.81 635 T
+(.\051) 511.1 635 T
+8 F
+(/usr/lib/Zmail/man/) 198 603 T
+4 F
+(various) 198 591 T
+12 F
+(.1) 226.97 591 T
+(This directory contains) 306 591 T
+4 F
+(man) 398.4 591 T
+12 F
+( pages for various Metamail-) 415.88 591 T
+(related programs.) 306 580 T
+8 F
+(/usr/lib/X1) 198 548 T
+(1/app-defaults/) 240.29 548 T
+12 F
+(Zmail) 198 536 T
+(Default X application resource \336le for Z-Mail) 306 536 T
+0 10 Q
+(Format of license.data) 72 488.33 T
+1 F
+(The license.data \336le is used by Z-Mail and the Network License server to) 198 488.33 T
+(maintain a list of Z-Code pr) 198 476.33 T
+(oducts and users for licensing purposes. This \336le) 320.32 476.33 T
+(is typically found in the) 198 464.33 T
+3 F
+(license) 305.5 464.33 T
+1 F
+( dir) 332.35 464.33 T
+(ectory in your Z-Mail library dir) 347.63 464.33 T
+(ectory) 490.12 464.33 T
+(.) 516.46 464.33 T
+-0.15 (If you have a lar) 198 447.33 P
+-0.15 (ge number of users at your site who will be using Z-) 269.04 447.33 P
+-0.15 (Mail and) 498.12 447.33 P
+-0.26 (\336nd that typing all those usernames into zmail -r) 198 435.33 P
+-0.26 (egister is overly tedious, you) 411.54 435.33 P
+(may elect to edit the license.data \336le by hand. Be extr) 198 423.33 T
+(emely car) 431.85 423.33 T
+(eful to follow) 474.42 423.33 T
+-0.21 (the formatting r) 198 411.33 P
+-0.21 (ules below when you edit license.data, lest you r) 267.67 411.33 P
+-0.21 (ender the \336le) 480.07 411.33 P
+(unusable.) 198 399.33 T
+(Ther) 198 382.33 T
+(e is one entry in license.data per Z-Code softwar) 218.5 382.33 T
+(e activation key) 431.87 382.33 T
+(. Each) 500.13 382.33 T
+(entry has the following lines, the \336rst seven of which) 198 370.33 T
+3 F
+(must not be changed) 433.83 370.33 T
+1 F
+(:) 516.66 370.33 T
+(\245) 198 353.33 T
+(pr) 212.4 353.33 T
+(oduct activation key) 222.18 353.33 T
+(\245) 198 339.33 T
+(name of Z-Code pr) 212.4 339.33 T
+(oduct, including version number \050if the pr) 296.31 339.33 T
+(oduct is) 482.51 339.33 T
+(\322Z-) 212.4 327.33 T
+(Mail,\323 the name is omitted\051) 227.39 327.33 T
+(\245) 198 313.33 T
+(the hostname of machine) 212.4 313.33 T
+(\245) 198 299.33 T
+(the hostid \050or \322manufactur) 212.4 299.33 T
+(ed\323 hostid\051 of machine) 330.76 299.33 T
+(\245) 198 285.33 T
+(encoded key-expiration date, 0 \050zer) 212.4 285.33 T
+(o\051 means \322never expir) 367.89 285.33 T
+(es\323) 465.45 285.33 T
+(\245) 198 271.33 T
+(number of users allowed by this activation key) 212.4 271.33 T
+(, 0 \050zer) 418.13 271.33 T
+(o\051 means \322unlim-) 447.5 271.33 T
+(ited\323) 212.4 259.33 T
+(\245) 198 245.33 T
+(number r) 212.4 245.33 T
+(epr) 253.6 245.33 T
+(esenting this activation key\325s type) 268.16 245.33 T
+(\245) 198 231.33 T
+-0.03 (list of zer) 212.4 231.33 P
+-0.03 (o or mor) 253 231.33 P
+-0.03 (e usernames, one user per line. If the key is not user) 290.86 231.33 P
+-0.03 (-lim-) 518.7 231.33 P
+(ited, this list is ignor) 212.4 219.33 T
+(ed. If the list is longer than the number of users speci-) 302.14 219.33 T
+(\336ed on line six of the entry) 212.4 207.33 T
+(, the extra users at end ar) 329.24 207.33 T
+(e ignor) 439.7 207.33 T
+(ed.) 470.5 207.33 T
+(Entries in license.data ar) 198 190.33 T
+(e separated by a line containing two equal signs) 305.79 190.33 T
+(\050\322==\323\051. Her) 198 178.33 T
+(e is an example license.data \336le that contains 3 entries:) 248.63 178.33 T
+6 F
+(5da97a8ef419db1a) 216 161.33 T
+(Z-Other 2.0) 216 149.83 T
+(zerex) 216 138.33 T
+(c0523206) 216 126.83 T
+(7cd1e220) 216 115.33 T
+(2) 216 103.83 T
+(0) 216 92.33 T
+(hatch) 216 80.83 T
+FMENDPAGE
+%%EndPage: "14" 15
+%%Page: "15" 15
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+69.98 44.06 540.94 59.04 R
+V
+1 9 Q
+0 X
+(Z-Mail Installation Guide) 69.98 53.04 T
+(15 of 18) 509.63 53.04 T
+72 72 540 720 R
+7 X
+V
+6 10 Q
+0 X
+(==) 216 713.33 T
+(5149aa2d39d79ab3) 216 701.83 T
+(2.1) 216 690.33 T
+(zunderd) 216 678.83 T
+(c0523806) 216 667.33 T
+(acc4e230) 216 655.83 T
+(5) 216 644.33 T
+(0) 216 632.83 T
+(alice) 216 621.33 T
+(bernice) 216 609.83 T
+(carla) 216 598.33 T
+(dianne) 216 586.83 T
+(hatch) 216 575.33 T
+(==) 216 563.83 T
+(efa03971f72ef1e8) 216 552.33 T
+(Z-Fax 0.9) 216 540.83 T
+(zylo) 216 529.33 T
+(7c8ac6) 216 517.83 T
+(2b0976ac) 216 506.33 T
+(0) 216 494.83 T
+(0) 216 483.33 T
+FMENDPAGE
+%%EndPage: "15" 16
+%%Page: "16" 16
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+69.98 44.06 540.94 59.04 R
+V
+1 9 Q
+0 X
+(Z-Mail Installation Guide) 69.98 53.04 T
+(16 of 18) 509.63 53.04 T
+72 72 540 720 R
+7 X
+V
+72 701.71 540 720 C
+72 701.71 540 720 R
+7 X
+0 K
+V
+71.21 710.06 199.51 719.21 R
+0 X
+V
+0.5 H
+0 Z
+N
+0 0 612 792 C
+5 16 Q
+0 X
+0 K
+(Platfor) 72 691.04 T
+(m-Speci\336c Notes) 120.05 691.04 T
+1 10 Q
+(Please r) 198 666.04 T
+(ead this section for platform, operating system, and window system) 232.02 666.04 T
+-0.08 (speci\336c information. Mor) 198 654.04 P
+-0.08 (e than one section below may apply to your installa-) 309.61 654.04 P
+(tion.) 198 642.04 T
+0 F
+(Intel 386/486) 72 618.04 T
+1 F
+(Intel-based systems do not pr) 198 618.04 T
+(ovide a) 328.13 618.04 T
+3 F
+(hostid) 363.03 618.04 T
+1 F
+(. Instead, you need to have your) 387.46 618.04 T
+3 F
+(hostname) 198 606.04 T
+1 F
+( to r) 236.31 606.04 T
+(egister Z-Mail. T) 253.79 606.04 T
+(o get your) 326.24 606.04 T
+3 F
+(hostname) 373.78 606.04 T
+1 F
+(, type) 412.09 606.04 T
+6 F
+(hostname) 439.2 606.04 T
+1 F
+( at the Unix) 475.19 606.04 T
+(pr) 198 594.04 T
+(ompt.) 207.77 594.04 T
+-0.18 (If you use) 198 577.04 P
+3 F
+-0.18 (XFr) 243.74 577.04 P
+-0.18 (ee86) 260.22 577.04 P
+1 F
+-0.18 ( , you may have dif) 277.99 577.04 P
+-0.18 (\336culty r) 361.91 577.04 P
+-0.18 (unning Z-) 396.33 577.04 P
+-0.18 (Mail\325s Motif interface.) 440.59 577.04 P
+(Z-) 198 565.04 T
+(Mail is built with each 386/486 UNIX variant\325s native Motif libraries, and) 207.99 565.04 T
+(XFr) 198 553.05 T
+(ee86 is often incompatible with these libraries.) 213.99 553.05 T
+3 F
+(Network License Server users only) 198 536.05 T
+1 F
+(: SCO Unix, Interactive Unix, and NCR SVR5) 337.57 536.05 T
+(ar) 198 524.05 T
+(e modular operating systems. As such, it is possible that you may not have) 206.76 524.05 T
+(the kernel functions and networking libraries installed that the Network) 198 512.05 T
+0 (License Server r) 198 500.05 P
+0 (equir) 268.2 500.05 P
+0 (es to function pr) 291.29 500.05 P
+0 (operly) 363.34 500.05 P
+0 (. If you \336nd that the NLS will not) 390.89 500.05 P
+-0.02 (r) 198 488.05 P
+-0.02 (un on your Intel platform, try installing your operating system vendor) 201.87 488.05 P
+-0.02 (\325s net-) 513.32 488.05 P
+(work softwar) 198 476.05 T
+(e package, then start the NLS again.) 257.18 476.05 T
+0 F
+(DEC Ultrix) 72 452.05 T
+1 F
+-0.22 (DEC systems do not pr) 198 452.05 P
+-0.22 (ovide a) 299.07 452.05 P
+3 F
+-0.22 (hostid) 333.53 452.05 P
+1 F
+-0.22 (. Y) 357.96 452.05 P
+-0.22 (ou need to have your) 368.48 452.05 P
+3 F
+-0.22 (hostname) 463.83 452.05 P
+1 F
+-0.22 ( to r) 502.14 452.05 P
+-0.22 (egis-) 519.18 452.05 P
+(ter Z-Mail. T) 198 440.05 T
+(o get your) 252.96 440.05 T
+3 F
+(hostname) 300.5 440.05 T
+1 F
+(, type) 338.81 440.05 T
+6 F
+(hostname) 365.92 440.05 T
+1 F
+( at the Unix pr) 401.91 440.05 T
+(ompt.) 465.45 440.05 T
+0 F
+(Sun) 72 416.05 T
+1 F
+(Y) 198 416.05 T
+(our Sun must be using SunOS version 4.1 or higher for Z-Mail to r) 203.75 416.05 T
+(un.) 495.27 416.05 T
+(If you ar) 198 399.05 T
+(e using the OpenW) 235.5 399.05 T
+(indows V) 320.1 399.05 T
+(ersion 2 X/NeWS server and Motif,) 361.57 399.05 T
+-0.04 (ther) 198 387.05 P
+-0.04 (e is a CG6 frame buf) 215.63 387.05 P
+-0.04 (fer bug that has been known to cause Z-Mail to hang) 305.14 387.05 P
+-0.01 (or crash the server on certain machines \050e.g., Sun IPC\051. This bug has been cor-) 198 375.05 P
+(r) 198 363.05 T
+(ected in OpenW) 201.77 363.05 T
+(indows V) 272.78 363.05 T
+(ersion 3.) 314.25 363.05 T
+-0.09 (Also note that if you ar) 198 346.05 P
+-0.09 (e using the NeWS server and Motif, you may \336nd that) 299.1 346.05 P
+-0.02 (the arr) 198 334.05 P
+-0.02 (ow keys do not work pr) 227.06 334.05 P
+-0.02 (operly in Z-) 332.56 334.05 P
+-0.02 (Mail. If this is the case, you should) 384.91 334.05 P
+(copy the \336le) 198 322.05 T
+3 F
+(/usr/lib/Zmail/motifbind) 254.56 322.05 T
+1 F
+( into each user) 353.4 322.05 T
+(\325s home dir) 418.12 322.05 T
+(ectory) 467.8 322.05 T
+(, giving it) 494.14 322.05 T
+(the name .motifbind:) 198 310.05 T
+7 9 Q
+(cp /usr/lib/Zmail/motifbind) 223.2 293.71 T
+8 F
+(users-directory) 337.57 293.71 T
+7 F
+(/.motifbind) 402.99 293.71 T
+3 10 Q
+(.motifbind) 198 277.55 T
+1 F
+( is automatically r) 239.56 277.55 T
+(ead by Motif applications when they r) 318.5 277.55 T
+(un; it r) 486.86 277.55 T
+(ede-) 516.14 277.55 T
+-0.29 (\336nes a number of keys to cause them to emit the pr) 198 265.55 P
+-0.29 (oper codes to Z-Mail when) 420.02 265.55 P
+(they ar) 198 253.55 T
+(e pr) 228.68 253.55 T
+(essed.) 245.74 253.55 T
+0 F
+(HP-UX) 72 229.55 T
+1 F
+(Systems r) 198 229.55 T
+(unning HP-UX ar) 240.52 229.55 T
+(e shipped by HP with mail delivery disabled. If) 318.34 229.55 T
+(you have not yet enabled mail delivery on your machine, perform the follow-) 198 217.55 T
+(ing steps:) 198 205.55 T
+(\245) 198 188.55 T
+(Log in as) 212.4 188.55 T
+3 F
+(r) 254.98 188.55 T
+(oot) 258.68 188.55 T
+1 F
+(\245) 198 174.55 T
+(Start the) 212.4 174.55 T
+6 F
+(sam) 251.97 174.55 T
+1 F
+( pr) 267.45 174.55 T
+(ogram.) 279.72 174.55 T
+(\245) 198 160.55 T
+0 (\050This step HP-UX 8.0 only\051 Select) 212.4 160.55 P
+3 F
+0 ( LAN Hardwar) 358.69 160.55 P
+0 (e/Softwar) 420.68 160.55 P
+0 (e,) 458.99 160.55 P
+1 F
+0 (then select) 467.87 160.55 P
+3 F
+0 (LAN) 516.96 160.55 P
+(Softwar) 212.4 148.55 T
+(e) 243.86 148.55 T
+1 F
+(\245) 198 134.55 T
+(Select) 212.4 134.55 T
+3 F
+(Networks/Communications ->) 240.32 134.55 T
+1 F
+(\245) 198 120.55 T
+(Select) 212.4 120.55 T
+3 F
+(ARP) 240.32 120.55 T
+(A Services Con\336guration ->) 259.02 120.55 T
+1 F
+(\245) 198 106.55 T
+(Select) 212.4 106.55 T
+3 F
+(Disable or Restart Network Mail ...) 240.32 106.55 T
+1 F
+(\245) 198 92.55 T
+(Put an) 212.4 92.55 T
+6 F
+(X) 243.53 92.55 T
+1 F
+( in) 249 92.55 T
+3 F
+(Restart network mail) 262.72 92.55 T
+1 F
+(\245) 198 78.55 T
+(Pr) 212.4 78.55 T
+(ess) 222.21 78.55 T
+6 F
+(F4) 237.97 78.55 T
+1 F
+( to) 247.53 78.55 T
+3 F
+(Perform T) 261.24 78.55 T
+(ask) 301.5 78.55 T
+FMENDPAGE
+%%EndPage: "16" 17
+%%Page: "17" 17
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+69.98 44.06 540.94 59.04 R
+V
+1 9 Q
+0 X
+(Z-Mail Installation Guide) 69.98 53.04 T
+(17 of 18) 509.63 53.04 T
+72 72 540 720 R
+7 X
+V
+0 10 Q
+0 X
+(Motorola 88K) 72 713.33 T
+1 F
+-0.18 (The Motor) 198 713.33 P
+-0.18 (ola 88K system does not pr) 244.45 713.33 P
+-0.18 (ovide) 362.47 713.33 P
+3 F
+-0.18 (hostid) 389.7 713.33 P
+1 F
+-0.18 ( access fr) 414.12 713.33 P
+-0.18 (om the shell. When) 453 713.33 P
+(you ar) 198 701.33 T
+(e r) 226.3 701.33 T
+(eady to get your) 237.36 701.33 T
+3 F
+(hostid) 312.11 701.33 T
+1 F
+(, type) 336.53 701.33 T
+6 F
+(zmail -register) 363.64 701.33 T
+1 F
+( at the pr) 415.09 701.33 T
+(ompt. Y) 454.48 701.33 T
+(our) 488.77 701.33 T
+3 F
+(hostid) 506.7 701.33 T
+1 F
+(will be displayed.) 198 689.33 T
+0 F
+(X W) 72 665.33 T
+(indows) 90.79 665.33 T
+1 F
+(If Z-Mail, r) 198 665.33 T
+(unning in Motif mode, informs you that it cannot \336nd the) 246.32 665.33 T
+-0.4 (app-) 198 653.33 P
+-0.4 (defaults \336le, then changes you make to Z-) 218.34 653.33 P
+-0.4 (Mail X application defaults will) 400.16 653.33 P
+(not take ef) 198 641.33 T
+(fect. Z-) 244.07 641.33 T
+(Mail normally looks for the \336le) 274.87 641.33 T
+3 F
+(/usr/lib/X1) 198 629.33 T
+(1/app-) 242.06 629.33 T
+(defaults/Zmail) 267.77 629.33 T
+1 F
+( to obtain its X application defaults. If this \336le is) 326.82 629.33 T
+(not pr) 198 617.33 T
+(esent, you may need to move it to this location or adjust the setting of) 224.8 617.33 T
+(the) 198 605.33 T
+6 F
+(XAPPLRESDIR) 214.36 605.33 T
+1 F
+( envir) 271.75 605.33 T
+(onment variable. If you ar) 297.17 605.33 T
+(e using a POSIX-compliant) 411.85 605.33 T
+(server) 198 593.33 T
+(, you may need to unset) 224.62 593.33 T
+6 F
+(XFILESEARCHP) 332.87 593.33 T
+(A) 394.66 593.33 T
+(TH) 399.53 593.33 T
+1 F
+(and/or) 412.73 593.33 T
+6 F
+(XUSERFILESEARCHP) 198 581.33 T
+(A) 282.56 581.33 T
+(TH) 287.43 581.33 T
+1 F
+( as well. For mor) 298.36 581.33 T
+(e information about X application) 372.03 581.33 T
+(defaults and how to set them, see) 198 569.33 T
+3 F
+(The X W) 347.67 569.33 T
+(indow System User) 384.11 569.33 T
+(\325) 463.33 569.33 T
+(s Guide) 465.56 569.33 T
+1 F
+(, pub-) 496.39 569.33 T
+(lished by O\325Reilly & Associates, Inc.) 198 557.33 T
+FMENDPAGE
+%%EndPage: "17" 18
+%%Page: "18" 18
+612 792 0 FMBEGINPAGE
+72 746.06 540 756 R
+7 X
+0 K
+V
+69.98 44.06 540.94 59.04 R
+V
+1 9 Q
+0 X
+(Z-Mail Installation Guide) 69.98 53.04 T
+(18 of 18) 509.63 53.04 T
+178.67 72 540 720 R
+7 X
+V
+178.67 701.71 540 720 C
+178.67 701.71 540 720 R
+7 X
+0 K
+V
+177.87 710.06 306.18 719.21 R
+0 X
+V
+0.5 H
+0 Z
+N
+0 0 612 792 C
+5 16 Q
+0 X
+0 K
+(Copyrights, W) 178.67 691.04 T
+(arranties, and Disclaimers) 284.69 691.04 T
+1 9 Q
+(Copyright \251 1992, 1993 Z-Code Softwar) 178.67 666.71 T
+(e Corporation. All rights r) 336.8 666.71 T
+(eserved.) 439.95 666.71 T
+(The information contained in this manual and the accompanying softwar) 178.67 652.71 T
+(e pr) 469.14 652.71 T
+(ograms ar) 484.48 652.71 T
+(e) 524.3 652.71 T
+-0.02 (copyrighted and all rights ar) 178.67 642.71 P
+-0.02 (e r) 291.96 642.71 P
+-0.02 (eserved by Z-Code Softwar) 301.88 642.71 P
+-0.02 (e Corporation. Z-Code Softwar) 410.37 642.71 P
+-0.02 (e) 533.47 642.71 P
+(Corporation r) 178.67 632.71 T
+(eserves the right to make periodic modi\336cations to this pr) 233.17 632.71 T
+(oduct without obli-) 462.36 632.71 T
+(gation to notify any person or entity of such r) 178.67 622.71 T
+(evision. Copying, duplicating, selling, or oth-) 358.7 622.71 T
+(erwise distributing any part of this pr) 178.67 612.71 T
+(oduct without the prior consent of an authorized) 327.78 612.71 T
+(r) 178.67 602.71 T
+(epr) 182.05 602.71 T
+(esentative of Z-Code Softwar) 195.15 602.71 T
+(e Corporation is pr) 310.78 602.71 T
+(ohibited. Z-Mail is a trademark of Z-) 385.91 602.71 T
+-0.21 (Code Softwar) 178.67 592.71 P
+-0.21 (e. All other brands and pr) 232.7 592.71 P
+-0.21 (oduct names in this publication ar) 334.13 592.71 P
+-0.21 (e r) 468.33 592.71 P
+-0.21 (egister) 478.05 592.71 P
+-0.21 (ed trade-) 504.4 592.71 P
+(marks or trademarks of their r) 178.67 582.71 T
+(espective holders.) 298.62 582.71 T
+0 11 Q
+(Government Users Restricted Rights Legend) 247.66 567.38 T
+0 9 Q
+(For the Department of Defense:) 178.67 549.71 T
+1 F
+(Use, duplication or disclosur) 310.48 549.71 T
+(e by the Government is sub-) 424.79 549.71 T
+-0.2 (ject to r) 178.67 539.71 P
+-0.2 (estrictions as set forth in subparagraph \050c\051 \0501\051 \050ii\051 of the Rights in T) 207.3 539.71 P
+-0.2 (echnical Data and) 467.31 539.71 P
+(Computer Softwar) 178.67 529.71 T
+(e clause at DF) 252.66 529.71 T
+(ARS 252.227-7013.) 307.05 529.71 T
+(Z-Code Softwar) 178.67 515.71 T
+(e) 241.9 515.71 T
+(4340 Redwood Highway) 178.67 505.71 T
+(, Suite B-50) 276.05 505.71 T
+(San Rafael, CA 94903) 178.67 495.71 T
+0 F
+(For Civilian Agencies:) 178.67 481.71 T
+1 F
+(Use, r) 272.03 481.71 T
+(epr) 295.02 481.71 T
+(oduction or disclosur) 308.11 481.71 T
+(e is subject to r) 392.6 481.71 T
+(estrictions set forth in) 451.08 481.71 T
+(subparagraphs \050a\051 thr) 178.67 471.71 T
+(ough \050d\051 of the Commer) 264.81 471.71 T
+(cial Computer Softwar) 361.04 471.71 T
+(e Restricted Rights) 450.99 471.71 T
+(clause at 52.227-19 and the limitations set forth in the Z-Code Softwar) 178.67 461.71 T
+(e commer) 454.47 461.71 T
+(cial license) 493.49 461.71 T
+(agr) 178.67 451.71 T
+(eement for this softwar) 191.55 451.71 T
+(e. Unpublished rights r) 283.35 451.71 T
+(eserved under the copyright laws of the) 375.25 451.71 T
+(United States. If the softwar) 178.67 441.71 T
+(e was acquir) 289.16 441.71 T
+(ed under a GSA schedule, use, duplication or dis-) 338.7 441.71 T
+(closur) 178.67 431.71 T
+(e shall be in accor) 202.8 431.71 T
+(dance with the applicable GSA Schedule contract.) 272.75 431.71 T
+0 11 Q
+(W) 290.18 416.38 T
+(arranties and Disclaimers) 300.35 416.38 T
+1 9 Q
+(The softwar) 178.67 403.71 T
+(e and user manuals ar) 225.98 403.71 T
+(e pr) 313.45 403.71 T
+(ovided \322as is\323 and without expr) 328.79 403.71 T
+(ess or limited war-) 456.11 403.71 T
+(ranty of any kind by Z-Code Softwar) 178.67 393.71 T
+(e or anyone who has been involved in the cr) 325.26 393.71 T
+(eation,) 500.4 393.71 T
+(pr) 178.67 383.71 T
+(oduction, or distribution of the softwar) 187.46 383.71 T
+(e, including, but not limited to the implied war-) 342.36 383.71 T
+(ranties of the mer) 178.67 373.71 T
+(chantability and \336tness for a particular purpose. The entir) 248.34 373.71 T
+(e risk as to the) 477.72 373.71 T
+-0.32 (quality and performance of the softwar) 178.67 363.71 P
+-0.32 (e and user manuals is with you. Should the softwar) 332.67 363.71 P
+-0.32 (e) 533.77 363.71 P
+(and user manuals pr) 178.67 353.71 T
+(ove defective, you \050and not Z-Code Softwar) 260.5 353.71 T
+(e or anyone else who has) 434.12 353.71 T
+-0.25 (been involved in the cr) 178.67 343.71 P
+-0.25 (eation, pr) 268.49 343.71 P
+-0.25 (oduction, or distribution of the softwar) 306.01 343.71 P
+-0.25 (e\051 assume the entir) 459.68 343.71 P
+-0.25 (e) 533.69 343.71 P
+(cost of all necessary servicing, r) 178.67 333.71 T
+(epair) 303.48 333.71 T
+(, or corr) 323.18 333.71 T
+(ection.) 354.22 333.71 T
+(Some states do not allow the exclusion of implied warranties, so the above exclusion may) 178.67 319.71 T
+(not apply to you.) 178.67 309.71 T
+-0.05 (In no event will Z-Code Softwar) 178.67 295.71 P
+-0.05 (e or any other person involved in the cr) 306.2 295.71 P
+-0.05 (eation, pr) 462.36 295.71 P
+-0.05 (oduction,) 500.07 295.71 P
+(or distribution of the softwar) 178.67 285.71 T
+(e be liable to you on account of any claim for any damages,) 293.58 285.71 T
+(including any lost pr) 178.67 275.71 T
+(o\336ts, lost savings, or other special, incidental, consequential, or exem-) 261.39 275.71 T
+(plary damages, including but not limited to any damages assessed against or paid by you) 178.67 265.71 T
+(to any thir) 178.67 255.71 T
+(d party) 219.88 255.71 T
+(, arising out of the use, inability to use, quality or performance of such) 248 255.71 T
+-0.13 (softwar) 178.67 245.71 P
+-0.13 (e and user manuals, even if Z-Code Softwar) 208.68 245.71 P
+-0.13 (e or any such other person or entity has) 381.88 245.71 P
+-0.25 (been advised of the possibility for such damages, or for any claim by any party) 178.67 235.71 P
+-0.25 (. In addition,) 487.46 235.71 P
+(Z-Code Softwar) 178.67 225.71 T
+(e or any other person involved in the cr) 241.9 225.71 T
+(eation, pr) 398.5 225.71 T
+(oduction, distribution of) 436.27 225.71 T
+-0.08 (the softwar) 178.67 215.71 P
+-0.08 (e shall not be liable for any claim by you or any other party for damages arising) 223.31 215.71 P
+(out of the use, inability to use, quality) 178.67 205.71 T
+(, or performance of such softwar) 327.61 205.71 T
+(e and user manuals,) 456.58 205.71 T
+(based upon principles of contract warranty) 178.67 195.71 T
+(, negligence, strict liability for the principles of) 349.13 195.71 T
+(indemnity or contribution, the failur) 178.67 185.71 T
+(e of any r) 323 185.71 T
+(emedy to achieve its essential purpose, or) 360.05 185.71 T
+(otherwise.) 178.67 175.71 T
+-0.02 (Some states do not allow the limitation or exclusion of liability for incidental or consequen-) 178.67 161.71 P
+(tial damages, so the above limitations may not apply to you.) 178.67 151.71 T
+FMENDPAGE
+%%EndPage: "18" 19
+%%Trailer
+%%BoundingBox: 0 0 612 792
+%%Pages: 18 1
+%%DocumentFonts: Palatino-Bold
+%%+ Palatino-Roman
+%%+ Palatino-BoldItalic
+%%+ Palatino-Italic
+%%+ Helvetica-Oblique
+%%+ AvantGarde-Demi
+%%+ Helvetica-Narrow
+%%+ Helvetica-Bold
+%%+ Helvetica-BoldOblique
+%%+ Helvetica-Narrow-Oblique
+%%+ Helvetica-Narrow-BoldOblique
+%%+ Helvetica-Narrow-Bold
+%%+ Helvetica

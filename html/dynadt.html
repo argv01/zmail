@@ -1,0 +1,2681 @@
+<HTML>
+<HEAD>
+<!-- This HTML file has been created by texi2html 1.35
+     from ../general/dynadt.texinfo on 9 August 1996 -->
+
+<TITLE>Dynamic Abstract Data Types</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>Dynamic Abstract Data Types</H1>
+
+
+<H1><A NAME="SEC1" HREF="dynadt_toc.html#SEC1">Introduction</A></H1>
+
+<P>
+This manual describes Dynamic Abstract Data Types, a reusable software
+library providing dynamically-resizing data structures for use in C
+system and application programming.
+
+</P>
+
+
+
+<H1><A NAME="SEC2" HREF="dynadt_toc.html#SEC2">Glist</A></H1>
+
+<P>
+<A NAME="IDX1"></A>
+A Glist is a <STRONG>grow list</STRONG>.  Like a stack, data can be added to and
+removed from the end.  Like an array, elements in the middle can be
+accessed and changed.  A Glist expands automatically to accommodate data
+as it is added.
+
+</P>
+<P>
+A single Glist holds elements of a single type.  It actually holds
+<EM>copies</EM> of those elements.  When you hand a Glist a pointer to
+some data element, it copies that element according to the <CODE>sizeof</CODE>
+the data type into its private space.  The accessor functions
+<CODE>glist_Nth</CODE> and <CODE>glist_Last</CODE> return pointers to the private
+copies of the data.
+
+</P>
+<P>
+<A NAME="IDX2"></A>
+<A NAME="IDX3"></A>
+<A NAME="IDX4"></A>
+It is important to note that the pointers returned by <CODE>glist_Nth</CODE>
+and <CODE>glist_Last</CODE> are volatile; their contents may relocate if a
+subsequent <CODE>glist_Add</CODE> or <CODE>glist_Insert</CODE> causes a
+<CODE>realloc</CODE> of the Glist's private memory, rendering the returned
+pointers useless.  Therefore, pointers into Glists should be used with
+care.  If in doubt, don't save the pointer value, save the index of the
+element you care about, and use repeated calls to <CODE>glist_Nth</CODE>.
+
+</P>
+<P>
+<A NAME="IDX5"></A>
+<U>Function:</U> void <B>glist_Init</B> <I>(struct glist *<VAR>gl</VAR>, int <VAR>eltsize</VAR>, int <VAR>growsize</VAR>)</I><P>
+<A NAME="IDX6"></A>
+Initialize the <CODE>struct glist</CODE> pointed to by <VAR>gl</VAR>.  The size of
+an element in the new Glist will be <VAR>eltsize</VAR>, and when the Glist is
+full, an attempt to add another element will cause the Glist to be
+expanded by <VAR>growsize</VAR> uninitialized entries.
+
+</P>
+<P>
+<U>Macro:</U> int <B>glist_EmptyP</B> <I>(struct glist *<VAR>gl</VAR>)</I><P>
+<A NAME="IDX7"></A>
+Yields zero if <VAR>gl</VAR> is a non-empty Glist, non-zero otherwise.
+
+</P>
+<P>
+<U>Macro:</U> int <B>glist_Length</B> <I>(struct glist *<VAR>gl</VAR>)</I><P>
+<A NAME="IDX8"></A>
+Yields the number of elements in <VAR>gl</VAR>.
+
+</P>
+<P>
+<U>Function:</U> int <B>glist_Add</B> <I>(struct glist *<VAR>gl</VAR>, const void *<VAR>elt</VAR>)</I><P>
+<A NAME="IDX9"></A>
+Adds a new value to the end of <VAR>gl</VAR>.  The value is pointed to by
+<VAR>elt</VAR>, whose referent is copied into the Glist.  The number of bytes
+to copy was given as <VAR>eltsize</VAR> in <CODE>glist_Init</CODE>.  Returns
+the position of the newly-added element.  If <VAR>elt</VAR> is 0, an empty
+element is added and is initialized with <CODE>bzero</CODE>.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void <B>glist_Insert</B> <I>(struct glist *<VAR>gl</VAR>, const void *<VAR>elt</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX10"></A>
+Insert an element into <VAR>gl</VAR>.  The element to insert is pointed to by
+<VAR>elt</VAR>.  The newly-added element will be located at position <VAR>n</VAR>.
+The old elements occupying locations <VAR>n</VAR> and higher are shifted to
+the right, resulting in the Glist growing by one.  This is an O(<VAR>n</VAR>)
+operation.  Legal values for <VAR>n</VAR> are in the range 0 to
+<CODE>glist_Length(<VAR>gl</VAR>)</CODE> inclusive.  Note that
+
+</P>
+
+<PRE>
+glist_Insert(<VAR>gl</VAR>, <VAR>elt</VAR>, glist_Length(<VAR>gl</VAR>));
+</PRE>
+
+<P>
+is exactly equivalent to
+
+</P>
+
+<PRE>
+glist_Add(<VAR>gl</VAR>, <VAR>elt</VAR>);
+</PRE>
+
+<P>
+Glists are not optimized for mid-list insertion.  If you find yourself
+using <CODE>glist_Insert</CODE> frequently, consider using a Dlist instead
+(see section <A HREF="dynadt.html#SEC3">Dlist</A>).
+
+</P>
+<P>
+If <VAR>elt</VAR> is 0, an empty element is inserted and initialized with
+<CODE>bzero</CODE>.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void * <B>glist_Last</B> <I>(struct glist *<VAR>gl</VAR>)</I><P>
+<A NAME="IDX11"></A>
+Returns a pointer to the last element of <VAR>gl</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void * <B>glist_Nth</B> <I>(struct glist *<VAR>gl</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX12"></A>
+Returns a pointer to the element of <VAR>gl</VAR> whose position is <VAR>n</VAR>,
+where <VAR>n</VAR> lies between 0 and <CODE>glist_Length(<VAR>gl</VAR>) -
+1</CODE>.
+
+</P>
+<P>
+<U>Macro:</U> int <B>glist_Pop</B> <I>(struct glist *<VAR>gl</VAR>)</I><P>
+<A NAME="IDX13"></A>
+Shortens <VAR>gl</VAR> by one, discarding the last value in it.  Yields the
+new number of values in the Glist.  Do <EM>not</EM> call this macro on an
+empty Glist!
+
+</P>
+<P>
+<U>Macro:</U> void <B>glist_Truncate</B> <I>(struct glist *<VAR>gl</VAR>, int <VAR>num</VAR>)</I><P>
+<A NAME="IDX14"></A>
+Truncates <VAR>gl</VAR> to contain <VAR>num</VAR> entries (by discarding all but
+entries 0 through <VAR>num</VAR> - 1).  It is an error for <VAR>num</VAR> to
+be greater than <CODE>glist_Length(<VAR>gl</VAR>)</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>glist_Remove</B> <I>(struct glist *<VAR>gl</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX15"></A>
+Removes the element from <VAR>gl</VAR> whose position is <VAR>n</VAR>.  Elements
+in <VAR>gl</VAR> whose positions are higher than <VAR>n</VAR> are shifted to the
+left, shortening the Glist by one.  This is an O(<VAR>n</VAR>) operation.
+
+</P>
+<P>
+Glists are not optimized for mid-list removal.  If you find yourself
+using <CODE>glist_Remove</CODE> frequently, consider using a Dlist instead
+(see section <A HREF="dynadt.html#SEC3">Dlist</A>).
+
+</P>
+<P>
+<U>Function:</U> void <B>glist_Set</B> <I>(struct glist *<VAR>gl</VAR>, int <VAR>n</VAR>, const void *<VAR>elt</VAR>)</I><P>
+<A NAME="IDX16"></A>
+Destructively replace the element in <VAR>gl</VAR> at position <VAR>n</VAR> with
+the element pointed to by <VAR>elt</VAR>.  If <VAR>n</VAR> is larger than the
+largest index in <VAR>gl</VAR>, then <VAR>gl</VAR> will automatically be extended
+to be exactly <CODE><VAR>n</VAR> + 1</CODE> entries long; however, any
+intervening entries added by extending <VAR>gl</VAR> in this way remain
+completely uninitialized and will initially contain random garbage.  If
+<VAR>elt</VAR> is 0, an empty element replaces the affected element and is
+initialized with <CODE>bzero</CODE>.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void <B>glist_Sort</B> <I>(struct glist *<VAR>gl</VAR>, int (*<VAR>compare</VAR>)(const void *, const void *))</I><P>
+<A NAME="IDX17"></A>
+Sort the elements of <VAR>gl</VAR> in place according to the sorting
+predicate <VAR>compare</VAR> which, as in <CODE>qsort</CODE>, is a function taking
+pointers to two elements and returns a value less than, equal to, or
+greater than zero depending on whether its first argument is to be
+considered less than, equal to, or greater than its second argument.
+
+</P>
+<P>
+<U>Function:</U> int <B>glist_Bsearch</B> <I>(struct glist *<VAR>gl</VAR>, const void *<VAR>probe</VAR>, int (*<VAR>compare</VAR>)(const void *, const void *))</I><P>
+<A NAME="IDX18"></A>
+Perform binary search for an element of <VAR>gl</VAR> matching <VAR>probe</VAR>,
+using the comparison predicate <VAR>compare</VAR>.  Finds a matching element
+in <CODE>O(log <VAR>n</VAR>)</CODE> time.  The elements of <VAR>gl</VAR> must be
+sorted in ascending order with respect to the ordering implied by
+<VAR>compare</VAR>, which is a function taking pointers to two elements and
+returning a value less than, equal to, or greater than zero depending on
+whether its first argument is to be considered less than, equal to, or
+greater than its second argument.
+
+</P>
+<P>
+If a matching element is found, this function returns its index within
+<VAR>gl</VAR>; otherwise -1 is returned.
+
+</P>
+<P>
+<U>Function:</U> void <B>glist_Swap</B> <I>(struct glist *<VAR>gl</VAR>, int <VAR>m</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX19"></A>
+Swaps the two elements in <VAR>gl</VAR> whose positions are <VAR>m</VAR> and <VAR>n</VAR>.
+
+</P>
+<P>
+<U>Macro:</U>  <B>glist_FOREACH</B> <I>(struct glist *<VAR>gl</VAR>, <VAR>t</VAR>, <VAR>v</VAR>, <VAR>i</VAR>)</I><P>
+<A NAME="IDX20"></A>
+Replaces the <CODE>for (...)</CODE> at the beginning of a loop that
+traverses the elements of a Glist.  <VAR>gl</VAR> is a pointer to a Glist;
+<VAR>t</VAR> is the type of an element of the Glist; <VAR>v</VAR> is the name of a
+variable of type <CODE><VAR>t</VAR> *</CODE>; and <VAR>i</VAR> is the name of an
+<CODE>int</CODE> variable.  Within the body of the loop, <VAR>i</VAR> iterates from
+0 through <CODE>glist_Length(<VAR>gl</VAR>) - 1</CODE>, and in each iteration,
+<VAR>v</VAR> points to the <VAR>i</VAR>th element of <VAR>gl</VAR>.  Example:
+
+</P>
+
+<PRE>
+int i;
+struct foo *f;
+
+glist_FOREACH(gl, struct foo, f, i) {
+    printf("The bar field of element %d is %s\n", i, f-&#62;bar);
+}
+</PRE>
+
+<P>
+
+<U>Function:</U> void <B>glist_Map</B> <I>(struct glist *<VAR>gl</VAR>, void (*<VAR>fn</VAR>)(void *, void *), void *<VAR>data</VAR>)</I><P>
+<A NAME="IDX21"></A>
+For each element of <VAR>gl</VAR>, invoke <VAR>fn</VAR>, passing a pointer to the
+element and <VAR>data</VAR> as arguments.  The function <VAR>fn</VAR> should not
+alter <VAR>gl</VAR> (with respect to which elements are in it and in what
+order), but may alter the contents of individual elements.
+
+</P>
+<P>
+Elements of <VAR>gl</VAR> are traversed in order from 0 through
+<CODE>glist_Length(<VAR>gl</VAR>) - 1</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>glist_Destroy</B> <I>(struct glist *<VAR>gl</VAR>)</I><P>
+<A NAME="IDX22"></A>
+Releases the memory associated with <VAR>gl</VAR>.  If the elements of
+<VAR>gl</VAR> have privately-allocated resources (such as memory or file
+descriptors), those resources should be released (presumably in a
+<CODE>glist_FOREACH</CODE> loop) prior to calling this function, or
+<CODE>glist_CleanDestroy</CODE> should be used.
+
+</P>
+<P>
+<U>Function:</U> void <B>glist_CleanDestroy</B> <I>(struct glist *<VAR>gl</VAR>, void (*<VAR>final</VAR>)(void *))</I><P>
+<A NAME="IDX23"></A>
+Like <CODE>glist_Destroy(<VAR>gl</VAR>)</CODE>, but first calls <VAR>final</VAR> on
+a pointer to each element of <VAR>gl</VAR> (presumably as a destructor).
+
+</P>
+<P>
+<U>Function:</U> void * <B>glist_GiveUpList</B> <I>(struct glist *<VAR>gl</VAR>)</I><P>
+<A NAME="IDX24"></A>
+Like <CODE>glist_Destroy</CODE>, but returns <VAR>gl</VAR>'s private copy of
+the array of elements without destroying it.  No further Glist
+operations are possible on <VAR>gl</VAR>.  If <VAR>n</VAR> is the number of
+elements in <VAR>gl</VAR> and <VAR>s</VAR> is the size of an element (as given to
+<CODE>glist_Init</CODE>), then the returned array resides in a
+<CODE>malloc</CODE> block whose size is at least <CODE><VAR>n</VAR> * <VAR>s</VAR></CODE>,
+and possibly larger.  This function may also return 0, indicating that
+<VAR>gl</VAR> is and always has been empty (no memory was ever allocated for
+it).
+
+</P>
+
+
+<H1><A NAME="SEC3" HREF="dynadt_toc.html#SEC3">Dlist</A></H1>
+
+<P>
+<A NAME="IDX25"></A>
+A Dlist is a doubly-linked list.  Like a Glist, a single Dlist holds
+elements of a single type.  In fact, Dlists are implemented as Glists
+with next and previous links added.  As such, many of the same rules and
+caveats apply: data elements are <EM>copied</EM> into the Dlist's private
+space, and pointers into Dlists can become invalid if a Dlist-growing
+operation (<CODE>dlist_Append</CODE>, <CODE>dlist_Prepend</CODE>,
+<CODE>dlist_InsertBefore</CODE>, or <CODE>dlist_InsertAfter</CODE>) causes a
+<CODE>realloc</CODE> of the Dlist's private memory.  See section <A HREF="dynadt.html#SEC2">Glist</A>.
+
+</P>
+<P>
+Note that Dlist elements are referred to by an integer index, but the
+value of the index does not reflect the element's position within
+doubly-linked list ordering.
+
+</P>
+<P>
+<A NAME="IDX26"></A>
+<U>Function:</U> void <B>dlist_Init</B> <I>(struct dlist *<VAR>dl</VAR>, int <VAR>eltsize</VAR>, int <VAR>growsize</VAR>)</I><P>
+<A NAME="IDX27"></A>
+Initialize the <CODE>struct dlist</CODE> pointed to by <VAR>dl</VAR>.  The size of
+an element in the new Dlist will be <VAR>eltsize</VAR>, and when the Dlist is
+full, an attempt to add another element will cause the Dlist to be
+expanded by <VAR>growsize</VAR> uninitialized entries.
+
+</P>
+<P>
+<U>Macro:</U> int <B>dlist_EmptyP</B> <I>(struct dlist *<VAR>dl</VAR>)</I><P>
+<A NAME="IDX28"></A>
+Yields zero if <VAR>dl</VAR> is non-empty, non-zero otherwise.
+
+</P>
+<P>
+<U>Macro:</U> int <B>dlist_Head</B> <I>(struct dlist *<VAR>dl</VAR>)</I><P>
+<A NAME="IDX29"></A>
+Yields the index of the head element of <VAR>dl</VAR>, or -1 if the
+list is empty.
+
+</P>
+<P>
+<U>Macro:</U> int <B>dlist_Tail</B> <I>(struct dlist *<VAR>dl</VAR>)</I><P>
+<A NAME="IDX30"></A>
+Yields the index of the tail element of <VAR>dl</VAR>, or -1 if the
+list is empty.
+
+</P>
+<P>
+<U>Function:</U> void * <B>dlist_HeadElt</B> <I>(struct dlist *<VAR>dl</VAR>)</I><P>
+<A NAME="IDX31"></A>
+Yields the head element of <VAR>dl</VAR>.  This is exactly equivalent to
+
+</P>
+
+<PRE>
+dlist_Nth(<VAR>dl</VAR>, dlist_Head(<VAR>dl</VAR>))
+</PRE>
+
+<P>
+The Dlist <VAR>dl</VAR> must not be empty.
+
+</P>
+<P>
+<U>Function:</U> void * <B>dlist_TailElt</B> <I>(struct dlist *<VAR>dl</VAR>)</I><P>
+<A NAME="IDX32"></A>
+Yields the tail element of <VAR>dl</VAR>.  This is exactly equivalent to
+
+</P>
+
+<PRE>
+dlist_Nth(<VAR>dl</VAR>, dlist_Head(<VAR>dl</VAR>))
+</PRE>
+
+<P>
+The Dlist <VAR>dl</VAR> must not be empty.
+
+</P>
+<P>
+<U>Macro:</U> int <B>dlist_Length</B> <I>(struct dlist *<VAR>dl</VAR>)</I><P>
+<A NAME="IDX33"></A>
+Yields the number of elements in <VAR>dl</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> void * <B>dlist_Nth</B> <I>(struct dlist *<VAR>dl</VAR>, int <VAR>i</VAR>)</I><P>
+<A NAME="IDX34"></A>
+Yields a pointer to the element of <VAR>dl</VAR> whose index is <VAR>i</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> int <B>dlist_Next</B> <I>(struct dlist *<VAR>dl</VAR>, int <VAR>i</VAR>)</I><P>
+<A NAME="IDX35"></A>
+Yields the index of the element of <VAR>dl</VAR> that is next after element
+number <VAR>i</VAR>, or -1 if there is no next element.
+
+</P>
+<P>
+<U>Macro:</U> int <B>dlist_Prev</B> <I>(struct dlist *<VAR>dl</VAR>, int <VAR>i</VAR>)</I><P>
+<A NAME="IDX36"></A>
+Yields the index of the elements of <VAR>dl</VAR> that is previous to element
+number <VAR>i</VAR>, or -1 if there is no previous element.
+
+</P>
+<P>
+<U>Function:</U> int <B>dlist_Prepend</B> <I>(struct dlist *<VAR>dl</VAR>, const void *<VAR>elt</VAR>)</I><P>
+<A NAME="IDX37"></A>
+Prepend to <VAR>dl</VAR> the element pointed to by <VAR>elt</VAR>.  Returns the
+index of the newly-added element.  The new element becomes the new head
+of the Dlist.  It has no Prev element, and its Next element is the
+former head of the Dlist (if any).  If <VAR>elt</VAR> is 0, an empty element
+initialized with <CODE>bzero</CODE> is prepended.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> int <B>dlist_Append</B> <I>(struct dlist *<VAR>dl</VAR>, const void *<VAR>elt</VAR>)</I><P>
+<A NAME="IDX38"></A>
+Append to <VAR>dl</VAR> the element pointed to by <VAR>elt</VAR>.  Returns the
+index of the newly-added element.  The new element becomes the new tail
+of the Dlist.  It has no Next element, and its Prev element is the
+former tail of the Dlist (if any).  If <VAR>elt</VAR> is 0, an empty element
+initialized with <CODE>bzero</CODE> is appended.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> int <B>dlist_InsertAfter</B> <I>(struct dlist *<VAR>dl</VAR>, int <VAR>after</VAR>, const void *<VAR>elt</VAR>)</I><P>
+<A NAME="IDX39"></A>
+Insert into <VAR>dl</VAR>, after the element whose index is <VAR>after</VAR>, an
+element pointed to by <VAR>elt</VAR>.  Returns the index of the newly-added
+element.  The new element becomes the Next of the element at
+<VAR>after</VAR>, and becomes the Prev of <VAR>after</VAR>'s old Next.  If
+<VAR>elt</VAR> is 0, an empty element is inserted and initialized with
+<CODE>bzero</CODE>.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> int <B>dlist_InsertBefore</B> <I>(struct dlist *<VAR>dl</VAR>, int <VAR>before</VAR>, const void *<VAR>elt</VAR>)</I><P>
+<A NAME="IDX40"></A>
+Insert into <VAR>dl</VAR>, before the element whose index is <VAR>before</VAR>, an
+element pointed to by <VAR>elt</VAR>.  Returns the index of the newly-added
+element.  The new element becomes the Prev of the element at
+<VAR>before</VAR>, and becomes the Next of <VAR>before</VAR>'s old Prev.  If
+<VAR>elt</VAR> is 0, an empty element is inserted and initialized with
+<CODE>bzero</CODE>.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void <B>dlist_Remove</B> <I>(struct dlist *<VAR>dl</VAR>, int <VAR>i</VAR>)</I><P>
+<A NAME="IDX41"></A>
+Remove from <VAR>dl</VAR> the element whose index is <VAR>i</VAR>.  The deleted
+element's old Prev and Next elements are made to point at each other.
+
+</P>
+<P>
+<U>Function:</U> void <B>dlist_Replace</B> <I>(struct dlist *<VAR>dl</VAR>, int <VAR>n</VAR>, const void *<VAR>elt</VAR>)</I><P>
+<A NAME="IDX42"></A>
+Replaces the element of <VAR>dl</VAR> whose index is <VAR>n</VAR> with the element
+pointed to by <VAR>elt</VAR>.  If <VAR>elt</VAR> is 0, an empty element replaces
+the affected element, and is initialized with <CODE>bzero</CODE>.
+
+</P>
+<P>
+<U>Macro:</U>  <B>dlist_FOREACH</B> <I>(struct dlist *<VAR>dl</VAR>, <VAR>t</VAR>, <VAR>v</VAR>, <VAR>i</VAR>)</I><P>
+<A NAME="IDX43"></A>
+Replaces the <CODE>for (...)</CODE> at the top of a loop that iterates
+over the elements of <VAR>dl</VAR> in order, from head to tail; <VAR>t</VAR> is
+the type of an element of the Dlist; <VAR>v</VAR> is the name of a variable
+of type <CODE><VAR>t</VAR> *</CODE>, and <VAR>i</VAR> is the name of an integer variable
+which, each iteration through the loop, holds the value of the current
+index.  Within the body of the loop, <VAR>v</VAR> points to the current
+(<VAR>i</VAR>th) element of <VAR>dl</VAR>.  Example:
+
+</P>
+
+<PRE>
+int i;
+struct foo *f;
+
+dlist_FOREACH(dl, struct foo, f, i) {
+    printf("bar field of next element is %s\n", f-&#62;bar);
+}
+</PRE>
+
+<P>
+The expansion of this macro computes the next element in the Dlist from
+the current element at the end of each loop iteration.  This means that
+the loop body must not remove the current element from the Dlist;
+otherwise, the "next" computation will yield garbage.
+
+</P>
+<P>
+<U>Macro:</U>  <B>dlist_FOREACH2</B> <I>(struct dlist *<VAR>dl</VAR>, <VAR>t</VAR>, <VAR>v</VAR>, <VAR>i</VAR>, <VAR>j</VAR>)</I><P>
+<A NAME="IDX44"></A>
+Like <CODE>dlist_FOREACH</CODE>, but allows the loop body to remove the
+current Dlist element.  The caller passes the name of an additional
+integer variable, <VAR>j</VAR>.  The "next" computation takes place at the
+<EM>top</EM> of each loop and <VAR>j</VAR> holds the index of the next element.
+
+</P>
+<P>
+<U>Function:</U> void <B>dlist_Map</B> <I>(struct dlist *<VAR>dl</VAR>, void (*<VAR>fn</VAR>)(void *, void *), void *<VAR>data</VAR>)</I><P>
+<A NAME="IDX45"></A>
+For each element of <VAR>dl</VAR>, invoke <VAR>fn</VAR>, passing a pointer to the
+element and <VAR>data</VAR> as arguments.  The function <VAR>fn</VAR> should not
+alter <VAR>dl</VAR> (with respect to which elements are in it and in what
+order), but may alter the contents of individual elements.
+
+</P>
+<P>
+Elements of <VAR>dl</VAR> are traversed in order from head to tail.
+
+</P>
+<P>
+<U>Function:</U> void <B>dlist_Destroy</B> <I>(struct dlist *<VAR>dl</VAR>)</I><P>
+<A NAME="IDX46"></A>
+Releases the memory associated with <VAR>dl</VAR>.  If the elements if
+<VAR>dl</VAR> have privately-allocated resources (such as memory or file
+descriptors), those resources should be released (presumably in a
+<CODE>dlist_FOREACH</CODE> loop) prior to calling this function, or
+<CODE>dlist_CleanDestroy</CODE> should be used.
+
+</P>
+<P>
+<U>Function:</U> void <B>dlist_CleanDestroy</B> <I>(struct dlist *<VAR>dl</VAR>, void (*<VAR>final</VAR>)(void *))</I><P>
+<A NAME="IDX47"></A>
+Like <CODE>dlist_Destroy(<VAR>dl</VAR>)</CODE>, but first calls <VAR>final</VAR> on
+a pointer to each element of <VAR>dl</VAR> (presumably as a destructor).
+
+</P>
+
+
+<H1><A NAME="SEC4" HREF="dynadt_toc.html#SEC4">Dynstr</A></H1>
+
+<P>
+<A NAME="IDX48"></A>
+<A NAME="IDX49"></A>
+<A NAME="IDX50"></A>
+A Dynstr is a dynamically-allocated string which grows and shrinks as
+necessary to accommodate the characters in it.  Dynstr strings are
+<CODE>NUL</CODE>-terminated like conventional C strings; in fact, the macro
+<CODE>dynstr_Str</CODE> yields the conventional string contained within a
+Dynstr.  However, that string should not be manipulated in certain ways
+without its containing Dynstr's knowledge.  In particular, its
+terminating <CODE>NUL</CODE> should not move, and the string should not be
+passed to <CODE>realloc</CODE> or <CODE>free</CODE> or the like.
+
+</P>
+<P>
+Since the string contained in a Dynstr may relocate (as the result of a
+<CODE>realloc</CODE>), the pointer returned by <CODE>dynstr_Str</CODE> may become
+invalid.  It is therefore preferable to use repeated calls to
+<CODE>dynstr_Str</CODE> than to squirrel away a copy of the pointer.
+
+</P>
+<P>
+<A NAME="IDX51"></A>
+<U>Function:</U> void <B>dynstr_Init</B> <I>(struct dynstr *<VAR>d</VAR>)</I><P>
+<A NAME="IDX52"></A>
+Initializes the <CODE>struct dynstr</CODE> pointed to by <VAR>d</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>dynstr_InitFrom</B> <I>(struct dynstr *<VAR>d</VAR>, char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX53"></A>
+Initializes <VAR>d</VAR> (which should not have been previously initialized)
+with the already-<CODE>malloc</CODE>'d string <VAR>str</VAR>.  This is equivalent
+to
+
+</P>
+
+<PRE>
+dynstr_Init(<VAR>d</VAR>);
+dynstr_Set(<VAR>d</VAR>, <VAR>str</VAR>);
+</PRE>
+
+<P>
+but doesn't create a new copy of the string.  Use this function when you
+have a string in a <CODE>malloc</CODE>-allocated piece of memory which you
+wish to place under Dynstr control.
+
+</P>
+<P>
+The amount of space <CODE>malloc</CODE>'d for <VAR>str</VAR> is presumed to be
+equal to <CODE>1 + strlen(<VAR>str</VAR>)</CODE>.  After this function call,
+<VAR>str</VAR> becomes the "property" of <VAR>d</VAR>, in a sense; the caller
+should not attempt to <CODE>free</CODE> or <CODE>realloc</CODE> it, should
+<CODE>dynstr_Destroy</CODE> <VAR>d</VAR> normally when finished with it, and in
+general should obey the rules for <CODE>dynstr_Str</CODE> outlined above.
+
+</P>
+<P>
+<U>Macro:</U> int <B>dynstr_EmptyP</B> <I>(const struct dynstr *<VAR>d</VAR>)</I><P>
+<A NAME="IDX54"></A>
+Yields zero if <VAR>d</VAR> is non-empty (<CODE>dynstr_Length</CODE> is greater
+than 0), non-zero otherwise.
+
+</P>
+<P>
+<U>Function:</U> int <B>dynstr_Length</B> <I>(const struct dynstr *<VAR>d</VAR>)</I><P>
+<A NAME="IDX55"></A>
+Returns the number of characters in <VAR>d</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> char * <B>dynstr_Str</B> <I>(const struct dynstr *<VAR>d</VAR>)</I><P>
+<A NAME="IDX56"></A>
+Yields the character string contained in <VAR>d</VAR>.  The value returned is
+never 0 (this is a change from earlier versions of this software).
+
+</P>
+<P>
+<U>Function:</U> void <B>dynstr_Set</B> <I>(struct dynstr *<VAR>d</VAR>, const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX57"></A>
+Sets the contents of <VAR>d</VAR> to be a copy of the string <VAR>str</VAR>,
+erasing any old contents of <VAR>d</VAR>.  If <VAR>str</VAR> is 0, then any
+allocated memory associated with <VAR>d</VAR> is freed and the empty string
+is assigned to <VAR>d</VAR>.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void <B>dynstr_Append</B> <I>(struct dynstr *<VAR>d</VAR>, const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX58"></A>
+Appends to <VAR>d</VAR> a copy of the character string <VAR>str</VAR>.  Like
+<CODE>strcat(dynstr_Str(<VAR>d</VAR>), <VAR>str</VAR>)</CODE> but without the
+memory-allocation hassle.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void <B>dynstr_AppendN</B> <I>(struct dynstr *<VAR>d</VAR>, const char *<VAR>str</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX59"></A>
+Appends to <VAR>d</VAR> a copy of the character string <VAR>str</VAR>, stopping after
+<VAR>n</VAR> characters are copied or at the end of <VAR>str</VAR>, whichever
+comes first.  This function is to <CODE>dynstr_Append</CODE> as <CODE>strncat</CODE>
+is to <CODE>strcat</CODE>.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> int <B>dynstr_AppendChar</B> <I>(struct dynstr *<VAR>d</VAR>, int <VAR>c</VAR>)</I><P>
+<A NAME="IDX60"></A>
+Appends to <VAR>d</VAR> the single character <VAR>c</VAR> and returns the added
+character.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> int <B>dynstr_Chop</B> <I>(struct dynstr *<VAR>d</VAR>)</I><P>
+<A NAME="IDX61"></A>
+Shortens <VAR>d</VAR> by one character by chopping it off the end.  Returns
+the chopped character.  Inspired by Perl.
+
+</P>
+<P>
+<U>Function:</U> int <B>dynstr_ChopN</B> <I>(struct dynstr *<VAR>d</VAR>, unsigned <VAR>n</VAR>)</I><P>
+<A NAME="IDX62"></A>
+Shortens <VAR>d</VAR> by chopping <VAR>n</VAR> characters off the end.
+
+</P>
+<P>
+No range check is performed; <VAR>n</VAR> must not be greater than
+<CODE>dynstr_Length(<VAR>d</VAR>)</CODE>.
+
+</P>
+<P>
+<U>Function:</U> int <B>dynstr_KeepN</B> <I>(struct dynstr *<VAR>d</VAR>, unsigned <VAR>n</VAR>)</I><P>
+<A NAME="IDX63"></A>
+Shortens <VAR>d</VAR> by keeping only the leading <VAR>n</VAR> characters.
+<VAR>n</VAR> is a count, not a positional index; if <VAR>n</VAR> is zero, the
+dynstr will become empty.
+
+</P>
+<P>
+No range check is performed; <VAR>n</VAR> must not be greater than
+<CODE>dynstr_Length(<VAR>d</VAR>)</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>dynstr_Replace</B> <I>(struct dynstr *<VAR>d</VAR>, int <VAR>start</VAR>, int <VAR>len</VAR>, const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX64"></A>
+Replace a substring of <VAR>d</VAR> with a new string.  Characters beginning
+at position <VAR>start</VAR> (zero-based) and continuing for <VAR>len</VAR> bytes
+are replaced by the <CODE>NUL</CODE>-terminated string <VAR>str</VAR>, shortening
+or lengthening <VAR>d</VAR> as necessary.
+
+</P>
+<P>
+No range checks are performed; <VAR>start</VAR> and <CODE>(<VAR>start</VAR> +
+<VAR>len</VAR>)</CODE> must both lie between 0 and
+<CODE>dynstr_Length(<VAR>d</VAR>)</CODE>, inclusive.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void <B>dynstr_ReplaceN</B> <I>(struct dynstr *<VAR>d</VAR>, int <VAR>start</VAR>, int <VAR>len</VAR>, const char *<VAR>str</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX65"></A>
+Like <CODE>dynstr_Replace</CODE>, but replaces the substring of <VAR>d</VAR> with
+at most <VAR>n</VAR> characters from <VAR>str</VAR> (stopping earlier if <VAR>str</VAR>
+is shorter than <VAR>n</VAR> characters).
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void <B>dynstr_ReplaceChar</B> <I>(struct dynstr *<VAR>d</VAR>, int <VAR>start</VAR>, int <VAR>len</VAR>, int <VAR>c</VAR>)</I><P>
+<A NAME="IDX66"></A>
+Like <CODE>dynstr_Replace</CODE>, but replaces the substring of <VAR>d</VAR> with
+the single character <VAR>c</VAR>.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Macro:</U> void <B>dynstr_Insert</B> <I>(struct dynstr *<VAR>d</VAR>, int <VAR>pos</VAR>, const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX67"></A>
+Insert into <VAR>d</VAR> at position <VAR>pos</VAR> the <CODE>NUL</CODE>-terminated
+string <VAR>str</VAR>.  This macro simply calls
+<CODE>dynstr_Replace(<VAR>d</VAR>, <VAR>pos</VAR>, 0, <VAR>str</VAR>)</CODE>.
+
+</P>
+<P>
+<U>Macro:</U> void <B>dynstr_InsertN</B> <I>(struct dynstr *<VAR>d</VAR>, int <VAR>pos</VAR>, const char *<VAR>str</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX68"></A>
+Insert into <VAR>d</VAR> at position <VAR>pos</VAR> the string <VAR>str</VAR>, stopping
+after <VAR>n</VAR> bytes have been copied or upon reaching the end of
+<VAR>str</VAR>, whichever comes first.  This macro simply calls
+<CODE>dynstr_ReplaceN(<VAR>d</VAR>, <VAR>pos</VAR>, 0, <VAR>str</VAR>, <VAR>n</VAR>)</CODE>.
+
+</P>
+<P>
+<U>Macro:</U> void <B>dynstr_InsertChar</B> <I>(struct dynstr *<VAR>d</VAR>, int <VAR>pos</VAR>, int <VAR>c</VAR>)</I><P>
+<A NAME="IDX69"></A>
+Insert into <VAR>d</VAR> at position <VAR>pos</VAR> the single character <VAR>c</VAR>.
+This macro simply calls <CODE>dynstr_ReplaceChar(<VAR>d</VAR>, <VAR>pos</VAR>,
+0, <VAR>c</VAR>)</CODE>.
+
+</P>
+<P>
+<U>Macro:</U> void <B>dynstr_Delete</B> <I>(struct dynstr *<VAR>d</VAR>, int <VAR>pos</VAR>, int <VAR>len</VAR>)</I><P>
+<A NAME="IDX70"></A>
+Delete from <VAR>d</VAR> a substring of characters beginning at position
+<VAR>pos</VAR> and continuing for <VAR>len</VAR> bytes.  This macro simply calls
+<CODE>dynstr_Replace(<VAR>d</VAR>, <VAR>pos</VAR>, <VAR>len</VAR>, "")</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>dynstr_Destroy</B> <I>(struct dynstr *<VAR>d</VAR>)</I><P>
+<A NAME="IDX71"></A>
+Releases the memory associated with <VAR>d</VAR>.
+
+</P>
+<P>
+<U>Function:</U> char * <B>dynstr_GiveUpStr</B> <I>(struct dynstr *<VAR>d</VAR>)</I><P>
+<A NAME="IDX72"></A>
+Like <CODE>dynstr_Destroy</CODE>, but returns <VAR>d</VAR>'s private copy of the
+string (as in <CODE>dynstr_Str(<VAR>d</VAR>)</CODE>) without destroying it.  No
+further Dynstr operations are possible on <VAR>d</VAR>.  The resulting string
+<VAR>str</VAR> always resides in a <CODE>malloc</CODE> block whose size is at least
+<CODE>strlen(<VAR>str</VAR>) + 1</CODE>, and possibly larger.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+
+
+<H1><A NAME="SEC5" HREF="dynadt_toc.html#SEC5">Intset</A></H1>
+
+<P>
+<A NAME="IDX73"></A>
+<A NAME="IDX74"></A>
+An Intset is a set of integers, implemented as a sorted Dlist of
+<STRONG>parts</STRONG>.  Each part is a bit vector of varying size which can
+represent a portion of the space of all integers.  When a value is added
+to the set, if no part exists to hold the value, then either an existing
+part is expanded to include the value, or a new part is linked into the
+Dlist, whichever is more space-efficient.
+
+</P>
+<P>
+<A NAME="IDX75"></A>
+<U>Function:</U> void <B>intset_Init</B> <I>(struct intset *<VAR>iset</VAR>)</I><P>
+<A NAME="IDX76"></A>
+Initializes the Intset pointed to by <VAR>iset</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> int <B>intset_EmptyP</B> <I>(struct intset *<VAR>iset</VAR>)</I><P>
+<A NAME="IDX77"></A>
+Yields zero if <VAR>iset</VAR> is non-empty, non-zero otherwise.
+
+</P>
+<P>
+<U>Macro:</U> int <B>intset_Count</B> <I>(struct intset *<VAR>iset</VAR>)</I><P>
+<A NAME="IDX78"></A>
+Yields the number of elements in <VAR>iset</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>intset_Add</B> <I>(struct intset *<VAR>iset</VAR>, int <VAR>i</VAR>)</I><P>
+<A NAME="IDX79"></A>
+Adds to the set <VAR>iset</VAR> the value <VAR>i</VAR>.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void <B>intset_AddRange</B> <I>(struct intset *<VAR>iset</VAR>, int <VAR>start</VAR>, int <VAR>end</VAR>)</I><P>
+<A NAME="IDX80"></A>
+Adds to the set <VAR>iset</VAR> every value in the range <VAR>start</VAR> through
+<VAR>end</VAR>, inclusive (<VAR>start</VAR> must not be greater than <VAR>end</VAR>).
+This function is equivalent to, but much more efficient than
+
+</P>
+
+<PRE>
+int i;
+
+for (i = <VAR>start</VAR>; i &#60;= <VAR>end</VAR>; ++i)
+    intset_Add(<VAR>iset</VAR>, i);
+</PRE>
+
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void <B>intset_Remove</B> <I>(struct intset *<VAR>iset</VAR>, int <VAR>i</VAR>)</I><P>
+<A NAME="IDX81"></A>
+Removes from <VAR>iset</VAR> the value <VAR>i</VAR>.  If <VAR>i</VAR> was not a member of
+<VAR>iset</VAR>, this function does nothing.  If this function produces an
+empty "part" (described above), then the part is deallocated.
+
+</P>
+<P>
+<U>Function:</U> void <B>intset_Clear</B> <I>(struct intset *<VAR>iset</VAR>)</I><P>
+<A NAME="IDX82"></A>
+Removes all values from the set <VAR>iset</VAR>.
+
+</P>
+<P>
+<U>Function:</U> int <B>intset_Contains</B> <I>(struct intset *<VAR>iset</VAR>, int <VAR>i</VAR>)</I><P>
+<A NAME="IDX83"></A>
+Tests whether <VAR>iset</VAR> contains the value <VAR>i</VAR>, returning zero if
+not, non-zero if so.
+
+</P>
+<P>
+<U>Function:</U> int <B>intset_Min</B> <I>(struct intset *<VAR>iset</VAR>)</I><P>
+<A NAME="IDX84"></A>
+Returns the smallest member of <VAR>iset</VAR>.
+
+</P>
+<P>
+If <VAR>iset</VAR> is empty, this function will raise the
+<CODE>strerror(EINVAL)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> int <B>intset_Max</B> <I>(struct intset *<VAR>iset</VAR>)</I><P>
+<A NAME="IDX85"></A>
+Returns the largest member of <VAR>iset</VAR>.
+
+</P>
+<P>
+If <VAR>iset</VAR> is empty, this function will raise the
+<CODE>strerror(EINVAL)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> int <B>intset_Equal</B> <I>(struct intset *<VAR>is1</VAR>, struct intset *<VAR>is2</VAR>)</I><P>
+<A NAME="IDX86"></A>
+Tests whether <VAR>is1</VAR> contains exactly the same members as <VAR>is2</VAR>.
+Returns non-zero if they're equal, zero if non-equal.
+
+</P>
+<P>
+<A NAME="IDX87"></A>
+<U>Function:</U> void <B>intset_InitIterator</B> <I>(struct intset_iterator *<VAR>isi</VAR>)</I><P>
+<A NAME="IDX88"></A>
+Initialize <VAR>isi</VAR> for subsequence use in calls to
+<CODE>intset_Iterate</CODE>.
+
+</P>
+<P>
+<U>Function:</U> int * <B>intset_Iterate</B> <I>(struct intset *<VAR>iset</VAR>, struct intset_iterator *<VAR>isi</VAR>)</I><P>
+<A NAME="IDX89"></A>
+Iterates over the elements of <VAR>iset</VAR> using the iterator <VAR>isi</VAR>,
+which has been initialized with <CODE>intset_InitIterator</CODE>.  Each call
+to this function returns a pointer to a static area containing the
+"next" element of <VAR>isi</VAR> in numerical order (from
+<CODE>intset_Min(<VAR>iset</VAR>)</CODE> to <CODE>intset_Max(<VAR>iset</VAR>)</CODE>).  The
+iterator <VAR>isi</VAR> is used to record the current position in the
+traversal so that the next call to <CODE>intset_Iterate</CODE> will pick up
+from the correct spot.  Multiple concurrent traversals, each using a
+separate iterator, are possible.
+
+</P>
+<P>
+The contents of <VAR>isi</VAR> must not change during the traversal.  When no
+elements remain in a traversal, this function returns 0.  There is no
+requirement to complete a particular traversal, and an iterator may be
+re-initialized at any time to begin a new traversal.  There is no need
+to finalize an iterator.
+
+</P>
+<P>
+Example:
+
+</P>
+
+<PRE>
+struct intset_iterator isi;
+int *intptr;
+
+intset_InitIterator(&#38;isi);
+while (intptr = intset_Iterate(<VAR>iset</VAR>, &#38;isi)) {
+    code that uses the integer in <CODE>*intptr</CODE>
+}
+</PRE>
+
+<P>
+
+<U>Function:</U> void <B>intset_Destroy</B> <I>(struct intset *<VAR>iset</VAR>)</I><P>
+<A NAME="IDX90"></A>
+Releases the memory associated with <VAR>iset</VAR>.
+
+</P>
+
+
+<H1><A NAME="SEC6" HREF="dynadt_toc.html#SEC6">Hashtab</A></H1>
+
+<P>
+<A NAME="IDX91"></A>
+<A NAME="IDX92"></A>
+<A NAME="IDX93"></A>
+A Hashtab is a hash table, which is a fast-lookup array.  Hashtab
+implements an <STRONG>open</STRONG>-style hash table atop Glists and Dlists.  In an
+open hash table, a fixed number of <STRONG>buckets</STRONG> holds a variable number
+of table elements.  Finding the correct bucket is an O(1) operation;
+finding the element within the bucket is a simple linear search.  For
+this reason, it is desirable to choose a Hashtab configuration that will
+spread elements among buckets evenly, with no bucket getting too
+"deep".
+
+</P>
+<P>
+<A NAME="IDX94"></A>
+Given a hash table element, the correct bucket is found by taking the
+<STRONG>hash value</STRONG> of the element modulo the number of buckets in the
+Hashtab.  The hash value is determined by the table's <STRONG>hash
+function</STRONG>, which should attempt to map elements to as nearly unique
+integers as is feasible.  It is also customary practice to choose a
+prime number for the number of buckets in the hash table (so the hash
+value modulo the number of buckets is least likely to exhibit
+periodicity), though it is by no means necessary.
+
+</P>
+<P>
+Since Glists and Dlists are used, the same rules and caveats apply:  one
+data type per Hashtab; data elements are <EM>copied</EM> into the
+Hashtab's private space; and pointers into Hashtabs can become invalid
+if a <CODE>hashtab_Add</CODE> causes a <CODE>realloc</CODE> of the Hashtab's private
+memory.  See section <A HREF="dynadt.html#SEC2">Glist</A>.
+
+</P>
+<P>
+<A NAME="IDX95"></A>
+<U>Function:</U> void <B>hashtab_Init</B> <I>(struct hashtab *<VAR>ht</VAR>, unsigned int (*<VAR>hashfn</VAR>)(const void *), int (*<VAR>compare</VAR>)(const void *, const void *), int <VAR>eltsize</VAR>, int <VAR>nbuckets</VAR>)</I><P>
+<A NAME="IDX96"></A>
+Initializes hash table <VAR>ht</VAR>.  The hash function to use on elements
+of the new table is <VAR>hashfn</VAR>, which takes a pointer to an element
+and returns an <CODE>unsigned int</CODE> hash value.  A predicate to compare
+pairs of elements, called the <STRONG>comparison predicate</STRONG>, is given as
+<VAR>compare</VAR>, which should take two pointers to elements and return
+zero if they are equal, non-zero otherwise.  The size of a data element
+is <VAR>eltsize</VAR>.  The number of buckets to create in the new table is
+<VAR>nbuckets</VAR>.
+
+</P>
+<P>
+If <VAR>compare</VAR> is 0, then <CODE>bcmp</CODE> (or <CODE>memcmp</CODE>, whichever is
+available) is used (along with <VAR>eltsize</VAR>).
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void <B>hashtab_Add</B> <I>(struct hashtab *<VAR>ht</VAR>, const void *<VAR>elt</VAR>)</I><P>
+<A NAME="IDX97"></A>
+Add to <VAR>ht</VAR> a copy of the element pointed to by <VAR>elt</VAR>.  The
+pointer is first passed to <VAR>ht</VAR>'s hash function to obtain a hash
+value.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void * <B>hashtab_Find</B> <I>(struct hashtab *<VAR>ht</VAR>, const void *<VAR>probe</VAR>)</I><P>
+<A NAME="IDX98"></A>
+Find the element of <VAR>ht</VAR> which matches <VAR>probe</VAR> and return a
+pointer to it.  Usually, <VAR>probe</VAR> is a pointer to a
+partially-filled-in version of the data structure being sought (for
+instance, if the elements of <VAR>ht</VAR> are key-value pairs, <VAR>probe</VAR>
+would be a pointer to a pair containing a valid key field but nothing in
+the value field).  The element is found using <VAR>ht</VAR>'s hash function
+and comparison predicate; this means that <VAR>probe</VAR> must hash the same
+as the target element would, and that the comparison predicate must
+consider <VAR>probe</VAR> and the target element equal.  If no matching
+element is found, 0 is returned.  If multiple matches exist, only the
+first one found is returned.  (There is no practical way to determine
+which matching element among several would be found first.)
+
+</P>
+<P>
+<U>Function:</U> void <B>hashtab_Remove</B> <I>(struct hashtab *<VAR>ht</VAR>, const void *<VAR>probe</VAR>)</I><P>
+<A NAME="IDX99"></A>
+The element of <VAR>ht</VAR> matching <VAR>probe</VAR> is found (as described
+above in <CODE>hashtab_Find</CODE>) and removed.  If no matching element is
+found, this function silently does nothing.  If multiple matches exist,
+only the first one found is removed.  (There is no practical way to
+determine which matching element among several would be found first.)
+
+</P>
+<P>
+If <VAR>probe</VAR> is 0, then the last element of <VAR>ht</VAR> returned by a
+call to <CODE>hashtab_Find</CODE> or <CODE>hashtab_Iterate</CODE> is removed
+without performing a new search.  This special case performs no
+error-checking, so be sure that there <EM>has</EM> been a successful
+<CODE>hashtab_Find</CODE> or <CODE>hashtab_Iterate</CODE> and that the
+resulting element has not already been removed before calling
+<CODE>hashtab_Remove(<VAR>ht</VAR>, 0)</CODE>.
+
+</P>
+<P>
+<A NAME="IDX100"></A>
+<U>Function:</U> void <B>hashtab_InitIterator</B> <I>(struct hashtab_iterator *<VAR>hti</VAR>)</I><P>
+<A NAME="IDX101"></A>
+Initialize <VAR>hti</VAR> for subsequent use in calls to
+<CODE>hashtab_Iterate</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void * <B>hashtab_Iterate</B> <I>(struct hashtab *<VAR>ht</VAR>, struct hashtab_iterator *<VAR>hti</VAR>)</I><P>
+<A NAME="IDX102"></A>
+Iterates over the elements of <VAR>ht</VAR> using the iterator <VAR>hti</VAR>,
+which has been initialized with <CODE>hashtab_InitIterator</CODE>.  Each call
+to this function returns a pointer to the "next" element of <VAR>ht</VAR>
+(according to an apparently-random traversal of <VAR>ht</VAR>).  The iterator
+<VAR>hti</VAR> is used to record the current position in the traversal so
+that the next call to <CODE>hashtab_Iterate</CODE> will pick up from the
+correct spot.  Multiple concurrent traversals, each using a separate
+iterator, are possible.
+
+</P>
+<P>
+Each traversal is guaranteed to reach each element of <VAR>ht</VAR> exactly
+once, but the contents of <VAR>ht</VAR> must not change during the traversal.
+(If an iterator is used without reinitializing <EM>after</EM> the Hashtab
+is modified, the result isn't even guaranteed to be <EM>in</EM> the
+Hashtab!)  When no elements remain in a traversal, this function returns
+0.  There is no requirement to complete a particular traversal, and an
+iterator may be re-initialized at any time to begin a new traversal.
+There is no need to finalize an iterator.
+
+</P>
+<P>
+Example:
+
+</P>
+
+<PRE>
+struct hashtab_iterator hti;
+struct foo *fooptr;
+
+hashtab_InitIterator(&#38;hti);
+while (fooptr = (struct foo *) hashtab_Iterate(<VAR>ht</VAR>, &#38;hti)) {
+    code that uses <CODE>fooptr</CODE>
+}
+</PRE>
+
+<P>
+
+<U>Function:</U> unsigned int <B>hashtab_StringHash</B> <I>(const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX103"></A>
+Computes and returns a hash value for the <CODE>NUL</CODE>-terminated string
+<VAR>str</VAR>.  This function is provided as a convenience; it is quite a
+good hash function for short and medium-length strings, especially
+identifier names in programming languages.
+
+</P>
+<P>
+<U>Macro:</U> int <B>hashtab_EmptyP</B> <I>(struct hashtab *<VAR>ht</VAR>)</I><P>
+<A NAME="IDX104"></A>
+Yields zero if <VAR>ht</VAR> is a non-empty Hashtab, non-zero otherwise.
+
+</P>
+<P>
+<U>Macro:</U> int <B>hashtab_Length</B> <I>(struct hashtab *<VAR>ht</VAR>)</I><P>
+<A NAME="IDX105"></A>
+Yields the number of elements in <VAR>ht</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> int <B>hashtab_NumBuckets</B> <I>(struct hashtab *<VAR>ht</VAR>)</I><P>
+<A NAME="IDX106"></A>
+Yields the number of buckets in <VAR>ht</VAR>, which was given by the latest
+call to <CODE>hashtab_Init</CODE> or <CODE>hashtab_Rehash</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>hashtab_Stats</B> <I>(const struct hashtab *<VAR>ht</VAR>, double *<VAR>mean</VAR>, double *<VAR>variance</VAR>)</I><P>
+<A NAME="IDX107"></A>
+Compute statistics about the distribution of elements among the buckets
+of <VAR>ht</VAR>.  The mean length of a bucket is placed in the <CODE>double</CODE>
+pointed to by <VAR>mean</VAR>, and the variance is placed in the
+<CODE>double</CODE> pointed to by <VAR>variance</VAR>.  (The square root of the
+variance is the <STRONG>standard deviation</STRONG>.)  Either <VAR>mean</VAR> or
+<VAR>variance</VAR> may be 0 if that value is not desired, but if the
+variance is desired but not the mean, be aware that the mean is computed
+internally anyway.
+
+</P>
+<P>
+<U>Function:</U> void <B>hashtab_Rehash</B> <I>(struct hashtab *<VAR>ht</VAR>, int <VAR>newbuckets</VAR>, unsigned int (*<VAR>newhash</VAR>)(const void *))</I><P>
+<A NAME="IDX108"></A>
+Redistribute the elements of <VAR>ht</VAR> among a new number of buckets
+<VAR>newbuckets</VAR> and/or using a new hash function <VAR>newhash</VAR>.  To
+leave the number of buckets alone, <VAR>newbuckets</VAR> should be 0; to
+leave the hash function alone, <VAR>newhash</VAR> should be 0.  This function
+is typically used when <CODE>hashtab_Stats</CODE> reveals that the hash
+table has grown large or imperfectly (resulting in buckets that are too
+large, or in very uneven growth among the buckets), or when deletions
+have left the hash table sparse and fewer buckets are called for.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void <B>hashtab_Map</B> <I>(struct hashtab *<VAR>ht</VAR>, void (*<VAR>fn</VAR>)(void *, void *), void *<VAR>data</VAR>)</I><P>
+<A NAME="IDX109"></A>
+For each element of <VAR>ht</VAR>, invoke <VAR>fn</VAR>, passing a pointer to the
+element and <VAR>data</VAR> as arguments.  The function <VAR>fn</VAR> should not
+alter <VAR>ht</VAR> (with respect to which elements are in it), but may alter
+the contents of individual elements.
+
+</P>
+<P>
+Elements of <VAR>ht</VAR> are traversed in an apparently-random order.
+
+</P>
+<P>
+<U>Function:</U> void <B>hashtab_Destroy</B> <I>(struct hashtab *<VAR>ht</VAR>)</I><P>
+<A NAME="IDX110"></A>
+Releases the memory associated with <VAR>ht</VAR>.  If the elements of
+<VAR>ht</VAR> have privately-allocated resources (such as memory or file
+descriptors), those resources should be released (presumably in a
+<CODE>hashtab_Iterate</CODE> traversal) prior to calling this function, or
+<CODE>hashtab_CleanDestroy</CODE> should be used.
+
+</P>
+<P>
+<U>Function:</U> void <B>hashtab_CleanDestroy</B> <I>(struct hashtab *<VAR>ht</VAR>, void (*<VAR>final</VAR>)(void *))</I><P>
+<A NAME="IDX111"></A>
+Like <CODE>hashtab_Destroy(<VAR>ht</VAR>)</CODE>, but first calls <VAR>final</VAR>
+on a pointer to each element of <VAR>ht</VAR> (presumably as a destructor).
+
+</P>
+
+
+<H1><A NAME="SEC7" HREF="dynadt_toc.html#SEC7">Sklist</A></H1>
+
+<P>
+<A NAME="IDX112"></A>
+A skip list is a special kind of linked list for keeping data in sorted
+order.  Its searching efficiency is comparable to that of a balanced
+binary tree, but the implementation is vastly simpler and the overhead
+is lower.
+
+</P>
+<P>
+In a skip list, each element is stored in a node of a randomly-chosen
+<STRONG>level</STRONG>.  A node of level <VAR>n</VAR> contains <CODE><VAR>n</VAR> + 1</CODE>
+forward pointers, where the <VAR>k</VAR>th pointer points to the next node of
+level <VAR>k</VAR> or higher.
+
+</P>
+<P>
+When a new node is inserted in the skip list, its level is chosen based
+on <VAR>P</VAR>, the probability of choosing a higher level for the node.
+The probability that a node's level is higher than <VAR>L</VAR> is
+<CODE><VAR>P</VAR>^(<VAR>L</VAR> + 1)</CODE>.  A skip list's value of <VAR>P</VAR> is
+specified as a ratio (numerator, denominator) in a call to
+<CODE>sklist_Init</CODE>.  An empirically good value for <VAR>P</VAR> is
+1/4.
+
+</P>
+<P>
+<A NAME="IDX113"></A>
+Because the random-number generator is used in creating skip list nodes,
+it is a good idea for the application to initialize the random-number
+generator some time before skip list insertions begin happening.  Some C
+libraries provide the function <CODE>srand</CODE> for this purpose; others
+provide <CODE>srandom</CODE>.  The macro <CODE>Srandom(<VAR>seed</VAR>)</CODE> invokes
+the correct variant for your platform.<A NAME="FOOT1" HREF="dynadt_foot.html#FOOT1">(1)</A>
+
+</P>
+<P>
+Skip lists were described in the June 1990 issue of <CITE>Communications
+of the ACM</CITE> (volume 33, number 6), in "Skip Lists:  A Probabilistic
+Alternative to Balanced Trees" by William Pugh.
+
+</P>
+<P>
+<A NAME="IDX114"></A>
+<U>Function:</U> void <B>sklist_Init</B> <I>(struct sklist *<VAR>skl</VAR>, int <VAR>eltsize</VAR>, int (*<VAR>cmp</VAR>)(const void *, const void *), int <VAR>numerator</VAR>, int <VAR>denominator</VAR>)</I><P>
+<A NAME="IDX115"></A>
+Initialize the skip list pointed to by <VAR>skl</VAR>.  The size of an
+element in the new skip list is <VAR>eltsize</VAR>; <VAR>cmp</VAR> is a pointer to
+a <STRONG>comparison function</STRONG>, an <CODE>int</CODE>-returning function which
+takes as arguments two pointers to skip list elements and compares them
+in the style of <CODE>strcmp</CODE>; and <VAR>numerator</VAR> and <VAR>denominator</VAR>
+form the ratio <VAR>P</VAR> described above (the recommended values are 1 and
+4).
+
+</P>
+<P>
+If <VAR>cmp</VAR> is 0, then <CODE>bcmp</CODE> (or <CODE>memcmp</CODE>, whichever is
+available) is used (along with <VAR>eltsize</VAR>).
+
+</P>
+<P>
+<U>Macro:</U> int <B>sklist_Length</B> <I>(struct sklist *<VAR>skl</VAR>)</I><P>
+<A NAME="IDX116"></A>
+Yields the number of elements in <VAR>skl</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> int <B>sklist_Empty</B> <I>(struct sklist *<VAR>skl</VAR>)</I><P>
+<A NAME="IDX117"></A>
+Yields zero if <VAR>skl</VAR> is non-empty, non-zero otherwise.
+
+</P>
+<P>
+<U>Function:</U> void * <B>sklist_Insert</B> <I>(struct sklist *<VAR>skl</VAR>, const void *<VAR>elt</VAR>)</I><P>
+<A NAME="IDX118"></A>
+Insert into <VAR>skl</VAR> the element pointed to by <VAR>elt</VAR>.  The referent
+of <VAR>elt</VAR> is copied into the skip list.  The number of bytes to copy
+was given as <VAR>eltsize</VAR> when the skip list was initialized with
+<CODE>sklist_Init</CODE>.  Returns a pointer to the new node in the skip list.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void * <B>sklist_Find</B> <I>(struct sklist *<VAR>skl</VAR>, const void *<VAR>probe</VAR>, int <VAR>record</VAR>)</I><P>
+<A NAME="IDX119"></A>
+Find in <VAR>skl</VAR> a data element which matches <VAR>probe</VAR> (according to
+the comparison function given in the call to <CODE>sklist_Init</CODE>).
+Return that element if found, or 0 if not.  The <VAR>record</VAR> parameter
+controls whether the skip list records the path to the found item.  If
+non-zero, the path will be recorded internally and can be used to speed
+a subsequent <CODE>sklist_Remove</CODE> or <CODE>sklist_CleanRemove</CODE>
+operation (<I>q.v.</I>).  If <VAR>record</VAR> is zero, the path will not be
+recorded and this function will run slightly faster.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception (but only
+if <VAR>record</VAR> is non-zero).
+
+</P>
+<P>
+<U>Function:</U> void <B>sklist_Remove</B> <I>(struct sklist *<VAR>skl</VAR>, const void *<VAR>probe</VAR>)</I><P>
+<A NAME="IDX120"></A>
+Remove from <VAR>skl</VAR> the element which matches <VAR>probe</VAR> (according
+to the comparison function given in the call to <CODE>sklist_Init</CODE>).
+If <VAR>skl</VAR> contains multiple matches for <VAR>probe</VAR> only one is
+removed.  (There is no practical way to determine which matching element
+among several would be found first.)  If no matching element is found,
+this function silently does nothing.  The storage containing the
+affected element is freed, making the removed element inaccessible after
+this call; if it contains private data that needs finalizing, use
+<CODE>sklist_CleanRemove</CODE> instead.
+
+</P>
+<P>
+If <VAR>probe</VAR> is 0, then the last element found by a call to
+<CODE>sklist_Find</CODE> is removed, but only if the <VAR>record</VAR>
+parameter was non-zero in that call, and only if no other operation
+involving a skip list search has intervened.  (That includes
+<CODE>sklist_Insert</CODE>, <CODE>sklist_Remove</CODE>,
+<CODE>sklist_CleanRemove</CODE>, and <CODE>sklist_Find</CODE>.)  Note that a
+call to such a function on <EM>any</EM> skip list invalidates the
+"recorded" information for <EM>all</EM> skip lists.  Note that this
+common idiom is fine:
+
+</P>
+
+<PRE>
+if (sklist_Find(skl, probe, 1)) {
+    sklist_Remove(skl, 0);
+} else {
+    ...not found...
+}
+</PRE>
+
+<P>
+
+<U>Function:</U> void <B>sklist_CleanRemove</B> <I>(struct sklist *<VAR>skl</VAR>, void *<VAR>probe</VAR>, void (*<VAR>final</VAR>)(void *))</I><P>
+<A NAME="IDX121"></A>
+Like <CODE>sklist_Remove(<VAR>skl</VAR>, <VAR>probe</VAR>)</CODE>, but first
+<VAR>final</VAR> is called on a pointer to the element to be removed, if one
+is found.  Presumably <VAR>final</VAR> is a destructor.
+
+</P>
+<P>
+<U>Function:</U> void * <B>sklist_LastMiss</B> <I>(struct sklist *<VAR>skl</VAR>)</I><P>
+<A NAME="IDX122"></A>
+Returns the <STRONG>last miss</STRONG> element from the previous search operation
+in <VAR>skl</VAR>.  The last miss is the element immediately "to the left"
+of an element sought in the previous search, regardless of whether that
+search succeeded.  If there is no such element in <VAR>skl</VAR>, this
+function returns 0.
+
+</P>
+<P>
+As when using <CODE>sklist_Remove(<VAR>skl</VAR>, 0)</CODE>, this function may
+only be called after a call to <CODE>sklist_Find</CODE> in which the
+<VAR>record</VAR> was non-zero, and there must have been no intervening skip
+list search operations (<CODE>sklist_Insert</CODE>,
+<CODE>sklist_Remove</CODE>, <CODE>sklist_CleanRemove</CODE>, and
+<CODE>sklist_Find</CODE>).  Note that a call to such a function on
+<EM>any</EM> skip list invalidates the "recorded" information for
+<EM>all</EM> skip lists.
+
+</P>
+<P>
+<U>Function:</U> void * <B>sklist_First</B> <I>(struct sklist *<VAR>skl</VAR>)</I><P>
+<A NAME="IDX123"></A>
+Returns the first element of <VAR>skl</VAR>, or 0 if <VAR>skl</VAR> is empty.
+
+</P>
+<P>
+<U>Function:</U> void * <B>sklist_Next</B> <I>(struct sklist *<VAR>skl</VAR>, const void *<VAR>elt</VAR>)</I><P>
+<A NAME="IDX124"></A>
+Returns the next element in <VAR>skl</VAR> after <VAR>elt</VAR> (which must be a
+non-zero pointer obtained earlier from <VAR>skl</VAR>).
+
+</P>
+<P>
+<U>Macro:</U>  <B>sklist_FOREACH</B> <I>(struct sklist *<VAR>skl</VAR>, <VAR>t</VAR>, <VAR>v</VAR>)</I><P>
+<A NAME="IDX125"></A>
+Replaces the <CODE>for (...)</CODE> at the top of a loop that iterates
+over the elements of <VAR>skl</VAR> in order; <VAR>t</VAR> is the type of an
+element in the Sklist; and <VAR>v</VAR> is the name of a variable of type
+<CODE><VAR>t</VAR> *</CODE>.  Example:
+
+</P>
+
+<PRE>
+struct foo *f;
+
+sklist_FOREACH(skl, struct foo, f) {
+    printf("bar field of next element is %s\n", f-&#62;bar);
+}
+</PRE>
+
+<P>
+The expansion of this macro computes the next element in the Sklist from
+the current element at the end of each loop iteration.  This means that
+the loop body must not remove the current element from the Sklist;
+otherwise, the "next" computation will yield garbage.
+
+</P>
+<P>
+<U>Macro:</U>  <B>sklist_FOREACH2</B> <I>(struct sklist *<VAR>skl</VAR>, <VAR>t</VAR>, <VAR>v</VAR>, <VAR>w</VAR>)</I><P>
+<A NAME="IDX126"></A>
+Like <CODE>sklist_FOREACH</CODE>, but allows the loop body to remove the
+current Sklist element.  The caller passes the name of an additional
+variable of type <CODE><VAR>t</VAR> *</CODE>, <VAR>w</VAR>.  The "next"
+computation takes place at the <EM>top</EM> of each loop and <VAR>w</VAR> holds
+a pointer to the next element.
+
+</P>
+<P>
+<U>Function:</U> void <B>sklist_Map</B> <I>(struct sklist *<VAR>skl</VAR>, void (*<VAR>fn</VAR>)(void *, void *), void *<VAR>data</VAR>)</I><P>
+<A NAME="IDX127"></A>
+For each element of <VAR>skl</VAR>, invoke <VAR>fn</VAR>, passing a pointer to the
+element and <VAR>data</VAR> as arguments.  The function <VAR>fn</VAR> should not
+alter <VAR>skl</VAR> (with respect to which elements are in it), but may
+alter the contents of individual elements.
+
+</P>
+<P>
+Elements of <VAR>skl</VAR> are traversed in order from first to last.
+
+</P>
+<P>
+<U>Function:</U> void <B>sklist_Destroy</B> <I>(struct sklist *<VAR>skl</VAR>)</I><P>
+<A NAME="IDX128"></A>
+Releases the memory associated with <VAR>skl</VAR>.  If the elements of
+<VAR>skl</VAR> have privately-allocated resources, those resources should be
+released prior to calling this function (presumably in a
+<CODE>sklist_FOREACH</CODE> loop), or <CODE>sklist_CleanDestroy</CODE>
+should be used.
+
+</P>
+<P>
+<U>Function:</U> void <B>sklist_CleanDestroy</B> <I>(struct sklist *<VAR>skl</VAR>, void (*<VAR>final</VAR>)(void *))</I><P>
+<A NAME="IDX129"></A>
+Like <CODE>sklist_Destroy(<VAR>skl</VAR>)</CODE>, but first calls <VAR>final</VAR>
+on a pointer to each element of <VAR>skl</VAR> (presumably as a destructor).
+
+</P>
+
+
+<H1><A NAME="SEC8" HREF="dynadt_toc.html#SEC8">Prqueue</A></H1>
+
+<P>
+<A NAME="IDX130"></A>
+A Prqueue is a priority queue, implemented as a <STRONG>heap</STRONG>-style binary
+tree atop a Glist.  As such, many of the same rules and caveats as in
+Glists and Dlists apply:  one data type per Prqueue; data elements are
+<EM>copied</EM> into the Prqueue's private space; and pointers into
+Prqueues can become invalid if a <CODE>prqueue_Add</CODE> causes a
+<CODE>realloc</CODE> of the Prqueue's private memory.  See section <A HREF="dynadt.html#SEC2">Glist</A>.
+
+</P>
+<P>
+<A NAME="IDX131"></A>
+<A NAME="IDX132"></A>
+When a Prqueue is set up, it is given a pointer to an int-returning
+function that orders the Prqueue's elements according to some criterion.
+The element that is "lightest" in this ordering "bubbles up" to be
+the <STRONG>head</STRONG> of the Prqueue.  Only the head of a Prqueue can be
+accessed, but it can always be found in constant time.  Adding and
+removing elements from a Prqueue are O(log <VAR>n</VAR>) operations, where
+<VAR>n</VAR> is the number of elements in in Prqueue.
+
+</P>
+<P>
+<A NAME="IDX133"></A>
+<U>Function:</U> void <B>prqueue_Init</B> <I>(struct prqueue *<VAR>p</VAR>, int (*<VAR>compare</VAR>)(void *, void *), int <VAR>eltsize</VAR>, int <VAR>growsize</VAR>)</I><P>
+<A NAME="IDX134"></A>
+Initializes the <CODE>struct prqueue</CODE> pointed to by <VAR>p</VAR>.  The
+comparison function <VAR>compare</VAR> will be used to compare pairs of
+elements when adding or removing, and should return an integer less
+than, equal to, or greater than zero depending on whether its first
+argument is to be considered heavier than, equal to, or lighter than its
+second argument.  (The element that compares <EM>lightest</EM> according
+to this function will bubble up to the head of the Prqueue.)  The size
+of an element of the Prqueue is <VAR>eltsize</VAR>, and when the Prqueue is
+full, an attempt to add another element will cause the Prqueue to be
+expanded by <VAR>growsize</VAR> uninitialized entries.
+
+</P>
+<P>
+<U>Macro:</U> int <B>prqueue_EmptyP</B> <I>(struct prqueue *<VAR>p</VAR>)</I><P>
+<A NAME="IDX135"></A>
+Yields zero if <VAR>p</VAR> is non-empty, non-zero otherwise.
+
+</P>
+<P>
+<U>Macro:</U> void * <B>prqueue_Head</B> <I>(struct prqueue *<VAR>p</VAR>)</I><P>
+<A NAME="IDX136"></A>
+Yields a pointer to the top element of <VAR>p</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>prqueue_Add</B> <I>(struct prqueue *<VAR>p</VAR>, void *<VAR>elt</VAR>)</I><P>
+<A NAME="IDX137"></A>
+Adds to <VAR>p</VAR> the element pointed to by <VAR>elt</VAR>.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void <B>prqueue_Remove</B> <I>(struct prqueue *<VAR>p</VAR>)</I><P>
+<A NAME="IDX138"></A>
+Removes the head element from <VAR>p</VAR>.  The next lightest element
+(according to the comparison <VAR>compare</VAR> provided to
+<CODE>prqueue_Init</CODE>) becomes the new head of the Prqueue.
+
+</P>
+<P>
+<U>Function:</U> void <B>prqueue_Destroy</B> <I>(struct prqueue *<VAR>p</VAR>)</I><P>
+<A NAME="IDX139"></A>
+Releases the memory associated with <VAR>p</VAR>.  If the elements of <VAR>p</VAR>
+have privately-allocated resources (such as memory or file descriptors),
+those resources should be released (presumably by repeatedly calling
+<CODE>prqueue_Head</CODE> and <CODE>prqueue_Remove</CODE> to get at each element
+until the Prqueue is empty) prior to calling this function, or
+<CODE>prqueue_CleanDestroy</CODE> should be used.
+
+</P>
+<P>
+<U>Function:</U> void <B>prqueue_CleanDestroy</B> <I>(struct prqueue *<VAR>p</VAR>, void (*<VAR>final</VAR>)(void *))</I><P>
+<A NAME="IDX140"></A>
+Like <CODE>prqueue_Destroy(<VAR>p</VAR>)</CODE>, but first calls <VAR>final</VAR> on
+a pointer to each element of <VAR>p</VAR> (presumably as a destructor).
+
+</P>
+
+
+<H1><A NAME="SEC9" HREF="dynadt_toc.html#SEC9">Dpipe</A></H1>
+
+<P>
+<A NAME="IDX141"></A>
+<A NAME="IDX142"></A>
+A Dpipe is a buffered data pipe (a FIFO) at one "end" of which
+bytes are written and from the other "end" of which the bytes can be
+read.  Unlike a Unix interprocess pipe, reading and writing cannot occur
+in parallel, so every write must be buffered before the written data can
+be read back out.  The internal buffer of a Dpipe grows dynamically, so
+no write on a Dpipe will ever block.
+
+</P>
+<P>
+<A NAME="IDX143"></A>
+<A NAME="IDX144"></A>
+<A NAME="IDX145"></A>
+A Dpipe can have associated with it a <STRONG>reader</STRONG>, a <STRONG>writer</STRONG>,
+both, or neither.  The reader is a function which will read bytes from a
+Dpipe upon demand, emptying its internal buffer.  The writer is a
+function that will supply bytes to a Dpipe upon demand.  The reader is
+invoked by the function <CODE>dpipe_Flush</CODE> and also by
+<CODE>dpipe_Write</CODE>, <CODE>dpipe_Put</CODE>, and
+<CODE>dpipe_Putchar</CODE> if <STRONG>autoflushing</STRONG> is enabled (to prevent
+the internal buffer from growing too large).  The writer is invoked by
+<CODE>dpipe_Read</CODE> and also by <CODE>dpipe_Get</CODE> and
+<CODE>dpipe_Getchar</CODE> when too few bytes are available in the buffer
+to satisfy the pending read request.
+
+</P>
+<P>
+The association of a reader or a writer with a Dpipe does not prevent
+other callers from writing to or reading from the Dpipe.
+
+</P>
+<P>
+Dpipes can be used to abstract stream-based communication, including
+between processes.  However, it is not possible for two processes to
+manipulate a Dpipe directly, due to the lack of a locking mechanism to
+prevent simultaneous accesses from clobbering the data structure.
+Instead, isolate the interprocess communication at one end of the Dpipe,
+for example by having the Dpipe's reader or writer communicate through
+an ordinary Unix pipe with a subprocess.
+
+</P>
+
+
+
+<H2><A NAME="SEC10" HREF="dynadt_toc.html#SEC10">Basic Dpipe functions</A></H2>
+
+<P>
+<A NAME="IDX146"></A>
+<U>Function:</U> void <B>dpipe_Init</B> <I>(struct dpipe *<VAR>dp</VAR>, void (*<VAR>rd</VAR>)(struct dpipe *, void *), void *<VAR>rddata</VAR>, void (*<VAR>wr</VAR>)(struct dpipe *, void *), void *<VAR>wrdata</VAR>, int <VAR>autoflush</VAR>)</I><P>
+<A NAME="IDX147"></A>
+Initializes the <CODE>struct dpipe</CODE> pointed to by <VAR>dp</VAR>.  The
+function <VAR>rd</VAR> is the Dpipe's reader, and <VAR>rddata</VAR> is its callback
+data.  The function <VAR>wr</VAR> is the Dpipe's writer, and <VAR>wrdata</VAR> is
+its callback data.  Finally, <VAR>autoflush</VAR> controls whether
+autoflushing is enabled for this Dpipe.
+
+</P>
+<P>
+When <CODE>dpipe_Read</CODE> or <CODE>dpipe_Getchar</CODE> is called on the
+Dpipe and the Dpipe's buffer is empty, then if <VAR>wr</VAR> is non-zero, it
+is invoked with <VAR>dp</VAR> as its first argument and <VAR>wrdata</VAR> as its
+second.  It is expected to write some bytes into <VAR>dp</VAR> (using
+<CODE>dpipe_Write</CODE>, <CODE>dpipe_Putchar</CODE>, or
+<CODE>dpipe_Put</CODE>) or to close it (using <CODE>dpipe_Close</CODE>).
+Unlike prior versions of the Dpipe library, writer functions are no
+longer required to perform one of these actions on every call.  Instead,
+the Dpipe code will automatically repeat calls to <VAR>wr</VAR> until one of
+the conditions is satisfied.
+
+</P>
+<P>
+When <CODE>dpipe_Read</CODE> or <CODE>dpipe_Getchar</CODE> is called on the
+Dpipe and the Dpipe's buffer is empty, and if <VAR>wr</VAR> is 0, then the
+exception <CODE>dpipe_err_NoWriter</CODE> is raised.
+
+</P>
+<P>
+When <CODE>dpipe_Flush</CODE> is called on the Dpipe and <VAR>rd</VAR> is
+non-zero, it is invoked repeatedly with <VAR>dp</VAR> as its first
+argument and <VAR>rddata</VAR> as its second, until no bytes remain in the
+Dpipe's buffer.  Each call to <VAR>rd</VAR> is expected to read one or more
+bytes out of the Dpipe.<A NAME="FOOT2" HREF="dynadt_foot.html#FOOT2">(2)</A>  See <CODE>dpipe_Flush</CODE>
+for an important recommendation concerning reader functions.
+
+</P>
+<P>
+The equivalent of a <CODE>dpipe_Flush</CODE> also occurs when writing to a
+Dpipe if <VAR>autoflush</VAR> is non-zero; in that case, the flush occurs
+each time the Dpipe's internal buffer reaches a certain fixed limit.
+(If <VAR>rd</VAR> is 0, <VAR>autoflush</VAR> is ignored.)
+
+</P>
+<P>
+<A NAME="IDX148"></A>
+The convenience type <CODE>dpipe_Callback_t</CODE>, defined as
+
+</P>
+
+<PRE>
+typedef void (*dpipe_Callback_t)(struct dpipe *,
+                                 void *);
+</PRE>
+
+<P>
+corresponds to the type of the callbacks <VAR>wr</VAR> and <VAR>rd</VAR>.
+
+</P>
+<P>
+<A NAME="IDX149"></A>
+<A NAME="IDX150"></A>
+<U>Function:</U> int <B>dpipe_Read</B> <I>(struct dpipe *<VAR>dp</VAR>, char *<VAR>buf</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX151"></A>
+Read from <VAR>dp</VAR> into <VAR>buf</VAR> at most <VAR>n</VAR> bytes.  Returns the
+actual number of bytes read, which will only be less than <VAR>n</VAR> if
+end-of-file is reached.  End-of-file is reached when all bytes written
+to the Dpipe have been read, and the Dpipe has been closed with
+<CODE>dpipe_Close</CODE>.
+
+</P>
+<P>
+If <VAR>n</VAR> is greater than the number of bytes in the Dpipe's buffer,
+necessitating a call to the Dpipe's writer, and the Dpipe has no writer,
+then no bytes are read and the exception <CODE>dpipe_err_NoWriter</CODE>
+is raised.  Note, however, that in this case, portions of <VAR>buf</VAR> may
+still have been overwritten.  This function may also raise the
+<CODE>strerror(ENOMEM)</CODE> exception (in the case that an attempt to
+read causes a writer function to be called).
+
+</P>
+<P>
+<A NAME="IDX152"></A>
+<U>Function:</U> void <B>dpipe_Write</B> <I>(struct dpipe *<VAR>dp</VAR>, const char *<VAR>buf</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX153"></A>
+Write to <VAR>dp</VAR> from <VAR>buf</VAR> exactly <VAR>n</VAR> bytes.  If autoflushing
+is enabled for the Dpipe, then the Dpipe's reader may be called every so
+often to keep the internal buffer below a certain fixed limit.
+Otherwise, all <VAR>n</VAR> bytes are buffered.  Dpipe buffering is dynamic,
+so <VAR>n</VAR> is limited only by your platform's memory capacity, or your
+good sense, whichever comes first.  Attempting to write data to a Dpipe
+on which <CODE>dpipe_Close</CODE> has been called raises the
+<CODE>dpipe_err_Closed</CODE> exception.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<A NAME="IDX154"></A>
+<U>Function:</U> int <B>dpipe_Getchar</B> <I>(struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX155"></A>
+Read and return the next character from <VAR>dp</VAR>.  If <VAR>dp</VAR> is at
+end-of-file, return the constant <CODE>dpipe_EOF</CODE>.
+
+</P>
+<P>
+This function may raise the <CODE>dpipe_err_NoWriter</CODE> exception.
+This function may also raise the <CODE>strerror(ENOMEM)</CODE> exception
+(in the case that an attempt to read causes a writer function to be
+called).
+
+</P>
+<P>
+<U>Function:</U> void <B>dpipe_Putchar</B> <I>(struct dpipe *<VAR>dp</VAR>, int <VAR>ch</VAR>)</I><P>
+<A NAME="IDX156"></A>
+Write to <VAR>dp</VAR> the single character <VAR>ch</VAR>.  It is an error to
+write data to a Dpipe on which <CODE>dpipe_Close</CODE> has been called.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void <B>dpipe_Unread</B> <I>(struct dpipe *<VAR>dp</VAR>, const char *<VAR>buf</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX157"></A>
+Pushes back onto <VAR>dp</VAR> from <VAR>buf</VAR> <VAR>n</VAR> bytes, as if they
+hadn't been read in the first place.  It is possible to unread data on a
+closed Dpipe or one that is at end-of-file.
+
+</P>
+<P>
+Note that
+
+</P>
+
+<PRE>
+dpipe_Unread(dp, "abcd", 4);
+</PRE>
+
+<P>
+is the same as
+
+</P>
+
+<PRE>
+dpipe_Unread(dp, "cd", 2);
+dpipe_Unread(dp, "ab", 2);
+</PRE>
+
+<P>
+and that the next four bytes read from the Dpipe will be <CODE>"abcd"</CODE>.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void <B>dpipe_Ungetchar</B> <I>(struct dpipe *<VAR>dp</VAR>, int <VAR>ch</VAR>)</I><P>
+<A NAME="IDX158"></A>
+Pushes back onto <VAR>dp</VAR> the single character <VAR>ch</VAR>.  It is possible
+to unread data on a closed Dpipe or one that is at end-of-file.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> int <B>dpipe_Peekchar</B> <I>(struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX159"></A>
+Read and return the next character from <VAR>dp</VAR> without removing it
+from the stream.  If <VAR>dp</VAR> is at end-of-file, return the constant
+<CODE>dpipe_EOF</CODE>.
+
+</P>
+<P>
+This function may raise the <CODE>dpipe_err_NoWriter</CODE> exception.
+This function may also raise the <CODE>strerror(ENOMEM)</CODE> exception
+(in the case that an attempt to peek ahead causes a writer function to
+be called).
+
+</P>
+<P>
+<U>Macro:</U> int <B>dpipe_Ready</B> <I>(const struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX160"></A>
+Returns the number of bytes already buffered for reading in <VAR>dp</VAR>.
+Put another way, this is the number of bytes that can be read without
+necessitating a call to the Dpipe's writer.  This is a lower bound on
+the number of bytes ready for reading; the actual number of readable
+bytes remaining in the Dpipe may be (much) higher, since a call to the
+Dpipe's writer (if it has one) may produce more data.
+
+</P>
+<P>
+<U>Function:</U> int <B>dpipe_Eof</B> <I>(struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX161"></A>
+Returns non-zero when <VAR>dp</VAR> is at end-of-file, zero otherwise.
+
+</P>
+<P>
+<STRONG>Warning.</STRONG>  This function may yield a "false negative" in some
+cases; that is, it may return 0 when <VAR>dp</VAR> really is at end-of-file.
+The ambiguous case is described under <CODE>dpipe_StrictEof</CODE>
+(<I>q.v.</I>), which is like <CODE>dpipe_Eof</CODE> but takes a different
+approach to addressing the ambiguity.  In short, the ambiguity arises
+when <VAR>dp</VAR> is empty and not yet closed.  If a writer function exists,
+it can be called to see whether <VAR>dp</VAR> is about to close, and that's
+what <CODE>dpipe_Eof</CODE> does (using <CODE>dpipe_Peekchar</CODE>).
+
+</P>
+<P>
+Since this function may force a call to the writer, this function may
+raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> int <B>dpipe_StrictEof</B> <I>(struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX162"></A>
+Returns non-zero when <VAR>dp</VAR> is at end-of-file, zero otherwise.
+
+</P>
+<P>
+<STRONG>Warning.</STRONG>  This function may raise the
+<CODE>dpipe_err_NoWriter</CODE> exception.  Here's why: A Dpipe is
+definitely at end-of-file when no bytes remain in its buffer and when
+its internal "closed" flag is set (by a prior call to
+<CODE>dpipe_Close</CODE>).  Similarly, a Dpipe is definitely <EM>not</EM> at
+end-of-file when any bytes remain in its buffer.  But suppose its buffer
+is empty and the "closed" flag isn't set; is the Dpipe at end-of-file
+or not?  If the Dpipe has a writer function, the next call to it might
+close the Dpipe without adding any more bytes; in that case, the answer
+is "yes," the Dpipe is at end-of-file.  But the writer might also
+supply some bytes, in which case the answer is "no," and there's no
+way to tell until a call to the writer has been forced.  Now suppose
+that the buffer is empty <EM>and</EM> the "closed" flag isn't set
+<EM>and</EM> the Dpipe has no writer function: is the Dpipe at
+end-of-file?  (In this case, <CODE>dpipe_Eof</CODE> simply says "no" and
+risks a false negative.)  There is literally no way for
+<CODE>dpipe_StrictEof</CODE> to know; so by raising an exception,
+<CODE>dpipe_StrictEof</CODE> effectively says, "I don't know, do you?"
+Note that this exception can never be raised when <VAR>dp</VAR> has a writer
+function.
+
+</P>
+<P>
+Since this function forces a call to the writer (in the case described
+above) using <CODE>dpipe_Peekchar</CODE>, this function may also raise the
+<CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<A NAME="IDX163"></A>
+<U>Function:</U> void <B>dpipe_Flush</B> <I>(struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX164"></A>
+Flush <VAR>dp</VAR>.  Repeatedly calls the Dpipe's reader until no bytes
+remain in the Dpipe's internal buffer.  If the Dpipe has no reader, raises
+the exception <CODE>dpipe_err_NoReader</CODE>.  It is possible to flush a
+Dpipe that has been closed.
+
+</P>
+<P>
+When a Dpipe has both a reader and a writer, calling
+<CODE>dpipe_Flush</CODE> will call the reader which might wind up invoking
+the writer as well (via <CODE>dpipe_Read</CODE>, <CODE>dpipe_Get</CODE>, or
+<CODE>dpipe_Getchar</CODE>).  Since the goal of <CODE>dpipe_Flush</CODE> is
+to empty the Dpipe's buffer, it is undesirable for the reader to attempt
+to read so many bytes that the writer is invoked, which will simply
+place more bytes in the Dpipe's buffer.  For that reason, the reader
+might want to limit itself to reading no more than
+<CODE>dpipe_Ready(<VAR>dp</VAR>)</CODE> bytes; but it must read at least one
+byte (unless <VAR>dp</VAR> is at end of file [which sometimes can't be known,
+see <CODE>dpipe_Eof</CODE>]), and <CODE>dpipe_Ready</CODE> could return 0.
+The consequence of reading more than <CODE>dpipe_Ready</CODE> bytes
+(forcing a call to the writer) is simply that the size of the internal
+buffer will fluctuate before emptying.
+
+</P>
+<P>
+Note that Dpipes contain a preventive mechanism without which
+<CODE>dpipe_Flush</CODE> could invoke the reader, which could invoke the
+writer, which could (if autoflushing is enabled) invoke
+<CODE>dpipe_Flush</CODE> and the reader recursively.  The mechanism simply
+makes <CODE>dpipe_Flush</CODE> a no-op any time a read is in progress.
+
+</P>
+<P>
+<U>Function:</U> void <B>dpipe_Pump</B> <I>(struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX165"></A>
+Pump all the data through <VAR>dp</VAR>.  This function is only for Dpipes
+that have both a reader and a writer function.  It works by repeatedly
+calling <CODE>dpipe_Get</CODE> (to get data from the writer function),
+then <CODE>dpipe_Unget</CODE> (to put the newly-read data back into the
+Dpipe), then <CODE>dpipe_Flush</CODE> (to send the data to the reader
+function).  This cycle repeats until end-of-file is reached on the
+Dpipe.
+
+</P>
+<P>
+This function may raise the <CODE>dpipe_err_NoWriter</CODE> or
+<CODE>dpipe_err_NoReader</CODE> exceptions if called on a Dpipe without
+both a reader and a writer function.  This function may also raise the
+<CODE>strerror(ENOMEM)</CODE> exceptionor.
+
+</P>
+<P>
+<U>Function:</U> void <B>dpipe_Close</B> <I>(struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX166"></A>
+Close <VAR>dp</VAR>.  Called to indicate that the writer has no more data to
+write to the Dpipe.  When the reader has exhausted the reading buffer
+after a Dpipe has been closed, the writer is not called to add data to
+the Dpipe; instead, the Dpipe is said to be at end-of-file.
+
+</P>
+<P>
+If autoflush is enabled for <VAR>dp</VAR> and <VAR>dp</VAR> has a reader function,
+then <CODE>dpipe_Close</CODE> flushes <VAR>dp</VAR> via a call to
+<CODE>dpipe_Flush</CODE>.
+
+</P>
+<P>
+<U>Macro:</U> void * <B>dpipe_wrdata</B> <I>(struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX167"></A>
+Yields the callback data for <VAR>dp</VAR>'s writer function (e.g., to
+finalize it prior to a <CODE>dpipe_Destroy</CODE>), which was specified in
+<CODE>dpipe_Init</CODE>.
+
+</P>
+<P>
+<U>Macro:</U> void * <B>dpipe_rddata</B> <I>(struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX168"></A>
+Yields the callback data for <VAR>dp</VAR>'s reader function (e.g., to
+finalize it prior to a <CODE>dpipe_Destroy</CODE>), which was specified in
+<CODE>dpipe_Init</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>dpipe_Destroy</B> <I>(struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX169"></A>
+Releases the memory associated with <VAR>dp</VAR>.  It is not necessary to
+close <VAR>dp</VAR> before destroying it.
+
+</P>
+
+
+<H2><A NAME="SEC11" HREF="dynadt_toc.html#SEC11">Dpipe block operations</A></H2>
+
+<P>
+<A NAME="IDX170"></A>
+When writing normally to a Dpipe, data is copied from the caller's
+buffer into the Dpipe's internal storage.  Internally, the Dpipe places
+the copied data into a block of memory allocated by <CODE>malloc</CODE>.  It
+can be much more efficient if the caller is able to <STRONG>donate</STRONG> such a
+block containing the data to be written.  Donating a block means the
+caller relinquishes control over the buffer containing the data to be
+written; that buffer must have been created with <CODE>malloc</CODE>.  The
+Dpipe then uses that block directly, with the data already in it, as its
+internal storage rather than create more storage of its own, then have
+to copy the data into it.
+
+</P>
+<P>
+When reading from a Dpipe, a similar optimization is available.  If the
+caller is able to accept a pointer to a Dpipe-internal <CODE>malloc</CODE>
+block (whose size cannot be known in advance), there is no need for
+copying data out of the Dpipe, then destroying the block with
+<CODE>free</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>dpipe_Put</B> <I>(struct dpipe *<VAR>dp</VAR>, char *<VAR>buf</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX171"></A>
+Like <CODE>dpipe_Write</CODE>, but avoids copying by linking <VAR>buf</VAR>
+directly into the internal storage of <VAR>dp</VAR>.  The buffer <VAR>buf</VAR>
+must be a <CODE>malloc</CODE>-allocated block of at least <VAR>n</VAR> bytes, and
+<VAR>n</VAR> must be at least 1.  The caller relinquishes ownership of
+<VAR>buf</VAR> and must perform no further operations with it (including
+<CODE>free</CODE>---the Dpipe will take care of disposing of the space at the
+proper time).
+
+</P>
+<P>
+Like <CODE>dpipe_Write</CODE>, if autoflushing is enabled for <VAR>dp</VAR>,
+then the Dpipe's reader may be called via <CODE>dpipe_Flush</CODE>; also,
+this function can raise the <CODE>dpipe_err_Closed</CODE> and
+<CODE>strerror(ENOMEM)</CODE> exceptions.
+
+</P>
+<P>
+<U>Function:</U> int <B>dpipe_Get</B> <I>(struct dpipe *<VAR>dp</VAR>, char **<VAR>bufp</VAR>)</I><P>
+<A NAME="IDX172"></A>
+Like <CODE>dpipe_Read</CODE>, but assigns to <CODE>*<VAR>bufp</VAR></CODE> the
+address of a <CODE>malloc</CODE>-allocated block containing one or more bytes
+from <VAR>dp</VAR>'s internal storage.  Return value is the number of bytes
+contained in <CODE>*<VAR>bufp</VAR></CODE>.  If <VAR>dp</VAR> is at end-of-file,
+0 is returned and <CODE>*<VAR>bufp</VAR></CODE> will also be 0.  If <VAR>dp</VAR>'s
+internal buffer is empty but it has not yet been closed with
+<CODE>dpipe_Close</CODE>, then the writer is called to supply one or more
+bytes, but if <VAR>dp</VAR> has no writer, then the exception
+<CODE>dpipe_err_NoWriter</CODE> is raised.
+
+</P>
+<P>
+The Dpipe relinquishes its ownership of the <CODE>malloc</CODE> block it
+returns, meaning, among other things, that the caller must be prepared
+to dispose of it at some point using <CODE>free</CODE> (or donate it to a
+future <CODE>dpipe_Put</CODE>, or possibly <CODE>dynstr_InitFrom</CODE>
+[see section <A HREF="dynadt.html#SEC4">Dynstr</A>]).
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception (in
+the case that an attempt to read causes a writer function to be called).
+
+</P>
+<P>
+<U>Function:</U> void <B>dpipe_Unget</B> <I>(struct dpipe *<VAR>dp</VAR>, char *<VAR>buf</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX173"></A>
+Like <CODE>dpipe_Unread</CODE>, but <VAR>buf</VAR> must be a <CODE>malloc</CODE>
+block of at least <VAR>n</VAR> bytes which the caller relinquishes.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+
+
+<H2><A NAME="SEC12" HREF="dynadt_toc.html#SEC12">Dpipelines</A></H2>
+
+<P>
+<A NAME="IDX174"></A>
+<A NAME="IDX175"></A>
+This section discusses <STRONG>Dpipelines</STRONG>, a convenience facility using
+Dpipes.  A Dpipeline is a sequence of Dpipes, each feeding its output
+into the next one's input, via a <STRONG>filter</STRONG> function.  The filter
+functions in a Dpipeline are called on demand.  Each time one is
+invoked, it is required to read at least one byte from its source Dpipe
+<EM>or</EM> write at least one byte to its destination Dpipe <EM>or</EM>
+close its destination Dpipe.
+
+</P>
+<P>
+<A NAME="IDX176"></A>
+<A NAME="IDX177"></A>
+Every non-empty Dpipeline has an ordinary Dpipe at its source, or
+<STRONG>writing end</STRONG>, and an ordinary Dpipe at its destination, or
+<STRONG>reading end</STRONG>.  Callers are free to obtain handles to these Dpipes
+(via <CODE>dpipeline_wrEnd</CODE> and <CODE>dpipeline_rdEnd</CODE>) and use them in
+an ordinary way.<A NAME="FOOT3" HREF="dynadt_foot.html#FOOT3">(3)</A>
+
+</P>
+<P>
+<A NAME="IDX178"></A>
+<U>Function:</U> void <B>dpipeline_Init</B> <I>(struct dpipeline *<VAR>dpl</VAR>, void (*<VAR>rd</VAR>)(struct dpipe *, void *), void *<VAR>rddata</VAR>, void (*<VAR>wr</VAR>)(struct dpipe *, void *), void *<VAR>wrdata</VAR>)</I><P>
+<A NAME="IDX179"></A>
+Initializes the Dpipeline pointed to by <VAR>dpl</VAR>.  The reader function
+for the rightmost Dpipe is <VAR>rd</VAR>, and its callback data is
+<VAR>rddata</VAR>.  The writer function for the leftmost Dpipe is <VAR>wr</VAR>,
+and its callback data is <VAR>wrdata</VAR>.  Each of <VAR>rd</VAR> and <VAR>wr</VAR>
+may be 0.  If <VAR>rd</VAR> is non-zero, autoflush is enabled for all Dpipes
+in the Dpipeline.
+
+</P>
+<P>
+A newly-initialized Dpipeline is empty and contains no filters, no
+reading end, and no writing end.
+
+</P>
+<P>
+<A NAME="IDX180"></A>
+<U>Function:</U> void <B>dpipeline_Prepend</B> <I>(struct dpipeline *<VAR>dpl</VAR>, void (*<VAR>filter</VAR>)(struct dpipe *, struct dpipe *, void *), void *<VAR>filterdata</VAR>, void (*<VAR>finalize</VAR>)(dpipeline_Filter_t, void *))</I><P>
+<A NAME="IDX181"></A>
+Prepend a filter to <VAR>dpl</VAR>.  The new filter function is <VAR>filter</VAR>
+which, when invoked, is passed a source Dpipe, a destination Dpipe, and
+<VAR>filterdata</VAR>.  The function <VAR>finalize</VAR>, if non-zero, is invoked
+during <CODE>dpipeline_Destroy</CODE> and is passed <VAR>filter</VAR> and
+<VAR>filterdata</VAR> (for cleanup, if necessary).  There must not be a
+"foreign" Dpipe prepended to <VAR>dpl</VAR> (see
+<CODE>dpipeline_PrependDpipe</CODE>, below); if there is, the exception
+<CODE>dpipe_err_Pipeline</CODE> is raised.
+
+</P>
+<P>
+The source Dpipe is newly created and becomes the writing end of the
+Dpipeline; its writer is <VAR>wr</VAR> as passed to <CODE>dpipeline_Init</CODE>
+(with <VAR>wrdata</VAR> as its callback data).  The destination Dpipe is the
+former writing end of the Dpipeline, or is newly created (and becomes
+the reading end of the Dpipeline, with <VAR>rd</VAR> and <VAR>rddata</VAR>, as
+passed to <CODE>dpipeline_Init</CODE>, as its reader and callback data) if the
+Dpipeline was empty.
+
+</P>
+<P>
+<A NAME="IDX182"></A>
+The convenience type <CODE>dpipeline_Filter_t</CODE>, defined as
+
+</P>
+
+<PRE>
+typedef void (*dpipeline_Filter_t)(struct dpipe *,
+                                   struct dpipe *,
+                                   void *);
+</PRE>
+
+<P>
+corresponds to the type of the filter function <VAR>filter</VAR>.
+
+</P>
+<P>
+<A NAME="IDX183"></A>
+The convenience type <CODE>dpipeline_Finalize_t</CODE>, defined as
+
+</P>
+
+<PRE>
+typedef void (*dpipeline_Finalize_t)(dpipeline_Filter_t,
+                                     void *);
+</PRE>
+
+<P>
+corresponds to the type of the finalizing function <VAR>finalize</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>dpipeline_Append</B> <I>(struct dpipeline *<VAR>dpl</VAR>, void (*<VAR>filter</VAR>)(struct dpipe *, struct dpipe *, void *), void *<VAR>filterdata</VAR>, void (*<VAR>finalize</VAR>)(dpipeline_Filter_t, void *))</I><P>
+<A NAME="IDX184"></A>
+Append a filter to <VAR>dpl</VAR>.  The new filter function is <VAR>filter</VAR>
+which, when invoked, is passed a source Dpipe, a destination Dpipe, and
+<VAR>filterdata</VAR>.  The function <VAR>finalize</VAR>, if non-zero, is invoked
+during <CODE>dpipeline_Destroy</CODE> and is passed <VAR>filter</VAR> and
+<VAR>filterdata</VAR> (for cleanup, if necessary).  There must not be a
+"foreign" Dpipe appended to <VAR>dpl</VAR> (see
+<CODE>dpipeline_AppendDpipe</CODE>, below); if there is, the exception
+<CODE>dpipe_err_Pipeline</CODE> is raised.
+
+</P>
+<P>
+The destination Dpipe is newly created and becomes the reading end of
+the Dpipeline; its reader is <VAR>rd</VAR> as passed to <CODE>dpipeline_Init</CODE>
+(with <VAR>rddata</VAR> as its callback data).  The source Dpipe is the
+former reading end of the Dpipeline, or is newly created (and becomes
+the writing end of the Dpipeline, with <VAR>wr</VAR> and <VAR>wrdata</VAR>, as
+passed to <CODE>dpipeline_Init</CODE>, as its writer and callback data) if the
+Dpipeline was empty.
+
+</P>
+<P>
+The convenience type <CODE>dpipeline_Filter_t</CODE>, defined as
+
+</P>
+
+<PRE>
+typedef void (*dpipeline_Filter_t)(struct dpipe *,
+                                   struct dpipe *,
+                                   void *);
+</PRE>
+
+<P>
+corresponds to the type of the filter function <VAR>filter</VAR>.
+
+</P>
+<P>
+The convenience type <CODE>dpipeline_Finalize_t</CODE>, defined as
+
+</P>
+
+<PRE>
+typedef void (*dpipeline_Finalize_t)(dpipeline_Filter_t, void *);
+</PRE>
+
+<P>
+corresponds to the type of the finalizing function <VAR>finalize</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> int <B>dpipeline_Length</B> <I>(struct dpipeline *<VAR>dpl</VAR>)</I><P>
+<A NAME="IDX185"></A>
+Yields the number of filters in <VAR>dpl</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>dpipeline_PrependDpipe</B> <I>(struct dpipeline *<VAR>dpl</VAR>, struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX186"></A>
+Prepend to the Dpipeline <VAR>dpl</VAR> the Dpipe <VAR>dp</VAR>, making <VAR>dp</VAR>
+the new writing end.  There must be at least one filter in <VAR>dpl</VAR>; if
+there isn't, the exception <CODE>dpipe_err_Pipeline</CODE> is raised.  If
+<VAR>dp</VAR> has a reader and reader data, they are cached and overwritten
+(to be restored to the Dpipe upon <CODE>dpipeline_UnprependDpipe</CODE> or
+<CODE>dpipeline_Destroy</CODE>).  If <VAR>dpl</VAR> has a writer, it is superseded,
+and its writer data is not used (but can still be accessed with
+<CODE>dpipeline_wrdata(<VAR>dpl</VAR>)</CODE>).  The autoflush status of <VAR>dp</VAR>
+does not change, though it will not affect the autoflush status of the
+other Dpipes in <VAR>dpl</VAR>.  While <VAR>dp</VAR> is attached to <VAR>dpl</VAR>, do
+not use <CODE>dpipe_rddata(<VAR>dp</VAR>)</CODE>, since it will contain
+pipeline-private data.
+
+</P>
+<P>
+<A NAME="IDX187"></A>
+The new writing end is termed a <STRONG>foreign Dpipe</STRONG>.  When <VAR>dpl</VAR> is
+destroyed (with <CODE>dpipeline_Destroy</CODE>), <VAR>dp</VAR> will <EM>not</EM> be
+automatically destroyed.  Note that the reader and reader data of
+<VAR>dp</VAR>, if any, are inaccessible while <VAR>dp</VAR> is attached to
+<VAR>dpl</VAR>.
+
+</P>
+<P>
+It is not possible to call <CODE>dpipeline_Prepend</CODE> on a Dpipeline to
+which a foreign Dpipe has been prepended.  The prepended Dpipe must
+remain the writing end of the Dpipeline.
+
+</P>
+<P>
+It <EM>is</EM> possible to call <CODE>dpipeline_PrependDpipe</CODE> more than
+once on a given Dpipeline.  Each call <EM>replaces</EM> the previous
+writing end with the new Dpipe.  The previous writing end has its reader
+and reader data restored, but it is not returned or saved anywhere, so
+if necessary, a pointer to it should be obtained (with
+<CODE>dpipeline_wrEnd</CODE>) prior to replacing it.  (If the writing end of a
+Dpipeline is not foreign, then the Dpipeline will manage that Dpipe
+itself.  Foreign writing ends, however, are the responsibility of the
+caller.)
+
+</P>
+<P>
+It is possible to connect two Dpipelines like this:
+
+</P>
+
+<PRE>
+dpipeline_PrependDpipe(<VAR>dpl2</VAR>, dpipeline_rdEnd(<VAR>dpl1</VAR>));
+</PRE>
+
+<P>
+which will cause <VAR>dpl1</VAR> to feed into <VAR>dpl2</VAR>.  Remember, though,
+that this causes the reader and reader data of
+<CODE>dpipeline_rdEnd(<VAR>dpl1</VAR>)</CODE> to be hidden, and that
+<CODE>dpipeline_Destroy(<VAR>dpl2</VAR>)</CODE> will not reclaim
+<CODE>dpipeline_rdEnd(<VAR>dpl1</VAR>)</CODE> (nor would you want it to).
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> void <B>dpipeline_AppendDpipe</B> <I>(struct dpipeline *<VAR>dpl</VAR>, struct dpipe *<VAR>dp</VAR>)</I><P>
+<A NAME="IDX188"></A>
+Append to the Dpipeline <VAR>dpl</VAR> the Dpipe <VAR>dp</VAR>, making <VAR>dp</VAR>
+the new reading end.  There must be at least one filter in <VAR>dpl</VAR>; if
+there isn't, the exception <CODE>dpipe_err_Pipeline</CODE> is raised.  If
+<VAR>dp</VAR> has a writer and writer data, they are cached and overwritten
+(to be restored to the Dpipe upon <CODE>dpipeline_UnappendDpipe</CODE> or
+<CODE>dpipeline_Destroy</CODE>).  If <VAR>dpl</VAR> has a reader, it is superseded,
+and its reader data is not used (but can still be accessed with
+<CODE>dpipeline_rddata(<VAR>dpl</VAR>)</CODE>).  The autoflush status of <VAR>dp</VAR>
+does not change, though it will not affect the autoflush status of the
+other Dpipes in <VAR>dpl</VAR>.  While <VAR>dp</VAR> is attached to <VAR>dpl</VAR>, do
+not use <CODE>dpipe_wrdata(<VAR>dp</VAR>)</CODE>, since it will contain
+pipeline-private data.
+
+</P>
+<P>
+The new reading end is termed a <STRONG>foreign Dpipe</STRONG>.  When <VAR>dpl</VAR> is
+destroyed (with <CODE>dpipeline_Destroy</CODE>), <VAR>dp</VAR> will <EM>not</EM> be
+automatically destroyed.  Note that the writer and writer data of
+<VAR>dp</VAR>, if any, are inaccessible while <VAR>dp</VAR> is attached to
+<VAR>dpl</VAR>.
+
+</P>
+<P>
+It is not possible to call <CODE>dpipeline_Append</CODE> on a Dpipeline to
+which a foreign Dpipe has been appended.  The appended Dpipe must remain
+the reading end of the Dpipeline.
+
+</P>
+<P>
+It <EM>is</EM> possible to call <CODE>dpipeline_AppendDpipe</CODE> more than
+once on a given Dpipeline.  Each call <EM>replaces</EM> the previous
+reading end with the new Dpipe.  The previous reading end has its writer
+and writer data restored, but it is not returned or saved anywhere, so
+if necessary, a pointer to it should be obtained (with
+<CODE>dpipeline_rdEnd</CODE>) prior to replacing it.  (If the reading end of a
+Dpipeline is not foreign, then the Dpipeline will manage that Dpipe
+itself.  Foreign reading ends, however, are the responsibility of the
+caller.)
+
+</P>
+<P>
+It is possible to connect two Dpipelines like this:
+
+</P>
+
+<PRE>
+dpipeline_AppendDpipe(<VAR>dpl1</VAR>, dpipeline_wrEnd(<VAR>dpl2</VAR>));
+</PRE>
+
+<P>
+which will cause <VAR>dpl1</VAR> to feed into <VAR>dpl2</VAR>.  Remember, though,
+that this causes the writer and writer data of
+<CODE>dpipeline_wrEnd(<VAR>dpl2</VAR>)</CODE> to be forgotten, and that
+<CODE>dpipeline_Destroy(<VAR>dpl1</VAR>)</CODE> will not reclaim
+<CODE>dpipeline_wrEnd(<VAR>dpl2</VAR>)</CODE> (nor would you want it to).
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> struct dpipe * <B>dpipeline_UnprependDpipe</B> <I>(struct dpipeline *<VAR>dpl</VAR>)</I><P>
+<A NAME="IDX189"></A>
+Removes and returns the foreign Dpipe from <VAR>dpl</VAR> that was prepended
+by <CODE>dpipeline_PrependDpipe</CODE>.  If the writing end of <VAR>dpl</VAR> is
+not foreign, the exception <CODE>dpipe_err_Pipeline</CODE> is raised.
+
+</P>
+<P>
+The foreign Dpipe has its reader and reader data restored, and the
+Dpipeline has its writer and writer data restored.  The foreign Dpipe is
+replaced (in the Dpipeline) with a new non-foreign Dpipe.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> struct dpipe * <B>dpipeline_UnappendDpipe</B> <I>(struct dpipeline *<VAR>dpl</VAR>)</I><P>
+<A NAME="IDX190"></A>
+Removes and returns the foreign Dpipe from <VAR>dpl</VAR> that was appended
+by <CODE>dpipeline_AppendDpipe</CODE>.  If the reading end of <VAR>dpl</VAR> is not
+foreign, the exception <CODE>dpipe_err_Pipeline</CODE> is raised.
+
+</P>
+<P>
+The foreign Dpipe has its writer and writer data restored, and the
+Dpipeline has its reader and reader data restored.  The foreign Dpipe is
+replaced (in the Dpipeline) with a new non-foreign Dpipe.
+
+</P>
+<P>
+This function may raise the <CODE>strerror(ENOMEM)</CODE> exception.
+
+</P>
+<P>
+<U>Function:</U> struct dpipe * <B>dpipeline_wrEnd</B> <I>(struct dpipeline *<VAR>dpl</VAR>)</I><P>
+<A NAME="IDX191"></A>
+Returns the Dpipe at the "writing end" of <VAR>dpl</VAR>.
+
+</P>
+<P>
+<U>Function:</U> struct dpipe * <B>dpipeline_rdEnd</B> <I>(struct dpipeline *<VAR>dpl</VAR>)</I><P>
+<A NAME="IDX192"></A>
+Returns the Dpipe at the "reading end" of <VAR>dpl</VAR>.
+
+</P>
+<P>
+If a Dpipeline has both a reader function and a writer function, it is
+possible to "pump" all the data through it by calling
+<CODE>dpipe_Pump(dpipeline_rdEnd(<VAR>dpl</VAR>))</CODE>.
+
+</P>
+<P>
+<U>Macro:</U> void * <B>dpipeline_wrdata</B> <I>(struct dpipeline *<VAR>dpl</VAR>)</I><P>
+<A NAME="IDX193"></A>
+Yields the writer callback data specified in <CODE>dpipeline_Init</CODE>.
+This is the same as <CODE>dpipe_wrdata(dpipeline_wrEnd(<VAR>dpl</VAR>))</CODE>,
+unless a foreign Dpipe has been prepended with
+<CODE>dpipeline_PrependDpipe</CODE>.
+
+</P>
+<P>
+<U>Macro:</U> void * <B>dpipeline_rddata</B> <I>(struct dpipeline *<VAR>dpl</VAR>)</I><P>
+<A NAME="IDX194"></A>
+Yields the reader callback data specified in <CODE>dpipeline_Init</CODE>.
+This is the same as <CODE>dpipe_rddata(dpipeline_rdEnd(<VAR>dpl</VAR>))</CODE>,
+unless a foreign Dpipe has been appended with
+<CODE>dpipeline_AppendDpipe</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>dpipeline_Destroy</B> <I>(struct dpipeline *<VAR>dpl</VAR>)</I><P>
+<A NAME="IDX195"></A>
+Releases all the memory associated with <VAR>dpl</VAR> (including destroying
+all the Dpipes it contains), except for foreign Dpipes.  If the writing
+end of <VAR>dpl</VAR> is foreign, its reader and reader data are restored.
+If the reading end of <VAR>dpl</VAR> is foreign, its writer and writer data
+are restored.
+
+</P>
+
+
+<H1><A NAME="SEC13" HREF="dynadt_toc.html#SEC13">Miscellaneous</A></H1>
+
+<P>
+<U>Function:</U> void <B>safe_bcopy</B> <I>(void *<VAR>src</VAR>, void *<VAR>dest</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX196"></A>
+Copies <VAR>n</VAR> bytes from <VAR>src</VAR> to <VAR>dest</VAR>, correctly handling
+overlapping blocks of memory.  This function should only be called when
+it is known that the blocks at <VAR>src</VAR> and <VAR>dest</VAR> can overlap (if
+<VAR>src</VAR> and <VAR>dest</VAR> point to two separate <CODE>malloc</CODE> blocks, for
+example, or if they point inside two seperately-declared structures or
+arrays, they <EM>cannot</EM> overlap, so <CODE>safe_bcopy</CODE> should not be
+used).  This function only gets defined if the native <CODE>bcopy</CODE>
+cannot handle overlaps.  If it can, then <CODE>safe_bcopy</CODE> is defined as
+a macro in terms of the native <CODE>bcopy</CODE>.  (The macro will use
+<CODE>memcpy</CODE> if <CODE>bcopy</CODE> is not available.)
+
+</P>
+
+
+<H1><A NAME="SEC14" HREF="dynadt_toc.html#SEC14">Compiling</A></H1>
+
+<P>
+To use DYNADT in your application, link with the library
+<TT>`libdynadt.a'</TT>, and also with <TT>`libexcept.a'</TT>, on which
+DYNADT depends.  Include one or more of the following header files
+depending on which subsystems of DYNADT you are using:
+<TT>`glist.h'</TT>; <TT>`dlist.h'</TT>; <TT>`dynstr.h'</TT>; <TT>`intset.h'</TT>;
+<TT>`hashtab.h'</TT>; <TT>`sklist.h'</TT>; <TT>`prqueue.h'</TT>; <TT>`dpipe.h'</TT>.
+
+</P>
+
+
+<H1><A NAME="SEC15" HREF="dynadt_toc.html#SEC15">Index</A></H1>
+
+<P>
+<H2>a</H2>
+<DIR>
+<LI><A HREF="dynadt.html#IDX145">autoflushing</A>
+</DIR>
+<H2>b</H2>
+<DIR>
+<LI><A HREF="dynadt.html#IDX93">bucket</A>
+</DIR>
+<H2>c</H2>
+<DIR>
+<LI><A HREF="dynadt.html#IDX131">comparison operator</A>
+<LI><A HREF="dynadt.html#IDX49">conventional string</A>
+</DIR>
+<H2>d</H2>
+<DIR>
+<LI><A HREF="dynadt.html#IDX141">data pipe</A>
+<LI><A HREF="dynadt.html#IDX38">dlist_Append</A>
+<LI><A HREF="dynadt.html#IDX47">dlist_CleanDestroy</A>
+<LI><A HREF="dynadt.html#IDX46">dlist_Destroy</A>
+<LI><A HREF="dynadt.html#IDX28">dlist_EmptyP</A>
+<LI><A HREF="dynadt.html#IDX43">dlist_FOREACH</A>
+<LI><A HREF="dynadt.html#IDX44">dlist_FOREACH2</A>
+<LI><A HREF="dynadt.html#IDX29">dlist_Head</A>
+<LI><A HREF="dynadt.html#IDX31">dlist_HeadElt</A>
+<LI><A HREF="dynadt.html#IDX27">dlist_Init</A>
+<LI><A HREF="dynadt.html#IDX39">dlist_InsertAfter</A>
+<LI><A HREF="dynadt.html#IDX40">dlist_InsertBefore</A>
+<LI><A HREF="dynadt.html#IDX33">dlist_Length</A>
+<LI><A HREF="dynadt.html#IDX45">dlist_Map</A>
+<LI><A HREF="dynadt.html#IDX35">dlist_Next</A>
+<LI><A HREF="dynadt.html#IDX34">dlist_Nth</A>
+<LI><A HREF="dynadt.html#IDX37">dlist_Prepend</A>
+<LI><A HREF="dynadt.html#IDX36">dlist_Prev</A>
+<LI><A HREF="dynadt.html#IDX41">dlist_Remove</A>
+<LI><A HREF="dynadt.html#IDX42">dlist_Replace</A>
+<LI><A HREF="dynadt.html#IDX30">dlist_Tail</A>
+<LI><A HREF="dynadt.html#IDX32">dlist_TailElt</A>
+<LI><A HREF="dynadt.html#IDX170">donate</A>
+<LI><A HREF="dynadt.html#IDX25">doubly-linked list</A>
+<LI><A HREF="dynadt.html#IDX148">dpipe_Callback_t</A>
+<LI><A HREF="dynadt.html#IDX166">dpipe_Close</A>
+<LI><A HREF="dynadt.html#IDX169">dpipe_Destroy</A>
+<LI><A HREF="dynadt.html#IDX154">dpipe_EOF</A>
+<LI><A HREF="dynadt.html#IDX161">dpipe_Eof</A>
+<LI><A HREF="dynadt.html#IDX152">dpipe_err_Closed</A>
+<LI><A HREF="dynadt.html#IDX163">dpipe_err_NoReader</A>
+<LI><A HREF="dynadt.html#IDX150">dpipe_err_NoWriter</A>
+<LI><A HREF="dynadt.html#IDX180">dpipe_err_Pipeline</A>
+<LI><A HREF="dynadt.html#IDX164">dpipe_Flush</A>
+<LI><A HREF="dynadt.html#IDX172">dpipe_Get</A>
+<LI><A HREF="dynadt.html#IDX155">dpipe_Getchar</A>
+<LI><A HREF="dynadt.html#IDX147">dpipe_Init</A>
+<LI><A HREF="dynadt.html#IDX159">dpipe_Peekchar</A>
+<LI><A HREF="dynadt.html#IDX165">dpipe_Pump</A>
+<LI><A HREF="dynadt.html#IDX171">dpipe_Put</A>
+<LI><A HREF="dynadt.html#IDX156">dpipe_Putchar</A>
+<LI><A HREF="dynadt.html#IDX168">dpipe_rddata</A>
+<LI><A HREF="dynadt.html#IDX151">dpipe_Read</A>
+<LI><A HREF="dynadt.html#IDX160">dpipe_Ready</A>
+<LI><A HREF="dynadt.html#IDX162">dpipe_StrictEof</A>
+<LI><A HREF="dynadt.html#IDX173">dpipe_Unget</A>
+<LI><A HREF="dynadt.html#IDX158">dpipe_Ungetchar</A>
+<LI><A HREF="dynadt.html#IDX157">dpipe_Unread</A>
+<LI><A HREF="dynadt.html#IDX167">dpipe_wrdata</A>
+<LI><A HREF="dynadt.html#IDX153">dpipe_Write</A>
+<LI><A HREF="dynadt.html#IDX174">dpipeline</A>
+<LI><A HREF="dynadt.html#IDX184">dpipeline_Append</A>
+<LI><A HREF="dynadt.html#IDX188">dpipeline_AppendDpipe</A>
+<LI><A HREF="dynadt.html#IDX195">dpipeline_Destroy</A>
+<LI><A HREF="dynadt.html#IDX182">dpipeline_Filter_t</A>
+<LI><A HREF="dynadt.html#IDX183">dpipeline_Finalize_t</A>
+<LI><A HREF="dynadt.html#IDX179">dpipeline_Init</A>
+<LI><A HREF="dynadt.html#IDX185">dpipeline_Length</A>
+<LI><A HREF="dynadt.html#IDX181">dpipeline_Prepend</A>
+<LI><A HREF="dynadt.html#IDX186">dpipeline_PrependDpipe</A>
+<LI><A HREF="dynadt.html#IDX194">dpipeline_rddata</A>
+<LI><A HREF="dynadt.html#IDX192">dpipeline_rdEnd</A>
+<LI><A HREF="dynadt.html#IDX190">dpipeline_UnappendDpipe</A>
+<LI><A HREF="dynadt.html#IDX189">dpipeline_UnprependDpipe</A>
+<LI><A HREF="dynadt.html#IDX193">dpipeline_wrdata</A>
+<LI><A HREF="dynadt.html#IDX191">dpipeline_wrEnd</A>
+<LI><A HREF="dynadt.html#IDX48">dynamic string</A>
+<LI><A HREF="dynadt.html#IDX58">dynstr_Append</A>
+<LI><A HREF="dynadt.html#IDX60">dynstr_AppendChar</A>
+<LI><A HREF="dynadt.html#IDX59">dynstr_AppendN</A>
+<LI><A HREF="dynadt.html#IDX61">dynstr_Chop</A>
+<LI><A HREF="dynadt.html#IDX62">dynstr_ChopN</A>
+<LI><A HREF="dynadt.html#IDX70">dynstr_Delete</A>
+<LI><A HREF="dynadt.html#IDX71">dynstr_Destroy</A>
+<LI><A HREF="dynadt.html#IDX54">dynstr_EmptyP</A>
+<LI><A HREF="dynadt.html#IDX72">dynstr_GiveUpStr</A>
+<LI><A HREF="dynadt.html#IDX52">dynstr_Init</A>
+<LI><A HREF="dynadt.html#IDX53">dynstr_InitFrom</A>
+<LI><A HREF="dynadt.html#IDX67">dynstr_Insert</A>
+<LI><A HREF="dynadt.html#IDX69">dynstr_InsertChar</A>
+<LI><A HREF="dynadt.html#IDX68">dynstr_InsertN</A>
+<LI><A HREF="dynadt.html#IDX63">dynstr_KeepN</A>
+<LI><A HREF="dynadt.html#IDX55">dynstr_Length</A>
+<LI><A HREF="dynadt.html#IDX64">dynstr_Replace</A>
+<LI><A HREF="dynadt.html#IDX66">dynstr_ReplaceChar</A>
+<LI><A HREF="dynadt.html#IDX65">dynstr_ReplaceN</A>
+<LI><A HREF="dynadt.html#IDX57">dynstr_Set</A>
+<LI><A HREF="dynadt.html#IDX56">dynstr_Str</A>
+</DIR>
+<H2>e</H2>
+<DIR>
+<LI><A HREF="dynadt.html#IDX149">end of file</A>
+</DIR>
+<H2>f</H2>
+<DIR>
+<LI><A HREF="dynadt.html#IDX175">filter</A>
+<LI><A HREF="dynadt.html#IDX187">foreign dpipe</A>
+</DIR>
+<H2>g</H2>
+<DIR>
+<LI><A HREF="dynadt.html#IDX9">glist_Add</A>
+<LI><A HREF="dynadt.html#IDX18">glist_Bsearch</A>
+<LI><A HREF="dynadt.html#IDX23">glist_CleanDestroy</A>
+<LI><A HREF="dynadt.html#IDX22">glist_Destroy</A>
+<LI><A HREF="dynadt.html#IDX7">glist_EmptyP</A>
+<LI><A HREF="dynadt.html#IDX20">glist_FOREACH</A>
+<LI><A HREF="dynadt.html#IDX24">glist_GiveUpList</A>
+<LI><A HREF="dynadt.html#IDX6">glist_Init</A>
+<LI><A HREF="dynadt.html#IDX10">glist_Insert</A>
+<LI><A HREF="dynadt.html#IDX11">glist_Last</A>
+<LI><A HREF="dynadt.html#IDX8">glist_Length</A>
+<LI><A HREF="dynadt.html#IDX21">glist_Map</A>
+<LI><A HREF="dynadt.html#IDX12">glist_Nth</A>
+<LI><A HREF="dynadt.html#IDX13">glist_Pop</A>
+<LI><A HREF="dynadt.html#IDX15">glist_Remove</A>
+<LI><A HREF="dynadt.html#IDX16">glist_Set</A>
+<LI><A HREF="dynadt.html#IDX17">glist_Sort</A>
+<LI><A HREF="dynadt.html#IDX19">glist_Swap</A>
+<LI><A HREF="dynadt.html#IDX14">glist_Truncate</A>
+<LI><A HREF="dynadt.html#IDX1">grow list</A>
+</DIR>
+<H2>h</H2>
+<DIR>
+<LI><A HREF="dynadt.html#IDX91">hash table</A>
+<LI><A HREF="dynadt.html#IDX94">hash value</A>
+<LI><A HREF="dynadt.html#IDX97">hashtab_Add</A>
+<LI><A HREF="dynadt.html#IDX111">hashtab_CleanDestroy</A>
+<LI><A HREF="dynadt.html#IDX110">hashtab_Destroy</A>
+<LI><A HREF="dynadt.html#IDX104">hashtab_EmptyP</A>
+<LI><A HREF="dynadt.html#IDX98">hashtab_Find</A>
+<LI><A HREF="dynadt.html#IDX96">hashtab_Init</A>
+<LI><A HREF="dynadt.html#IDX101">hashtab_InitIterator</A>
+<LI><A HREF="dynadt.html#IDX102">hashtab_Iterate</A>
+<LI><A HREF="dynadt.html#IDX105">hashtab_Length</A>
+<LI><A HREF="dynadt.html#IDX109">hashtab_Map</A>
+<LI><A HREF="dynadt.html#IDX106">hashtab_NumBuckets</A>
+<LI><A HREF="dynadt.html#IDX108">hashtab_Rehash</A>
+<LI><A HREF="dynadt.html#IDX99">hashtab_Remove</A>
+<LI><A HREF="dynadt.html#IDX107">hashtab_Stats</A>
+<LI><A HREF="dynadt.html#IDX103">hashtab_StringHash</A>
+</DIR>
+<H2>i</H2>
+<DIR>
+<LI><A HREF="dynadt.html#IDX73">integer set</A>
+<LI><A HREF="dynadt.html#IDX79">intset_Add</A>
+<LI><A HREF="dynadt.html#IDX80">intset_AddRange</A>
+<LI><A HREF="dynadt.html#IDX82">intset_Clear</A>
+<LI><A HREF="dynadt.html#IDX83">intset_Contains</A>
+<LI><A HREF="dynadt.html#IDX78">intset_Count</A>
+<LI><A HREF="dynadt.html#IDX90">intset_Destroy</A>
+<LI><A HREF="dynadt.html#IDX77">intset_EmptyP</A>
+<LI><A HREF="dynadt.html#IDX86">intset_Equal</A>
+<LI><A HREF="dynadt.html#IDX76">intset_Init</A>
+<LI><A HREF="dynadt.html#IDX88">intset_InitIterator</A>
+<LI><A HREF="dynadt.html#IDX89">intset_Iterate</A>
+<LI><A HREF="dynadt.html#IDX85">intset_Max</A>
+<LI><A HREF="dynadt.html#IDX84">intset_Min</A>
+<LI><A HREF="dynadt.html#IDX81">intset_Remove</A>
+</DIR>
+<H2>o</H2>
+<DIR>
+<LI><A HREF="dynadt.html#IDX92">open hash table</A>
+<LI><A HREF="dynadt.html#IDX132">ordering</A>
+</DIR>
+<H2>p</H2>
+<DIR>
+<LI><A HREF="dynadt.html#IDX142">pipe</A>
+<LI><A HREF="dynadt.html#IDX3">pointer relocation</A>
+<LI><A HREF="dynadt.html#IDX130">priority queue</A>
+<LI><A HREF="dynadt.html#IDX137">prqueue_Add</A>
+<LI><A HREF="dynadt.html#IDX140">prqueue_CleanDestroy</A>
+<LI><A HREF="dynadt.html#IDX139">prqueue_Destroy</A>
+<LI><A HREF="dynadt.html#IDX135">prqueue_EmptyP</A>
+<LI><A HREF="dynadt.html#IDX136">prqueue_Head</A>
+<LI><A HREF="dynadt.html#IDX134">prqueue_Init</A>
+<LI><A HREF="dynadt.html#IDX138">prqueue_Remove</A>
+</DIR>
+<H2>r</H2>
+<DIR>
+<LI><A HREF="dynadt.html#IDX144">reader</A>
+<LI><A HREF="dynadt.html#IDX176">reading end</A>
+<LI><A HREF="dynadt.html#IDX4">relocation of pointers</A>
+</DIR>
+<H2>s</H2>
+<DIR>
+<LI><A HREF="dynadt.html#IDX196">safe_bcopy</A>
+<LI><A HREF="dynadt.html#IDX74">set of integers</A>
+<LI><A HREF="dynadt.html#IDX112">skip list</A>
+<LI><A HREF="dynadt.html#IDX129">sklist_CleanDestroy</A>
+<LI><A HREF="dynadt.html#IDX121">sklist_CleanRemove</A>
+<LI><A HREF="dynadt.html#IDX128">sklist_Destroy</A>
+<LI><A HREF="dynadt.html#IDX117">sklist_Empty</A>
+<LI><A HREF="dynadt.html#IDX119">sklist_Find</A>
+<LI><A HREF="dynadt.html#IDX123">sklist_First</A>
+<LI><A HREF="dynadt.html#IDX125">sklist_FOREACH</A>
+<LI><A HREF="dynadt.html#IDX126">sklist_FOREACH2</A>
+<LI><A HREF="dynadt.html#IDX115">sklist_Init</A>
+<LI><A HREF="dynadt.html#IDX118">sklist_Insert</A>
+<LI><A HREF="dynadt.html#IDX122">sklist_LastMiss</A>
+<LI><A HREF="dynadt.html#IDX116">sklist_Length</A>
+<LI><A HREF="dynadt.html#IDX127">sklist_Map</A>
+<LI><A HREF="dynadt.html#IDX124">sklist_Next</A>
+<LI><A HREF="dynadt.html#IDX120">sklist_Remove</A>
+<LI><A HREF="dynadt.html#IDX113">Srandom</A>
+<LI><A HREF="dynadt.html#IDX50">string</A>
+<LI><A HREF="dynadt.html#IDX26">struct dlist</A>
+<LI><A HREF="dynadt.html#IDX146">struct dpipe</A>
+<LI><A HREF="dynadt.html#IDX178">struct dpipeline</A>
+<LI><A HREF="dynadt.html#IDX51">struct dynstr</A>
+<LI><A HREF="dynadt.html#IDX5">struct glist</A>
+<LI><A HREF="dynadt.html#IDX95">struct hashtab</A>
+<LI><A HREF="dynadt.html#IDX100">struct hashtab_iterator</A>
+<LI><A HREF="dynadt.html#IDX75">struct intset</A>
+<LI><A HREF="dynadt.html#IDX87">struct intset_iterator</A>
+<LI><A HREF="dynadt.html#IDX133">struct prqueue</A>
+<LI><A HREF="dynadt.html#IDX114">struct sklist</A>
+</DIR>
+<H2>v</H2>
+<DIR>
+<LI><A HREF="dynadt.html#IDX2">volatile pointer</A>
+</DIR>
+<H2>w</H2>
+<DIR>
+<LI><A HREF="dynadt.html#IDX143">writer</A>
+<LI><A HREF="dynadt.html#IDX177">writing end</A>
+</DIR>
+
+</P>
+
+</BODY>
+</HTML>

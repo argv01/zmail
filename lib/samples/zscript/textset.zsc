@@ -1,0 +1,38 @@
+# Sample Z-Script function: textset
+
+function textset () {
+#%
+#      textset varname unixcommand
+#
+# This function sets the variable indicated by varname to the output of
+# the given unixcommand.  For example:
+#
+#     textset files ls -a
+#     ask -i filename "Which file would you like?" $files
+#
+# Shortcomings:
+#
+# Quotation marks in the arguments of the unix command are handled badly,
+# because the command passes through both Z-Mail and the Unix shell.
+#
+# Single quotes in the output of unixcommand will produce errors.
+# Output of more than 1000 characters may produce errors.
+#
+# Multi-line output from the unix command is joined into a single line.
+#%
+    # There must be at least two arguments
+    if $# < 2
+	echo usage: $0 varname unixcommand
+	return -1
+    endif
+    # Extract the variable name
+    set _textset = $1
+    shift
+    # Use the shell to create a Z-Mail command that sets the variable
+    sh "TEXT=`$*`;echo set $_textset = \'"'$TEXT'"\' > /tmp/zc$$"
+    unset _textset
+    # Execute the Z-mail command just created
+    source /tmp/zc$$
+    # Remove the temporary file
+    sh rm /tmp/zc$$
+}

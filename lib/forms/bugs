@@ -1,0 +1,61 @@
+
+Contact:
+    Name:
+    Organization:
+    Email Address:
+    Phone Number:
+
+Z-Mail Version: ["zmail -version", "zmlite -version", or "version" 
+                 command within zmail]
+Operating System:
+Hardware:
+Interface used: [tty, fullscreen, Motif, Open Look, Lite]
+Additional information needed for Lite users.
+    Terminal type: [DEC, Wyse, AT&T, ...]
+    Emulation: [vt100, wyse75, ...]
+    Communications software: [Procomm, Crosstalk, ...]
+
+Automatic Acknowledgement: Yes	[Change to No to suppress acknowledgement]
+
+Bug Type:  (choose one of the following)
+    1.  Lost Data, Software Crash
+    2.  Feature Malfunction (no workaround)
+    3.  Feature Malfunction (workaround exists)
+    4.  Documentation Error
+    5.  Feature Request
+    6.  Usage/Operation Question
+
+1-Line Summary:
+
+Full Description:
+
+	<Please replace this text with as complete a description of the
+	problem as you can.  Include any details about your local system
+	that you think may be helpful to us.>
+
+How to Reproduce:
+
+	<Please replace this text with step-by-step instructions that
+	our support staff can use to duplicate the error.>
+
+Debugger stack trace (if applicable): [may be many lines]
+
+----- Delete the following lines before sending bug report -----
+
+If you have a level 1 bug (the software crashed with a core dump),
+please use adb, dbx, or gdb to provide a stack trace from the core
+file.  The bug may have occured from Motif or other system libraries
+so it is important to know where the problem originated.  Help us by
+providing as much information as you can such as how to reproduce the
+problem, etc.  If you use dbx or suspect a problem with X or Motif,
+please use the -sync command line option when running Z-Mail to assure
+that the server is synchronized with Z-Mail.  Otherwise, debugging
+results may be inconclusive.
+
+Please DO NOT send core files.  In general, a core file is not useful
+except on the machine where it was generated.
+
+A general debugging convenience is to use the "debug" command at the
+command line (from any user interface).  Debugging output can be used
+to examine what the program is doing at all times.  The environment
+variable DBFILE can be set to the filename where debugging out is sent.

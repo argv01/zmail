@@ -1,0 +1,452 @@
+<TITLE>Z-POP FAQ</TITLE>
+<HEAD><H1><A href=""><IMG align=middle SRC="../images/zncd-color.gif"></A>
+Z-POP 1.0</H1>
+<H3>Frequently Asked Questions</H3>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<hr><pre>
+Index:
+
+<dl><dd><a href="#I">I.</a> Z-POP Mail Server
+   <dl><dd><a href="#IA">A.</a> Installation
+     <dd><a href="#IA1">1.</a> How do I make Z-POP function as my POP-3 server?
+     <dd><a href="#IA2">2.</a> Why should I also set up Z-POP on tcp port 15232?</dl>
+   <dd><a href="#IB">B.</a> Trouble Shooting
+     <dl><dd><a href="#IB1">1.</a> What if the Z-POP server does not recognize my password?
+     <dd><a href="#IB2">2.</a> What is a "pop_stat" error, and how do I get around it?
+     <dd><a href="#IB3">3.</a> What is a "pop_dropcopy" error?
+     <dd><a href="#IB4">4.</a> What is a "ZHB2" error?
+     <dd><a href="#IB5">5.</a> What is a "uidl" error?
+     <dd><a href="#IB6">6.</a> What does "mime_err_Header" mean?</dl>
+<dd><a href="#II">II.</a> Advanced Issues
+   <dl><dd><a href="#IIA">A.</a> What is Mailbox Synchronization?
+   <dd><a href="#IIB">B.</a> How do I set up remote prefs and config downloading?
+   <dd><a href="#IIC">C.</a> Is there any other documentation on POP-3?
+   <dd><a href="#IID">D.</a> Where can I find out more about Z-POP?</dl></dl>
+
+<hr>
+
+<a name="I"><b>I. Z-POP Mail Server</b></a>
+
+   <a name="IA"><b>A. Installation</b></a>
+
+     <a name="IA1"><b>1. How do I make Z-POP function as my POP-3 server?</b></a>
+
+To Install Z-POP as a POP-3 Server:
+
+    * Obtain the tar file and extract the files from it.  NOTE: this
+      may not be the actual name of the zpop file.
+
+	% cd /usr/local/etc
+	% zcat zpop.tar.Z | tar xvf 
+
+    * Also, it is also important to note that Z-POP should be setgid
+      the same as the mail spool directory:
+
+	% ls -ld /usr/spool/mail
+	 drwxrwxr-x   3 root    mail       512 Sep 21 17:10 /usr/spool/mail/
+	% ls -l zpop
+	 -rwxr-xr-x   1 root     bin     24081 Sep 21 16:51 zpop
+	% chgrp mail zpop
+	% chmod 2755 zpop
+	% ls -l zpop
+	 -rwxr-sr-x   1 root    mail     24081 Sep 21 16:51 zpop
+
+    * Edit Unix system files and the zpop.config
+      configuration file.
+
+/etc/services:
+        pop-3    110/tcp
+
+/etc/inetd.conf:
+        pop-3  stream  tcp  nowait  root  /usr/local/etc/zpoplib/zpop  zpop
+
+/usr/local/etc/zpop.config:
+        trace /usr/tmp/zpop-trace
+        debug ERRORS WARNINGS
+        spool /var/mail
+        ...
+
+    * Send a HUP signal to the inetd daemon to start the
+      POP-3 service.
+
+        kill -HUP process-id
+
+Port 110 should now be configured to run Z-POP as the default POP-3 service.
+
+
+    <a name="IA2"><b>2. Why should I also set up Z-POP on tcp port 15232?</b></a>
+
+Setting up Z-POP on port 15232 will as the service 'zpop' will exhibit no
+functional difference from Z-POP installed as 'pop-3' on port 110.  However,
+it will give the sysadmin a chance to differentiate between what kinds of
+services are distribuited on each port, since Z-Mail clients request POP-3
+specific functionality on one channel and can be configured to request Z-POP
+functionality on another, separate channel.  This allows the sysadmin some
+degree of freedom in assigning services to his users.
+
+
+   <a name="IB"><b>B. Trouble Shooting</b></a>
+
+    <a name="IB1"><b>1. What if the Z-POP server does not recognize my password?</b></a>
+
+Passwords are case sensitive, and need to be used when connecting to Z-POP 
+from Z-Mail.  If you have enabled 'shadow' passwords on your system, make 
+sure that you are using the most recent build of Z-POP for that platform for 
+compatibility.  i.e.- Enabling 'shadow' passwords on an IRIX 5.3 SGI Indy is 
+not supported by the Z-POP for IRIX 4.x build.
+
+
+    <a name="IB2"><b>2. What is a "pop_stat" error, and how do I get around it?</b></a>
+
+To get around a pop_stat error, which occurs when Z-Mail for Windows and Z-POP
+use synch to create a temporart maildrop that is so big it times out a serial
+setting, we recommend bumping the value of the IOTimeoutSeconds (Serial
+Read/Write Timeout (secs) in the Z-Mail for Windows Client Setup UI)
+from 30 to 60 (or more) seconds.
+
+    <a name="IB3"><b>3. What is a "pop_dropcopy" error?</b></a>
+
+The Z-POP config file contains a number of directives that should be set by
+your site's system administrator.  In the case of a pop_dropcopy ERROR the
+SPOOL directive could be pointing to an incorrect location.  It is also
+important to note that Z-POP should be setgid the same as the mail spool
+directory:
+
+% ls -ld /var/mail
+drwxrwxr-x   3 root   mail           512 Sep 21 17:10 /var/mail/
+
+% ls -l zpop
+-rwxr-xr-x   1 root     bin        24081 Sep 21 16:51 zpop
+
+% chgrp mail zpop
+% chmod 2755 zpop
+% ls -l zpop
+-rwxr-sr-x   1 root    mail        24081 Sep 21 16:51 zpop
+
+If Z-POP or Z-Mail complains: "Maildrop lock busy!  Is another session 
+active?" then try moving the current /usr/spool/mail/.$username.pop to another 
+location (this file can also be recovered by opening it as a mail folder) so 
+that Z-POP can create a new one to work with.  When ZPOP is not active, 
+there should only be a 0 (zero) legnth dropcopy in the spool folder. Check 
+that you have the latest version of Z-POP, since some new revisions address 
+this problem.
+
+    <a name="IB4"><b>4. What is a "ZHB2" error?</b></a>
+
+This results when a user is attempting to synchronize mail between Z-Mail and
+an older version of Z-POP that does not support this feature.  To eliminate 
+this grab the newest server off of ftp.ncd.com!
+
+
+    <a name="IB5"><b>5. What is a "uidl" error?</b></a>
+
+"UIDL" is a new POP3 command described in the RFC-1725 draft specification 
+-- and currently not supported by Z-POP and Z-MAil clients.  Here's the 
+information taken directly from the spec:
+
+Simply put; some POP clients use UIDL to identify messages on the host, 
+but Z-POP doesn't do the UIDL command, so if a POP client gives it the 
+UIDL command, Z-POP will complain.
+
+    <a name="IB6"><b>6. What does "mime_err_Header" mean?</b></a>
+
+The headers of one of the messages in the spool folder contain what
+Z-POP considers to be a syntax error or a violation of RFC 822.  Later
+Z-POP patchlevels are more lenient about the headers they accept; you
+should first make sure you have the latest patchlevel of the Z-POP server
+for your platform.  If you still get this error, you can look in the
+Z-POP trace file to see which message is at fault.
+
+The offending message can then be isolated and ftp'd to the Z-Mail client
+and opened as a mail folder.
+
+
+<a name="II"><b>II. Advanced Issues</b></a>
+
+   <a name="IIA"><b>A. What is Mailbox Synchronization?</b></a>
+
+Z-Mail synch is a feature of the interaction that is possible between Z-Mail 
+for Windows 4.0 and the Z-POP mail server.  A better explanation  than space 
+allows for here is available from both:
+
+	http://www.ncd.com/Z-Code/zproducts/wp-synchronization.html
+	ftp://ftp.ncd.com/pub/z-code/supported/doc/windows/sync.doc
+
+
+   <a name="IIB"><b>B. How do I set up remote prefs and config downloading?</b></a>
+
+    The LIBRARY directive in the zpop.config file
+    specifies the directory in which zpop looks for the
+    configuration files it downloads to clients.  Within
+    this directory are subdirectories for each product which
+    uses Z-POP (currently only zmail).  Within each product
+    directory are directories for platforms on which the
+    product runs (e.g. Macintosh and PC).  The platform
+    directories may contain subdirectories for different
+    versions of the platform.
+
+    Each level of the library directory hierarchy contains a
+    file named .give, which lists the files and
+    subdirectories at that level which are included in the
+    library.  To be included in the library, files and
+    subdirectories must be listed in the .give file of the
+    directory containing them.  The .give file is a text
+    file with a single file or directory name per line.
+
+-----------------
+Download Lib Map:
+-----------------
+/usr/local/etc/zpoplib/zpop.config:
+	...
+	library /usr/local/etc/zpoplib/lib
+	library-structure PRODUCT PLATFORM VERSION
+	...
+
+/usr/local/etc/zpoplib/lib/.give:
+	zmail
+
+/usr/local/etc/zpoplib/lib/zmail/.give:
+	mac
+	windows
+
+/usr/local/etc/zpoplib/lib/zmail/windows/.give:
+	3.2.1
+	4.0.0
+
+/usr/local/etc/zpoplib/lib/zmail/windows/4.0.0/.give:
+	locale.rc
+	system.rc
+	variable
+	zmailmnu.rc
+
+    When a client connects to zpop to download
+    configuration files, it gives zpop its type, the
+    platform it is running on, and its version number.
+    zpop uses this information to find the appropriate
+    "home" directory within the library for that client.
+    The client can then download all files in its "home"
+    directory, as well as library files in its parent
+    library directories.
+
+------------------------------------------------
+Download Lib Transaction:  '/usr/tmp/zpop-trace'
+------------------------------------------------
+
+General Z-POP config info:
+
+ [14865] ZPOP 1.0 (pl 50925a) starting session from "192.82.56.186"
+ [192.82.56.186] on Mon Oct 16 16:20:12 1995.
+ [14865] Spool path: "/usr/mail"
+ [14865] Preferences path: "/tmp"
+ [14865] Library path: "/usr/local/etc/zpoplib/lib"
+ [14865] Idle timeout is 600 seconds.
+ [14865] Library structure: PRODUCT PLATFORM VERSION
+ [14865] Debug flags: ALL
+
+The AUTHORIZATION phase, where Z-POP validates the user:
+
+ [14865] Sent OK: "Welcome to ZPOP server version 1.0 (patchlevel 50925a)."
+ [14865] Received: "USER patrick"
+ [14865] Sent OK: "Password required for patrick."
+ [14865] Received: "pass ????????"
+ [14865] Sent OK: "patrick logged in"
+
+The Z-POP TRANSACTION phase, where Z-POP determines what download
+library it should look in for the client library files:
+
+ [14865] Received: "ZMOI"
+ [14865] Sent OK: "Tell me about vous."
+ [14865] Received: "product zmail"
+ [14865] Received: "version 4.0.0"
+ [14865] Received: "platform windows"
+ [14865] Received: "."
+ [14865] Sent OK: ""
+ [14865] Received: "ZHAV"
+ [14865] Download library:
+ [14865]   Node: .
+ [14865]     Node: zmail
+ [14865]       Node: windows
+ [14865]         Node: 4.0.0
+
+Next; Z-POP checks its LIBRARY revision and sequence numbers against
+those in the Z-Mail client library, to determine if the client
+should receive updated copies.  Here, they are up to date:
+
+ [14865] Sent OK: "Send file stamps."
+ [14865] Received: "³ö"
+ [14865] Received: "# -%- File-Id:attach.typ; Client-Rev:4.0.0 Seq-num:5 -%-"
+ [14865] Received: "?_"
+ [14865] Received: "# -%- File-Id:locale.rc; Client-Rev:4.0.0 Seq-num:5 -%-"
+ [14865] Received: "# -%- File-Id:system.rc; Client-Rev:4.0.0 Seq-num:5 -%-"
+ [14865] Received: "# -%- File-Id:variable; Client-Rev:4.0.0 Seq-num:5 -%-"
+ [14865] Received: "# -%- File-Id:zmailmnu.rc; Client-Rev:4.0.0 Seq-num:5 -%-"
+ [14865] Received: "?_"
+ [14865] Received: "."
+ [14865] Sent OK: "0 files (0 octets) are out of date."
+ [14865] Received: "ZGET"
+ [14865] Sent OK: "0 files (0 octets)"
+ [14865] Sent: "."
+ [14865] Received: "QUIT"
+ [14865] Sent OK: "ZPOP exiting normally at Mon Oct 16 16:20:14 1995
+
+    Since the configuration files are also stored on the
+    clients themselves, zpop will only download them to
+    the client if they are missing from the client or if
+    they have been changed on the server by the system
+    administrator.  zpop determines whether its version of
+    a particular file is newer than the version on the
+    client by comparing the client-rev and sequence numbers
+    of the files.  The client-rev and sequence number are
+    stored on the first line of each file in a special
+    format.  Files with higher client revisions and sequence
+    numbers are newer than files with lower client revisions
+    and sequence numbers.  The client revision takes
+    precedence over the sequence number, and is optional.
+    For example, the file attach.types on the server might
+    have a sequence number of 10:
+
+        # -%- File-id:attach.types; Client-rev:3.0; Seq-num:10 -%-
+
+    while a client might have a sequence number of 5:
+
+        # -%- File-id:attach.types; Client-rev:3.0; Seq-num:5 -%-
+
+    In this example, the version on the server is newer, and
+    zpop will automatically replace attach.types on the
+    client with attach.types from the server.
+
+    To propagate a modified file on the zpop server host
+    to all clients, increment the sequence number in that
+    file by 1.  The file will then automatically be
+    downloaded to all clients contacting the server.
+
+    For a file to be correctly downloaded, it must reside in
+    the appropriate library directory and be listed in that
+    directory's .give file.
+
+    NOTE: The sequence numbers of library files provided for
+    each client are reset to 1 with each client release.
+    However, library files from newer releases are always
+    considered newer than library files of previous
+    releases, so you should install the new library files
+    and set their sequence numbers to one greater than those
+    of your existing library files.
+
+
+   <a name="IIC"><b>C. Is there any other documentation on POP-3?</b></a>
+
+The latest POP-3 Request for Comments document is RFC1725, which can be 
+found at:
+
+	http://www.cis.ohio-state.edu/hypertext/information/rfc.html
+	http://www.pmg.lcs.mit.edu/rfc.html
+	http://ds.internic.net/ds/dspg1intdoc.html
+
+Also, recent Z-POP whitepapers are also availble from: 
+
+	http://www.ncd.com/Z-Code/zproducts/wpapers.html
+
+
+   <a name="IID"><b>D. Where can I find out more about Z-POP?</b></a>
+
+WWWeb searches constantly turn up new, private Z-Mail support pages, though
+I recommend highly the comp.mail.zmail newsgroup for beginning and advanced
+user community support.  
+
+Also, the newsgroups comp.mail.mime and comp.mail.zmail are archived
+at NCD and will be maintained as a public service to the electronic
+messaging community.
+
+	ftp://ftp.z-code.com/pub/usenet/comp.mail.mime
+	ftp://ftp.z-code.com/pub/usenet/comp.mail.zmail
+
+The first of these is a large collection of messages posted to
+comp.mail.mime, it has well over six thousand articles dating
+back as far as December of 1992, although there may still be some
+gaps.
+
+The second archive is a complete collection of messages posted to
+comp.mail.zmail.  This archive is much smaller, since that group is
+much younger, but it should contain every article posted to the group
+since the day it was born.
+
+New articles are merged into the existing archives daily.  Articles
+are archived three ways in three directories:
+
+    number/
+
+        This directory holds every article in the archive.  Each
+        article appears in its own sequentially-numbered file.  The
+        entire directory looks like one huge MH-format mail folder.
+        The oldest article is named "1", followed by "2", "3", and so
+        on.
+
+    month/
+
+        This directory holds one small archive for each month and year
+        of the newsgroup.  Each monthly archive is in its own
+        subdirectory, named using a pattern of "yymm".  So all
+        articles from January, 1995 would be found in the directory
+        named "month/9501/".
+
+        Within each month's subdirectory, each article appears in an
+        individual file whose name is a number.  The numbers will not
+        be strictly sequential though -- rather, they will match up
+        with the same numbers used in the "number/" directory.  So if
+        a grand total of six thousand articles had been archived by
+        the end of one month, the next month's archive will start with
+        an article named "6001".
+
+        You can also download an entire month's worth of articles at
+        once, as a tar archive.  Just add ".tar" to the end of any
+        subdirectory name, such as "month/9501.tar", and get that as
+        though it were a file.  The entire contents of that directory
+        will be streamed to you as a single tar archive.  You can also
+        use ".tar.Z" or ".tar.gz" to speed things up if you have
+        decompression tools.
+
+    subject/
+
+        This directory is also split into subdirectories, each with
+        its own small archive.  Here, articles are grouped by subject.
+        The name of each subdirectory is the same as the subjects of
+        all the articles in that directory.  Again, the individual
+        articles are named using the same numbers found in the
+        "number/" directory.
+
+        For example, if article number/23 has the subject:
+
+            MIME and Z-Mail
+
+        And if number/27 was a followup, with the subject:
+
+            Re: MIME and Z-Mail
+
+        The archiver will clean off the "Re:", and those two articles
+        will also be found as:
+
+            subject/MIME and Z-Mail/23
+            subject/MIME and Z-Mail/27
+
+        Again, you can also download an entire subject's worth of
+        articles at once, as a tar archive.  Just add ".tar",
+        ".tar.Z", or ".tar.gz" to the end of any subdirectory name,
+        and get that as though it were a file.  The entire contents of
+        that directory will be streamed to you as a single tar
+        archive.
+
+</pre>
+
+<HR>
+<address><a href="mailto:support@z-code.com">support@z-code.com</a></address><p>
+<a href="zsupport.html">
+<img src="../images/zslacker.gif"></a>
+<a href="../zcode.html">
+<img src="../images/zcode.gif"></a>
+<a href="../../welcome.html">
+<img src="../images/corp_small_icon.gif"></a><p>
+[<a href="zsupport.html">Z-Support</a>] [<a href="../zcode.html">Z-Code</a>] [<a
+ href="../../welcome.html">NCD</a>]
+<h6>COPYRIGHT 1994 Network Computing Devices , Inc.</H6>
+</BODY>

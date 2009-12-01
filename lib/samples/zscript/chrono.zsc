@@ -1,0 +1,123 @@
+# Sample Z-Script  function: chrono
+#	 	     button: Chrono
+
+function chrono() {
+#
+# Chronological sort, grouping by identical subject (message thread).
+#
+#%
+# This function groups messages by subject, sorts by date within the
+# subject, and sorts the subject groups by the first date in each
+# group.  This permits easy reading of related messages, in order.
+#%
+    if $(%t) == 0
+	return 0
+    endif
+    # Initialize the beginning and end of the range to sort.  If an
+    # argument was given, use that as the place to begin the sort.
+    # Also create a few useful command shorthands for later.
+    #
+    unmark *
+    if $?1
+	set begin = "$1"
+    else
+	set begin = 1
+    endif
+    msg_list $ | set end
+    cmd next_number 'msg_list +'
+    cmd first_number 'msg_list - ; msg_list .'
+    cmd last_number 'msg_list + ; msg_list .'
+
+    #
+    # GUI list refreshes are expensive, suppress them
+    #
+    if is_gui
+	hide *
+    endif
+
+    #
+    # Date-sort all messages from the beginning point through the end.
+    #
+    $begin - $ | sort -d | msg_list -
+
+    #
+    # Loop through the messages, threading each of them.
+    #
+    # if is_gui
+    #     task_meter -on "Threading"
+    # endif
+    echo -n "Threading "
+    while '$begin != $end' \
+	'echo -n "$begin " ; chrono_loop_body'
+    echo done
+    # if is_gui
+    #     task_meter -off "Threading done"
+    # endif
+
+    #
+    # Clean up.
+    #
+    if is_gui
+	unhide *
+    endif
+    unset begin end
+    uncmd next_number first_number last_number
+    return 0
+}
+
+function chrono_loop_body() {
+    if $status != 0
+	return $status
+    endif
+    #
+    # Find the messages with the same subject as the current message.
+    # If the current message has no subject, find all messages that
+    # reference the message ID of the current message.
+    #
+    # Mark any messages that match, including the current message.
+    #
+    if $?[%s]
+	eval -h pick -n -r $begin - $ -s %s$ | mark
+    else
+	eval -h pick -n -r $begin - $ -h references %i | mark .
+    endif
+    #
+    # Find the highest message number in this thread.
+    #
+    :m | last_number | set range
+    #
+    # Sort by priority to move the marked messages to the top.
+    #
+    if $begin != $range
+	$begin - $range | sort -p
+    endif
+    #
+    # Find the range boundaries of the set of marked messages,
+    # then unmark them.
+    #
+    :m | first_number | set first
+    :m | last_number | set last
+    unmark *
+    #
+    # If there is a range of more than one message,
+    # re-sort that range by date, and unset the vars.
+    #
+    if $first != $last
+	$first - $last | sort -d | next_number
+    endif
+    unset first last
+    #
+    # Advance the beginning point to the next message beyond those sorted.
+    #
+    next_number | set begin
+    if $begin < $range
+	$begin - $range | sort -d
+    endif
+    if is_gui
+	task_meter -check "Threading $begin ..."
+    else
+	return 0
+    endif
+}
+
+button -n Chrono chrono

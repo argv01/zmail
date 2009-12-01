@@ -1,0 +1,111 @@
+#@(#)@(#)Makefile	2.5  2.5 4/3/91
+
+SHELL = /bin/sh
+
+DONOTEDIT = DO NOT EDIT BELOW THIS LINE -- added automatically by "make depend"
+
+CSRCS = lock.c plist.c pop_dele.c pop_dropcopy.c pop_dropinfo.c \
+    pop_getcmd.c pop_init.c pop_last.c pop_list.c pop_log.c \
+    pop_lower.c pop_msg.c pop_parse.c pop_pass.c pop_quit.c pop_rset.c \
+    pop_send.c pop_stat.c pop_subcmd.c pop_updt.c pop_user.c \
+    pop_xmit.c pop_xtnd.c popper.c version.c zync_d4ip.c zync_dloads.c \
+    zync_extras.c zync_fgets.c zync_fstamp.c \
+    zync_get.c zync_have.c zync_init.c \
+    zync_mhash.c zync_moi.c zync_msgs.c \
+    zync_numlist.c zync_prefs.c zync_pshash.c \
+    zync_update.c zync_who.c zync_zdat.c zync_zfrl.c \
+    zync_zhbm.c zync_zsiz.c zync_zsmy.c zync_zsst.c zync_zsts.c
+
+OBJS = lock.o plist.o pop_dele.o pop_dropcopy.o pop_dropinfo.o \
+    pop_getcmd.o pop_init.o pop_last.o pop_list.o pop_log.o \
+    pop_lower.o pop_msg.o pop_parse.o pop_pass.o pop_quit.o pop_rset.o \
+    pop_send.o pop_stat.o pop_subcmd.o pop_updt.o pop_user.o \
+    pop_xmit.o pop_xtnd.o popper.o version.o zync_d4ip.o zync_dloads.o \
+    zync_extras.o zync_fgets.o zync_fstamp.o \
+    zync_get.o zync_have.o zync_init.o \
+    zync_mhash.o zync_moi.o zync_msgs.o \
+    zync_numlist.o zync_prefs.o zync_pshash.o \
+    zync_update.o zync_who.o zync_zdat.o zync_zfrl.o \
+    zync_zhbm.o zync_zsiz.o zync_zsmy.o zync_zsst.o zync_zsts.o
+
+LIBS = ../mstore/mfolder.o ../mstore/message.o \
+    ../mstore/ghosts.o ../mstore/mime-api.o ../general/dputil.o \
+    ../spoor/spoor.o ../general/strcase.o ../msgs/encode/base64en.o \
+    ../general/libdynadt.a ../general/libexcept.a \
+    @LIBS@
+
+#               Options are:
+#               BIND43          -	If you are using BSD 4.3 domain 
+#					name service.
+
+SENTINEL = @sentinel@
+
+CC = @CC@
+CPP = @CPP@
+
+OSTYPE = @OSTYPE@
+CFLAGS = -g -DBIND43 -I.. -I../general -I../include -D$(OSTYPE) -DNOT_ZMAIL $(LOCAL_DEFS)
+
+TARGET = zpop
+
+DISTFILES = $(TARGET)lib/$(TARGET) $(TARGET)lib/$(TARGET).config \
+    $(TARGET)lib/README $(TARGET)lib/CONFIG.TXT $(TARGET)lib/INSTALL.TXT
+
+all: $(TARGET)
+
+$(TARGET)lib:
+	-mkdir $(TARGET)lib
+
+$(TARGET)lib/prefs:
+	-mkdir $(TARGET)lib/prefs
+	chmod 0777 $(TARGET)lib/prefs
+
+$(TARGET)lib/$(TARGET): $(TARGET)
+	-rm -f $(TARGET)lib/$(TARGET)
+	(cd $(TARGET)lib; ln ../$(TARGET) $(TARGET))
+
+$(TARGET)lib/$(TARGET).config: zpop.config
+	-rm -f $(TARGET)lib/$(TARGET).config
+	(cd $(TARGET)lib; ln ../zpop.config $(TARGET).config)
+	chmod 644 $(TARGET)lib/$(TARGET).config
+
+$(TARGET)lib/README: README
+	-rm -f $(TARGET)lib/README
+	(cd $(TARGET)lib; ln ../README README)
+
+$(TARGET)lib/INSTALL.TXT: INSTALL.TXT
+	-rm -f $(TARGET)lib/INSTALL.TXT
+	(cd $(TARGET)lib; ln ../INSTALL.TXT INSTALL.TXT)
+
+$(TARGET)lib/CONFIG.TXT: CONFIG.TXT
+	-rm -f $(TARGET)lib/CONFIG.TXT
+	(cd $(TARGET)lib; ln ../CONFIG.TXT CONFIG.TXT)
+
+dist: $(TARGET)lib $(TARGET)lib/prefs $(DISTFILES)
+
+$(TARGET): $(OBJS)
+	$(SENTINEL) $(CC) -o $(TARGET) $(OBJS) $(LIBS)
+
+oneportd: oneportd.c
+	$(CC) $(CFLAGS) oneportd.c -o oneportd $(LIBS)
+
+config.h: config.h.in
+	@echo config.h is out of date, re-run config.status
+	@exit 1
+
+clean:
+	-rm -f $(TARGET)
+	-rm -f *.o *.a *~ core a.out mon.out
+	-rm -r $(TARGET)lib
+
+veryclean: clean
+	-rm -f config.h config.status
+	-rm -f Makefile
+
+depend: Makefile
+	(sed -e '/^# $(DONOTEDIT)/,$$ d' Makefile; \
+		echo '# $(DONOTEDIT)'; \
+		echo ' '; \
+		perl ../config/depend.pl \
+			-I. -I.. -I../general -I../include -I../config \
+			$(CSRCS)) > Makefile.new && mv -f Makefile.new Makefile

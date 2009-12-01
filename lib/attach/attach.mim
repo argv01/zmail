@@ -1,0 +1,91 @@
+# MIME definitions
+
+CODE	base64	"| mimencode -b |"	"| mimencode -b -u |"
+# CODE	base64-CRLF	"| mimencode -b -p |"	"| mimencode -b -p -u |"
+CODE	quoted-printable	"| mimencode -q |"	"| mimencode -q -u |"
+# XXX WARNING - THIS IS NOT A BINHEX ENCODER - THIS IS FOR TESTING PURPOSES
+CODE    x-binhex	"| mimencode -b |"	"| mimencode -b -u |"
+
+ENCODE	image/gif			base64
+ENCODE	image/jpeg			base64
+ENCODE	image/ief			base64
+ENCODE	image/g3fax			base64
+ENCODE	image/cgm			base64
+ENCODE	image/png			base64
+ENCODE	audio/basic			base64
+ENCODE	audio/32kadpcm			base64
+ENCODE	video/mpeg			base64
+ENCODE	video/quicktime			base64
+ENCODE	application/octet-stream	base64
+ENCODE	application/postscript		base64
+ENCODE	application/wordperfect5.1	base64
+ENCODE	application/macwriteii		base64
+ENCODE	application/msword		base64
+ENCODE	application/vnd.ms-excel	base64
+ENCODE	application/vnd.ms-powerpoint	base64
+ENCODE	application/vnd.ms-project	base64
+ENCODE	application/vnd.ms-works	base64
+ENCODE	text/plain			None
+ENCODE	message/rfc822			None
+ENCODE  application/applefile		base64
+ENCODE  application/mac-binhex40	x-binhex
+
+#The rest of this stuff will ultimately be placed in the mailcap file
+
+BITMAP	application/octet-stream	bitmaps/binary.xbm
+BITMAP	application/postscript		bitmaps/book.xbm
+BITMAP	image/jpeg			bitmaps/bitmap.xbm
+BITMAP	image/gif			bitmaps/bitmap.xbm
+
+BITMAP	image/x-xwd			bitmaps/bitmap.xbm
+BITMAP	audio/basic			bitmaps/sound.xbm
+BITMAP	video/mpeg			bitmaps/movie.xbm
+BITMAP	text/plain			bitmaps/page.xbm
+BITMAP	text/richtext			bitmaps/page.xbm
+BITMAP	message/rfc822			bitmaps/pager.xbm
+
+BITMAP	multipart/alternative		bitmaps/attach.xbm
+BITMAP	multipart/mixed			bitmaps/attach.xbm
+BITMAP	multipart/parallel		bitmaps/attach.xbm
+BITMAP	multipart/digest		bitmaps/pager.xbm
+BITMAP	message/partial			bitmaps/pager.xbm
+
+BITMAP  application/applefile		bitmaps/binary.xbm
+BITMAP  application/mac-binhex40	bitmaps/binary.xbm
+
+# Entry for plain files, using variables for the editor.  This entry
+# is tuned for the X11 GUI, and should differ for character modes.
+TYPE	text/plain	":page -c '%{charset}' '%s'"	":page_edit '%s'"	"plain text"
+
+TYPE	application/octet-stream	None	None	"binary file"
+
+TYPE	text/richtext	\
+	"|metamail -P -d -q -x -m zmail -b -c text/richtext 2>&1 &" \
+	None	"rich text"
+
+TYPE	message/external-body	\
+	":window_sh $zmlib/bin/showexternal '%s' %{access-type} %{name} %{site} %{directory} %{mode} %{server}"	\
+	None	"external message part"
+
+TYPE		message/partial	\
+	":window_sh $zmlib/bin/metamail -P -q -m zmail -b -c '%t\; id=%{id}\; number=%{number}\; total=%{total}' '%s' -d 2>&1 &"	\
+	None	"partial message"
+
+TYPE	multipart/alternative	\
+	":window_sh $zmlib/bin/metamail -P -q -m zmail -b -c '%t\; boundary=%{boundary}' '%s' -d 2>&1 &" \
+	None	"alternative message parts"
+
+TYPE	multipart/mixed	\
+	":window_sh $zmlib/bin/metamail -P -q -m zmail -b -c '%t\; boundary=%{boundary}' '%s' -d 2>&1 &"	\
+	None	"mixed message parts"
+
+TYPE	multipart/parallel	\
+	":window_sh $zmlib/bin/metamail -P -q -m zmail -b -c '%t\; boundary=%{boundary}' '%s' -d 2>&1 &"	\
+	None	"parallel message parts"
+
+TYPE	multipart/digest	\
+	":window_sh $zmlib/bin/metamail -P -q -m zmail -b -c '%t\; boundary=%{boundary}' '%s' -d 2>&1 &"	\
+	None	"message digest"
+
+TYPE	message/rfc822	":view_msg '%s'"	":copy '%s'"	\
+	"complete message"

@@ -1,0 +1,65 @@
+function resend() {
+#%
+#     resend [msg-list] [addresses]
+#
+# Resend (unedited) the listed messages to the addresses.
+#%
+    # Versions earlier than 2.1 do not support "mail -resend".
+    # Use equivalent backwards-compatible options just in case.
+    mail -send -forward $*
+}
+#   # Below is the Z-Script implementation.  The prompting originally
+#   # supported by function resend is now a builtin to "mail -resend".
+#
+#   shift -m			# Skip the messages specifed or selected.
+#   if $status < 0		# If the message list had an error, return.
+#	return
+#   endif
+#   set _msgs = "$output"	# Set _msgs to be result of "shift -m".
+#   if "X$_msgs" != X		# If there were messages,
+#	msg_list - $_msgs	# Set current message correctly.
+#   endif
+#   if $argc == 1		# If no other args exist, prompt for user list.
+#	ask -i userid "Forward to:"
+#	if $status == -1	# If user cancelled command, return now.
+#    return
+#	endif
+#   else
+#	set userid = "$*"	# Addresses already specified, get from args.
+#   endif
+#   mail -resend $_msgs $userid	# Forward messages to userid(s).
+#   msg_list $_msgs | unset userid _msgs	# Set $output and unset locals.
+
+function readit() {
+    type $*
+}
+function undeleteit() {
+    undelete $*
+}
+function deleteit() {
+    delete $*
+}
+function composeit() {
+    mail
+}
+function replyit() {
+    reply $*
+}
+function saveit() {
+#%
+#      saveit [msg-list]
+#%
+    ask -f _file "Saving: $*"
+    if $status == 0
+	save $* $_file
+    endif
+    unset _file
+}
+
+button Read readit
+button Delete deleteit
+button Undelete undeleteit
+button Save saveit
+button -n Compose composeit
+button Reply replyit
+button Resend resend

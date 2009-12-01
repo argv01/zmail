@@ -1,0 +1,4428 @@
+Z-mail deletes the files when the folder
+@@# This file is preprocessed by ifdef.sh.
+@@# Consult config/features.h for symbol definitions.
+# command.hlp
+# Copyright 1990-1998 NetManage, Inc.  All Rights Reserved.
+@@ifndef MAC_OS
+# NOTE:
+#
+# This file should not contain TAB characters.
+# Use spaces for all formatting of text.
+#
+# The format of an entry in this file is:
+#
+# %index entry string%
+# %other key strings%
+# text of help entry, if any
+# %%<continuation entry
+# %%
+#
+# A "continuation entry" may be a "key string" for another entry in this
+# file or a string of the form "variable>key string" where the key string
+# is to be looked up in the file named by the indicated Z-Mail variable.
+#
+# If the index entry string begins with the character `-', that entry is
+# omitted from the index.
+#
+# NOTE: Some lines in this file consist of a single space on an otherwise
+# blank line.  This is intentional, and is used when reformatting entries
+# for display in the GUI and Lite Help Index.
+
+@@endif !MAC_OS
+%About This Program%
+
+@@ifdef MEDIAMAIL
+Product Information About MediaMail
+
+@@else
+Product Information About Z-Mail 5.0
+
+@@endif
+Z-Mail and the Z logo are registered trademarks, 
+and Z-Mail Lite and MediaMail are trademarks, of NetManage, Inc.
+The trademark of ZScript is licensed from Zenographics Corporation.
+
+Copyright 1990-1998 NetManage, Inc.  All rights reserved.
+
+%%
+
+%about%
+      about
+
+The "about" command provides copyright notices and other general
+%%
+
+%?%
+      ? [command-name]
+
+The "?" command provides a list of legal commands.  Most commands
+accept -? as an option.  This gives specialized help with that
+particular command.
+
+If the optional command-name is given as an argument to "?", then help
+for that command is shown.
+%%
+
+%Addressing%
+Addresses specify the recipients of your composed message. You enter
+addresses into the To, Cc, and Bcc fields. Each
+address that you specify in one of these fields receives one copy of
+your message.
+
+The only difference between the three addressing fields is their
+presentation to the recipient:
+
+  'To' addresses are to whom the message is directed.
+
+  'Cc' addresses are 'Carbon copies.'
+
+  'Bcc' addresses are 'Blind carbon copies.' Bcc addressees
+   receive a copy of the message, but do
+   not appear in the message's headers, so no
+   other recipients can tell that the Bcc recipient
+   got a copy.  
+
+@@ifndef MAC_OS
+A mail recipient may be a user, an alias, a file, or a program.  Mail
+sent to a filename will simply be stored in the named file; mail sent
+to a program will cause that program to run with the message as its
+standard input.  
+@@else !MAC_OS   
+A mail recipient may be a user or an alias.
+@@endif !MAC_OS
+Mail sent to an alias is sent to every recipient named
+in that alias.  
+
+When more than one address is specified, the addresses given should be
+separated by commas.  The simplest addresses are just the login names
+of the local users you wish to send your message to:
+
+    martha fred jerry jane
+ 
+In these cases, Z-Mail can figure out that they are separate addresses
+and insert commas between them automatically:
+
+    martha, fred, jerry, jane
+ 
+More complex address lists must have the commas included in order for
+Z-Mail to read them correctly.
+
+Addresses for users on machines other than your local machine may also
+contain `!', `@' and `%' characters which are used to separate the
+hostnames from the user name.
+
+Domain addresses (also called Arpanet, Internet, RFC822, and "fully
+qualified" addresses) are specified as
+
+    user@host.domain
+ 
+where "domain" is usually a compound name such as "berkeley.edu" or
+"z-code.com".  This is the most common form of electronic addressing.
+
+Another form of addressing describes the UUCP (UNIX-to-UNIX CoPy) path
+used to transmit a message:
+
+    host1!host2!user
+ 
+where there may be as many hosts as necessary to route the message to
+the recipient user.  In the example above, the "user" account is on
+"host2" and that machine is connected to "host1".  Your machine should
+have a UUCP connection to "host1" in this case.  UUCP addressing is
+becoming less common, but you may still see it occasionally.
+
+UUCP and Domain addresses are sometimes mixed:
+
+    host2!user@host1.domain
+
+This tells the local system to transmit the message to host1 in the
+named domain, with the expectation that host1 will then UUCP the
+message to host2.  Delivery to "user" occurs on host2.
+
+A `%' character has the same meaning as `@', but its interpretation is
+delayed until the message has crossed the uucp connection:
+
+    host1!user%host2.domain
+ 
+The above example tells the local system to UUCP the message to host1,
+with the expectation that host1 will transmit the message to host2 in
+the named domain.  Again, delivery to "user" occurs on host2.
+
+Mixing of addresses in this way is discouraged, but it is sometimes
+required to assure delivery.  The complete syntax and ramifications of
+inter-network mailing are too complex to cover here.  More information
+can be obtained through your system manager.
+
+@@ifndef MAC_OS
+If a recipient is a filename, it must be a full pathname beginning with
+slash (/), tilde (~) (meaning the user's home directory) or plus (+)
+(meaning the user's folder directory).
+
+If a recipient is a program, is must begin with the pipe symbol
+(vertical bar, "|") and be enclosed in angle brackets:
+
+    <|program arguments ...>
+
+Note that because < and > have a special meaning to the mail system,
+programs to which mail is sent cannot use shell input and output
+redirection.  The arguments to a program also must not include comma
+(,) characters.  Commas are used by the mail system to separate one
+address from another.
+@@endif !MAC_OS
+%%
+
+%unignore%
+%%<ignore
+
+%ignore%
+      ignore [header-labels]
+      unignore header-labels
+
+When viewing a message, you can choose to "ignore" certain message
+headers that are uninteresting or that clutter up your mail-reading
+display.  Since message headers can be quite long, ignoring specific
+headers can make it easier to read messages.  It is not possible to
+give a complete listing of the headers that may appear in your
+messages, but some headers that are typically ignored are:
+
+   Content-Length      Priority     Resent-Message-Id  Status
+   Content-Type        Received     Resent-To          Via
+   Encoding-Algorithm  Resent-Cc    Return-Path
+   Errors-To           Resent-Date  Return-Receipt-To
+   Message-Id          Resent-From  Sender
+   MIME-Version
+
+Use the "ignore" command to set the message headers you would to be
+hidden when you read a message. If no header-label is given, a list of
+all headers currently being ignored is printed.
+
+The "unignore" command removes headers from the list to be ignored.
+One or more header-labels are required as "unignore" arguments; it is
+an error to use it with no arguments.
+
+You can use * as a wildcard operator in header names:
+
+    ignore *          (ignores all headers)
+    ignore Received*  (ignores headers that start with "Received")
+    ignore Resent-*   (Resent-From, Resent-To, Resent-Date, ...)
+
+You can set the variable ~#alwaysignore#~ to force normally ignored
+headers to be ignored even while saving messages, forwarding messages,
+or including messages into your compositions.
+
+The list of ignored headers is itself ignored if there are "retain"
+headers set.
+%%
+
+%unretain%
+%%<retain
+
+%retain%
+      retain [header-labels]
+      unretain header-labels
+
+When viewing a message, you can choose to view only certain message
+headers.  Since some message headers can be verbose and uninteresting
+to the casual user, specifying only those you wish to see can reduce
+the clutter in your mail-reading display and make it easier to read
+messages.
+
+To specify the headers to be shown, use their names as the arguments
+to "retain".  It is not possible to give a complete listing of the
+headers that may appear in your messages, since you cannot predict
+what custom headers the sender may have included, but some of the
+headers you may wish to retain are:
+
+      Bcc    Date    Name       Subject   X-Mailer
+      Cc     From    Reply-To   To
+
+If no header is specified with "retain", a list of all headers
+currently being retained is printed.
+
+The "unretain" command removes headers from the list to be shown.  One
+or more header names are required as "unretain" arguments.
+
+See also the ~#ignore~cmd#~ command.
+%%
+
+%unset%
+%%<set
+
+%set%
+      set [?variable]
+      set variable [= value]
+      set variable += value
+      set variable -= value
+      unset variable
+
+These commands set and clear temporary storage locations called
+~#variables#~.  Some variables have special meanings to Z-Mail, and
+setting or unsetting them affects the way Z-Mail behaves.  Other
+variables may be used to store any textual information you might like
+to save.
+
+For a list of all variables with special meanings, use:
+        ~#set~cmd#~ ?all
+For help on a particular one of these variables, use:
+        ~#set~cmd#~ ?variablename
+
+With no parameters, ~#set~cmd#~ lists all variables and their values.
+
+Some variables are called "boolean" variables, which means that they
+are interpreted as having a "true" (or "on") value when they are set,
+and a "false" (or "off") value when they are unset.  To set a boolean
+variable to "true", use:
+        ~#set~cmd#~ variable
+To set a boolean variable to "false", use:
+        ~#unset~cmd#~ variable
+
+Other variables are called "multivalued" variables, which means that
+they are interpreted as a list of keywords, separated by spaces or
+commas.  There are also "string" valued variables and "numeric"
+variables.  A "string" is any set of characters, such as "abcd" or
+"Harper's Ferry."
+
+To set a variable's value to a list of values, a string, or a number,
+use:
+
+        ~#set~cmd#~ variable = value
+
+where "value" is the list, string, or number you wish to store
+in the variable.  If you want spaces, tabs or double-quotes (")
+embedded in a value, surround the value with single quotes (').
+If you want single quotes in a value, surround it with double
+quotes.
+
+The += and -= operators add or remove a value from the list stored in
+a multivalued variable.  You must include a space before and after -=
+or +=. To add a value, use:
+
+        ~#set~cmd#~ variable += value
+
+To remove a value:
+
+        ~#set~cmd#~ variable -= value
+
+When the last value is removed, the variable will become unset.
+
+The -= operator may be used only on multivalued variables, but the +=
+operator may also be used on both multivalued and string-valued
+variables.  Using += on a string variable causes a string to be
+appended to the variable's value.  For example:
+
+        ~#set~cmd#~ name = John       # $name is "John"
+        ~#set~cmd#~ name += son       # $name is "Johnson"
+
+Note that the new string is appended directly to the existing value.
+To insert a space, use quotes:
+
+        ~#set~cmd#~ name = John       # $name is "John"
+        ~#set~cmd#~ name += " Jones"  # $name is "John Jones"
+
+The ~#unset~cmd#~ command removes a variable, changing its boolean value to
+"false" (or "off") and discarding any other value.
+%%
+
+%display%
+%Display%
+%%<read_msg
+
+%read%
+%Read%
+%%<read_msg
+
+%print%
+%Print%
+%%<read_msg
+
+%P%
+%p%
+%t%
+%T%
+%%<read_msg
+
+%type%
+%Type%
+%%<read_msg
+
+@@ifndef MAC_OS
+%top%
+%%<read_msg
+@@endif !MAC_OS
+
+%next%
+%n%
+%%<read_msg
+
+%previous%
+%%<read_msg
+
+@@ifndef VUI
+%pinup%
+%Pinup%
+%%<read_msg
+%%
+@@endif !VUI
+
+% -%
+%%<read_msg
+%%
+
+%+%
+%%<read_msg
+%%
+
+%-%
+%read_msg%
+      display  [msg-list]
+@@ifndef VUI
+      pinup    [msg-list]
+@@endif !VUI
+      print    [msg-list]
+      p        [msg-list]
+      read     [msg-list]
+      type     [msg-list]
+      t        [msg-list]
+
+@@ifndef MAC_OS
+      top      [msg-list]
+@@endif !MAC_OS
+      next     [msg-list]
+      +        [msg-list]
+      previous [msg-list]
+      -        [msg-list]
+
+You can read messages in different ways.  The command "type" displays
+the current message.  The commands "print", "read", and "display" are
+synonyms for "type".
+
+@@ifndef MAC_OS
+The command "top" displays only the first N lines of the current
+message where N is the value of the variable ~#toplines~var#~, or the
+variable ~#crt~var#~ if ~#toplines~var#~ is not set.  
+@@endif !MAC_OS
+
+The command "next" advances to the next message in the folder which
+is neither deleted nor saved and displays that, and "previous" goes
+back to read the unread message preceding the current one.
+
+The "+" and "-" commands are analagous to "next" and "previous"
+respectively, except that long messages are not passed through
+the default pager program for display.
+
+Typing message list metacharacters as commands also displays messages.
+For example, "^" displays the first message, and "$" displays the
+last.
+
+Any of these ~#commands#~ can be followed by a ~#message list#~, and the
+messages in that list will be displayed (they can also be piped to
+other commands).  The variations "Display", "Read", "Print", "P",
+"Type", and "T"  will display the complete set of message ~#headers#~ 
+(regardless of the ignored-headers list) unless overridden by the
+setting of ~#alwaysignore~var#~.
+
+@@ifndef VUI
+These commands open the ~#Message Display window#~.  The "pinup"
+command displays the message in a "pinned up" copy of the
+~#Message Display window#~.  A pinned up message remains visible until
+its folder is closed or updated or until the user dismisses the
+window.  More than one message at a time can be displayed if each is
+pinned up.
+@@endif !VUI
+%%
+
+%page%
+      page [-c charset] [file ...]
+
+This command displays the contents of the files named by its
+arguments.  
+@@ifndef MAC_OS
+In character mode, page uses the pager specified by the
+variable ~#pager~var#~, the environment variable PAGER, or Z-Mail's
+internal pager if no other pager is specified.  In GUI mode, a
+scrolled window is opened to display each file. In Lite mode, only the
+last file in the list is displayed in a pager.
+
+The -c option may be used to specify a MIME character set, if your
+system adminstrator has configured Z-Mail's app-defaults file to do
+so.
+
+Piping a message list to page is equivalent to piping to ~#read~cmd#~.
+If no file names are given and no message list is piped, page does
+nothing.
+@@endif !MAC_OS
+%%
+
+%alternates%
+%alts%
+      alternates [host-list] [!path!login] [user@host] [*[user]]
+%%<-shared-alts
+%%
+
+%-shared-alts%
+The ~#alternates~cmd#~ command tells Z-Mail that your login name at
+each of the listed hosts is really your login name.
+
+When you reply to messages, Z-Mail does not send a copy of the message
+to your login name at any of the hosts listed on the alternates list.
+Hosts may be specified either as a single host name or as a UUCP
+path, using "!" characters to separate host names.
+
+The symbol "*" in the ~#alternates~cmd#~ list matches your login name at any
+host.  For instance, if you are bobg@zyrcon.com, then "*" means "do
+not reply to bobg@andrew.cmu.edu or uunet!bobg or anyone else whose ID
+is bobg".  If the "*" is followed immediately by some name, then that
+name is used in place of your login ID.  If you have another login
+name on the local or remote host, then that login may be specified
+either as
+
+    user@host
+
+or by preceding the login name or a UUCP path to the login name by a
+"!" character, as
+
+    !host!user
+
+The leading "!" character tells Z-Mail that the path ends in a login
+name.  Without the "!", Z-Mail will append your login name.
+
+The command "alts" is equivalent to "alternates".
+
+Note that ~#alternates~cmd#~ commands are not cumulative.  Any argument
+given to an ~#alternates~cmd#~ command removes the current list and replaces
+it.  Reference the ~#alternates~var#~ variable to get the current list.
+%%
+
+%saveopts%
+%%<source
+%%
+
+%source%
+      source [file] [arguments ...]
+      saveopts [-A] [-a] [-f] [-g] [-o option] [file]
+
+The "source" command loads, and the "saveopts" command saves, all
+variable settings, options, ~#aliases#~, user-defined ~#functions#~, command
+abbreviations, ignored ~#headers#~, etc.  The file to load from or save to
+is chosen according to these rules:
+
+ 1) If a filename is given, that file is used; otherwise,
+@@ifdef MAC_OS
+ 2) If you are using the Zync enhanced-POP mail service, then
+    the settings are stored on the Zync server.
+@@else MAC_OS
+ 2) If the environment variable ZMAILRC identifies the Z-Mail
+    configuration file, that file is used; otherwise,
+ 3) The file ".zmailrc" in the user's home directory is used.
+@@endif MAC_OS
+
+When source is used and other arguments appear after the file argument,
+those arguments become the "positional parameters" $1, $2, $3, etc., as
+if the file being sourced were a user-defined Z-Script ~#function~cmd#~.  See
+the ~#function~cmd#~ command for more details.
+
+When saveopts is used, it saves only those values that have been changed
+since the system configuration file (system.zmailrc) was read.  If the
+-A argument is given, then all values are saved, including those read
+from the system configuration file.  (This was the behavior of the
+saveopts command prior to Z-Mail version 2.1.)
+
+If saveopts is used and the target file exists, confirmation is
+requested before the file is overwritten.  The -f argument causes the
+file to be overwritten without confirmation.  The -a argument causes the
+configuration values to be appended to the file, also without
+confirmation.  In all cases, the file is created if it does not exist.
+@@ifndef MAC_OS
+The -g argument saves GUI-specific settings, such as fonts and
+colors, to a file.  In Z-Mail Lite, this option causes you to be 
+prompted for a separate file in which to save the keybindings you 
+have created with ~#bindkey~cmd#~ and ~#multikey~cmd#~. 
+@@endif !MAC_OS
+Some variables' values are not saved because they hold transient
+information that may change from one Z-Mail session to the next:
+
+ ~#cmd_help~var#~ - Help file location (may be set in system.zmailrc)
+ ~#gui_help~var#~ - Help file location (may be set in system.zmailrc)
+@@ifndef MAC_OS
+ ~#cwd~var#~ - Current directory (set at the start of a session)
+ ~#hostname~var#~ - Current host name
+ ~#home~var#~ - User's home directory
+ ~#user~var#~ - User's login name
+@@else !MAC_OS
+ ~#user~var#~ - Your POP-server login name
+@@endif !MAC_OS
+
+The values of read-only variables are not saved.
+
+The "option" argument following -o controls the configuration values
+which are saved. You can restrict the saved values to one of the
+following categories, named for the commands which create them:
+
+ set - Variables
+ ~#my_hdr~cmd#~ - User-defined outgoing headers
+ alias - Mail ~#aliases#~
+ alts - Your alternate E-mail addresses
+ retain - Incoming headers to show
+ ignore - Incoming headers to hide
+ ~#cmd~cmd#~ - Command abbreviations
+ ~#filter~cmd#~ - Mail filters
+ ~#function~cmd#~ - User-defined functions
+ ~#button~cmd#~ - User-defined buttons 
+@@ifndef MAC_OS
+ ~#menu~cmd#~ - User-defined menus
+ ~#map~cmd#~ - Command-line mode key mappings
+ ~#map!~cmd#~ - Composition mode key mappings
+@@endif !MAC_OS
+
+More than one "-o option" may be used to save several categories.  For
+example:
+
+saveopts -o function -o button my_buttons
+
+The above saves all functions and buttons to the file "my_buttons".
+
+Note that "alts" are normally saved via the ~#alternates~var#~ variable.
+Saving these as a separate option is provided for compatibility with
+older versions.
+%%
+
+@@ifndef MAC_OS
+%sound%
+ sound [filename]
+ sound [-event type filename]
+ sound [-action type filename]
+ sound [-command type filename]
+ sound [-off [type] ]
+
+WARNING:  This is an undocumented (sort of) and unsupported command in
+Z-Mail.  It is only for the real hacker types.  Sound only works if you
+have sound capabilities on your machine and the version of Z-Mail you
+have supports the sound command.
+
+The sound command allows you to play sounds on your computer and
+possibly associate sounds with various different actions that can be
+taken by you or Z-Mail.
+
+Note: all "filename" arguments are 8kHz sound samples only.
+
+ sound filename  -- plays the sound in 
+                    the specified filename.
+
+ -action type: Attach sounds with various zmail actions.
+   fatal   -- all fatal errors (zmail is about to crash!)
+   warning -- all warning dialogs
+   message -- any message dialog
+   query   -- any question dialog
+   newmail -- whenever new mail arrives
+              (Note:  The variable "quiet" must omit 
+               the value "newmail" in order for a 
+               sound to play with newmail.)
+ 
+ -command type:
+   ANY command (including your own predefined functions)
+ 
+   Example:
+     sound -c delete gurgle.aiff -- sound is played 
+                                    whenever "delete" 
+                                    is executed
+@@ifndef MAC_OS
+   NOTE: "-command" *also* works for UNIX commands
+@@endif !MAC_OS
+
+ -event type   Attach sounds to user-generated events 
+   in the GUI ANY "action" defined by the toolkit in use.  
+   For Motif, this requires knowledge of the internals 
+   of the Motif toolkit.  Note that these are are toolkit 
+   actions, not X "events" (despite the name of 
+   the -event flag).
+ 
+ Examples:
+    sound -e arm soundname     -- a button is pressed
+    sound -e insert-text sound -- you insert text
+    sound -e ListKbdActivate sound
+                               -- you hit return in a list
+ 
+There are literally hundreds of actions.  Note, these are NOT
+callback routines, but Xt (X Toolkit Intrinsics) based action
+functions that are specific to either the Motif or Open Look
+widget sets.  This option will probably be generalized to include
+a less-toolkit specific set of events.  Buy the Motif Programming
+Manual from O'Reilly & Associates (in fact, buy two just in case
+you lose one) for a complete list of action routines.
+ 
+ -off type [type ...]
+   "type" would be any of those listed above.  You don't 
+   need to know whether the option was an event, action or 
+   command.  You can turn off any number of sounds in one 
+   command.
+ 
+The "sound" command loads the sound from the file and holds the data
+internally, so changes to the file are ignored after a sound is
+loaded.  To play a sound, Z-Mail talks directly to the device.
+%%
+
+@@endif !MAC_OS
+%help%
+      help [-?] [item]
+
+The "help" command displays help on a number of topics.  The format of
+a help entry varies depending on the topic.  Help for ~#commands~ui#~ usually
+begins as this entry does, with a usage summary of the command.  Words
+enclosed in square brackets [like this] represent optional arguments
+to the commands.  If a word in an argument begins with a "-"
+character, like "-?"  above, then it must be typed literally.  Other
+words, like the word "item" above, are meant only to DESIGNATE the
+appropriate argument.  You would never type "help item", for instance;
+you would replace "item" with whatever you wanted help on, as in "help
+variables" or "help path".
+%%<general
+%%
+
+%-%
+%general%
+You can view help on various topics by typing "~#help~cmd#~ [item]" in the
+command area where [item] is one of these keywords:
+
+@@ifdef MAC_OS
+    ~#addressing~ui#~    summary_fmt    msg-list
+    path          variables
+@@else MAC_OS
+    ~#addressing~ui#~    summary_fmt    msg-list
+    path          prompt        variables
+@@endif MAC_OS 
+
+You may also type "help [command]" or "? [command]" to get help on the
+particular command that you specify.  Type "?" to get a list of
+available commands.
+
+You can also get help for most commands by typing the command name with
+the argument "-?".
+
+Use "~#set~cmd#~ ?variable" to get help with specific variables.
+%%
+
+%-%
+%path%
+Whenever a filename, or "pathname," is specified, the following syntax
+is legal in addition to the normal path syntax:
+
+@@ifndef MAC_OS
+ ~         -- your home directory
+ ~user     -- the home directory of the named user
+@@endif !MAC_OS
+ %         -- your system mailbox
+              (usually /usr/spool/mail/<your-name>)
+ %user     -- the system mailbox of the named user
+ +         -- your folder directory, indicated by the
+              ~#folder~var#~ variable,
+@@ifndef MAC_OS
+               or ~/Mail
+@@endif !MAC_OS
+ +file     -- the named file in your ~#folder~var#~ directory
+ +/file    -- synonym for +file
+%%
+
+%-%
+%Message Lists%
+%msg-list%
+A "message list" refers to one or more messages.  The user specifies a
+group of messages by their numbers, according to a special syntax.
+%%<-shared-message-lists
+
+%-shared-message-lists%
+ *      All messages in the current folder.
+ ^      The first message in the current folder.
+ $      The last message in the current folder.
+ .      The current message.
+ N-M    A range of messages between N and M, inclusive.
+
+In the last case, N and M may be "*", "^", "$", ".", or numbers
+identifying specific messages.  The range must be in ascending order
+(i.e., you may use the range "3-7," but not "7-3").
+
+You can exclude messages from a list by placing a message list
+inside braces ("{" and "}").  Thus the message list "2-19 {11-14}"
+refers to messages 2 through 19 EXCEPT FOR those from 11 through 14.
+The "exclusion", or list within braces, must be preceded by a normal
+message list from which the latter numbers can be excluded.
+
+When an operation using a message list is executed, the messages in
+the list are always processed in numerical order regardless of the
+order in which the messages were specified.  In particular, the
+~#save~cmd#~ operation applied to the message list
+
+    5,2,7
+
+will cause messages 2, 5, and 7 to be saved in that order (not in the
+5, 2, 7 order).
+%%
+
+%-%
+%Header Format%
+%summary_fmt%
+The ~#summary_fmt~var#~ variable controls the display of message
+headers.  ("~#Headers~ui#~" in this context refers to the message
+summaries listed by the "~#headers~cmd#~" command.  In other contexts,
+the word "headers" refers to the separate fields in the beginning of
+mail messages, such as "To:", "Subject:", "Cc:", and so on.)  Use:
+
+      ~#set~cmd#~ ~#summary_fmt~var#~="string"
+
+to change the header display.  The string can contain the following
+special format characters, which will be replaced as described:
+
+    %a  address of the author
+    %c  number of characters (bytes) in the message
+    %d  entire date of the message
+        (see ~#date_received~var#~ variable)
+    %f  "From" header (author name and address)
+    %i  message-id (may or may not be present)
+    %l  number of lines in the message
+    %M  month name from the message date
+    %m  month number from the message date
+    %N  day of the month (number)
+    %n  name of the author
+    %s  subject of the message
+    %t  "To" header (recipients of the message)
+    %T  time of the message
+        (see ~#mil_time~var#~ variable)
+    %u  user (login) name of the author
+    %W  day of the week (Sun, Mon, etc.)
+    %Y  year of the message 
+    %y  year (last 2 digits only)
+    %Z  the time-zone (as sent by the author)
+    \n  a newline
+    \t  a tab
+
+A header width may be specified in any conversion.  Thus, "%20s"
+displays the first 20 characters of the Subject.
+
+Two special conversions may also be used:
+
+%?header? (body of specified header)
+    The header whose name is given between the question
+    marks is searched for.  If it is found, its content is
+    displayed.  Thus, "%?Return-Path?" may expand to the
+    text associated with the "Return-Path" header sent by
+    the sender of the message.
+
+%{format} (reformatted substring)
+    The substring specified by format is generated according
+    to the conversion rules given above.  Any field width
+    (given between the "%" and the opening "{") is then
+    applied to the substring.  Thus, "%8{%m/%N/%y}" displays
+    month/day/year in an 8-character-wide field.  The %{...}
+    may be nested.
+%%
+
+@@ifndef MAC_OS
+%-%
+%prompt%
+This variable controls the prompt that zmail displays.
+
+        ~#set~cmd#~ ~#prompt~var#~ = "string"
+
+The following characters may be embedded in the string, and will be
+replaced as described.
+
+    %F  full path of the current working folder
+    %f  name (path tail) of the current folder
+    %m  current message number
+    %n  number of new messages
+    %u  number of unread messages
+    %d  number of deleted messages
+    %t  total number of messages
+    %T  current time
+    %N  day of the month (number) (today)
+    %W  weekday name (today)
+    %M  month name (this month)
+    %Y  year (this year)
+    %y  year (last 2 digits only)
+    %$  introduces variable name 
+    \n  newline
+    \t  tab
+
+The special sequence %$ must be followed by the name of a variable.
+The value of that variable is inserted into the prompt at the time the
+prompt is displayed.  When setting a %$variable sequence in your
+prompt, be sure to enclose the string in single quotes ('') to prevent
+the shell from expanding the variable at that time.
+%%
+
+@@endif !MAC_OS
+%unpreserve%
+%unpre%
+%%<preserve
+
+%preserve%
+%pre%
+      preserve [msg-list]
+      unpreserve [msg-list]
+
+The "preserve" command marks messages to be held in your system
+mailbox.  Unless explicitly preserved, all mail that you read is saved
+in your main mailbox (
+@@ifndef MAC_OS
+~/mbox or 
+@@endif !MAC_OS
+the file specified by the ~#mbox~var#~
+variable) when your system folder is updated.  The "preserve" command
+does not undelete ~#delete#~d messages.  Deleted messages can only be
+preserved if they are also explicitly ~#undelete#~d.
+
+When a message is preserved, the "P" status flag appears in the header
+summary display for that message.
+
+The "unpreserve" command reverses the effect of "preserve".
+
+Setting the boolean variable ~#hold~var#~ is equivalent to
+preserving each message as you read it, except that no "P" status
+flag is set.  Instead, all messages will remain in the system mailbox
+unless they are deleted or saved elsewhere.
+%%
+
+%unmark%
+%%<mark
+
+%mark%
+      mark [-[A|B|C|D|E]] [msg-list]
+      unmark [msg-list]
+
+The "mark" command places a tag on messages that you wish to reference
+later.  If no argument or a msg-list only is given, the mark is
+temporary and is not be saved when the folder is closed or updated.
+The command "~#headers~cmd#~ -H:m" (abbreviated as ":m") can be used to
+reference all messages having this temporary mark.
+
+A specific "priority" may be assigned to messages by using one of the
+options "-A" through "-E".  The ~#sort~cmd#~ and ~#pick~cmd#~ commands can be used
+to order or select messages according to their priorities.  Message
+priorities, unlike ordinary marks, are saved across folder updates.
+
+Messages may have both a temporary mark and a priority, but may not
+have more than one priority.  The presence of a temporary mark is
+shown by a "+" character to the left of the the message status in the
+"headers" command display.  The priority letter is shown in the same
+place if the message is unmarked but prioritized.
+
+The "unmark" command removes temporary marks only.  To remove the
+priority of a message, use a "-" but do not specify a priority:
+
+    mark - [msg-list]
+
+See also the commands ~#set~cmd#~, ~#sort~cmd#~, ~#pick~cmd#~, and ~#headers~cmd#~.
+%%
+
+%priority%
+      priority [name=value ...] 
+
+The "priority" command gives a name to a certain priority level.
+The "name" will be assigned to the given "value", which must be a
+number from 1 to 30 (lower numbers are higher priority).
+%%
+
+%write%
+%w%
+%%<save
+
+%copy%
+%co%
+%%<save
+
+%save%
+%s%
+      save [-s|-S|-a|-A] [-f] -prune <cutoff> [msg-list] [filename]
+      copy [-s|-S|-a|-A] [-f] -prune <cutoff> [msg-list] [filename]
+      write [-s|-S|-a|-A] [-f] -prune <cutoff> [msg-list] [filename]
+
+Each of these commands places one or more messages in a folder or a
+file.  If no arguments are specified, the current message
+is saved to ~/mbox.
+
+"Save" saves the entire message, including ~#headers~ui#~.  The saved message
+is flagged as having been "saved."  Unless the variable
+~#keepsave~var#~ is turned on, messages flagged as "saved" are deleted
+from the system mailbox when it is next closed or updated.  Also see
+the description of the variable ~#deletesave~var#~.
+
+~#Copy~var#~ works just like "save" but does not flag the copied message(s)
+with the S (saved) flag.
+
+"Write" saves only the message body and none of the headers.  Because
+messages contained in message folders MUST contain headers, "write"
+cannot be used to store messages in folders.  "Write" should only be
+used to store messages in ordinary files.  "Write" does not flag the
+message(s) as "saved."
+
+When a message is flagged as having been saved, the letter "S" appears
+in its message summary line.
+
+Each command accepts the same arguments.  If no filename is specified,
+the user's main mailbox
+@@ifndef MAC_OS
+(~/mbox or
+@@else !MAC_OS
+(
+@@endif !MAC_OS
+the value of the variable ~#mbox~var#~)
+is used.
+The "-f" option forces the command to overwrite the target file or
+folder.  If "-f" is not used, then the messages are appended to the
+target file's existing contents, if any.
+
+The "-s" and "-S" options cause the target filename to be chosen
+automatically according to the "Subject:" of the message(s) to be
+saved.  In this case, the filename argument must either be omitted or
+must name a directory in which a new file can be created (in which
+case, that directory will be where the chosen filenames are placed).
+If more than one message is to be saved, then each message having a
+different "Subject:" will go into a different file.  However, "-S"
+causes the entire message list to be placed in one file, named by the
+"Subject:" of the first message in the list.
+
+The "-a" and "-A" options work like "-s" and "-S" except that the
+filename is chosen according to the name of the message author rather
+than according to the "Subject:" line.
+
+The -prune option removes large attachments from the message before
+saving.  Attachments larger than the given cutoff size, in bytes, will
+be removed from the saved message.
+@@if MOTIF
+See also the variable ~#attach_prune_size~var#~, which sets the cutoff
+when the Save dialog is used.
+@@endif MOTIF
+
+When filenames are generated from the subject or author name, blanks
+and slashes (/) are converted to underscores (_).  A leading Re: in
+the subject of a response is stripped, so a reply is saved in the same
+folder as the original message (provided the subject hasn't changed).
+
+See also the variable ~#keepsave~var#~, which prevents the "saved" status
+from causing messages to be deleted.
+%%
+
+@@ifndef MAC_OS
+%lpr%
+      lpr [-a] [-c 'command'] [-n] [-h] [msg-list]
+
+Send a message to the printer.  The options are:
+  -a      print all message headers
+  -c'command'
+          run 'command' instead of $print_cmd
+  -n      print body of message only (no headers)
+  -h      do not print ignored headers
+  -s      use a single print command to print all messages
+  -Pxx    print on printer xx
+
+This command invokes one of the "lpr" or the "lp" programs, depending
+on your operating system, and supplies the message to be printed as
+the standard input of that program.
+
+The variable ~#printer~var#~ can be used to specify a default printer; for
+example, "set printer=laser" is the same as always using "-Plaser".
+The variable ~#printer_opt~var#~ specifies the command-line option used to
+pass the printer name to "lpr" or "lp" (the default is "-P" for "lpr"
+or "-d" for "lp").
+
+The variable ~#print_cmd~var#~ can be used to specify a program other than
+lpr or lp to use for printing.  If ~#print_cmd~var#~ is specified, then
+'%P' in the value is replaced by the printer name, and '%O' is replaced by
+both the option and printer name (e.g. "-Plaser").  If neither %P nor
+%O appears, the printer name and option are not used.
+
+See also the variable ~#alwaysignore~var#~.
+%%
+@@endif !MAC_OS
+
+%mail%
+%m%
+      mail [mail-options] [recipients]
+
+Compose and send a mail message.  The possible mail-options follow.
+Note that a trailing "!" on some options negates the meaning of that
+option.
+
+  -A [type:]file  attach file, treating file as the named type
+  -b bcc-addrs    set blind-carbon-copy recipients
+  -C comment      place comment in X-Remarks: header
+  -c cc-addrs     set carbon-copy recipients
+  -E[!]           [do not] place outgoing headers in the editor
+  -e[!]           [do not] immediately enter editor (autoedit)
+@@ifndef MAC_OS
+  -F[!]           [do not] add fortune to the end of message
+@@endif !MAC_OS
+  -f [msg-list]   forward listed messages, unindented
+  -H file         read file as prepared text (no headers)
+  -h file         read file as prepared draft (with headers)
+  -I [msg-list]   include msg-list with headers in letter
+  -i [msg-list]   include msg-list in letter (no headers)
+  -l[!]           [do not] record message
+  -L[!]           [do not] log message header
+  -M [msg-list]   forward listed messages, as attachments
+  -p template     search for and read prepared template
+  -Q file         read file as message body and send
+                  immediately to transport agent.
+  -q[!] [msg-num] send message referenced by msg-num to 
+                  transport agent. "-q" accepts one message
+                  number only. If you do not specify a 
+                  message number, "mail" uses the current
+                  message number. "!" indicates not to send
+                  the message to the transport agent.
+  -s [subject]    prompt for or set subject
+@@ifndef MAC_OS
+  -u              do not append signatures and fortunes
+@@else !MAC_OS
+  -u              do not append signatures 
+@@endif !MAC_OS
+  -U              send draft immediately (use with -h or -H or -A)
+  -v              verbose (not available on some systems)
+
+The "-I" and "-i" options read the indicated messages into the text of
+your letter, surrounded by the text of variables ~#pre_indent_str~var#~,
+~#indent_str~var#~, and ~#post_indent_str~var#~.
+
+The "-f" option forwards the indicated messages.  If the "-U" option is
+also given, new headers beginning with "Resent-" are merged into the
+existing headers of each message, and each message is sent separately.
+Otherwise, "-f" copies the text of all messages into the text of your
+letter, preceding each with "--- Forwarded mail from <sender>", and
+following each with "--- End of forwarded mail from <sender>".
+
+The "-M" option forwards the indicated messages as attachments, without
+modification.
+
+The "-h" option reads a draft file, which should already include
+message headers.  The "-H" option reads a text file, which should NOT
+include headers.  If the "-U" option is also given, the draft is sent
+immediately.  The "-A" option is like "-H", except that the named file
+is appended to the message as an attachment, so binary files may also
+be sent.
+
+The "-p" option is like "-h" except that the directories named in the
+~#templates~var#~ variable are searched for the file to read.  If
+a template named "default" exists in the ~#templates~var#~ path, Z-Mail
+always loads that file when beginning a composition.  Note that the
+~#templates#~ variable must be set in order for the "default" template to
+be used, even if the "default" template is stored in the system
+templates directory 
+@@ifndef MAC_OS
+(usually $ZMLIB/forms).
+@@else !MAC_OS
+(usually {ZMLIB}:forms).
+@@endif !MAC_OS
+
+In GUI and Lite modes, the "mail" command opens the Compose Window,
+filling in the "To:" line and other headers as appropriate.
+
+See also the ~#reply~cmd#~ command and the following variables:
+
+@@ifndef MAC_OS
+    ~#ask~var#~             ~#askcc~var#~           ~#autoedit~var#~
+    ~#autoinclude~var#~     ~#autosign~var#~        ~#autosign2~var#~
+    ~#dot~var#~             ~#edit_hdrs~var#~       ~#escape~var#~
+    ~#fortune~var#~         ~#fortunates~var#~      ~#logfile~var#~
+    ~#record~var#~          ~#no_expand~var#~       ~#no_hdrs~var#~
+    ~#realname~var#~        ~#sendmail~var#~        ~#templates~var#~
+    ~#verbose~var#~         ~#verify~var#~          ~#wrapcolumn~var#~
+@@else !MAC_OS
+    ~#autoinclude~var#~     ~#autosign~var#~        ~#autosign2~var#~
+    ~#logfile~var#~         ~#record~var#~          ~#no_expand~var#~
+    ~#no_hdrs~var#~         ~#realname~var#~        ~#templates~var#~
+    ~#verify~var#~          ~#wrapcolumn~var#~
+@@endif !MAC_OS
+%%
+
+%replyall%
+%R%
+%%<reply
+
+%reply%
+%r%
+%replysender%
+%respond%
+      reply [msg-list] [-r path] [mail-flags] [recipients]
+      r  [msg-list] [-r path] [mail-flags] [recipients]
+      replyall [msg-list] [-r path] [mail-flags] [recipients]
+      R  [msg-list] [-r path] [mail-flags] [recipients]
+
+These commands permit you to compose a reply to the sender and/or
+recipients of the current message (or of the messages named in
+msg-list).
+
+The command "replysender" is identical to "reply".  The "reply",
+"replysender", and "r"  commands reply only to the sender of a message.  
+The commands "replyall" and "R" respond to everyone on the To: and Cc: 
+lines of the message, in addition to the sender.
+
+If a message list is indicated, then each message on the list is
+replied to in the same manner.  If "-r" is specified with a host or a
+uucp-style path, then each address in the list is routed via this
+path.  This overrides the value of the variable ~#auto_route~var#~.  See
+help on ~#Addressing~ui#~ for more information on uucp-style paths.
+
+When you reply to the sender of a message, the address is computed by
+looking at certain ~#headers#~ in the original message.  By default, these
+~#headers#~ are "Reply-To:", "From:", and "Return-Path:".  You may
+override this by setting the variable ~#reply_to_hdr~var#~.  The headers
+listed in this variable are searched in order until one is found in
+the message being replied to.  If none of the ~#headers#~ in the list is
+found, the default ~#headers#~ (mentioned above) are searched.
+
+See the command ~#mail~cmd#~ for a complete list of other options.
+
+@@ifndef MAC_OS
+In GUI and Lite modes, the ~#reply~cmd#~ command opens the ~#Compose Window#~,
+with ~#headers#~ properly initialized.
+@@else !MAC_OS
+The ~#reply~cmd#~ command opens the ~#Compose Window#~,
+with ~#headers#~ properly initialized.
+@@endif !MAC_OS
+
+See also the following variables:
+
+    ~#auto_route~var#~     ~#domain_route~var#~    ~#in_reply_to~var#~
+    ~#known_hosts~var#~    ~#metoo~var#~           ~#reply_to_hdr~var#~
+
+plus those variables listed in the help for ~#mail~cmd#~.
+%%
+
+%sort%
+      sort [-i] [-r] [-a|-d|-l|-p|-R|-s|-S]
+
+Sorts the messages within the current folder.  Sort options are:
+
+  -i         ignore case in alphabetical sorts
+  -r         reverse order of next sort-type
+
+  -a         by author (alphabetical)
+  -d         according to date
+  -l         by message length (size)
+  -p         by priority (A-E)
+  -R         by subject including Re:
+  -s         by subject ignoring Re:
+  -S         by status
+
+The options "-a", "-d", "-l", "-p", "-R", "-s", and "-S" are called
+"sort-types" and instruct Z-Mail what type of sort to perform.
+
+Any combination of the options can be given.  Sort-types specified
+earlier in the command line take precedence over those specified
+later.  For example,
+
+    sort -a -d
+
+sorts by author, and among those messages from the same author, sorts
+by date.  On the other hand,
+
+    sort -d -a
+
+sorts all the messages by date, and among messages having the same
+date, sorts by author.
+
+The "-r" flag reverses the order of the next sort-type specified on
+the command line.  Example:
+
+      sort -a -r -d
+
+The above sorts by author first, ignoring case, and within groups of
+messages by the same author, "reverse-sorts" by date (i.e., later
+dates will come BEFORE earlier dates).  The "-r" option only affects
+the sort-type immediately following it on the command line.  To
+reverse-sort by author AND reverse-sort by date, you would need to
+type:
+
+    sort -r -a -r -d
+
+(one "-r" for each sort-reversal).  Note that two "-r"'s in succession
+do NOT cancel each other out!
+
+The "-i" applies to all sort-types on the line, unlike the "-r"
+option.  If "-i" is present, then all alphabetic sort-types requested
+ignore case.
+
+If no arguments are given, sort orders messages by their status.  New,
+unread messages come first, followed by preserved messages, and
+finally the deleted messages.  If "-r" is the only flag given, the
+status order is reversed.
+
+If the variable ~#date_received~var#~ is set, sorting by date is done using
+the date you received the message.  Otherwise, sorting by date uses
+the date that the message was sent by the original author.
+
+See also the variable ~#sort~var#~ for automatic sorting on startup.
+%%
+
+%search%
+%%<pick
+
+%pick%
+      pick [options] <pattern>
+
+Search for patterns within messages.  "Search" is a synonym for
+"pick".  "Pick" searches entire messages for <pattern> unless
+otherwise specified.  Only one of "-d" or "-ago" can be specified.  
+"-f", "-h", "-s", and "-t" can be used in combination, but
+cannot be repeated.  No pattern is used with "-d" and "-ago".
+  
+The "-x" option may not be used in conjunction with +<num> or -<num>.
+   
+Options are:
+  
+ +<num>        return only the first <num>ber of the messages matched
+  
+ -<num>        return only the last <num>ber of the messages matched
+  
+ -ago <time>   select messages sent <time> amount of time ago
+               relative to today's date.
+  
+               <Time> is a number followed by the word 
+               "days" and/or a number followed by the 
+               word "weeks" and/or a number followed by 
+               the word "months" and/or a number followed 
+               by the word "years".
+  
+               The words may be abbreviated as "d", "w", "m",
+               and "y".  The numbers may be negated to select
+               messages sent before (rather than since) 
+               <time> amount of time ago.  
+  
+               Examples:
+  
+                 pick -ago 2Weeks1Day   messages younger than 
+                                        15 days
+  
+                 pick -ago 1d2w         same as above
+                 pick -ago 15days
+  
+                 pick -ago -3w          messages OLDER than 
+                                        3 weeks
+  
+ -B            match pattern in the message body only
+  
+ -b date1 date2  
+               select messages between dates (see "-d" above
+               for format). You may alternatively specify two 
+               "-d" arguments.
+  
+ -X            use an extended regular expression syntax for 
+               patterns.
+  
+ -d <date>     select messages sent on, before, or after <date>.  
+  
+               A date has the form:  [+-][month]/[date[/year]] 
+                        
+               A leading "+" means select messages sent ON or AFTER 
+               the date.  A leading "-" means select messages sent ON 
+               or BEFORE the date.  Omitted fields default to today's 
+               values.  
+                      
+                  Examples: 
+  
+                  pick -d 4/20     on Apr 20, this year 
+  
+                  pick -d -/2/85   on or before the 2nd, this month, 1985 
+  
+                  pick -d +5/4     on or after May 4, this year 
+  
+                  pick -d /        today's messages only (At least one 
+                                   "/" char must be used in a date.) 
+                                   The date specified is not rigorously 
+                                   checked; in particular, Z-Mail treats 
+                                   2/30 as a valid date.  
+  
+ -e            use all remaining arguments as the <pattern>
+  
+ -f            match pattern in the "From:" header 
+  
+ -h <header>   match pattern in named header only
+  
+ -i            ignore case of letters when matching
+  
+ -n            do not treat any of the characters in the pattern specially, 
+               except for a leading ^ and a trailing $
+  
+ -p [A-E]      select messages with specified priority
+               Multiple "-p" flags may be used to search 
+               for several priorities at once.
+  
+ -r <msg-list> restrict the range of messages searched to <msg-list>
+  
+ -s            match pattern in the "Subject:" header 
+  
+ -t            match pattern in any header that identifies a recipient 
+               of the message ("To:", "Cc:", etc.)
+  
+ -x            return all the messages which do NOT match
+
+The command "search" is a synonym for "pick".
+  
+Examples:
+  
+    Find the first 5 messages with the subject
+    "Telephone Message":
+            pick +5 -s Telephone Message
+  
+    Find the first 2 messages of the last 4 that are to
+    "zmail-users":
+            pick -4 +2 -t zmail-users
+  
+    Find those among messages 1 to 10 that are 2 months
+    or more old:
+            pick -r 1-10 -ago -2m
+  
+    Find messages that are 1 week old or newer:
+            pick -ago +1w
+  
+    Find messages that contain "-request" in the
+    Resent-From header:
+            pick -h resent-from -e -request
+  
+A description of the pick operation is printed before the search is
+performed, unless the value of the variable ~#quiet~var#~ contains the field
+"pick", or pick is piped to another Z-Mail command.
+%%
+
+%expand%
+%%<alias
+
+%group%
+%%<alias
+
+%unalias%
+%%<alias
+
+%alias%
+      alias [name [namelist]]
+      unalias name
+      expand name [name ...]
+
+~#Aliases~ui#~ (sometimes called groups) are shorthand names for longer lists
+of addresses to which mail messages are sent.
+
+Usage:
+
+ alias                show all aliases
+ alias name           print definition of alias "name"
+ alias name namelist  set alias "name" to namelist
+ unalias name         remove the alias "name"
+
+@@ifndef MAC_OS
+A namelist consists of one or more addresses.  An address may be
+another defined alias, a username, a file as a destination, a file
+as a source of other addresses, or a program name as a destination.
+Filenames as destinations must be full pathnames, i.e., they must
+begin with a "/", a "+", or a "~".  Program names must start with a
+pipe symbol and be enclosed in quotation marks:
+ 
+    "|program_name"
+ 
+Output of program_name is captured by Z-Mail and displayed along
+with any output from the MTA.  You may not place < or > characters in
+the program_name.
+@@else !MAC_OS
+A namelist consists of one or more addresses.  An address may be
+another defined alias, a username, or a file
+as a source of other addresses.
+@@endif !MAC_OS
+
+File names as sources of addresses must be enclosed in colons:
+ 
+    :filename:
+ 
+If the filename is not a full path, it is taken to be relative to
+your home directory.  The file may contain a namelist exactly as
+described above, one or more items per line, including references to
+other files.  The `#' character introduces a comment which continues
+through the end of the line.  A backslash (\) at the end of a line
+causes that line to be continued onto the next.
+
+The conventions for mail-addressing permit you to place the full name
+or other description of a recipient within parentheses.  For instance,
+the following is a valid namelist:
+
+ marlin@elfin.com, arb_g@tenstd.org
+
+The following is the same namelist, but more descriptive:
+
+ marlin@elfin.com (Aileen Marlin), 
+ arb_g@tenstd.org (Arbalest Group)
+
+If you use full names in parentheses, then you must separate addresses
+in the namelist with commas.
+
+The command "expand" prints the addresses associated with the given
+alias names.  "Sub-aliases" appearing within an alias definition will
+also be expanded.
+
+See also "help addressing" and the variable ~#no_expand~var#~.
+%%
+
+%msg_list%
+      msg_list [+|-] [msg-list]
+
+The "msg_list" command is a Z-Script programming aid which accepts a
+message list as an argument and simplifies it.  The argument may
+contain metacharacters ("*", "^", "$", and "."), negation syntax, and
+so on; the resulting list will consist only of numbers and
+number-ranges.  If the argument is syntactically valid, the result is
+stored in the variable ~#output~var#~ and the variable ~#status~var#~ is set to 0.
+If there was a problem parsing the message list, then ~#status~var#~ is set
+to -1 and ~#output~var#~ is empty.
+
+The special parameters "-" and "+" cause the current message pointer
+to move to the previous or next message, respectively.  If a message
+list was given in addition to "-" or "+", then the current message
+pointer is set to the first or last message, respectively, in the
+message list.
+
+A summary of message list syntax:
+
+  *      All messages.
+  ^      The first message.
+  $      The last message.
+  .      The current message.
+  N-M    A range of messages between N and M, inclusive.
+
+In the last case, N and M may be "*", "^", "$", ".", or numbers
+identifying specific messages.  The range must be in ascending order
+(i.e., you may write "3-7" as a range, but not "7-3").
+
+To exclude messages from a message list, the syntax is:
+
+  msg-list-one { msg-list-two }
+
+That is, a list followed by a second list enclosed in braces.  The
+messages identified by msg-list-two are removed from the set of those
+specified by msg-list-one.  The resulting list refers to those
+messages that are only in msg-list-one and not in msg-list-two.
+%%
+
+%from%
+%f%
+      from [+|-] [msg-list] [pattern]
+
+With no parameters, "from" displays the current message's header
+summary.  If given a message list, "from" displays the header
+summaries of the listed messages.  If given a pattern, it displays the
+header summaries of the messages whose "From:" lines contain the
+pattern.  Given both a message list and a pattern, it searches the
+"From:" lines of the listed messages and displays the headers
+summaries of those that match the pattern.
+
+The special parameters "-" and "+" cause the current message pointer
+to move to the previous or next message, respectively, while also
+displaying that message's header summary.  If a message list was given
+in addition to "-" or "+", then the current message pointer is set to
+the first or last message, respectively, in the message list given.
+
+Examples:
+
+        from - 10-30 {16}
+displays the headers of messages 10 through 30 except for message 16
+and set the current message pointer to 10.
+
+        from +
+displays the header of the message after the current message and
+increment the current message pointer to that message.
+
+        from + Dan
+displays the headers of all messages that contain "Dan" in the "From:"
+line and set the current message pointer to the last one of that kind
+in the list.
+
+See also the ~#headers~cmd#~ command and ~#summary_fmt#~.
+%%
+
+%un_hdr%
+%%<my_hdr
+
+%my_hdr%
+      my_hdr [header[: body]]
+      un_hdr header
+
+These commands are used to set, unset or view your personalized
+message headers.  These headers are included in all of your outgoing
+mail.
+
+Usages of my_hdr:
+
+  my_hdr               show all headers
+  my_hdr header        show value of header
+  my_hdr header: body  set header with body
+  un_hdr header        remove header
+
+Note that there is no space between the header name and the colon in
+the third form of the command.
+
+The string value of a header may be have any of the following special
+forms to create a dynamic (prompted-for) header:
+
+ []
+  Prompt for a value of the header.  If no (or an empty)
+  response is given, omit the header.
+
+ [choice1|choice2|choice3|...]
+  Prompt the user (as with the ~#ask~cmd#~ command) with 
+  the listed choices, and set the value of the header to
+  whatever the user selects.  If canceled (or if an
+  empty response is given), omit the header.
+
+  Note that the choice must be quoted in the ~#my_hdr~cmd#~
+  command to protect the `|' characters from
+  interpretation as a pipe to another command.
+
+  The "..." above indicates that there may be as many
+  alternatives as desired.  It should not be included
+  literally in a header definition.
+
+ :selection_function
+  Execute the (user-defined) selection_function.  Before
+  exiting, the selection_function must supply a value for
+  the variable ~#header_value~var#~, which is then used as
+  the value of the header.  If ~#header_value~var#~ is not 
+  set when the selection_function returns, the header is 
+  omitted.
+
+  The first parameter ($1) to the selection_function is
+  the header name.
+
+ [choice1|choice2|choice3|...]:selection_function
+  Bring up a simple ~#ask~cmd#~-style dialog with the 
+  listed choices.  After one is selected, invoke the
+  selection_function with the header name as first
+  parameter and the selected value as the second
+  parameter ($2).  The function must still set the
+  ~#header_value~var#~ variable in order for the selection 
+  to be accepted.
+
+ string (prompt)
+  When "string" is any of the four special forms above,
+  it may be followed by a prompt enclosed in parentheses.
+  This prompt is printed 
+@@ifndef MAC_OS
+  (or in GUI and Lite modes, displayed in
+  the Compose Headers dialog) when Z-Mail requests the
+@@else !MAC_OS
+  (or displayed in the Compose Headers dialog) when Z-Mail
+  requests the
+@@endif !MAC_OS
+  value for the header.  If no prompt is given, the name
+  of the header is used.
+
+ \string
+  Set the string literally as the header value, even if
+  it begins with a `[' or `:' character.  Do not prompt
+  or execute a function.
+
+  Note that if a header needs to begin with a backslash
+  character, two backslashes must be used.  Backslashes
+  are not significant elsewhere in the string.
+
+Z-Mail prompts for headers when initiating a composition.  
+@@ifndef MAC_OS
+In GUI and Lite mode, the
+@@else !MAC_OS
+The
+@@endif !MAC_OS
+Compose Headers dialog can be called up to modify the
+values of the dynamic headers.
+%%
+
+%uncmd%
+%%<cmd
+
+%cmd%
+      cmd [name [command]]
+      uncmd name
+
+This command is used to define command aliases.
+@@ifndef MAC_OS
+These are similar to aliases in the C-shell.
+@@endif !MAC_OS
+The ~#alias~cmd#~ command refers not to command aliases, but to
+mailing groups.
+
+Usage:
+
+ cmd              show all command aliases
+ cmd name         show command of alias "name"
+ cmd name command set alias "name" to command
+ uncmd name       remove command alias "name"
+
+The command must be quoted if it is to contain separators such as ";"
+or "|".
+
+The arguments of a cmd alias are referenced by using the history
+syntax.  For example:
+
+ cmd r 'replysender \!* ; delete; next'
+
+causes "r" to reply using whatever arguments you have given on
+the command line and then delete that message and print the next
+message.
+%%
+
+%headers%
+%h%
+%H%
+      headers [+|-|N] [[-H]:c]
+
+Displays the header summaries of certain messages in the current
+folder.  Options are:
+
+  +     display the next screenful.
+  -     display the previous screenful.
+  N     display a screenful starting at message number N.
+  -H:c  display according to letter "c" where "c" is one of:
+     a  all messages
+     d  deleted messages
+     f  forwarded messages
+     m  marked messages
+     n  new messages
+     o  old messages
+     p  preserved messages
+     r  replied-to messages
+     s  saved messages
+     u  unread messages
+
+The command "headers +" is equivalent to the "z" command, and "headers
+-" is equivalent to "z-".
+
+The "headers" command displays a screenful of headers.  
+@@ifndef MAC_OS
+In command-line mode, deleted messages are not normally shown.  Set the
+variable ~#show_deleted~var#~ to include deleted messages.  In
+GUI, and Lite modes, deleted messages are always shown in the header
+summaries.
+@@else !MAC_OS
+Deleted messages are always shown in the header summaries.
+@@endif !MAC_OS
+
+The command ":c" is equivalent to "headers -H:c" where "c" is one of
+the keyletters listed above.  The "-H" can be omitted, i.e., "headers
+:c" also works.  The "headers" command sets the variable ~#output~var#~ to a
+list of the messages selected.
+
+See the variable ~#summary_fmt~var#~ for further information.
+%%
+
+%close%
+%shut%
+%%<folder
+
+%open%
+%%<folder
+
+%update%
+%%<folder
+
+%folder%
+%fo%
+      folder [-a] [-f|-F] [-N] [-n] [-r] [-X] [%[user]|#[n]|&|file]
+      folder -d [-n] [-x|-X] [%[user]|#[n]|&|file]
+      folder [-w|-W] [%[user]|#[n]|&|file]
+      folder -l
+
+      open [-f|-F] [-N] [-n] [-r] [-w] [-X] [%[user]|#[n]|&|file]
+      close [-n] [-x|-X] [%[user]|#[n]|&|file]
+      shut [-n] [-x|-X] [%[user]|#[n]|&|file] 
+      update [-N] [-n] [-r] [-x|-X] [%[user]|#[n]|&|file]
+
+Open, close, activate, or update folders.  Options:
+
+  -a       add the named folder to those opened
+  -d       delete the named folder
+  -f       apply the system mailbox (folder) filters
+  -F       do NOT apply the system mailbox filters
+  -l       list the folders that are presently open
+  -N       do not display the list of header summaries
+  -n       do not update any folder that is being closed (implies -X)
+  -r       read-only mode (cannot update changes)
+  -w       watch this folder for new mail at all times
+  -W       do not watch this folder for new mail
+  -x       create an index for the folder on update
+  -X       ignore index on load, do not create on update
+
+Folder specifiers:
+
+  %[user]  means system mailbox owned by 'user' (yours by default)
+  #        means the most recently accessed inactive folder
+  #n       means folder number n in the open list
+  &        means the main mailbox (default $mbox)
+  file     the filename of the folder (e.g., '+outgoing')
+
+The command "open" is equivalent to "folder -a".  The command "close"
+is equivalent to "folder -d".  The command "update" updates the
+specified folder, or the active folder if no folder identifier (name
+or number) is provided.
+
+The "folder" command changes the active folder; with no arguments, it
+prints the name and status of the active folder.  By default, the
+current folder is updated and closed before the new folder is opened,
+unless the "-a" option is used.  However, folder #0 (zero) is reserved
+for the system mailbox, and once opened, remains open unless
+explicitly closed.
+
+@@ifdef MAC_OS
+The character "+" is treated specially when it is the
+first character of a file name.  A leading "+" is expanded to
+your folder directory (the value of the ~#folder~var#~
+variable).
+@@else MAC_OS
+The characters "+" and "~" are treated specially when they are the
+first character of a file name.  If a filename begins with a tilde
+("~"), the tilde is expanded to the name of your home directory.  If
+the filename begins with "~user", that is replaced with the pathname
+of the home directory of the named user.  A leading "+" is expanded to
+your folder directory ("~/Mail" or the value of the ~#folder~var#~
+variable).  No "/" is required between "+" and the file name, so both
+"+file" and "+/file" refer to the same file.
+@@endif MAC_OS
+
+The "open" command recognizes all "folder" options except "-d".  The
+"close" command recognizes the "-n" option to prevent update.  The
+"update" command recognizes the "-r" option, but changes the folder to
+read-only mode AFTER updating it.  To change a folder to read-only
+without updating it, use "folder -r".
+
+Normally, folders other than the system mailbox are watched for new
+mail only when they are active.  To cause a folder to be watched for
+new mail at all times, open it with "open -w".  You may change the
+watching of a folder after it is open by using "folder -w" to begin
+watching it for new mail, or "folder -W" to stop watching it.  The
+system mailbox is always watched for new mail, even if "folder -W"
+is used.
+
+A folder index may be manipulated with "-x" (index) and "-X"
+(noindex).  The index is a summary of the folder state, and allows
+Z-Mail to load the folder quickly.  To create an index, use "update
+-x" or "close -x".  Once the index has been created, Z-Mail will keep
+it up-to-date at each folder update.  To turn off indexing of a
+folder, use "update -X".  To load a folder without using its index,
+use "open -X" or "folder -X".  Note that if the index is disabled, it
+must be explicitly reenabled with "update -x".
+
+Updating a read-only folder will write an index file for that folder
+rather than rewriting the folder itself.  To force this behavior on a
+folder that is not read-only, use "update -n -x".  Whenever the folder
+is loaded (except with "open -X"), the external index file created in
+this way is used to restore the sorting order, saved/deleted/replied
+status, etc. of the messages.
+
+See also the variables ~#folder~var#~ and ~#mbox~var#~.
+
+For compatibility with older versions, the single character "!" as an
+argument preceding the folder name is interpreted as "-n".
+%%
+
+%return%
+%%<exit
+
+%quit%
+%q%
+%%<exit
+
+%exit%
+%xit%
+%x%
+      quit   [-f]
+      exit   [status_code]
+      return [status_code]
+
+The "quit" and "exit" commands end a Z-Mail session when used at the
+command prompt.  The command "quit" updates all open folders.  If new
+mail has come in, you are notified and asked whether to continue the
+program or quit anyway.  If the multivalued variable ~#verify~var#~ is set
+to contain the keyword "quit", then then you are prompted to confirm
+the update of any open folders that have been modified.
+
+If you specify the -f option to "quit", Z-Mail quits forcibly:  no
+confirmations are requested.  All open folders are updated, and all
+suspended compositions are written to the folder specified in the
+~#dead~var#~ variable.  Any errors that occur during a "quit -f" are ignored.
+
+The command "exit" terminates Z-Mail, neither updating the open
+folders nor checking for new mail.
+
+In scripts and user-defined functions, "exit" causes the script or
+function to stop executing and return to the function that called the
+exiting function.  "return" is a synonym for "exit" in this context.
+If an optional status_code is specified, the vaiable "status" is set
+to status_code.  To cause the entire Z-Mail session to exit from
+within a script or function, use "builtin exit" or simply "x".
+%%
+
+@@ifndef MAC_OS
+%ls%
+      ls [options] [directory]
+
+The "ls" command displays the names of the files in the directory you
+specify.  'ls' is exactly like the UNIX command "ls".  All
+parameters are the same.  The output is normally columnar, and is
+passed through the pager if more than one screenful is generated.
+%%
+
+@@endif !MAC_OS
+@@ifndef MAC_OS
+%sh%
+%shell%
+      sh [cmd]
+      sh [-t timeout] [-m message] cmd
+
+(Note that the way sh handles multi-argument cmds changed in Z-Mail
+2.1)
+
+sh takes the command cmd and executes it in a Bourne shell (/bin/sh),
+returning the exit status of the shell in the status of the sh
+command.  If no cmd is supplied, then a new interactive shell is
+started.  Either the environment variable SHELL or the Z-Mail
+variable ~#shell~var#~ identifies the shell to invoke in this
+case.  The shell must exit to return to Z-Mail.  In GUI mode, the
+variable ~#window_shell~var#~ is consulted to select a terminal
+emulator in which to run the shell.
+
+In Lite mode, you may want to use the screencmd prefix to your sh
+statement if the command produces output, or performs
+cursor-addressing functions on the terminal screen.
+
+If cmd is supplied, it is executed by the operating system under a
+Bourne shell.  If cmd contains pipe symbols ("|") or semicolons, cmd
+should be enclosed in quotation marks.
+
+Note that if sh executes a cmd that does not terminate and you have
+not specified the -m or -t options, Z-Mail will wait forever for sh to
+return.  Your only recourse is to send Z-Mail a SIGTERM kill signal.
+
+If cmd consists of more than one argument, sh tries to preserve word
+breaks and quoting when passing cmd to the shell.  If cmd is instead a
+single argument, the shell is allowed to re-parse the string.  The
+following three examples illustrate how sh tries to preserve the number
+of arguments and argument quoting.  Note that in the examples below,
+"sh" means the Z-Script command "sh", not the actual "sh" shell.
+
+Example 1:
+
+    sh "cat file | grep word"
+
+    In this example, sh receives a single argument, removes the
+    surrounding quotes, and passes the rest of cmd to the Bourne shell
+    for interpretation.  The shell sees:
+
+        cat file | grep word
+
+    This is the most common use of sh.  The next two examples are
+    intended for advanced users of the Bourne shell and sh.
+
+Example 2:
+
+    sh cat file "|" grep word
+
+    In this example, sh receives five arguments.  As in Example 1, the
+    Z-Mail parser removes the quotes from the pipe symbol.  However,
+    because sh received more than one argument, it applies quoting to
+    each argument before passing the command to the Bourne shell.  The
+    pipe character is quoted along with the rest of the arguments, so
+    the shell sees
+
+        cat file \| grep word
+
+    which is probably not what was intended.
+
+Example 3:
+
+    sh xterm -title "Editing File" -e vi file
+
+    In this example, sh receives six arguments (one of which contains a
+    space).  The arguments are parsed by sh, then each argument is
+    quoted before being passed to the Bourne shell, which sees:
+
+        xterm -title Editing\ File -e vi file
+
+    The title of the xterm window is therefore correctly set to
+    "Editing File".  If sh had not quoted the arguments, the title
+    would have been broken into two words by the Bourne shell,
+    resulting in a usage-error message from xterm.
+
+As you can see, the sh command attempts to make the most sensible
+choice in each case.  It is up to you to tell it what you mean, by
+careful use of quoting.
+
+In GUI and Lite modes, the -m option may be used to specify a message
+that should be displayed in the Task Meter dialog during the execution
+of the command.  If the "Stop" button (GUI) or SPACEBAR (Lite) is
+pressed, then "sh" returns, leaving the "command" running in the
+background.  In this case, the variable "~#child~var#~ is set to the process
+identifier number (pid) of the command.
+
+The -t option specifies a timeout in seconds that Z-Mail will wait
+before displaying the Task Meter.  If the cmd completes in that time,
+the Task Meter does not appear.  If -t is used without also using -m,
+the message "Running external command" is displayed in the Task Meter
+when it appears.
+
+NOTE:  When the -m or -t options are used, the cmd to be run must be a
+single command.  Input redirection may be used, but pipelines and
+complex commands containing semicolons, loop constructs, or groupings
+(parentheses or braces) will probably result in a syntax error reported
+from the subshell.
+%%
+
+@@endif !MAC_OS
+@@ifndef MAC_OS
+%stop%
+      stop
+
+The stop command sends a stop signal to Z-Mail.  It is equivalent to
+your tty job-control stop character (often ^Z).  On systems that do
+not support job control, "stop" has no effect.  In GUI mode, "stop" is
+identical to "iconify".
+
+It is never necessary to exit from Z-Mail, because new mail is
+collected and presented whenever it arrives.  Some users may wish to
+replace the command ~#quit~cmd#~ with "update;stop;await" by using the "cmd"
+facility or by creating a user-defined function.  Users of shells with
+job control, such as csh, may then use
+    %zmail
+to bring Z-Mail into the foreground rather than having to start it
+again.
+%%
+
+%iconify%
+      iconify
+
+In GUI mode, this command iconifies all open Z-Mail windows.
+%%
+
+@@endif !MAC_OS
+@@ifdef VUI
+%unbindkey%
+%%<bindkey
+
+%bindkey%
+    bindkey [-l label] [-d doc] (area | -c class) key-sequence action [arg]
+
+    unbindkey (name | -c class) key-sequence
+
+bindkey binds a key-sequence typed by the user to to a user-interface
+action.  This command is available in Z-Mail Lite only.  Identical
+keybindings can be made in similar contexts by binding to a "class" of
+areas, or keybindings can be effective in a single area only by
+binding to a specific named area.
+
+The use of bindkey is discussed thoroughly in the document titled
+"Configuring Your Terminal for Z-Mail Lite."
+
+See the $ZMLIB/bindkey.hlp file for a complete description of
+all classes, areas, and actions.
+
+When binding an interaction to any of the first 8 function keys (F1
+through F8), an on-screen "label" can be assigned by using the -l
+option.  If function-key labels are turned on (see the fkeylabels
+variable), then the assigned label will appear whenever the keybinding
+is in effect.
+  
+In most contexts, the "show-keys" interaction will pop up a dialog box
+containing a list of the currently-active keybindings.  This
+interaction is normally bound to `ESC k' by default.  If the "-d doc"
+argument is given to bindkey, then "doc" will appear in the keybinding
+list as documentation for the key.  The documentation string should be
+very brief.
+
+In all contexts, the "widget-info" interaction will display the name
+and class of the currently-active area.  By default, this interaction is
+bound to CTRL+x w.
+
+There is one special interaction named "do-sequence" which can invoke
+one or more interactions in areas other than the one in which the
+triggering keysequence was typed.  It is used as follows:
+
+    bindkey [-l label] (area | -c class)  key-sequence do-sequence
+        '!area1 interaction1 [arg]
+         !area2 interaction2 [arg] ...'
+
+The exclamation point may be replaced by any other single character
+that doesn't otherwise appear in the rest of the arguments.
+
+The meaning of this command is that when the given "keysequence" is
+pressed in the given area or class, then "interaction1" should take place
+in the named area "area1", and then "interaction2" should take
+place in "area2", and so on.  As a special case, "*" names the
+area in which the triggering keysequence was pressed.  Each
+"interaction" should be one that is handled by the corresponding
+area's class.  If any interaction fails, the entire sequence is
+aborted.
+
+Here is an example which causes the down-arrow, when pressed in the
+command-field of the main screen, to select the next message in the
+message summaries list:
+
+    bindkey command-field \<down>
+        '!main-summaries list-down!main-summaries list-click'
+
+
+%%<-shared-lite-keys
+
+%multikey%
+%unmultikey%
+       multikey key-sequence key-name
+       multikey -m key-sequence1 key-sequence2
+       multikey -l [-q]
+       multikey -s [file]
+
+       unmultikey [-m] key-sequence
+
+The multikey command is used for causing one sequence of input
+characters to be translated into another sequence.  The first form,
+without the -m, is typically used to inform Z-Mail Lite how to
+interpret keypresses that result in multi-character sequences being
+sent from the terminal to the program.  For instance, when the
+left-arrow key of the Zenia 100 terminal is pressed, it sends the
+sequence `ESC [ 0 x' to the running application.  The command
+
+    multikey \<esc>[0x \<left>
+
+tells Z-Mail Lite that the four-character sequence `ESC [ 0 x' should
+cause it to act as if a single key named "left" were pressed.  (This
+information is normally taken from the system's "terminfo" or
+"termcap" files, but that information is often sparse or incorrect.)
+Multikey definitions created this way are only for translating
+terminal-generated input sequences.
+
+When used with "-m" (for "macro"), multikey can translate human-usable
+sequences of keystrokes.  For instance, to make the two-keystroke
+sequence `ESC 1' be equivalent to the F1 key in every context, use
+
+    multikey -m \<esc>1 \<f1>
+
+The difference between "multikey" and "multikey -m" is that the first
+form installs a translator only for sequences that arrive rapidly, as
+when a terminal sends a stream of bytes for a single keypress.  The
+second form, upon seeing the beginning of a possible macro
+translation, waits until additional input arrives to determine whether
+the input actually is a translated sequence.
+
+The "-s" form saves the current terminal-specific multikey settings
+(i.e., not the "-m" settings) to the specified file.  If no file is
+specified, the file $HOME/.multikey/$TERM is used.
+
+The "-l" form loads multikey settings from a file. The following
+four locations are searched, in this order:
+
+ $ZMLIB/multikey/$LITETERM
+ $ZMLIB/multikey/$TERM
+ $HOME/.multikey/$LITETERM 
+ $HOME/.multikey/$TERM  
+
+To load multikey definitions from non-standard
+locations, use the ~#source~cmd#~ command.  
+
+The command
+   
+    multikey -l 
+
+is executed when Z-Mail Lite starts.
+
+The -q option causes loading to be quiet.  Without it, multikey
+reports whether or not it loaded definitions from each of the two
+files it tries.
+
+The "unmultikey" command removes a previously-defined
+terminal-specific translation or, with "-m", a previously-defined
+macro.
+
+Note that multikey is used to define key names and macros, but is not
+used to cause actions to be bound to keystrokes.  For that, see the
+help for the "bindkey" command.
+
+%%<-shared-lite-keys
+
+
+
+%-shared-lite-keys%
+Key-sequence describes the set of keystrokes that will execute
+the action in the specified context.
+
+A key-sequence may be a single character, a CTRL-character
+or ESC-character combination, or any of the keystrokes listed
+below.
+
+Single characters are case-sensitive, so you may bind one
+action to "J" and another action in the same context to "j".
+If you specify either the backslash (\) or caret (^) characters,
+you must precede them with a backslash, as in \\ and \^.
+
+CTRL-character combinations can be written as \<c-X>, where X 
+is any letter or one of these symbols:
+
+    [ \ ] ^ _
+
+CTRL-characters are not case-sensitive, so CTRL+X is the
+same as CTRL+x.
+
+Other CTRL-character pairings (such as CTRL-TAB or CTRL-2) are not 
+permitted.
+
+Many other characters and keys have special names and some have
+multiple synonyms:
+
+ ^x           CTRL-x (x may be any letter or [,\,],^, or _)
+ \<nul>       the NUL character (ASCII 0)
+ \t or \<tab> the TAB character (ASCII 9)
+ \n or \<newline>   
+              the NEWLINE character (ASCII 10)
+ \r or \<return>  
+              the CARRIAGE RETURN character (ASCII 13)
+ ^[ or \e or \<esc>
+              the ESCAPE character (ASCII 27)
+ ^\           ASCII 28
+ ^]           ASCII 29
+ ^^           ASCII 30
+ ^_           ASCII 31
+ \<space>     the SPACE character (ASCII 32), this can also 
+              be specified as a space, but it must be quoted.
+ ^? or \<del> delete (ASCII 127)
+ \<down>      the down-arrow key
+ \<up>        the up-arrow key
+ \<left>      the left-arrow key
+ \<right>     the right-arrow key
+ \<insert>    the insert key
+ \<delete>    the delete key
+ \<home>      the home key
+ \<end>       the end key
+ \<pageup>    the page-up key
+ \<pagedown>  the page-down key
+ \<fN>        function key number N
+ \octal-num   a three-digit byte value  (For example, the 
+              byte string emitted by a function key on a terminal.)
+
+For additional information, refer to the document titled
+Configuring Your Terminal for Z-Mail Lite.
+%%
+@@endif /* VUI */
+
+%hide%
+%%<flags
+
+%unhide%
+%%<flags
+
+%flags%
+%msg_flags%
+      flags [[+|-] [flag-bits]] [msg-list]
+      hide [msg-list]
+      unhide [msg-list]
+
+This command sets or displays in detail the status of messages.  If a
+message list is specified, "flags" describes which status flags  of the
+message are set.  If any one or more of the flags are given (see below)
+and no "+" or "-" modifier is specified, then the status of each
+message in the list is set to that status given, replacing any status
+flags on those messages.  However, if a "+" or "-" is specified, then
+the given status flags are added to or removed from the status of the
+message(s), respectively.
+
+The "hide" and "unhide" commands turn the "hidden" flag on or off,
+respectively.
+
+Any sensible combination of these flags may be used:
+ 
+  D    deleted
+  f    forwarded
+  N    new
+  O    old
+  P    preserved
+  p    printed
+  R    read
+  r    replied-to
+  S    saved
+  U    unread
+  H    hidden
+ 
+If no list is given or piped in, then the current message is used.
+
+See also the ~#mark~cmd#~ command.
+%%
+
+%setenv%
+      setenv VARIABLE [value]
+
+The "setenv" command adds a variable to your environment.
+@@ifndef MAC_OS
+The
+variables in your environment are passed along to any other Unix
+commands run from within Z-Mail.
+
+@@endif !MAC_OS
+Variable names may be any string, but by convention, environment
+variables are usually all upper-case.  If no "value" is specified,
+then the variable name is set to an empty string.  If the value
+contains spaces, you should enclose it in quotation marks.
+
+Note that the syntax of "setenv" differs from that of ~#set~cmd#~ in that
+there is no equal sign ("=") between the variable name and the value.
+Also, variables assigned with ~#set~cmd#~ do not go into your environment.
+Most Z-Mail variables must be assigned using "set" rather than
+"setenv".
+
+Use ~#printenv~cmd#~ to display a list of all your environment variables.
+%%
+
+%unsetenv%
+      unsetenv VARIABLE
+
+The "unsetenv" command removes a variable from your environment.  You
+must specify exactly one variable to unset.
+
+Use ~#printenv~cmd#~ to print a list of all your environment variables.
+%%
+
+%printenv%
+      printenv [VARIABLE]
+
+Display the entire current environment, or the value of the specified
+environment variable.
+
+See also ~#setenv~cmd#~ and ~#unsetenv~cmd#~.
+%%
+
+@@ifndef MAC_OS
+%edit%
+%e%
+%edit_msg%
+      edit [msg-list]
+
+The "edit" command lets you edit messages in your folder.  The editor
+used is determined by the variable ~#editor~var#~, the environment variable
+EDITOR, the variable ~#visual~var#~ and the environment variable VISUAL, in
+that order.  If none of those variables is set, the default visual
+editor is used.
+
+The command "e" is equivalent to "edit".  The command "v" is also
+equivalent, except that the editor used is always the visual editor.
+
+In GUI mode, "visual" is used first, then "editor".
+
+When editing messages, be careful not to remove certain message
+headers such as Date:, From:, or any of the other standard headers
+used for mail transport.  If you remove or change something you
+shouldn't have, Z-Mail will not accept your editing changes.  In this
+case, Z-Mail notifies you of the error and the temporary file used to
+edit the message is not removed (allowing you to go back and re-edit
+the message).
+%%
+
+%unmap%
+%%<map
+
+%map%
+      map [<sequence> [<expansion>]]
+      unmap <sequence>
+
+The "map" command allows you to use one keystroke (or a few) to cause
+Z-Mail to respond as though you had typed a longer sequence.  Map can
+be used in line (or "shell") mode.
+
+Given no arguments, "map" lists all current line mode macros.  Given
+only a <sequence>, it shows the current binding for that sequence.
+Given both a <sequence> and an <expansion>, it creates a macro such
+that, when the <sequence> is typed in line mode, the effect is the
+same as if the <expansion> had been typed instead.
+
+The same format for control characters that is used for the ~#bind~cmd#~
+command may be used in both the <sequence> and the <expansion>, i.e.,
+    ^X      control-X (where X is any capital letter)
+    \E      the escape character ("^[" also works)
+    \n      a newline (other C-style escapes also work)
+
+Example:
+    map & print\n
+
+If you are in line mode and press the & key, then it is as if you
+typed the word "print" and hit carriage return.
+
+Note that map sequences should use control characters or unusual
+combinations of characters to avoid interfering with normal typing.
+When you wish to type a character and not have it mapped into its
+expansion, precede the character with a backslash (\).
+
+Mappings are removed with the "unmap" command.
+
+Also see the ~#map!~cmd#~ command.
+%%
+
+%unmap!%
+%%<map!
+
+%map!%
+      map! [<sequence> [<expansion>]]
+      unmap! <sequence>
+
+The "map!" command allows you to set macros in message-composition
+mode, so that one keystroke (or a or a short sequence) acts as though
+you had typed a longer sequence.  Mappings take effect in line mode,
+but are not used in GUI mode.
+
+Given no arguments, "map!" lists all composition-mode macros.  Given
+only a <sequence>, it shows the current binding for that sequence.
+Given both a <sequence> and an <expansion>, it creates a macro such
+that, when the <sequence> is typed in message composition mode, the
+effect is the same as if the <expansion> had been typed instead.
+
+The format for control characters is:
+    ^X      control-X (where X is any capital letter)
+    \E      the escape character ("^[" also works)
+    \n      a newline (other C-style escapes also work)
+
+Example:
+    map! ! <BANG>
+
+If you are typing in a message and you press the ! key, Z-Mail
+responds as if you typed the six keys <BANG>.
+
+To type a character without having the mapping expanded, precede the
+character with a backslash (\).
+
+Composition-mode mappings are removed with the "unmap!" command.
+
+Also see the ~#map~cmd#~ command.
+%%
+
+@@endif !MAC_OS
+%eval%
+      eval [-h | -p] args ...
+
+This command causes its arguments to be read and executed as Z-Mail
+command.  Example:
+
+    set initprompt='"$hostname%$~#cwd~var#~ "'
+    eval set ~#prompt~var#~=$initprompt
+
+In this example, the string
+
+    set ~#prompt~var#~=$initprompt
+
+is first variable-expanded to yield
+
+    set ~#prompt~var#~="$hostname%$cwd "
+
+This expanded string is then evaluated as the Z-Mail command ~#set~cmd#~,
+setting the ~#prompt~var#~ variable to a string containing the hostname, a
+percent sign, the current working directory, and a blank.
+
+If the "-h" flag is given to eval, then eval looks for formatting
+parameters of the type used in displaying header summaries, and
+replaces them with data taken from the current message.  Example:
+
+    eval -h ~#pick~cmd#~ -f %f
+
+Here, the %f is replaced with the "From:" header of the current
+message.  This example finds all messages from the same author as the
+current message.
+
+If the "-p" flag is given, then eval looks for formatting parameters
+of the type used in displaying the line-mode prompt or GUI mode title
+bar, and replaces those with data from the active folder.
+
+The "-h" and "-p" flags may not be used together in the same eval.
+%%
+
+@@ifndef MAC_OS
+%pipe%
+%Pipe%
+%pipe_msg%
+ pipe [-p pattern] [msg-list] [unix-command] [cmd-args]
+
+This command is used to send a message as input to a Unix command.
+The standard input of the named command is taken from the message(s)
+specified.  By default, the entire message (including headers) is
+used.  Ignored headers (see "ignore -?" and "retain -?") can be
+suppressed by putting the keyword "pipe" into the multivalued variable
+~#alwaysignore~var#~.
+
+The unix-command is executed via "sh" (the Bourne shell), so csh
+aliases may not be used.
+
+If invoked with a capital letter (Pipe), only the bodies of the
+messages are sent to the unix-command -- all headers are omitted,
+regardless of the value of "alwaysignore".
+
+If the "-p" argument is given with a pattern, then all the lines in
+the message are skipped until one that begins with the specified
+pattern.  (The pattern must exactly match the beginning of the line in
+the message.  Regular expressions are not used.)  All lines including
+and following the line containing the pattern are sent to the
+unix-command.
+
+If the pattern is of the form /pattern-one/,/pattern-two/ then after
+pattern-one is matched, the first line to match pattern-two is the
+LAST line sent to the unix-command.
+
+If the unix-command is omitted, then /bin/sh is used and the 
+pattern searched for is "#!".  This useful shorthand allows you to
+easily extract "shar files."
+
+Examples:
+ pipe patch     -- send the current message to "patch"
+ pipe -p %! lpr -- send the message to a postscript printer
+ pipe 2 7 more  -- send messages 2 and 7 through "more"
+ 1 | Pipe nroff -- send the body of message 1 to "nroff"
+%%
+
+@@endif !MAC_OS
+%merge%
+      merge [-N] folder-name
+
+The contents of the specified folder are placed in the active folder.
+If "-N" is not specified, a header summary is displayed for each
+message read (see "headers -?").
+
+Merge always reads messages from the actual folder file.  If the
+folder happens to be open, Z-Mail maintains an internal representation
+of that folder which may differ from the folder file itself (until the
+open folder is "updated").  Thus if XYZ is a folder that is open and
+in which you have deleted some messages, but which has not yet been
+updated, merging from XYZ will not reflect the message deletions.
+
+A list of all the merged messages is placed in the variable ~#output~var#~.
+%%
+
+%error%
+%%<echo
+
+%echo%
+    echo [-n | -d] [-h | -p] args
+    error [-n] [-h | -p] args
+
+"Echo" displays its arguments.  "Error" is the same as echo except
+that it also sets the variable ~#status~var#~ to -1.  
+@@ifndef MAC_OS 
+In GUI mode, "error"
+@@else !MAC_OS
+"Error"
+@@endif !MAC_OS
+pops up a dialog window containing the echoed arguments and waits for
+the user to click "Ok".
+
+If the "-n" flag is given, then no newline is appended.  If the "-d"
+flag is 
+@@ifndef MAC_OS
+given and Z-Mail is in GUI mode, 
+@@else
+given,
+@@endif !MAC_OS
+the arguments appear in a
+prompt box, which must be dismissed by clicking the "Ok" button.
+
+If the "-h" flag is given, then echo looks for formatting parameters
+of the type used in displaying header summaries, and replaces them
+with data taken from the current message.
+
+If the "-p" flag is given, then echo looks for formatting parameters
+of the type used in displaying 
+@@ifndef MAC_OS
+the line-mode prompt or GUI mode
+@@else MAC_OS
+the
+@@endif !MAC_OS
+title bar, and replaces those with data from the active folder.
+
+Examples:
+    echo -h This message is from %a and is dated %d
+might produce:
+    This message is from z-code!argv and is dated Dec 14, 1990.
+
+    echo -p There are %n new messages to read in %F.
+might produce:
+    There are 5 new messages to read in /usr/spool/mail/argv.
+
+Note that "-h" and "-p" cannot be used simultaneously.
+%%
+
+%undigest%
+    undigest [-m] [-p pattern] [msg-list] [filename]
+
+A "digest" is a mail message which is a collection of other mail
+messages mailed to a "moderator" by other users.  The moderator
+compiles all the messages into a folder and sends the result to all
+the subscribers of the mailing list.  The undigest command
+disassembles the entries into the set of messages which comprises the
+digest.
+
+The "-m" option merges these messages into the current folder.  If
+"-m" is not given and a filename is specified, a new folder is
+created, and the digest is undigestified into that folder.  The user
+may then open the folder to read the messages.
+
+The "-p" option specifies an alternate pattern to use as the digest
+article separator.  The pattern must match literally at the beginning
+of a line.  The default pattern is "--------" (eight hyphens).
+
+If a message list is specified, each digest is disassembled to the
+same filename (if given).  If no filename is given and the user did
+not request a merge, then a folder is created based on the "Subject:"
+of the digest.
+%%
+
+%await%
+    await [-T delay]
+
+Instructs 
+@@ifndef MAC_OS
+the shell 
+@@else !MAC_OS
+Z-Mail
+@@endif !MAC_OS
+to wait for new mail to arrive.  New mail is
+checked every 30 seconds by default (15 minutes if ~#use_pop#~ is
+set); a different delay can be specified by using the "-T" option or
+~#pop_timeout#~.
+
+@@ifndef MAC_OS
+If await is used in a pipeline, its output is its input plus the
+list of new messages that have arrived.  For example, to show the
+headers of all new messages and set the current message to the first
+new message:
+
+    await | from -
+
+In line mode, the await command terminates only when new mail arrives
+or a keyboard interrupt is generated.  In the other interfaces, await
+@@else !MAC_OS
+Await
+@@endif !MAC_OS
+returns immediately whether or not there is new mail, except that if
+there is no new mail, Z-Mail "sleeps" for the delay specified by "-T"
+and then checks a second time.
+%%
+
+%cd%
+      cd [directory]
+
+Change the current working directory to the specified directory
+@@ifdef MAC_OS
+.
+@@else MAC_OS
+, or to
+your home directory if none was given.
+@@endif MAC_OS
+
+@@ifndef MAC_OS
+If the variable ~#cdpath~var#~ is set to a list of directory names,
+and the named directory is not an absolute path (i.e., does not begin
+with "/" or "~"), Z-Mail searches the ~#cdpath~var#~ directories in
+the order given for the new directory and changes to the first one
+found.  The current working directory is always checked before any of
+those listed in ~#cdpath~var#~.
+@@endif !MAC_OS
+%%
+
+@@ifndef MAC_OS
+%chroot%
+      chroot [directory]
+
+In GUI mode, change the root directory for the ~#File Finder#~ to the specified
+directory.  If no directory is given, report the current root directory
+for the file finder (defaults to "/").  The File Finder will only allow
+the user to access files which have this directory as a prefix.
+%%
+
+@@endif !MAC_OS
+%pwd%
+      pwd
+
+Displays the current working directory.  The variable ~#cwd~var#~ also holds
+the current working directory unless you have changed it.
+%%
+
+%undelete%
+%u%
+%%<delete
+
+%delete%
+%dp%
+%dt%
+      delete [msg-list]
+      undelete [msg-list]
+
+The "delete" command marks the specified messages as deleted.  If no
+message list is given, the current message is deleted.
+
+@@ifndef MAC_OS
+In line mode, deleted messages are not shown in the header summary
+display unless the variable ~#show_deleted~var#~ is set.  In
+GUI mode, deleted 
+@@else !MAC_OS
+Deleted
+@@endif !MAC_OS
+messages are shown so they can be selected for
+undelete or other operations.
+
+Deleted messages are ignored by the ~#pipe~cmd#~ command and by those
+commands that display messages, but most other commands include all
+messages whether deleted or not.
+
+Deleted messages are lost forever when the folder is updated (by the
+~#update~cmd#~ command, by changing folders without the "!" flag, or by
+exiting with ~#quit~cmd#~).  Deleted messages can be recovered by the
+"undelete" command at any time BEFORE the folder is updated.
+
+See also the variable ~#show_deleted~var#~.
+%%
+
+@@ifndef MAC_OS
+%history%
+      history [-h] [-r] [number]
+
+Display the command history that Z-Mail has recorded.  Option "-h"
+suppresses the history numbers, and option "-r" shows the history in
+reverse order (most recent first).  If a number is given, that many
+lines of history are displayed.
+
+The number of commands that zmail records is controlled by the
+variable ~#history~var#~.  If ~#history~var#~ is not set,
+Z-Mail remembers only the previous command (equivalent to history=1).
+
+The basic forms of history reference are as follows, where (N is a
+number and str is any string):
+
+  !str      most recent command beginning with str
+  !?str?    most recent command containing str
+  !N        command N from the history list
+  !-N       the Nth previous command
+  !!        previous command (same as !-1)
+  !$        last word of previous command
+  !*        all arguments of previous command
+
+Modifiers (H can be str, ?str?, N or -N, n is a number or $):
+
+  !H:$      last word of referenced command
+  !H:n      nth word of referenced command
+  !H:n-m    nth through mth words of command
+  !H:-n     word 0 (command name) through n of command
+  !H:*      all arguments of command (same as !H:1-$)
+  !H:n-     word n through next-to-last word
+  !H:p      print but don't execute command
+
+  !{R}str   append str to reference R (R is any form above)
+
+It is not possible to combine :p with any of the other modifiers.
+
+See also the variables ~#ignore_bang~var#~ and ~#nonobang~var#~.
+%%
+@@endif !MAC_OS
+
+%folders%
+      folders
+
+List the files in the directory named by the variable ~#folder~var#~.  These
+files are assumed to be folders of mail messages that can be read in
+by the ~#folder~cmd#~ command (see "folder -?").
+
+@@ifndef MAC_OS
+@@ifndef FOLDER_DIALOGS
+In GUI mode, "folders" brings up the Folder Manager, and is thus a
+shorthand for the command "~#dialog~cmd#~ Folders".
+
+@@endif /* !FOLDER_DIALOGS */
+See also the ~#ls~cmd#~ and ~#folder~cmd#~ commands.
+@@endif !MAC_OS
+%%
+
+@@ifndef MAC_OS
+%stty%
+      stty [options]
+
+The "stty" command is equivalent to the UNIX command, "stty".  All
+options are the same.  Some settings are temporarily changed while
+Z-Mail is running, but are restored when Z-Mail exits.  This command
+has no effect in GUI mode.
+%%
+
+@@endif !MAC_OS
+%ask%
+    ask [-noecho] [-input|-file|-list var_name] [-default "text"]
+        [-must_match] "question" [choice1 choice2 ... ]
+
+The "ask" command asks a question and waits for a reply.  In GUI mode,
+"ask" collects the reply by opening a dialog box.  All command-line
+options to "ask" can be abbreviated to one or more significant letters
+(only the first letter is examined).
+
+The "-noecho" option keeps "ask" from echoing a user's
+response to a question. Without the "-noecho" option, 
+when you type a response to a question presented by "ask," 
+you can view what you are typing in. With the "-noecho" flag, 
+"ask" doesn't display what you type. 
+This is particularly useful when using ask to prompt for passwords.
+
+The "-input" option can be used to specify a variable name in which
+the user's typed response will be stored.  In this case, a list of
+choices may also be provided, which are displayed along with the
+question.  The first item in this list is treated as a default choice.
+If the "-must_match" option is present, the user is forced to either
+select one of the choices or to cancel the operation.
+
+The "-file" option works just like the "-input" option, but the user
+is given a file-finder dialog in GUI mode.
+
+The "-list" option works just like "-input", but the choices are taken
+as message lists and the user is prompted with a list of message
+summaries associated with each message in the list.  (See example below.)
+Note: in line mode, message summaries aren't given in the prompt; only
+the text of the message list is given as if "-input" were used.
+
+The type of response varies depending on the nature of the question and the
+choices provided.  If no "-i" option is provided, the question is
+assumed to be a simple "yes/no" question, and Yes or No answers are
+accepted.  The answer given may be determined by the value of the
+variable ~#status~var#~ when the command returns.  The status is 0 (zero) if a
+choice was made or a Yes response was given, 1 (one) if no choice was
+made or a No response was given, and -1 (negative one) if the
+operation was canceled.
+
+Examples:
+
+    function newfolder() {
+        ask -f newfolder "Enter a folder name:" +mbox +record
+        if $status != 0
+            return
+        endif
+        folder $newfolder
+    }
+
+This function asks the user to enter a name, with +mbox and +record as
+being a the initial choices.  If the user answered the question, the
+variable "newfolder" is set to the user's response.  If the user
+canceled the operation without answering the question, the function
+returns (having tested $~#status~var#~).
+
+    function priority_items() {
+        pick -p A | set A_items
+        ask -l msg "Which message would you like to see?" $A_items
+        if $status == 0
+            display $msg
+        endif
+    }
+
+This function finds all messages that have a priority level "A" and
+sets them into a variable called A_items.  The ask command then
+puts up a dialog displaying all the message summaries of the A_items.
+The message selected is returned as a message number and set in a new
+variable called "msg".  The message is then shown using the
+~#display~cmd#~ command.
+%%
+
+%unfilter%
+%%<filter
+
+%filter%
+     filter [-n] [filter-name [command [search-options]]]
+     unfilter filter-name
+
+The "filter" function installs a filter to be invoked either when a
+folder is opened or when new mail arrives in the system folder.  Each
+new filter is added to the list of existing filters, replacing any
+filter that has the same name.
+
+Filters are executed in alphabetical order by name, regardless of the
+order in which they are created.  This allows sets of filters to be
+defined and new filters to be added in an ordered manner by selecting
+appropriate names.  In most cases, the order in which filters are
+executed is not significant.  However, if any filters use tests of the
+status of messages (saved, deleted, etc.) those filters should be
+named so as to order them after filters that save or delete messages.
+
+The command to be executed as the filter must be a single argument and
+must be quoted if it contains spaces.  Messages are selected for
+filtering using the same options as the ~#pick~cmd#~ or ~#search~cmd#~
+command.
+Some example filters:
+
+    filter expire-old-mail delete -ago 3 months
+
+Deletes mail older than 3 months.
+
+    filter save-announce "save +announce" -i -s announce
+
+Saves messages with the word "announce" the in their "Subject:" lines
+into the folder "announce" in the user's folder directory.  The word
+"announce" is matched case-insensitively.
+
+Some commands cannot be executed as filters.  These include:
+
+    ~#await~cmd#~    ~#filter~cmd#~   ~#quit~cmd#~     ~#sort~cmd#~   ~#update~cmd#~
+
+The ~#folder~cmd#~ command can be used to open a new folder during a filter,
+but be sure always to add the new folder without updating the current
+folder.
+
+If the "-n" option is given, the filter applies only to new mail that
+arrives while Z-Mail is being used interactively.  This should be used
+for filters that perform interactive commands or make announcements.
+For example:
+
+    filter -n meeting "~#echo~cmd#~ You have a meeting" -i -s meeting
+
+Other filters may be applied to any folder at the time it is opened by
+using the "-f" option of the ~#folder~cmd#~ command or by using the "-filter"
+option on the Z-Mail command line:
+    folder -f +mbox
+    zmail -filter -folder +mbox
+
+In all other cases, filters are applied to new messages that arrive in
+the system mailbox while Z-Mail is being used.  This filtering can
+only be suppressed by removing the filters.  The "unfilter" command is
+used to remove one or more filters.  The command "unfilter *" removes
+all filters.
+%%
+
+%shift%
+      shift [-m | N]
+
+This command can be used to help parse the arguments of a user-defined
+function.  When a user-defined functions is invoked, the remaining
+words on the command line are placed into parameter variables called
+$1, $2, etc.  $argc contains the number of arguments ("argument
+count").  $argv gives the entire argument list ("argument vector"),
+and $* is a shorthand synonym for $argv.  $1 through $N reference
+individual words.  The variable $0 is the name of the current
+function.
+
+The "shift" operation removes a single argument from the beginning of
+the list of words.  If a numeric argument is given, that number of
+words is shifted.  The "-m" option of the shift command causes any
+leading message list to be removed from the current argument list.
+This message list can be captured in a named variable by using the
+~#pipe~cmd#~ syntax, and is otherwise stored temporarily in the variable
+~#output~var#~.
+
+For example:
+
+    function save() {
+        shift -m | set msgs              # save any message list
+        if $argc < 2
+            ask -i filename "Filename: " # prompt for a file
+        else
+            set filename = $1            # use the first argument
+        endif
+        builtin save $msgs $filename
+    }
+%%
+
+%attach%
+      attach [-rehash] [-load file] [-merge file] [-save file]
+
+      attach -alias alias_name alias_type
+      attach -path [directory:directory...]
+      attach -type keyword "viewer program" "editor program"
+      attach -code keyword "encoder program" "decoder program"
+      attach -encode type_key code_key
+      attach -default code_key
+
+This command permits interactive modification of the attachment-type
+information that is specified in the attach.types file in the Z-Mail
+library directory (usually /usr/lib/Zmail).  If no options are
+specified, the current attachment types and codes are displayed.  The
+basic options process attachment-type information files:
+
+  -rehash       Clear the attachment type information
+                  and re-read the /usr/lib/Zmail/attach.types
+                  file (and files named by the variable
+                  ~#attach_types~var#~).
+  -load         Clear the current attachment type
+                  information and read new attachment
+                  information from the indicated file.
+  -merge        Read information from the indicated
+                  file and add it to the current
+                  attachment type information.
+  -save         Save the current attachment information
+                  to a file.
+
+The format of these files is the same as /usr/lib/Zmail/attach.types.
+
+The remaining options directly add to or modify the current attachment
+type information.  Each option corresponds to one of the declarations
+used in an attachment type information file.
+
+  -alias        Messages labeled as type alias_name
+                  should be treated as type type_key. 
+  -path         Add a list of directories to those
+                  searched for programs used to encode,
+                  decode, edit, and view attachments.
+  -type         Define (or redefine) the viewer and
+                  editor programs associated with a
+                  file type keyword.
+  -code         Define (or redefine) the encoder and
+                  decoder programs associated with an
+                  encoding keyword.
+  -encode       Associate an encoding with a file type.
+  -default      Specify the default encoding to use if
+                  one is required.
+
+For example, the following command specifies that your own search path
+(in the environment variable $PATH) is used in addition to the default
+path:
+
+      attach -path $PATH
+
+Options "-load", "-merge", "-save", and "-rehash" can be specified
+multiple times and are processed in the order given.  Only one "-alias",
+"-code", "-type", "-path", "-encode", or "-default" option can be used in each
+"attach" command.  If options are not given, the current path, types,
+and encodings are listed.
+
+See also the ~#attach_types~var#~ variable and the ~#detach~cmd#~ command.
+%%
+
+%detach%
+      detach [-temporary] [<part-id>] [<processing>] [msg-number] [file]
+      detach [<part-id>] -info <info-key> <variable> [msg-number]
+      detach -list
+
+This command selects one or more attachments from a single message and
+detaches them, placing them into files.  If only a single part is to
+be detached, the optional file argument following the message number
+is used as the output file.  If a file name is the only argument
+given, its name is used to identify the part to detach.
+
+The <part-id> specifies which attachment to detach, and may be any of:
+
+  -part N           Attachment part number N.
+  -name name        The attachment named name.
+  -all              All the attachments of the message.
+
+If no <part-id> is given, and no file name was specified, then "-all"
+is assumed.  In this case, each of the attachments is detached to a
+file having the same name as the attachment name, in the current
+directory.  If "-part" or "-name" is given after "-all", only the part
+specified by the latter argument is detached.  Using "-all" causes
+each attachment to be detached using its own name, so no output file
+name may be specified with "-all".
+
+The names and part numbers for the attachments are displayed using
+"detach -list".  Also displayed is information about the type of each
+attachment, the way each attachment was encoded for shipping, and a
+short description of each attachment if the sender provided any.  The
+type and encoding information can be used to process the attachments
+using the <processing> options:
+
+  -code encode_key          Decode as indicated by encode_key.
+  -delete                   Remove from the message on update.
+  -display                  Display after detaching.
+  -type type_key            Display as indicated by type_key.
+  -undelete                 Reverses "-delete" prior to update.
+
+If the attachment is encoded but no "-code" option is given, then
+Z-Mail attempts to discern an encode_key from the attachment.  If
+"-display" is given but "-type" is not, Z-Mail attempts to obtain a
+type_key from the attachment.  It is not necessary to specify both
+"-display" and "-type" except to change the type used for display.
+
+The "-type" option may not be used with "-all".
+
+Parts removed with "-delete" remain available until the next folder
+update.  At any time before an update is performed, deleted parts
+may be recovered with "detach -undelete".  Once the folder has been
+updated, deleted parts cannot be undeleted.
+
+The "-temporary" option tells Z-Mail to delete temporary files
+created when a file is detached.  Z-mail deletes the files when the
+folder from which they were detached is closed. This option is
+implied when you invoke Z-Mail with the "-display" option.
+
+The "-info" option retrieves data from the attachment as indicated
+by the <info-key> and stores that data in the named <variable>.  The
+possible values for <info-key> are:
+
+  parts-list          Part numbers of all parts (for iteration).
+  name                Name (may be a temporary file name).
+  id                  MIME content-id, if any.
+  type                MIME type.
+  encoding            MIME encoding, if any.
+  size                Size in bytes, before decoding.
+  param-charset       MIME character set (for text parts).
+  pruning             One of "none", "gone" or "to-be-deleted".
+
+Arbitrary parameters modifying a part's content-type may be retrieved
+with an <info-key> of the form "param-xxx" where "xxx" is the name of
+the desired parameter.  The "charset" is the most commonly needed.
+
+For compatibility with version 2.0 of Z-Mail, the options "-encoding"
+and "-use" are synonyms for "-code" and "-type" respectively.
+%%
+
+@@ifndef MAC_OS
+%resume%
+%fg%
+%%<jobs
+
+%jobs%
+      jobs
+      resume [job]
+
+The "jobs" command displays a list of the suspended compositions.
+Each composition is identified by a number.  The most recently
+suspended composition is also marked with a "+" sign.  This is the
+composition that is resumed by the "resume" command by default.
+
+Note that if header-editing is in effect, the "jobs" listing may not
+accurately reflect the state of the To: and Subject: lines in the
+editor file.
+
+The "resume" command resumes a composition suspended by use of the
+"~z" escape.  The optional job argument is an integer from the "jobs"
+list corresponding to the composition to be resumed.  If no job is
+specified, the most recently suspended composition is resumed.  The
+command "fg" is a synonym for "resume".
+
+These commands are not used in the GUI mode, because each composition
+job has its own input window and never needs to be suspended.
+
+Note that suspending of compositions is not true job control, in the
+sense used by some shells, because no external process is associated
+with a suspended composition.
+%%
+@@endif !MAC_OS
+
+%functions%
+%%<function
+
+%unfunction%
+%%<function
+
+%function%
+%define%
+%undefine%
+      function [-e] [name]
+      functions
+      unfunction name
+
+      function name() {
+          commands ...
+      }
+
+The command "function" creates or lists a user-defined function.  With
+no arguments, it lists all functions.  With only a name as an
+argument, it lists the text of the function with that name.  The
+"unfunction" command deletes the named function, or all functions if
+the name is "*".
+
+The -e option to "function" automatically invokes the default
+editor (specified by ~#wineditor~var#~, ~#editor~var#~,
+or ~#visual~var#~) on the named function.
+
+The command "functions" lists the names of all current user-defined
+functions without displaying their definitions.
+
+To define a function, the name must be followed by a set of empty
+parentheses "()" with no spaces between them, and the last argument
+must be an opening brace "{".  Succeeding lines are then read until a
+closing brace "}" is found at the beginning of a line (braces used for
+negation in message lists do not end the definition).  This text is
+stored as the function body.
+%%<-shared-functions
+%%
+
+%-shared-functions%
+When a user-defined ~#function~cmd#~ is invoked, the remaining words on the
+command line are placed into parameter variables called $1, $2, etc.
+$argc contains the number of arguments ("argument count").  $argv
+gives the entire argument list ("argument vector"), and $* is a
+shorthand synonym for $argv.  $1 through $N reference individual
+words.  The variable $0 is the name of the current function.
+
+Within a function, the variable ~#input~var#~ is the counterpart of the
+variable ~#output~var#~.  Recall that when a Z-Mail command completes, the
+variable ~#output~var#~ is set to the numbers of the messages affected by
+that command.  When a user-defined function appears on the right side
+of a pipe character (|) in a Z-Mail pipeline, the message numbers that
+are the "output" of the command on the left side of the pipe are
+passed to the user-defined function via "$~#input~var#~".  In addition, when a
+user-defined function is used as a filter (see the ~#filter~cmd#~ command),
+the number of the message being filtered is available as the value of
+"$~#input~var#~".  Since this variable is normally set only if the function is
+used in a pipeline or as a ~#filter~cmd#~, it can be used to test whether a
+pipeline is in progress.  For example:
+
+    function tellinput() {
+        if $?input
+            echo Messages piped to this function are: $input
+        else
+            echo This function is not in a pipeline.
+        endif
+    }
+
+    search -i -f bruce | tellinput
+
+If no messages were piped to the function, ~#input~var#~ will still be set,
+but will have an empty value.
+
+The ~#output~var#~ of a user-defined function is the same as the
+~#output~var#~ of the last command that function executes.  To set the
+~#output~var#~ of a user-defined function to a specific list of
+message numbers, use the ~#msg_list~cmd#~ command.
+%%
+
+%foreach%
+      foreach variable-name msg-list command
+      foreach variable-name (file-list) command
+
+The "foreach" command is similar to "eval" in that it causes its
+command argument to be re-parsed and executed.  However, each of the
+message numbers in the specified message list or file names in the
+specified file list is assigned to variable-name, one by one.  For
+each such assignment, the command is re-executed.  Thus, if there are
+five different messages listed, the command executes five times, with
+the variable "variable-name" set to each of the five messages in turn.
+
+If the arguments following the variable-name are enclosed in
+parentheses, they are treated as file names and metacharacters are
+expanded:
+
+    ?        Matches any single character
+    *        Matches any number of characters
+    [a-z]    Matches characters in the range a-z
+    {a,b,c}  Matches a, b, or c.
+
+If the arguments are not in parentheses, "^", "$", "*", ".", "{", and
+"}" are treated as message-list metacharacters as usual.  It is not
+possible to iterate over both file names and message numbers in the
+same "foreach" loop.
+
+If any of the commands in the loop returns a nonzero exit ~#status~var#~
+(e.g., sets the ~#status~var#~ variable to -1) the entire loop terminates.
+Note, however, that ~#cmd~cmd#~ aliases and functions may in some cases
+include commands that return a nonzero ~#status~var#~ without themselves
+returning nonzero.
+%%
+
+%each%
+      each msg-list command
+
+The "each" command is similar to "eval" in that it causes its command
+argument to be re-parsed and executed.  However, each of the messages
+in the specified message list is used as an argument to a separate
+invocation of the command.  Thus, if there are five different messages
+listed, the command executes five times, each time with one of the
+five messages as an argument in turn.  For example:
+
+  each 1-6 {2,5} 10 ~#reply~cmd#~
+
+executes:
+
+  reply 1
+  reply 3
+  reply 4
+  reply 6
+  reply 10
+
+Use cmd aliases or user-defined functions to allow "each" to invoke
+commands in more complicated ways.  The "\!*" syntax in cmds and the
+"$*" syntax in functions refer to the message number within the "each"
+loop.  For example:
+
+  cmd rep 'reply \!* -i'
+  each 1-6 {2,5} 10 rep
+
+executes:
+
+  reply 1 -i
+  reply 3 -i
+  reply 4 -i
+  reply 6 -i
+  reply 10 -i
+
+If any of the commands in the loop returns a nonzero exit status
+(e.g., sets the ~#status~var#~ variable to -1) the entire loop terminates.
+Note, however, that cmd aliases and functions may in some cases
+include commands that return a nonzero status without themselves
+returning nonzero.
+%%
+
+%-%
+%variables%
+Variables are modified by the ~#set~cmd#~ and ~#unset~cmd#~ commands.
+%%<set
+%%
+
+%unbutton%
+%%<button
+
+%button%
+%Button%
+
+   button [location] [options] [button-name] [command]
+   unbutton button-name
+
+In GUI and Lite modes, the "button" command creates a user-defined 
+button in the button panel of the Main, Compose, or Message window.
+You may create action buttons, which execute a Z-Script command
+or function when pressed, or toggle buttons, which alter the
+state of Z-Mail variables or options.
+
+If you specify no arguments, this command displays all the
+buttons for the current context, which by default is the Main
+window.  (Contexts are discussed below.)
+
+location may be specified as either the name of a window
+or the name of a button list:
+
+     -window main
+     -window message
+     -window compose
+     -buttonlist MainActions
+     -buttonlist MessageActions
+     -buttonlist ComposeActions 
+
+The -window option may be abbreviated as -w; the -buttonlist
+option may be abbreviated as -b.
+
+Groups of buttons that appear together in a window are
+specified in button lists.  The default button lists for the
+main, message and compose windows are shown above, you 
+may also specify a user-defined button list.
+
+Location may also be specified as a context:
+
+     -window-context windowname
+     -buttonlist-context buttonlistname
+
+These options may be abbreviated as -W and -B
+respectively.
+
+when these options are used in place of -window or
+-buttonlist, the specified location is used for all
+button commands that follow, until a different location
+is specified.
+
+
+options may be any of the following:
+
+
+ -no-msgs    if messages do not need to be selected
+             in order for this button to execute.  This
+             option may be abbreviated as -n, and only
+             applies to buttons in the main window
+             (or in the MainActions button list).
+
+ -position # specifies the position of the button;
+             buttons are numbered left to right starting
+             from 1
+
+ -final      to indicate that this button should always 
+             have the highest position number
+
+ -sensitivity expression
+
+             if the specified Boolean expression 
+             evaluates to false, the button is insensitive
+             (i.e., grayed out).  If the expression 
+             evaluates to true, the button is sensitive.
+
+ -focus-condition expression
+             if the specified Boolean expression changes
+             from false to true, the button gains focus.
+             (Focus refers to the selection rectangle that
+             appears around an interface object indicating
+             that Motif keyboard shortcuts will act upon
+             it.  You can change focus using the TAB key.)
+
+ -value expression
+             if this option is supplied, the button is a
+             toggle button, rather than an action button.
+             When the expression evaluates to false, the
+             button is toggled off; when it evaluates to
+             true, the button is toggled on.
+
+Focus and sensitivity expressions may take the 
+following forms:
+
+ expression ::= expr1 && expr2  (expr1 and expr2)
+                expr1 || expr2  (expr1 or expr2)
+                (expr)          (parentheses may be used
+                                 for grouping)
+                !expr           (expr is not true)
+                expr1 == expr2  (expr1 equals expr2)
+                expr1 != expr2  (expr1 does not equal expr2)
+                $variable
+                text-string
+                number          (expressions may also include
+                                 Z-Mail variables, strings,      
+                                 and numbers.)
+
+Value expressions are restricted to one of the following forms:
+
+ expression ::= A
+                !A
+ A ::= $variable         (returns contents of variable)
+       $?variable        (returns true if variable is set)
+       $variable:(value) (returns value if variable is set
+                          to value; returns null otherwise)
+       $?variable:(value)(returns true only if variable is
+                          set to value; returns false
+                          otherwise.)
+
+button-name specifies the text that appears on the button.  Specifying
+this argument will set both the name and label of the button to the
+same string. The "label" is the text that appears on the button;
+the "name" refers to the internal name of the widget.
+
+To specify a name and label that aren't identical, 
+use these options instead of the button-name argument:
+
+     -name button-name
+     -label button-label
+
+If you use only -name option, the specified text will also
+appear as the button label.  You must specify -name in order
+to use -label.
+
+command specifies the name of the Z-Script command or function
+that gets executed when the button is pressed.  If the -value
+option has been specified, command is optional.  If both -value
+and command are specified, command is executed after the value
+is toggled.
+
+The "unbutton" command is used to remove buttons from the window.
+"Unbutton *" causes all buttons to be removed.
+%%
+
+@@ifndef MAC_OS
+%menu%
+
+        menu [location] [options] [menu-name] [command]
+        unmenu menu-name
+
+The menu command is used to create and list user-defined menus
+and menu items in the GUI and Lite interfaces.  Each menu item
+created is associated with a Z-Script command that gets executed
+when the menu item is chosen.
+
+You may modify the contents of the menu bar in the Main, 
+Message and Compose windows as well as the pop-up menus in
+the following locations:
+        
+ - the message summaries area of the main window
+ - the output area of the main window
+ - the command area of the main window
+ - the body area of the message window
+
+location is specified with one of the following options:
+        
+ -menulist menulistname
+ -menulist-context menulistname
+
+menulist name may be the name of any default menu list or any
+user-defined menu list.  Default menu list names for menu bars
+and pop-up menus are shown below:
+
+ main window menu bar    MainMenu
+ message window menu bar MessageMenu
+ compose window menu bar ComposeMenu
+ summaries pop-up menu   MainSummariesPopupMenu
+ output area pop-up      OutputStatictextPopupMenu
+ command area pop-up     CommandlineAfPopupMenu
+ message body pop-up     ReadMessageBodyPopupMenu
+
+There are also menu list names for each menu on a menu
+bar, as well as submenus (or "pullright" menus).  Menu list
+names for these menus take the form:
+
+        WindownameMenunameMenu
+
+For example, the menu list name for the Folder menu in the
+main window is MainFolderMenu.
+
+When the -menulist-context option is used, the specified
+location is used for all menu commands that follow, until
+a different location is specified.
+
+options may be any of the following:
+
+
+ -no-msgs    if messages do not need to be selected
+             in order for this item to execute.  This
+             option may be abbreviated as -n, and only
+             applies to menu items in the main window
+             (menu bar menus, the summaries pop-up menu, 
+             the command area pop-up menu, and the output
+             area pop-up).
+
+ -position # specifies the position of the item
+             items are numbered top to bottom starting
+             from 1, left to right for menu bars.
+
+ -final      to indicate that this item should always have
+             the highest position number
+
+ -separator  to indicate that this item is a separator line
+
+ -sensitivity expression
+             if the specified Boolean expression evaluates 
+             to false, the item is insensitive 
+             (i.e., grayed out).  If the expression 
+             evaluates to true, the item is sensitive
+
+ -focus-condition expression
+             if the specified Boolean expression changes
+             from false to true, the item gains focus.
+             (Focus refers to the selection rectangle that
+             appears around an interface object indicating
+             that Motif keyboard shortcuts will act upon
+             it.  You can change focus using the TAB key.)
+
+ -value expression
+             if this option is supplied, the item is a
+             toggle item, rather than an action item.
+             When the expression evaluates to false, the
+             item is toggled off; when it evaluates to
+             true, the item is toggled on.
+
+Focus and sensitivity expressions may take the 
+following forms:
+
+ expression ::= expr1 && expr2  (expr1 and expr2)
+                expr1 || expr2  (expr1 or expr2)
+                (expr)          (parentheses may be used
+                                 for grouping)
+                !expr           (expr is not true)
+                expr1 == expr2  (expr1 equals expr2)
+                expr1 != expr2  (expr1 does not equal expr2)
+                $variable
+                text-string
+                number          (expressions may also include
+                                 Z-Mail variables, strings,      
+                                 and numbers.)
+
+Value expressions are restricted to one of the following forms:
+
+
+ expression ::= A
+                !A
+ A ::= $variable         (returns contents of variable)
+       $?variable        (returns true if variable is set)
+       $variable:(value) (returns value if variable is set
+                          to value; returns null otherwise)
+       $?variable:(value)(returns true only if variable is
+                          set to value; returns false
+                          otherwise.)
+
+menu-name specifies the text that appears on the menu or
+item. Specifying this argument will set both the name and label of the
+menu or item to the same string. The "label" is the text that appears
+on the menu or item; the "name" refers to the internal name of the widget.
+
+To specify a name and label that aren't identical, 
+use these options instead of the button-name argument:
+
+ -name menu-name
+ -label menu-label
+
+If you use only -name option, the specified text will also
+appear as the menu label.  You must specify -name in order
+to use -label.
+
+command specifies the name of the Z-Script command or function
+that gets executed when the item is chosen.  If the -value
+option has been specified, command is optional.  If both -value
+and command are specified, command is executed after the value
+is toggled.  command is also optional when the -separator
+option is specified.
+
+The "unmenu" command is used to remove menus or menu items.
+%%
+
+%unmenu%
+%%<menu
+
+%dialog%
+      dialog [-iconic] [-close] [-I icon-name] [-i] dialog-name
+
+Note that the -iconic option is not available in Z-Mail Lite.
+
+This command is used in GUI mode to cause a specified dialog to be
+opened.  The possible dialog-names are:
+
+ Aliases     Envelope    Templates
+ Browser     Headers     Toolbox*     
+ Save        Compose*    Printer 
+ Help        Search      Variables
+ Dates       Fonts*      Menus*
+ Colors*     Filters*    Buttons* 
+ Functions*  Compoptions Addfolder
+ Newfolder   Helpindex   Renamefolder
+ Multikey(+)
+
+Items marked with (*) are not available in Z-Mail Lite; items
+marked with (+) are available only in Z-Mail Lite.
+
+This command is most useful in a user-defined function that has been
+attached to a button.
+
+Any number of dialogs may be specified and they will all pop up.
+
+If the "-iconic" option is used, the dialog closed to its iconic state.
+If "-I <file>" is used, then <file> must contain an X11 bitmap which will
+be used as that dialog's window icon.
+
+If the "-close" option is used, the dialog is totally closed (not even
+in its iconic state).  This usually implies destruction of the dialog,
+whereas "-iconic" merely hides its visibility.
+
+If no dialog name is given, the action is taken on the window from
+where the command was given.
+%%<Buttons
+%%
+@@endif !MAC_OS
+
+%version%
+      version
+
+Print the version and copyright information for Z-Mail.
+%%
+
+%rename%
+      rename [oldfolder] newname
+
+This command renames oldfolder (or the current folder if oldfolder is
+not given) to newname.  Only opened, writable folders may be renamed.
+If a file having the new name already exists, rename requests that the
+name change be confirmed.  The old folder is updated into the new
+folder, making deletions and other changes permanent, and the old
+folder is then removed from the file system.
+%%
+
+%redraw%
+      redraw [-all] [msg-list]
+
+This command causes all windows to "refresh" in GUI and Lite modes.
+If the active folder has changed, the windows will change to reflect
+the new folder.  If a message list is specified or piped in, those
+messages are selected in the ~#Main window#~.  The "-all" option
+forces all message summaries in the ~#Main window#~ to be redrawn, but
+does not affect which messages are selected.
+%%
+
+@@ifndef MAC_OS
+%uniconify%
+      uniconify
+
+Available only in GUI mode, this command reverses the effects of the
+~#iconify~cmd#~ command.  If Z-Mail is not iconified, the command has no
+effect.
+%%
+@@endif !MAC_OS
+
+%remove%
+%rmfolder%
+      remove [-i] [-I] [-f] file1 [file2 ...]
+      rmfolder [-x] [-i] [-f] folder
+
+Remove listed files.  If a file is an open folder, then the folder is
+updated and closed unless the -f option (see below) is used.  The -i
+option interactively prompts to confirm removal.  If the
+~#verify~var#~ variable includes "remove" as one of its values, the -i
+option is implicitly set for every rm and rmfolder command.
+
+The "-I" option prompts you only if you are trying to remove a file
+not identifiable as a mail folder.  "rmfolder" implies the "-I" flag.
+
+The "-x" option to "rmfolder" causes any external index file associated
+with the named folder to be removed.  The folder is not affected.
+
+The "-f" option prevents any interactive prompting to confirm removal.
+%%
+
+@@ifndef MAC_OS
+%trap%
+      trap [[command] signal [signal ...]]
+
+When "trap" is executed, the specified "command" is installed as a
+handler for the indicated signals.  If a trapped signal is received
+by Z-Mail, "command" is executed.  Signals must be listed by number,
+not by name; the number for each signal depends on your operating
+system.
+
+If no command is given, the traps for the listed signals are removed.
+
+If 0 is specified as the signal, the command is executed when Z-Mail
+is about to exit.
+
+If neither a command nor a signal is given, "trap" lists the current
+signal traps.
+
+NOTE:  The following signals cannot be trapped:
+
+    ILL (4)     KILL (9)    BUS (10)    SEGV (11)
+    PIPE (13)   ALRM (14)   STOP (17)   CHLD (20)
+    CONT (19)   TTIN (21)   TTOU (22)   VTALRM (23)
+
+    TSTP (BSD) or CLD (SVR3)  (both number 18)
+
+Some of these signals may not be present on all operating systems.
+If a signal listed above is not present on your system, then its
+number is not reserved.
+%%
+
+@@endif !MAC_OS
+%builtin%
+      builtin command [arguments]
+
+The "builtin" keyword is not a command, but rather a command
+modifier.  It instructs Z-Mail to use a predefined, internal ("built
+in") version of a command.  User-defined functions and ~#cmd~cmd#~
+abbreviations are thus bypassed, even if their name is the same as
+that of a Z-Mail command.  If the "command" following "builtin" is not
+a built-in Z-Mail command, Z-Mail will respond with "Command not
+found."
+
+Examples:
+
+    builtin ~#delete~cmd#~ 7
+    builtin ~#read~cmd#~ 5
+    builtin ~#set~cmd#~ ~#realname~var#~ = "This is My Name"
+%%
+
+%if%
+%else%
+%endif%
+This is not a true command; rather, it is a control structure.
+The if...else...endif conditional may be used only in user-defined
+functions and scripts.  The syntax is:
+
+    if condition
+        commands
+    else
+        commands
+    endif
+ 
+The "else" part may be omitted.  The "condition" may have any of
+these forms:
+
+      x      x == y      x < y      x <= y      x =~ y
+      !x     x != y      x > y      x >= y      x !~ y
+ 
+Comparisons with =~ and !~ expect a filename pattern on the right hand
+side, which is matched against a string on the left hand side.
+
+A few file test operations are also supported as the "condition":
+
+      -e file        - file exists
+      -F file        - file is a folder containing messages
+      -z file        - file is empty (zero size)
+
+File test operations may be negated by preceding them with an `!':
+
+      ! -e file      - file does not exist
+      ! -F file      - file is not a folder
+      ! -z file      - file is not empty
+
+In file test operations, the usual abbreviations (%, &, ~, +) may be
+used.  However, folder numbers (#0, #1, #2, ...) are NOT converted to
+the names of those folders.
+%%
+
+%debug%
+      debug [0]
+
+This command toggles a debugging trace.  This is useful for debugging
+Z-Script functions and Z-Mail initialization files.
+
+Given no argument, debug toggles the trace on if it is off, or toggles
+it off if it is on.  Given the argument 0, debug always turns the trace
+off.
+%%
+
+%-%
+%task_meter%
+      task_meter [-on|-off|-check|-wait] [message]
+
+This command can be used to display a notice when a Z-Script function
+is performing a time-consuming task.
+
+Options:
+    -on      Turns task meter on (pops up the dialog)
+    -off     Turns task meter off (pops down the dialog)
+    -check   Sets $status to 1 if the Stop button was pressed
+    -wait    Waits until the Stop button is pressed
+%%
+
+@@ifndef MAC_OS
+%screencmd%
+      screencmd [-p] any-statement
+
+(Lite mode only)
+When screencmd precedes a statement, Z-Mail Lite relinquishes control
+of the terminal screen for the duration of the statement.  This allows
+commands that perform cursor addressing (such as vi and emacs) to
+work properly.
+
+The -p option to screencmd causes Z-Mail Lite to print the prompt
+
+      Press ENTER to resume Z-Mail Lite: 
+
+and wait until a ENTER is pressed before retaking control of the screen.
+This prevents Z-Mail Lite from erasing the output of a statement
+before you've read it.
+%%
+
+@@ifndef ZMAIL_BASIC
+%uninterpose%
+%%<interpose
+
+%interpose%
+      interpose -before command interposing_function
+      interpose -after command interposing_function
+      interpose -operation keyword interposing_function
+
+      uninterpose -before command interposing_function
+      uninterpose -after command interposing_function
+      uninterpose -operation keyword interposing_function
+
+This command allows a user-defined function to be "interposed" or
+"piggybacked" on a built in command or operation.  This means that whenever
+Z-Mail executes the command or performs the operation, the interposed
+function is also called.  Functions (called "interposers") can be
+interposed either before or after commands, but only before (not
+after) operations.
+
+The specified interposing function must be an existing user-defined 
+function; you cannot specify Z-Script directly in the "interpose"
+command line.
+
+The "uninterpose" command removes an interposer.  If the string "*"
+appears in place of an interposing_function, all interposers of the
+indicated command or operation are removed.  Note that to completely
+remove interposers of a command it is necessary to do both:
+
+    uninterpose -before command *
+    uninterpose -after command *
+
+Operation interposers are called whenever the operation occurs, no
+matter what the reason.  Command interposers are called only when the
+named command (or one of its synonyms) executes.  The following
+operations may be interposed upon:
+
+    display    -- a message is displayed to the user
+    delete     -- a message is marked for deletion
+    undelete   -- the deletion mark is removed from a message
+    save       -- a message is saved (written, copied) to a file
+
+    mail       -- a composition is initiated
+    attach     -- a file is attached to a composition
+    send       -- a completed composition is sent
+
+This list obviously does not include all possible Z-Mail operations.
+In most cases, an operation can be caught by interposing on the
+corresponding Z-Script command.  The operations listed constitute those
+that:
+
+    may occur automatically (e.g. the "autoprint" variable causes the
+      "delete" command to display a message);
+    are not a direct consequence of a Z-Script command (e.g., the
+      "attach" operation may, or may not, occur during a composition);
+    are common to several Z-Script commands that are not synonymous
+      (e.g., "mail" is common to the commands "mail" and "reply").
+
+For example, consider the command "dp" (short for "delete and print").
+This executes neither the "delete" nor the "display" commands, but
+triggers both the "delete" and the "display" operations.
+
+Other examples:
+
+    Execute the "display" command when the "show_deleted" variable is
+    not set.  The "display" command asks whether to undelete before
+    displaying.  Interposers for the "display" command are called.
+    Interposers for the "undelete" and "display" operations may also
+    be called, but the interposers for the "undelete" command are not.
+
+    Execute the "write" command.  Interposers for the "write" command
+    and for the "save" operation are called, but interposers for the
+    "save" command are not.
+
+When interposed before a command, the user-defined function receives
+exactly the same arguments (and piped-in message list, via
+$~#input~var#~) as the command itself.  The interposer can determine
+which command caused it to be called by examining the value of
+positional parameter $0.  Some commands have synonyms; for example,
+the commands "~#read~cmd#~", "~#print~cmd#~", and "~#display~cmd#~"
+all call the same interposers, regardless of which name is used to
+install the interposer.
+
+When interposed after a command, the interposer is passed the command
+name as $0.  If the command affected one or more messages, that list of
+messages forms the other parameters to the interposer.
+
+When interposed on an operation, the interposer is passed the keyword
+describing that operation as $0.  If the operation affects one or more
+messages, those message numbers appear next.  If the operation affects
+a file, the name of that file follows the message numbers.
+
+Interposers on operations currently are passed no other parameters.
+
+Each interposed function automatically disables itself during its
+execution, so it is safe for the function to make another call to the
+command or operation on which it is interposed.  Note, however, that
+certain combinations are ignored; for example, invoking "compcmd send"
+from a "send" interposer has no effect, because the same message can
+be sent only once.
+
+When called from within an interposing function, the special command
+"thwart" prevents all remaining interposers and the command itself
+from being executed.  If the function is an after-command interposer,
+"thwart" substitutes its argument for the return value of the command,
+but does not otherwise affect execution of the command.  Like
+"return", "thwart" immediately exits the calling function and sets the
+variable ~#status~var#~ to its integer argument.  If the function is
+interposed on an operation, this status is sometimes lost (replaced by
+the status of the command performing the operation).
+
+Notes:
+
+It is much more useful to interpose on the operation "send" than after
+the command "~#mail~cmd#~".  The composition may still be in progress when the
+"~#mail~cmd#~" command returns.
+
+The "~#attach~cmd#~" command is used to define attachment types, not to attach
+files to messages.  Interposing on the attach operation (NOT command)
+is almost always what is intended.
+
+The "~#flags~cmd#~" command can be used to change message status directly,
+bypassing the interposers for operations such as "~#delete~cmd#~".
+
+WARNINGS:
+
+Changing folders within an interposer is not prohibited, but can have
+unpredictable side-effects for message operations if the interposer
+does not also call "thwart".
+
+Certain "~#compcmd~cmd#~" operations automatically "thwart" when called from an
+interposer on the "send" operation.  These include "edit-message" and
+"edit-visual".
+
+Use at your own risk.
+
+Examples:
+
+The following checks an X-Acknowledge header on any message that is
+displayed and asks the user to confirm reading the message.
+ 
+    function confirm_read() {
+        #
+        # Get the value of the X-Acknowledge header
+        set acks = "$[%?X-Acknowledge?]"
+        # Check whether it includes "read", using lower case
+        # The X makes sure "if" never receives an empty arg
+        if "X$acks:l" =~ *read*
+            # Check to see if message has already been read
+            # by checking the content of the Status: header, which
+            # will contain an 'R' if so.
+            set stat = "$[%?Status?]"
+            if "X$stat" =~ *R*
+                # Uncomment the following line if you're testing
+                # the implementation of read receipt and want to
+                # verify you get here
+                #echo -d "Already read!"
+                return -1
+            endif
+            # Ask whether to acknowledge, not to, or cancel
+            ask "Acknowledge that you've read this message?"
+            if $status == 0
+                # If acknowledged, send the reply
+                reply -send -file $home/.acknowledged
+            else
+                if $status < 0
+                    # If canceled, don't continue display
+                    thwart
+                endif
+            endif
+        endif
+    }
+    interpose -operation display confirm_read
+    my_hdr X-Acknowledge: "[read|no]"
+
+The following prevents any further interposers from being assigned or
+removed.
+ 
+    function nope() {
+        # Prevent the interpose command
+        if $0 =~ *interpose
+            thwart
+        endif
+        # Prevent "unfunction nope" in any form
+        if " $* " =~ "* nope *"
+            thwart
+        endif
+    }
+    interpose -before interpose nope
+    interpose -before uninterpose nope
+    interpose -before unfunction nope
+%%
+@@endif /* ! ZMAIL_BASIC */
+@@endif !MAC_OS
+
+@@ifndef MAC_OS
+%compcmd%
+  compcmd [job] cmd[:off] [arguments]
+
+Perform a command on a composition.  The "job" argument specifies the
+composition to be affected:
+  
+    compcmd %3 append-line "Sincerely yours,"
+  
+If the job is omitted, the current composition is affected.  See the
+"~#jobs~cmd#~" command for more information.  When an interposer
+(defined with the "~#interpose~cmd#~" command) on "~#attach~cmd#~" or
+"~#send~cmd#~" is called, the composition that called the interposer is
+the current composition.  
+@@ifdef ZMAIL_BASIC
+The interpose command is not available in Z-Mail Basic.
+@@endif ZMAIL_BASIC
+  
+The "compcmd" facility currently supports the following "cmd"
+directives:
+  
+ append-line line_to_append  Append the indicated 
+                             text and a newline to the 
+                             message body.
+  
+ append-text text_to_append  Append the indicated text to 
+                             the message body.
+  
+ attach-file filename type   Attach a file of specified 
+                             type.
+  
+ blind-carbon recipient_name [ ... ]
+                             Add BCC recipients.
+  
+ cancel                      Cancel the message.
+  
+ carbon-copy recipient_name [ ... ]
+                             Add CC recipients.
+@@ifndef ZMAIL_BASIC
+  
+ directory-check             Pass all addresses through the 
+                             address browser.
+@@endif
+  
+ edit-message                Call up the "$~#wineditor#~" 
+                             or "$~#editor~var#~" external 
+                             editor.
+  
+ edit-visual                 Call up the "$~#visual~var#~" 
+                             external editor.
+  
+ erase                       Erase the contents of the 
+                             message.
+  
+ forward-unindented [message_number]
+                             Forward the current (or 
+                             specified) message from the 
+                             active folder to the message 
+                             body.
+  
+ get-header header_name      Place the current value of the 
+                             indicated header in the 
+                             variable "header_value".
+  
+ include-message [message_number]
+                             Include (indented) the current
+                             (or specified) message into the 
+                             composition.
+
+ insert-file filename        Append a file to the message 
+                             body.
+
+ insert-header header_name: header_value
+                             Add any header.  You must 
+                             include a colon after the 
+                             header_name and a space 
+                             before header_value.
+ 
+ kill                        Cancel the message (prompt for 
+                             confirmation).
+
+ log [logfilename]           Activate outgoing header log.  
+                             If you specify a file name, it 
+                             is used only if the $~#logfile~var#~ 
+                             variable is not set.
+@@ifndef MAC_OS
+  
+ pipe shell_command          Pass the message body through 
+                             the specified shell command.
+  
+ preview attachment_number   Preview an attachment.
+@@endif !MAC_OS
+  
+ record [recordfilename]     Activate the outgoing message 
+                             record. If you specify a file 
+                             name, it is used only if 
+                             $~#record~var#~ is not set.
+  
+ return-receipt-to           Request return-receipt.
+  
+ save-draft filename         Save composition to filename. 
+                             The entire message, including 
+                             headers, is saved. If filename
+                             exists, the draft is appended
+                             to it.
+  
+ save-to-file filename       Append the message body to 
+                             a file.
+  
+ send-message                Send the message.
+  
+ sort-addresses              Pass each address header 
+                             through the sort routine.
+  
+ subject subject_text        Set the subject of the 
+                             message.
+  
+ to recipient_name [...]     Add TO recipients.
+  
+ use-signature               Activate ~#autosign~var#~.
+  
+ write-to-file [filename]    Write (destructively) the 
+                             message to a file.
+  
+Any operation that enables a feature (e.g. use-signature) or adds a
+header also has a corresponding "off" variant.
+
+@@ifndef ZMAIL_BASIC
+The get-header directive returns the header value in the header_value
+variable, which is the same variable used by the dynamic header
+mechanism (see ~#my_hdr~cmd#~) to assign the value of a header.  This makes it
+easy for a dynamic-header function to leave the value of the header
+unchanged.
+@@endif ZMAIL_BASIC
+%%
+@@endif !MAC_OS
+
+%enable%
+%%<disable
+
+%disable%
+    disable commandname1 [commandname2 ...]
+    enable commandname1 [commandname2 ...]
+ 
+These commands restrict or grant access to other Z-Script commands.
+These commands normally may be used only in the system.zmailrc
+file, by your Z-Mail installer/maintainer.
+
+Examples:
+
+@@ifndef MAC_OS
+  disable sh            # Restrict the "~#sh~ui#~" interpreter
+@@else MAC_OS
+  disable button        # Restrict "~#button~ui#~ command
+@@endif
+
+A disabled command still operates normally when it is used in the
+system.zmailrc file.  Once system.zmailrc has been read, however, any
+further attempt to execute a disabled command is refused.
+
+The "enable" and "disable" commands are themselves disabled when
+Z-Mail starts up.  To permit these commands to be used outside the
+system.zmailrc file, the "enable" command must be applied.
+
+Example:
+
+  enable disable        # Grant access to "disable"
+  enable enable         # Grant access to "enable"
+ 
+Note that disabled commands are completely restricted, even if they
+appear in Z-Script functions defined before the command became
+disabled.  Choose with care those commands that are to be disabled.   
+%%
+
+@@ifndef MAC_OS
+%textedit%
+        textedit set-item areaname
+        textedit action [arguments ...]
+
+The textedit command is used to manipulate text in text areas
+without using the mouse.  It is designed for use primarily
+in Z-Script functions. 
+  
+When you use textedit, you must first specify the text area
+you wish to work with, using the first form of the command
+shown above.  areaname must be one of the following:
+  
+  command-field         command area
+  output-text           output area
+  message-body          body area of the message window
+  compose-body          body area of the compose window
+  to-header-field       To field of the compose window
+  subject-header-field  Subject field of the compose window
+  cc-header-field       Cc field of the compose window
+  bcc-header-field      Bcc field of the compose window
+  variable-description  description field in the Variables dialog
+  helpindex-text        description field in the Help dialog
+  alias-name-field      Alias Name field in the Aliases dialog
+  alias-address-field   Address(es) field in the Aliases dialog
+  header-name-field     Header Name field in the Envelope dialog
+  print-command-field   Print Command field in the Print dialog
+  main-messages-field   Messages field in the main window
+  compose-messages-field
+                        Messages field in the compose window 
+  message-messages-field        
+                        Messages field in the message window
+  datesearch-messages-field
+                        Messages field in the Date Search dialog
+  patternsearch-messages-field
+                        Messages field in the Pattern Search dialog
+  
+You may then use subsequent textedit commands to act upon the
+specified area:
+  
+        textedit action [arguments ...]
+  
+action may be one of the following:
+  
+  text-indent [string]  prefixes each line of selected text with        
+                        the specified string, or the value of
+                        the indent_str variable
+  text-unindent         removes a prefix from selected text
+  text-fill             formats selected text so that it spans
+                        the width of the text area
+  text-pipe command     pipes selected text through specified UNIX
+                        shell command
+  text-delete-all       delete all text in area
+
+  text-get-cursor-position variable
+                        assigns the current cursor location 
+                        (number of characters from the top of
+                        the text area) to the specified variable
+                        
+  text-get-selection-position variable1 variable2
+                        assigns the location of the beginning of
+                        the selection to variable1 and the location
+                        of the end of the selection to variable2
+  text-set-selection-position value1 value2
+                        selects the text between value1 and value2.
+                        If value1 and value2 are equal, or if value2
+                        is omitted, the cursor is placed at value1
+                        and no text is selected.
+  text-get-selection variable [...]
+                        assigns the selected text to the specified
+                        variable(s).
+  text-get-text variable
+                        assigns all text in the area to the specified
+                        variable.
+  text-set-cursor-position value
+                        places the cursor at the position specified
+                        by 'value'.  Value should be specified as
+                        number of characters from the top of the file.
+  text-save-to-file filename
+                        saves all the text in the area to the specified
+                        file
+  text-insert text      inserts specified text into the text area,
+                        at the insertion point
+  text-scroll-up        scroll text up one line
+  text-scroll-down      scroll text down one line
+  text-paste            paste contents of clipboard
+  text-set-selection-position start-point end-point
+                        xtselect text between specified start-point
+                        and end-point.  (start-point and end-point
+                        are specifed by the number of characters
+                        each is from the top of the text area)
+  text-end              move insertion point to end of text
+  text-backward-char    move insertion point backward one character
+  text-forward-char     move insertion point forward one character
+  text-delete-backward-char
+                        delete character to left of insertion point
+  text-delete-forward-char
+                        delete character to right of insertion point
+  text-beginning-of-line
+                        move insertion point to beginning of line
+  text-end-of-line      move insertion point to end of line
+  text-next-page        scroll text down one page
+  text-previous-page    scroll text up one page
+  text-delete-to-end-of-line
+                        delete text between insertion point and
+                        end of line
+  text-delete-to-beginning-of-line
+                        delete text between insertion point and
+                        beginning of line
+  text-beginning        move insertion point to top of text area
+  text-backward-word    move insertion point backward one word
+  text-forward-word     move insertion point forward one word
+  text-delete-backward-word
+                        delete the word to the left of the 
+                        insertion point
+  text-delete-forward-word
+                        delete the word to the right of the 
+                        insertion point
+  text-open-line
+                        insert a carriage return at the 
+                        insertion point
+  text-deselect         unselect text
+  text-cut-selection    cut selected text
+  text-copy-selection   copy selected text
+  text-clear-selection  delete selected text
+  text-select-all       select all text in the area
+  inputfield-accept     act like RETURN in text-entry "inputfields"
+  get-cursor-position   get current cursor position
+  next-line             move cursor to next line
+  previous-line         move cursor to previous line
+  forward-word          move cursor forward a word
+  start-selecting       begin selection at cursor position
+  stop-selecting        stop selecting text at cursor position
+  resume-selecting      continue selection at cursor position
+  paste                 paste cut or copied text at cursor
+  beginning             move cursor to start of text
+  end                   move cursor to end of text
+  backward-char         move cursor back one character
+  forward-char          move cursor forward one character
+  delete-backward-char  delete character to left of cursor
+  delete-forward-char   delete character cursor is on
+  beginning-of-line     move cursor to start of line
+  end-of-line           move cursor to end of line
+  delete-to-end-of-line delete from cursor to end of line
+  delete-to-beginning-of-line
+                        delete from cursor to start of line
+  backward-word         move cursor back one word
+  delete-backward-word  delete word to left of cursor
+  delete-forward-word   delete word cursor is on
+  open-line             insert new line above cursor
+
+  indent textstring     replace selection with specified 
+                        textstring, prefacing each line
+                        with the string specified by the
+                        indent_str variable
+  unindent textstring   replace selection with specified
+                        textstring
+  fill                  reformats selected text so it uses
+                        all the space between the left and
+                        right sides of the text area
+  pipe command          pipe selected text through command
+
+Note that the cursor position and the selection may be
+separate from one another.  Moving the cursor, inserting
+or deleting text does not necessarily move, clear, or 
+replace the current selection.
+%%
+@@endif !MAC_OS
+
+%arith%
+        arith variable = expression
+
+arith evaluates a mathematical expression and assigns the
+result to the specified variable.
+%%<-shared-math
+
+%calc%
+        calc expression
+
+calc evaluates a mathematical expression and outputs the
+result.
+
+%%<-shared-math
+
+%-shared-math
+The syntax and precedence of operators are identical to
+the C language, except that ** (for powers) and ! (for 
+factorials) have been added; refer to any C reference 
+book for additional information.
+
+  Operator      Meaning
+  --------      -------
+
+     **         raise to the power of
+     *          multiply
+     /          divide
+     %          assign remainder
+     +          add
+     -          subtract
+     <<         left shift
+     >>         right shift
+     <=         less than or equal to
+     >=         greater than or equal to
+     <          less than
+     >          greater than
+     !=         not equal
+     ==         equal
+     &&         logical AND
+     ||         logical OR
+     &          bitwise AND
+     |          bitwise OR
+     ,          sequential evaluation
+     !          factorial
+%%
+
+%match%
+        match pattern string
+
+Assigns to the zscript variables $__match_1 through $__match_9
+the substrings selected by parenthesized subpatterns of pattern.
+Parenthesized substrings are delimited by \( and \).
+
+If there are fewer than 9 substrings, unsets the __match variables
+numbered higher than the last match.  Also assigns to $__match_0
+the substring matched by the entire pattern, and to $__matches
+the number of substrings that were matched (0 if only the entire
+pattern matched, or unsets it if no patterns matched).
+
+Does NOT unset $__match_* on failure!  Only $__matches is unset
+in this case.
+
+Also assigns to $__start_0 through $__start_9 the starting positions
+in the string of each of the substrings, and assigns to $__len_0
+through $__len_9 the lengths of each of the substrings.  Unsets
+__start and __len variables for which __match variables are unset.
+
+Note that the __start variables count the number of characters to
+the left of the starting position; they do not include the starting
+position itself.
+
+Sets $status to 0 on success, > 0 on no match, < 0 on error.
+
+Example:
+
+    match '[^.]*\.*\([^.]+\)\.\([^.]+\)$' "$hostname:2"
+
+This example sets $__match_1 and $__match_2 to the local and global
+domains from the hostname.  If $hostname is "zyrcon.z-code.com",
+then $__match_0 is "zyrcon.z-code.com", $__match_1 is "z-code", and
+$__match_2 is "com".  $__start_1 is 7, $__start_2 is 14, $__len_1
+is 6, and $__len_2 is 3.
+%%
+
+%uudecode%
+        uudecode [-files <variable>] [-part <number>] [msg-number]
+
+This command selects one or more uuencoded blocks from the text of
+a single message and decodes them, placing them into files in the
+~#detach_dir~var#~ directory.  The name for each file is read from the
+"begin" line of each uuencoded block.
+
+The "-part" option specifies by <number> a single uuencoded block
+to be decoded.  If "-part" is not used, all blocks are decoded.
+
+The "-files" option retrieves the names of the decoded files and
+stores those names in the named <variable>.  The ~#foreach~cmd#~
+command can then be used to step through the names and do additional
+processing.  File names containing spaces interfere with this.  Use
+both "-files" and "-part" together to obtain the name of a single a
+uuencoded block if the name contains a space.
+
+Example:
+
+    uudecode -files __filenames -part 2
+
+This example decodes the second uuencoded block in the current (or
+selected) message and sets $__filename to the name of the decoded
+output file.
+%%
+
+%-%
+%License Agreement%
+%sla%
+%SLA%
+%%<zmlib>License.txt
+
+# Local Variables:
+# mode: text
+# fill-column: 70
+# paragraph-start: "^[   \n%]"
+# paragraph-separate: "^\\([     %]*\\|%%.*\\|%.*%\\)$"
+# End:

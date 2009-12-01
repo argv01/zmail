@@ -1,0 +1,18 @@
+# MIME image types
+
+# xloadimage doesn't understand jpeg
+TYPE	image/jpeg	"xv '%s' &"	None	"jpeg image"
+
+TYPE	image/gif	"xloadimage -quiet '%s' &"	\
+	"xwd -frame|quietly xwdtopnm|quietly ppmtogif > '%s'"	"gif image"
+
+# Extended MIME image types
+
+TYPE	image/x-xwd	"zxwud -in '%s' &"	None	"X11 window image dump"
+
+#TYPE	image/x-xwd	"zxwud -in '%s' &"	"zxwd -out %s"	\
+	"X11 window image dump"
+#TYPE	image/x-xwd	"xloadimage -quiet '%s' &"	"xwd -frame > '%s'"	\
+	"X11 window image dump"
+#TYPE	image/x-xwd	"quietly xwdtopnm '%s' | xv - &"	"xwd -frame > '%s'" \
+	"X11 window image dump"

@@ -1,0 +1,461 @@
+.\" Z-Mail Lite Man Page: Copyright (c) 1994, Z-Code Software, 
+.\" a Division of NCD.
+.\"
+.if n .ds Q \&"
+.if n .ds U \&"
+.if t .ds Q \&``
+.if t .ds U \&''
+.if n .ds - --
+.if t .ds - \(em
+.nh
+.TH "ZMLITE" 1 "Z-Code Software" "Version 3.2" "" ""
+.SH NAME
+Z-Mail Lite \- a full-screen, character-based interface for managing electronic mail.
+.SH SYNOPSIS
+.in +2
+.ti -2
+.B zmlite
+[
+.B \-subject
+\*Qsubject\*U
+]
+[
+.B \-attach
+[program:]file
+]
+[
+.B \-cc
+cc-list
+]
+[
+.B \-bcc
+bcc-list
+]
+[
+to-list
+]
+[ < file ]
+.ti -2
+.B zmlite \-draft
+draft-file
+.ti -2
+.B zmlite
+[
+\-shell
+]
+[
+file-options
+]
+.in -2
+.SH INTRODUCTION
+.I Z-Mail Lite
+is an interface for sending, receiving, and managing
+a database of electronic mail messages.  
+.I Z-Mail Lite 
+is designed for use on
+character terminals, where a pointing device such 
+as a mouse is not available.  
+.PP
+.I Z-Mail Lite 
+makes use of the 
+.I curses
+library, and requires that you have a complete and
+correct 
+.I termcap
+or 
+.I terminfo
+entry for your terminal type.  You must have your TERM
+environment variable set to the name of the 
+.I termcap
+or
+.I terminfo
+entry appropriate for the terminal you are using.
+.PP
+Z-Mail Lite also has a tty-based command line mode.
+This mode requires nothing from the terminal in terms of screen
+capability.
+.PP
+Both interfaces are capable of interpreting all
+.IR Z-Script 
+commands.
+
+.SH "STARTING Z-MAIL LITE"
+.PP
+.I Z-Mail Lite
+is started by typing the command
+.B zmlite
+at your shell prompt.
+The following command line arguments are understood by
+.B zmlite
+(alternate forms in parentheses):
+.TP
+\-attach [type:]file
+(\-A)
+The indicated file is attached to the message being sent.
+Unless input is also redirected from a file,
+.I Z-Mail Lite
+prompts for additional information about the attachment, such as its file
+type and a short description.
+The attachment file type may optionally be specified with the file name
+by preceding the file name with the type keyword and a colon.
+.sp
+If input is redirected and the file does not appear to be 7-bit ASCII text,
+.I Z-Mail Lite
+automatically encodes the file for transport.
+Otherwise it prompts for an encoding to use.
+Encoding is not required for ASCII text attachments.
+.TP
+\-blind bcc-list
+(\-blindcarbon, \-bcc, \-b)
+The list of Blind Carbon Copy recipients is set on the command line.
+If more than one address or an address containing spaces is specified, the
+entire list should be enclosed in quotes.
+.sp
+This option applies only when sending mail and invokes command line
+mode if specified.
+.TP
+\-carbon cc-list
+(\-copy, \-cc, \-c)
+The list of Carbon Copy recipients is set on the command line.
+If more than one address or an address containing spaces is specified, the
+entire list should be enclosed in quotes.
+.sp
+This option applies only when sending mail and invokes command line
+mode if specified.
+.TP
+\-direct
+(\-notempfile, \-D)
+Causes
+.I Z-Mail Lite
+to pass its standard input directly to the Mail Transport Agent, without
+buffering it in a temporary file.
+This option is ignored unless input is redirected from a file or a
+shell pipeline.
+It is intended for sending large text files when storage space in
+the file system used for temporaries is at a premium.
+.TP
+\-draft draft-file
+(\-headerfile, \-message, \-h)
+This option specifies a previously prepared message file (called a draft)
+which is read in as a new message to be sent.
+The current implementation requires that the draft file must contain all the
+message headers.
+.I Z-Mail Lite
+adds only a new \*QDate:\*U and a \*QFrom:\*U header if there is none.
+If there is no \*QTo:\*U header, the draft is not sent.
+See the
+.B mail
+command and the section on \*QSending mail\*U for more information.
+.sp
+If `\-' is given as the draft file name, the standard input is read.
+However, the \-direct option cannot be used in conjunction with \-draft,
+because the input must be scanned more than once in order to extract some
+information that is used to connect with the MTA.
+.TP
+\-eval command
+(\-execute, \-command, \-e)
+The specified command is executed immediately before the program begins
+to accept input from the user.
+This happens after all initialization files are read, including any file
+given to the \-source option.
+If several \-eval options are given, each is executed in the
+order in which it appears.
+.sp
+This option is ignored when sending mail, unless the \-shell option
+is also given.
+.TP
+\-echo
+(\-E)
+Normally, the program runs with the local echo off and each character
+typed is processed individually, in order to handle macros and keyboard
+mappings.
+This option specifies that local echo should remain on,
+so
+.I Z-Mail Lite
+only processes input after a carriage return has been typed.
+Under normal circumstances, keyboard management is transparent to
+the user, and the use of this option is discouraged.
+Note that if this option is specified, key sequences set by the
+.B map
+or
+.B map!
+commands do not take effect.
+.sp
+This option is ignored except in command line mode.
+.TP
+\-filter
+Perform message filtering during loading of the folder.
+Filters are defined by use of the
+.B filter
+command in an initialization file.
+If no filters are defined, this option has no effect.
+Note that filters defined with
+.RB \*Q filter
+\-n\*U are
+.I not
+run during loading of the folder, even with the \-filter option.
+.sp
+This option is most frequently used in conjunction with \*Q\-folder \-\*U when
+.I Z-Mail Lite
+is run automatically, for example,
+from a \*Q.forward\*U or \*Q.maildelivery\*U file.
+This allows filtering of incoming mail before it is delivered to your
+system mailbox.
+.sp
+If both the \-filter and \-nofilter options are given, only the last given
+is honored.
+.TP
+\-folder [foldername]
+(\-f)
+The optional foldername argument specifies a folder containing mail messages.
+The named folder is opened in place of the user's system mailbox.
+With no argument,
+.B mbox
+in the user's home directory (or the folder specified by the variable
+.BR mbox )
+is used.
+If no foldername is given, this option must be the last on the command line.
+.sp
+The special foldername \*Q\-\*U (a single hyphen) causes
+.I Z-Mail Lite
+to read the folder from the standard input.
+In this case, instead of continuing into the shell,
+.I Z-Mail Lite
+performs the actions specified by the \-filter, \-source, and \-eval
+options.
+When this has completed, the folder is updated as if it were the system
+mailbox, appending the messages to the actual system mailbox unless they
+are marked for deletion.
+This allows
+.I Z-Mail Lite
+to be run automatically from delivery files
+such as \*Q.forward\*U or \*Q.maildelivery\*U
+(the actual method or file name depends on your Mail Transport Agent).
+.sp
+.IR WARNING \|:
+If, when using \*Q\-folder \-\*U, any action causes
+.I Z-Mail Lite
+to exit, whether in the initialization files,
+in a file sourced with \-source,
+or in commands executed with \-eval,
+\fIappending to the system mailbox does \fBnot\fI occur\fR.
+In this case, the messages are left in a temporary file, which may be
+subject to automatic deletion by your operating system at reboot or after
+a certain period of time has elapsed.
+For this reason, it is recommended that novice users avoid \-source and \-eval 
+and instead rely on \-filter, using filters defined in the \*Q.zmailrc\*U file.
+.TP
+\-headers[:c]
+(\-H)
+Have
+.I Z-Mail Lite
+display mail headers without entering the 
+.I Z-Mail Lite
+user interface.
+See the
+.B headers
+command for information on the
+.B :c
+modifier.
+No colon modifier is equivalent to \*Q\-H:a\*U.
+.TP
+\-init[!] filename
+(\-I)
+This option specifies an initialization file to be read
+.I before
+any of the other
+.I Z-Mail Lite
+initialization is done.
+The file specified by \-init is read before the default system initialization
+file is read (see the INITIALIZATION section for details).
+The optional `!' modifier prevents
+.I Z-Mail Lite
+from reading the default system file, so \-init! can be used to specify a
+substitute default file.
+The user's personal initialization file is read normally.
+.TP
+\-interact
+(\-i)
+Forces interactive mode even if input has been redirected to the program.
+This is intended for remote host mail sessions (with \-echo) but also allows
+the user to redirect input from a \*Qscript\*U of
+.I Z-Mail Lite
+commands.
+See the INITIALIZATION and ZMAIL SCRIPTS sections for information on how to
+write scripts that deal with mail.
+Note that this flag is different from the \-i (\*Qignore\*U) flag of UCB Mail.
+.TP
+\-lib library-dir
+(\-library, \-L)
+Sets the path to the
+.I Z-Mail Lite
+library directory (usually /usr/lib/Zmlite).
+This can be used in place of the
+.I ZMLIB
+environment variable.
+If the specified directory is not found, the directory specified by
+.I ZMLIB
+and the default /usr/lib/Zmlite location are also searched.
+If none of these is found,
+.I Z-Mail Lite
+will not execute.
+.TP
+\-mailbox mailbox-path
+(\-m)
+The mailbox specified is interpreted as if it were the user's main
+(system) mailbox in place of /usr/spool/mail/$USER (or whatever path is
+applicable for your system and Mail Transport Agent).
+.TP
+\-nofilter
+Suppress running of the system mailbox filters on program startup.
+Filters are defined by use of the
+.B filter
+command in an initialization file.
+If no filters are defined, this option has no effect.
+If both the \-nofilter and \-filter options are given, only the last given
+is honored.
+.TP
+\-noheaders
+(\-N)
+Enter
+.I Z-Mail Lite
+without displaying any message headers.
+This argument is passed to the
+.B folder
+command.
+If this option is specified, 
+.I Z-Mail Lite 
+is invoked in command line mode.
+.TP
+\-noinit[!]
+(\-n)
+No initialization is done on start up.
+That is, does not source the default system initialization files.
+If the `!' modifier is given, reading of the user's personal
+.I .zmailrc
+file is also suppressed.
+See the INITIALIZATION section for more information on
+startup and the significance of these files.
+.TP
+\-picky
+(\-P)
+Some Mail Transport Agents do not accept \*QFrom:\*U and \*QDate:\*U headers
+generated by a user agent such as
+.IR Z-Mail Lite.
+This option prevents these headers from being passed to a \*Qpicky\*U
+transport agent, which is expected to supply them itself.
+See also the variable
+.BR picky_mta .
+.TP
+\-readonly
+(\-r)
+Initialize the folder in Read-Only mode; no modification of the folder is
+permitted.
+This argument is passed on to the
+.B folder
+command.
+.TP
+\-shell
+(\-S)
+This flag allows the user to enter the command line mode even if the system
+mailbox or specified folder is empty or doesn't exist.
+.TP
+\-source[!] filename
+(\-file, \-F)
+Causes
+.I Z-Mail Lite
+to read commands from the named file before beginning to accept input
+from the user.
+The named file should have the same format as the initialization file read on
+startup (see INITIALIZATION) with the exception that commands that manipulate
+or search messages may be given.
+Normally, such commands may not appear in the initialization file since
+that file is read before the folder is scanned.
+The file specified by \-source is read after the folder is scanned, so
+commands that affect messages are allowed.
+The optional `!' modifier prevents the program from running after the
+file has been sourced.
+Otherwise,
+.I Z-Mail Lite
+continues into whatever interface has been specified.
+.TP
+\-subject subject
+(\-s)
+The subject of an outgoing message is set on the command line using this flag.
+If the subject has
+any spaces or tabs, the entire subject should be enclosed in quotes.
+.sp
+This option applies only when sending mail, and causes command line
+mode to be invoked automatically. 
+.TP
+\-template template-name
+This option specifies that the templates directories should be searched for
+a previously prepared message template, which the user may fill out.
+The current implementation requires that the template file must contain at
+least a To: header as the first line.
+The templates directories are listed as the value of the variable
+.BR templates .
+If this variable is not set, \-template uses the default directory
+.I forms
+in the 
+.I Z-Mail Lite 
+library (/usr/lib/Zmlite, or as specified by \-lib or by the
+environment variable ZMLIB).
+.TP
+\-timeout seconds
+(\-T)
+.I seconds
+specifies the length of time to wait between each check for new mail.
+30 is the smallest value of
+.I seconds
+allowed for performance reasons; this seconds is the default value.
+.TP
+\-user [ user ]
+(\-u)
+This option causes
+.I Z-Mail Lite
+to act as if another user (specified by login name) is running the program.
+If no login name is specified, then \*Qroot\*U is used.
+.I Z-Mail Lite
+does not change the user ID or permissions of the real user who is
+executing the program, so this does not normally permit reading or
+modification of other users' mailboxes.
+However,
+.I Z-Mail Lite
+sets its home directory, system mailbox, real name, and login name
+to those of the named user.
+This information is not passed on to the Mail Transport Agent, to prevent
+malicious users from masquerading as others.
+The option is intended for use as a system administration tool; for example,
+to allow the system administrator to read mail directed to \*Qpostmaster\*U
+or to other pseudo-users.
+.TP
+\-verbose
+(\-v)
+Verbose mode is turned on.
+This option is passed to the Mail Transport Agent.
+Some MTAs do not have a verbose option, so this flag may not apply
+to your system (for example, older System V machines).
+.sp
+This option applies only when sending mail, and causes command line
+mode to be invoked.
+
+.SH FILES
+.nf
+.ta 2.0i
+/usr/spool/mail/*	Directory for incoming mail
+~/Mail	Default \fBfolder\fR directory
+~/mbox	File where old mail is saved
+~/.zmailrc	File giving initial \fIZ-Mail Lite\fR commands
+~/.edXXXXXXX	Temporary for file for outgoing messages
+~/.zmlXXXXXX	Temporary mail file (copy of current folder)
+.fi
+.SH "SEE ALSO"
+.I Z-Mail Lite for Character Terminals User's Guide
+.PP
+.I Z-Mail Reference Manual
+.PP
+.I Configuring Your Terminal for Z-Mail Lite
+
+
+

@@ -1,0 +1,38 @@
+# Sample Z-Script  function: update_as
+#	 	     button: Update As...
+
+function update_as() {
+#%
+#       update_as newname
+#
+# Update the current folder to a new folder name.  Leaves the current
+# folder unchanged, and opens the new folder for further processing.
+#%
+    if $# == 0
+	ask -i newname "Update folder as:"
+	if $status == -1
+	    return -1
+	endif
+    else
+	set newname = $1
+    endif
+    if -e $newname
+	ask "Overwrite $newname?"
+	if $status
+	    return $status
+	endif
+    endif
+    if $?deletesave
+	builtin delete `builtin :s`
+    else
+	if $thisfolder =~ */mail/$user
+	    if ! $?keepsave
+		builtin delete `builtin :s`
+	    endif
+	endif
+    endif
+    builtin copy -f * {`builtin :d`} $newname
+    builtin close -n
+    builtin open $newname
+}
+button -n "Update As..." update_as

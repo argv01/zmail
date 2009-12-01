@@ -1,0 +1,713 @@
+\input texinfo @c -*- texinfo -*-
+@c %**start of header
+@setfilename except.info
+@settitle Except
+@c @finalout
+@c @smallbook
+@c @setchapternewpage odd
+@footnotestyle separate
+@c %**end of header
+
+@ifinfo
+This file describes Except, a library package for adding exception
+handling constructs to C programs.
+
+Software and documentation Copyright 1993 Z-Code Software Corp.,
+San Rafael, CA 94903.
+
+This software is based on original work by Michael Horowitz and Michael
+McInerny at the Information Technology Center of Carnegie Mellon
+University, Pittsburgh, PA 15213.  Modifications by Bob Glickstein at
+Z-Code Software Corp.
+@end ifinfo
+
+@titlepage
+@title Except
+@subtitle Exception handling extensions for C
+@subtitle Manual version $Revision: 2.15 $
+@subtitle $Date: 1995/02/08 19:54:11 $
+@author Bob Glickstein
+@page
+@vskip 0pt plus 1filll
+This manual documents Except, a library package for adding exception
+handling constructs to C programs.
+
+Software and documentation Copyright @copyright{} 1993 Z-Code Software Corp.,
+San Rafael, CA  94903
+
+This software is based on original work by Michael Horowitz and Michael
+McInerny at the Information Technology Center of Carnegie Mellon
+University, Pittsburgh, PA 15213.  Modifications by Bob Glickstein at
+Z-Code Software Corp.
+@end titlepage
+
+@node Top, Exception handling overview, (dir), (dir)
+@unnumbered Introduction
+
+This manual describes Except, a library package for adding exception
+handling constructs to C programs.
+
+@ifinfo
+Manual version:  $Revision: 2.15 $ $Date: 1995/02/08 19:54:11 $
+@end ifinfo
+
+@menu
+* Exception handling overview::         Discussion of exception handling.
+* The TRY statement::                   Exception-catching construct.
+* The RAISE function::                  Exception-raising construct.
+* Non-local exits::                     Important limitations of Except.
+* Signal handling::
+* Miscellaneous functions::             Additional functionality.
+* Compiling::                           How to use Except in an application.
+
+* Function index::                      Index of Except functions.
+@end menu
+
+@node Exception handling overview, The TRY statement, Top, Top
+@chapter Exception handling overview
+
+Exception handling is a programming technique in which error-handling
+code is kept separate from code representing the normal flow of a
+program.  Writing code in an exception-handling style results in
+smaller, more readable, more correct programs.
+
+Error-handling in conventional C programs is cumbersome and error-prone
+itself!  Suppose function @var{a} calls function @var{b} which calls
+function @var{c} @dots{} which calls function @var{y} which calls
+function @var{z}.  Now suppose @var{z} encounters an error.  Typically,
+it will return a special ``error'' value to @var{y}, which will return a
+(possibly different) special error value to @var{x} @dots{} which will
+return a (possibly different) special error value to @var{b} which will
+finally inform @var{a} of the error by returning a (possibly different)
+special error value.  Every function is responsible for checking for
+errors and communicating that information to its caller, even though
+the only functions that really @emph{care} about the error are the
+innermost one (the one that encounters the error) and the one, possibly
+many call frames higher, which intends to handle the error.  If someone
+in the chain fails to check for an error condition, it will go
+completely unnoticed and will probably wind up in a software crash later
+on (because, for instance, the program didn't notice that @code{malloc}
+returned @code{NULL} and tried to use it as a valid address).
+
+Here is a sample sequence of code in which the programmer has been
+fastidious about checking for error codes:
+
+@example
+@group
+if ((ptr = malloc(n)) == NULL) @{
+    return (-1);
+@}
+if ((fp = fopen("foo", "r")) == NULL) @{
+    free(ptr);
+    return (-1);
+@}
+if (unlink("bar") != 0) @{
+    free(ptr);
+    fclose(fp);
+    return (-1);
+@}
+@r{@dots{} other processing @dots{}}
+@end group
+@end example
+
+The code is choked with @code{if} tests and cleanup cases, which are
+often highly redundant.  The return values that mean ``error'' often
+change from one function to the next.  Functions which do not produce a
+computationally meaningful result are nonetheless forced to have a
+return value to indicate success or failure.  And functions which do
+yield usable values must reserve one such value as its error token,
+unnecessarily constraining its value range.
+
+In exception handling programming, errors, or @dfn{exceptions}, cause an
+immediate jump @footnote{Using @code{setjmp} and @code{longjmp}.} from
+the place where the error happened to the place which has previously
+assured that it can handle that kind of exception.  In the process of
+finding the handler, it will execute any cleanup code the programmer has
+associated with aborting the intervening call frames.  Different kinds
+of exceptions can have different names, and a function can say it's able
+to handle ``out of memory'' errors but not ``no such file'' errors (for
+instance).  In any event, it's impossible for an exception to get lost
+in the shuffle; @emph{someone} will handle it (even if it's the default
+exception handler that's installed at the beginning of a program).
+
+Here's how the above code fragment might look rewritten in an exception
+handling style:
+
+@example
+@group
+TRY @{
+    ptr = e_malloc(n);
+    fp  = e_fopen("foo", "r");
+    e_unlink("bar");
+    @r{@dots{} other processing @dots{}}
+@} EXCEPT(ANY) @{
+    if (ptr)
+        free(ptr);
+    if (fp)
+        free(fp);
+    PROPAGATE();
+@} ENDTRY;
+@end group
+@end example
+
+The @code{TRY} statement encapsulates code where errors might occur.
+@code{EXCEPT} clauses contain cleanup code, or @dfn{handlers}, to be
+executed when particular exceptions arise.  (Exceptions themselves are
+indicated with the @code{RAISE} function.)
+
+The calls to @code{malloc}, @code{fopen}, and @code{unlink} have been
+replaced here with calls to @code{e_malloc}, @code{e_fopen}, and
+@code{e_unlink}.  These are fictional functions with names that suggest
+that they work like the originals but when they encounter an error,
+instead of returning a special value, they raise one of several
+exceptions whose names are known.
+
+This example says to perform the desired computation, and if anything
+goes wrong, make sure any allocated memory is released and any opened
+files are closed.
+
+Incidentally, the definition of @code{e_malloc} would probably look
+something like this:
+
+@example
+@group
+void *
+e_malloc(n)
+    int n;
+@{
+    void *result = malloc(n);
+
+    if (result == NULL)
+        RAISE("out of memory", NULL);
+    return (result);
+@}
+@end group
+@end example
+
+@node The TRY statement, The RAISE function, Exception handling overview, Top
+@chapter The TRY statement
+
+The syntax of the @code{TRY} statement is:
+
+@findex TRY
+@findex EXCEPT
+@findex FINALLY
+@findex ENDTRY
+@example
+@group
+TRY @{
+    @r{body of normal case}
+@} @r{[} EXCEPT(@var{eid}) @{
+    @r{body of handler for exception case @var{eid}}
+@} @r{] @dots{} [} FINALLY @{
+    @r{body of cleanup clause}
+@} @r{]} ENDTRY;
+@end group
+@end example
+
+@findex ANY
+Square brackets denote optional sections.  Each ``body'' is an arbitrary
+sequence of C statements (potentially including nested @code{TRY}
+statements).  The ``normal case'' body is executed normally, stopping if
+an exception occurs.  (The exception may be raised by a @code{RAISE}
+call many call frames down.)  There may be any number of
+@code{EXCEPT(@var{eid}) @{ @dots{} @}} blocks (called @dfn{exception
+clauses}), including zero.  Each @var{eid} is a null-terminated string
+naming the exception which the clause handles; this string is called the
+@dfn{exception ID}.  An exception ID may be the constant @code{ANY};
+such a clause will handle any raised exception that reaches it.  An
+exception clause is executed when an exception is raised and the clause
+is an @dfn{appropriate handler} as described in @ref{The RAISE
+function}.  The @code{FINALLY @{ @dots{} @}} block (called the
+@dfn{finally clause}) is optional.  Its body is executed at the end of a
+@code{TRY @dots{} ENDTRY} block, whether or not an exception
+occurred, and whether or not any raised exception was handled by this
+particular @code{TRY} block.
+
+Consider the following @code{TRY} statement:
+
+@example
+@group
+TRY @{
+    a();
+    b();
+    c();
+@} EXCEPT("out of memory") @{
+    d();
+@} EXCEPT("file not found") @{
+    e();
+@} FINALLY @{
+    f();
+    g();
+@} ENDTRY;
+@end group
+@end example
+
+When control reaches this block, the body of the normal case is executed
+(a call to @code{a} followed by a call to @code{b} followed by a call to
+@code{c}).  If all goes well, control then jumps to the finally clause,
+where @code{f} and then @code{g} are called.
+
+If an ``out of memory'' exception occurs sometime during the call to
+@code{b} (say), then control jumps directly to the handler for the ``out
+of memory'' error, and @code{d} is executed.  Similarly, if a ``file not
+found'' exception occurs during the call to @code{b}, then control jumps
+directly to the ``file not found'' handler, executing @code{e}.
+Execution in both exception cases resumes with @code{f} and @code{g} in
+the finally clause, then continues after the @code{TRY} block.
+
+If an exception other than ``out of memory'' and ``file not found''
+occurs during @code{a}, @code{b}, or @code{c}, then the finally clause
+is executed and control jumps to a call frame containing a handler for
+the raised exception.  No statements after the @code{ENDTRY} are
+executed.
+
+If there is no @code{EXCEPT} block in any pending call frame that will
+handle the raised exception, then the @dfn{uncaught exception handler}
+is invoked (@pxref{Miscellaneous functions}).
+
+It is sometimes the case that a section of exception-handling code needs
+to apply to all raised exceptions even when there is additional code
+that needs to apply to specific exceptions.  This won't suffice:
+
+@example
+@group
+TRY @{
+    @r{@dots{}}
+@} EXCEPT(@var{specific}) @{
+    @r{code for a specific exception}
+@} EXCEPT(ANY) @{
+    @r{code for all other exceptions}
+@} ENDTRY;
+@end group
+@end example
+
+@noindent
+because the ``code for all other exceptions'' won't be executed in the
+case of the @var{specific} exception.  Use this instead:
+
+@example
+@group
+TRY @{
+    @r{@dots{}}
+@} EXCEPT(ANY) @{
+    if (!strcmp(except_GetRaisedException(), @var{specific})) @{
+        @r{code for a specific exception}
+    @}
+    @r{code for all exceptions}
+@} ENDTRY;
+@end group
+@end example
+
+Generally speaking, a program will contain many more @code{TRY @dots{}
+FINALLY @dots{} ENDTRY} blocks than @code{TRY @dots{} EXCEPT @dots{}
+ENDTRY} blocks.  This is because the exception handler for a particular
+kind of error only needs to be in a small number of places, while
+cleanup code for code blocks where failures can occur is much more
+prevalent.  There is no reason to write a @code{TRY} block with no
+@code{EXCEPT} clauses and no @code{FINALLY} clause.  This is a common
+idiom:
+
+@example
+@group
+p = e_malloc(n);        /* or fp = e_fopen(@dots{}), or @dots{} */
+TRY @{
+    @r{code that uses the value of @code{p}}
+@} FINALLY @{
+    free(p);            /* or fclose(fp), or @dots{} */
+@} ENDTRY;
+@end group
+@end example
+
+This ensures that @code{p} is always freed when it's no longer needed,
+even if an exception occurs deep inside the ``code that uses the value
+of @code{p}''.  Note that the call to @code{e_malloc} is outside the
+@code{TRY} block because if it fails, the @code{FINALLY} clause needn't
+be executed (no memory will have been allocated), and the ``out of
+memory'' exception raised by @code{e_malloc} will abort this frame and
+unwind the stack to search for an appropriate handler.
+
+@node The RAISE function, Non-local exits, The TRY statement, Top
+@chapter The RAISE function
+
+The @code{RAISE} function raises a named exception and associates a
+piece of data with it.
+
+@deftypefn {Function} {} RAISE (const char *@var{eid}, void *@var{edata})
+Raises exception @var{eid} (a null-terminated string).  This function
+does not return.  Instead, it causes a @code{longjmp} to the nearest
+appropriate enclosing handler for the exception.  ``The nearest
+appropriate'' handler is the innermost pending @code{TRY} statement
+containing either a @code{FINALLY} clause or an @code{EXCEPT} clause
+matching @var{eid}.  An @code{EXCEPT} clause ``matches'' @var{eid} if
+the @code{EXCEPT} clause's name compares the same as @var{eid} (using
+@code{strcmp}), or if it is an @code{EXCEPT(ANY)} clause.
+
+If the nearest appropriate handler is a @code{FINALLY} clause, its body
+is executed and then the search for an appropriate handler continues as
+above.  If the nearest appropriate handler is a matching
+@code{EXCEPT} clause, its body is executed, followed by the
+@code{FINALLY} clause (if present) of the same @code{TRY} statement, and
+then control proceeds normally following the @code{TRY} block.
+
+Any handler for the raised exception may call the function
+@code{except_GetExceptionValue} to get the value of @var{edata}, which
+is an arbitrary datum that is associated with the exception.
+
+If no appropriate handler for exception @var{eid} exists, the uncaught
+exception handler is called (@pxref{Miscellaneous functions}).
+@end deftypefn
+
+@node Non-local exits, Signal handling, The RAISE function, Top
+@chapter Non-local exits
+
+This implementation of exceptions for C is entirely based on macro
+definitions and library functions; i.e., it is not a part of the
+language @i{per se}.  As such, it has one important limitation not found
+in languages with intrinsic exception-handling:  @code{TRY} statements
+that can be aborted by non-local exits must be written specially.
+
+A @dfn{non-local exit} in C is a point in the program where control does
+not flow sequentially from one statement to the next.  @footnote{Note
+that when control reaches the end of a loop construct such as a
+@code{while} loop and jumps back to the beginning, a non-local exit is
+@emph{not} considered to have taken place.}  In C, the following keywords
+all cause non-local exits:
+
+@itemize @bullet
+@item @code{break}
+@item @code{continue}
+@item @code{goto}
+@item @code{return}
+@end itemize
+
+To keep its internal state consistent, Except expects that a @code{TRY}
+block will always reach its @code{ENDTRY} (or will be exited via a
+raised exception).  @emph{It is an error to write a @code{break},
+@code{continue}, or @code{return} statement inside a @code{TRY} block if
+it will cause control to leave the @code{TRY} block}!  These control
+constructs can be replaced with the following:
+
+@findex EXC_BREAK
+@findex EXC_CONTINUE
+@findex EXC_RETURN
+@findex EXC_RETURNVAL
+@itemize @bullet
+@item @code{EXC_BREAK}
+@item @code{EXC_CONTINUE}
+@item @code{EXC_RETURN}
+@item @code{EXC_RETURNVAL(@var{t}, @var{v})}
+@end itemize
+
+Note that there is no @code{EXC_} equivalent for @code{goto}; this means
+it is an error to use @code{goto} to leave a @code{TRY} block.  The
+@code{EXC_RETURN} form is used when returning from @code{void} functions
+that do not return a value.  The @code{EXC_RETURNVAL} form is used when
+returning from functions that do need to return a value.  It takes two
+arguments: @var{t} is the type of the value and @var{v} is the value
+itself.@footnote{@code{EXC_RETURNVAL} is a macro that creates a
+temporary variable whose type is @var{t}, which must be a type
+descriptor that can be placed entirely to the left of a variable name in
+a variable declaration.  If @var{v} has a more complicated type, use
+@code{typedef} to create a simple name for it.  For instance, if @var{v}
+is a pointer to a function returning @code{int}, its declaration would
+normally be written as@*@t{ int (*@var{v})();}@*but here @var{v} does
+not lie entirely to the right of its type descriptor.  Use something
+like@*@t{ typedef int (*intfn_t)();}@*and then call
+@code{EXC_RETURNVAL(intfn_t, @var{v})}.}
+
+Note that a @code{break} statement in a @code{switch} statement does
+@emph{not} get replaced by @code{EXC_BREAK}, but a @code{break}
+statement that exits from a loop construct does.
+
+Each of these non-local exit keywords exits a particular kind of block
+non-locally.  @code{return} exits an entire function, while @code{break}
+and @code{continue} each exits the innermost enclosing loop containing
+them.  Whichever kind of block has had a non-local exit replaced with an
+@code{EXC_} form must @emph{itself} be rewritten as follows:
+
+@findex EXC_BEGIN
+@findex EXC_END
+@itemize @bullet
+@item
+A function containing an @code{EXC_RETURN} or @code{EXC_RETURNVAL} must
+have its outermost braces surrounded with @code{EXC_BEGIN} and
+@code{EXC_END}, like so:
+
+@example
+@group
+char *
+somefunc(a)
+    char *a;
+EXC_BEGIN
+@{
+    @r{@dots{}}
+    TRY @{
+        @r{@dots{}}
+        EXC_RETURNVAL(char *, index(foo, bar));
+        @r{@dots{}}
+    @} ENDTRY;
+    @r{@dots{}}
+@} EXC_END;
+@end group
+@end example
+
+@noindent
+However, @code{EXC_RETURN} and @code{EXC_RETURNVAL} only need to be used
+when returning from within a @code{TRY} block.  It's okay to use an
+ordinary @code{return} when returning from a
+@code{EXC_BEGIN}-@code{EXC_END} wrapped function if not returning from
+within a @code{TRY} block.
+
+@findex EXC_DO
+@findex EXC_FOR
+@findex EXC_WHILE
+@item
+A loop containing an @code{EXC_BREAK} or @code{EXC_CONTINUE} must be
+rewritten to replace the @code{do}, @code{for}, or @code{while} with
+@code{EXC_DO}, @code{EXC_FOR}, or @code{EXC_WHILE}, respectively.  Also,
+the body of the loop (whether a single statement with no surrounding
+braces, or a compound statement with surrounding braces) must be
+followed by an @code{EXC_END}.  Only the loop affected by the non-local
+exit need be rewritten; if such a loop is contained within another loop,
+the outer loop need not be rewritten.  Example:  this function
+
+@example
+@group
+char *
+newfunc(a)
+    char *a;
+@{
+    @r{@dots{}}
+    for (i = 0; i < 17; ++i) @{
+        @r{@dots{}}
+        TRY @{
+            @r{@dots{}}
+            if (i == j)
+                break;
+            @r{@dots{}}
+        @} ENDTRY;
+        @r{@dots{}}
+    @}
+    @r{@dots{}}
+@}
+@end group
+@end example
+
+should be rewritten as
+
+@example
+@group
+char *
+newfunc(a)
+    char *a;
+@{
+    @r{@dots{}}
+    EXC_FOR (i = 0; i < 17; ++i) @{
+        @r{@dots{}}
+        TRY @{
+            @r{@dots{}}
+            if (i == j)
+                EXC_BREAK;
+            @r{@dots{}}
+        @} ENDTRY;
+        @r{@dots{}}
+    @} EXC_END;
+    @r{@dots{}}
+@}
+@end group
+@end example
+
+Only loops containing @code{TRY} statements containing non-local exits
+need be rewritten.  A @code{TRY} statement which totally encloses a loop
+which contains a non-local exit does not need to be rewritten, since the
+non-local exit will not cause control to leave the @code{TRY} block.
+@end itemize
+
+@strong{Warning}:  All of the non-local exit constructs will bypass the
+@code{FINALLY} clause of any @code{TRY} block which they exit!
+
+@node Signal handling, Miscellaneous functions, Non-local exits, Top
+@chapter Signal handling
+
+A variation of the @code{TRY} statement allows the programmer to treat
+Unix signals as exceptions.  The @code{TRYSIG} statement is used to
+enclose a block containing exception handlers for certain signals.  The
+syntax of a @code{TRYSIG} block is parallel to the syntax for a
+@code{TRY} block:
+
+@findex TRYSIG
+@findex EXCEPTSIG
+@findex FINALLYSIG
+@findex ENDTRYSIG
+@example
+@group
+TRYSIG((@var{sig1}, @var{sig2}, @dots{}, 0)) @{
+    @r{body of normal case}
+@} @r{[} EXCEPTSIG(@var{sig1}) @{
+    @r{body of handler for signal number @var{sig1}}
+@} @r{] @dots{} [} FINALLYSIG @{
+    @r{body of cleanup clause}
+@} @r{]} ENDTRYSIG;
+@end group
+@end example
+
+Square brackets denote optional sections, and there may be any number of
+@code{EXCEPTSIG(@var{sig}) @{ @dots{} @}} blocks.  Note the
+double-parentheses required in @code{TRYSIG}'s parameter list, and also
+note the required terminating @code{0}.
+
+Upon entry to a @code{TRYSIG} block, a signal handler is installed for
+each of the listed signal numbers which simply performs a
+@code{RAISE(strsignal(@var{sig}), NULL)} (where
+@code{strsignal(@var{sig})} yields a string naming the signal numbered
+@var{sig}).  This exception can be caught by a
+@code{EXCEPTSIG(@var{sig})} clause.  Upon (any kind of) exit from the
+@code{TRYSIG} block, the previously-installed handlers for the listed
+signals are restored.
+
+Note that @code{EXCEPTSIG(@var{sig})} is exactly equivalent to
+@code{EXCEPT(strsignal(@var{sig}))} and, in fact, ordinary @code{EXCEPT}
+clauses can be freely mixed among @code{EXCEPTSIG} clauses.  However, if
+@code{EXCEPTSIG} is used, then @code{TRYSIG}, @code{FINALLYSIG}, and
+@code{ENDTRYSIG} must be used instead of their non-signal-related
+counterparts.
+
+Finally, note that an @code{EXCEPT(ANY)} clause will catch all
+signal-generated exceptions as well as ordinary exceptions.
+
+@node Miscellaneous functions, Compiling, Signal handling, Top
+@chapter Miscellaneous functions
+
+@deftypefn {Macro} {} ASSERT (@var{e}, const char *@var{eid}, void *@var{edata})
+Evaluates the arbitrary expression @var{e}.  If it is zero,
+@code{ASSERT} raises the exception named @var{eid} (a string), with
+associated datum @var{edata} (@pxref{The RAISE function}).  If @var{e}
+is non-zero, @code{ASSERT} yields its value and takes no further action.
+@end deftypefn
+
+@deftypefn {Function} {} PROPAGATE ()
+Inside an @code{EXCEPT} clause, re-raises the same exception (i.e., the
+one being handled).  Control immediately leaves the pending @code{TRY}
+block and searches for the next appropriate handler as described in
+@ref{The RAISE function}.  @strong{Warning}:  If @code{PROPAGATE} is
+called inside an @code{EXCEPT} clause, and there is an associated
+@code{FINALLY} clause awaiting execution, the @code{FINALLY} clause will
+be bypassed!  A workaround for this unfortunate state of affairs is
+this:  Instead of writing
+
+@example
+@group
+TRY @{
+    @r{@dots{}}
+@} EXCEPT("some error") @{
+    @r{@dots{}}
+    PROPAGATE();
+    @r{@dots{}}
+@} FINALLY @{
+    @r{cleanup code}
+@} ENDTRY;
+@end group
+@end example
+
+(in which the ``cleanup code'' will never be executed if
+@code{PROPAGATE} is reached), write
+
+@example
+@group
+TRY @{
+    TRY @{
+        @r{@dots{}}
+    @} EXCEPT("some error") @{
+        @r{@dots{}}
+        PROPAGATE();
+        @r{@dots{}}
+    @} ENDTRY;
+@} FINALLY @{
+    @r{cleanup code}
+@} ENDTRY;
+@end group
+@end example
+
+In this version, the call to @code{PROPAGATE} immediately aborts the
+inner @code{TRY}.  In searching for a new handler for the raised
+exception, the outer @code{TRY} is encountered and its @code{FINALLY}
+clause is executed.
+@end deftypefn
+
+@deftypefn {Function} {const char *} except_GetRaisedException ()
+Returns the name (exception ID) of the latest exception raised.
+@end deftypefn
+
+@deftypefn {Function} void except_SetExceptionValue (void *@var{v})
+Associates arbitrary datum @var{v} with the pending exception.  @var{v}
+becomes the value returned by @code{except_GetExceptionValue}.
+@end deftypefn
+
+@deftypefn {Function} {void *} except_GetExceptionValue ()
+Returns the datum that was associated with a raised exception by
+@code{RAISE} or a subsequent @code{except_SetExceptionValue}.
+@end deftypefn
+
+@deftypefn {Function} void except_SetUncaughtExceptionHandler @w{(void (*@var{func})())}
+Causes @var{func} to become the function that handles uncaught
+exceptions (exceptions which, when raised, can find no appropriate
+handler after checking the outermost enclosing @code{TRY} block).
+@var{func} is a void function of no arguments, and can access the name
+and data of the pending exception using the functions
+@code{except_GetRaisedException} and @code{except_GetExceptionValue}.
+It is expected that @var{func} doesn't return normally (i.e., it does a
+@code{longjmp} or it exits the application or somesuch); if it does
+return normally, control will resume after the outermost pending
+@code{TRY} block, or immediately following the pending call to
+@code{RAISE} if there are no pending @code{TRY} blocks.
+
+The default uncaught exception handler generates a core-dumping signal
+that is guaranteed not to be caught.
+@end deftypefn
+
+@deftypefn {Function} {(void (*) ())} except_GetUncaughtExceptionHandler ()
+Returns the function that handles uncaught exceptions.
+@end deftypefn
+
+@deftypefn Macro {} DEFINE_EXCEPTION (@var{name}, @var{string})
+Define a string-valued variable and an exception identifier to serve as
+its value.  The variable name should be used in @code{RAISE} and
+@code{EXCEPT} constructs rather than the string constant, to guard
+against typographical errors in duplicating the exception identifier.
+This macro expands to:
+
+@example
+const char @var{name}[] = @var{string}
+@end example
+
+@noindent
+and must be followed by a semi-colon.
+@end deftypefn
+
+@deftypefn Macro {} DECLARE_EXCEPTION (@var{name})
+Declare the name of a variable whose string value is intended to be used
+as an exception identifier.  This macro expands to:
+
+@example
+extern const char @var{name}[]
+@end example
+
+@noindent
+and must be followed by a semi-colon.
+@end deftypefn
+
+@node Compiling, Function index, Miscellaneous functions, Top
+@chapter Compiling
+
+To use Except in a C program, include the header file @file{except.h} in
+any module that uses Except macros or functions.  Link your object files
+with @file{libexcept.a}.
+
+@node Function index,  , Compiling, Top
+@unnumbered Function index
+
+@printindex fn
+
+@contents
+@bye

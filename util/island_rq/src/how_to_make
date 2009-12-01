@@ -1,0 +1,10 @@
+#! /bin/csh -f
+
+pushd ../lib/ipc/src; make; popd
+pushd ../lib/mem/src; make; popd
+
+cc -o island_rq \
+	-I../lib/mem/src -I../lib/ipc/src island_rq.c \
+	../lib/ipc/sun4/libipc1.1_motif.a \
+	../lib/mem/sun4/libmemsimp.unix.a \
+	/usr/lib/libX11.a

@@ -1,0 +1,880 @@
+\input texinfo @c -*- texinfo -*-
+@c %**start of header
+@setfilename spcore.info
+@settitle The SPOOR CORE
+@c @finalout
+@c @smallbook
+@c @setchapternewpage odd
+@footnotestyle separate
+@syncodeindex vr fn
+@syncodeindex cp fn
+@syncodeindex tp fn
+@c %**end of header
+
+@ifinfo
+This file describes The @sc{Spoor Core}, a collection of @sc{Spoor}
+user-interface classes.
+
+Software and documentation Copyright 1993 Z-Code Software Corp.,
+San Rafael, CA 94903.
+@end ifinfo
+
+@titlepage
+@title The SPOOR CORE
+@subtitle User Interface Classes for SPOOR Programming
+@subtitle Manual version $Revision: 2.6 $
+@subtitle $Date: 1995/12/13 01:25:50 $
+@author Bob Glickstein
+@page
+@vskip 0pt plus 1filll
+This manual documents The @sc{Spoor Core}, a collection of @sc{Spoor}
+user-interface classes.
+
+Software and documentation Copyright @copyright{} 1993 Z-Code Software Corp.,
+San Rafael, CA  94903
+@end titlepage
+
+@c This doesn't seem to work, so it's ignored out...
+@ignore
+@tex
+% @deftypemethod spEvent int process (struct spIm *@var{im})
+\def\deftypemethod{\defparsebody\Edeftypemethod\deftypemethodx\deftypemethodheader}
+
+% #1 is the data type.  #2 is the class.  #3 is the name and args.
+\def\deftypemethodheader #1#2#3{\deftypemethodheaderx{#1#2}#3 \relax}
+% #1 is the data type, #2 is the is the class, #3 the name, #4 the args
+\def\deftypemethodheaderx #1#2 #3 #4\relax{%
+\dosubind {fn}{\code{#3}}{on {\code{#2}}}% make entry in function index
+\begingroup\defname {\code{#1} #3}{Method on {\code{#2}}}%
+\deftypefunargs {#4}\endgroup %
+\catcode 61=\other % Turn off change made in \defparsebody
+}
+@end tex
+@end ignore
+
+@node Top, Core Classes, (dir), (dir)
+@unnumbered Introduction
+
+This manual describes The @sc{Spoor Core}, a collection of
+user-interface classes for use in @sc{Spoor} application programming.
+
+@ifinfo
+Manual version:  $Revision: 2.6 $ $Date: 1995/12/13 01:25:50 $
+@end ifinfo
+
+@menu
+* Core Classes::		SPOOR class heirarchy.
+* Index::                       Index of functions, variables, types, and
+                                concepts.
+@end menu
+
+@node Core Classes, Index, Top, Top
+@chapter Core Classes
+
+Here is the hierarchy of the @sc{Spoor Core} classes, with detailed
+programming information in the sections that follow.  Superclasses are
+recursively shown in parentheses.
+
+@table @code
+@item spEvent (spoor)
+An abstraction of a deferred event.  Contains a time (relative or
+absolute) at which to trigger, and a function to call when the event
+triggers.
+
+@item spKeymap (spoor)
+An abstraction for mapping between sequences of user keystrokes and
+user-interface actions to invoke.
+
+@item spFullKm (spKeymap (spoor))
+A subclass of @code{spKeymap} implemented as a static-sized array
+containing entries for every possible single keystroke.
+
+@item spSparseKm (spKeymap (spoor))
+A subclass of @code{spKeymap} implemented as a linked list of single
+keystrokes, for keymaps that are sparsely populated.
+
+@item spObservable (spoor)
+A class of objects which can be observed, in the sense that interested
+observers can be notified of particular kinds of events.
+
+@item spButton (spObservable (spoor))
+An object with a label; when pressed, it notifies its observers.
+
+@item spToggle (spButton (spoor))
+A button with one bit of state which is toggled with each button press.
+
+@item spText (spObservable (spoor))
+A dynamically-sized editable text buffer including position markers
+which move with the text as it changes.
+
+@item spView (spObservable (spoor))
+The central class of the @sc{Spoor Core}.  A view subclass knows how to
+observe a particular kind of observable, and embodies the information
+necessary to display the object on the screen perform user interactions
+on the object.  The @dfn{view/data separation} model permits, among
+other things, putting multiple views on a single data object.
+
+@item spButtonv (spView (spObservable (spoor)))
+A view for the @code{spButton} class that permits the grouping of
+several buttons in several different layouts.  A callback function is
+activated when one of the buttons is pressed.
+
+@item spMenu (spButtonv (spView (spObservable (spoor))))
+A subclass of @code{spButtonv} that works like a pulldown or popup menu.
+
+@item spIm (spView (spObservable (spoor)))
+A special subclass of @code{spView}, this is a class of @dfn{interaction
+managers}.  There is one interaction manager object per application, and
+it has the ultimate responsibility for the appearance of the display and
+for coordinating input and output.
+
+@item spCharIm (spIm (spView (spObservable (spoor))))
+A subclass of @code{spIm} for character-based applications.
+
+@item spCursesIm (spCharIm (spIm (spView (spObservable (spoor)))))
+A subclass of @code{spCharIm} for curses-based implementations of
+character-based applications.
+
+@item spPopupView (spView (spObservable (spoor)))
+A kind of view that can pop up on top of other views (and which can
+contain other views which wouldn't otherwise be able to pop up).  Among
+other things, this is the view used to contain popup dialogs and
+pulldown menus.
+
+@item spSplitview (spView (spObservable (spoor)))
+A view containing two subviews, either side-by-side or top-and-bottom.
+
+@item spTextview (spView (spObservable (spoor)))
+A view for interacting with editable text.
+
+@item spCmdline (spTextview (spView (spObservable (spoor))))
+A subclass of @code{spTextview} that is only one line high and has a
+callback associated with pressing the @key{RET} key.
+
+@item spWrapview (spView (spObservable (spoor)))
+An instance of @code{spWrapview} contains one subview, and optionally
+adorns it in certain ways.
+
+@item spWindow (spoor)
+This class represents a drawable region of the screen.
+
+@item spCharWin (spWindow (spoor))
+This subclass of @code{spWindow} is for character-based screens.
+
+@item spCursesWin (spCharWin (spWindow (spoor)))
+This subclass of @code{spCharWin} is for character-based screens
+controlled by curses.
+@end table
+
+@iftex
+Indentation is used below to reflect the inheritance hierarchy.
+
+@example
+@group
+spEvent
+spKeymap
+    spFullKm
+    spSparseKm
+spObservable
+    spButton
+        spToggle
+    spText
+    spView
+        spButtonv
+            spMenu
+        spIm
+            spCharIm
+                spCursesIm
+        spPopupView
+        spSplitview
+        spTextview
+            spCmdline
+        spWrapview
+spWindow
+    spCharWin
+        spCursesWin
+@end group
+@end example
+@end iftex
+
+@menu
+This menu uses indentation to reflect the inheritance hierarchy.
+
+* spEvent::                     Deferred callback.
+* spKeymap::                    Mapping keys to actions.
+*     spFullKm::                Array implementation of keymap.
+*     spSparseKm::              Linked-list implementation of keymap.
+* spObservable::                Notifies observers of events.
+*     spButton::                Pressable button.
+*         spToggle::            Button with one bit of state.
+*     spText::                  Editable text buffer.
+*     spView::                  Something the user sees and interacts with.
+*         spButtonv::           List of buttons.
+*             spMenu::          Menu-like list of buttons.
+*         spIm::                Interaction manager.
+*             spCharIm::        Character-based im.
+*                 spCursesIm::  Curses-based charIm.
+*         spPopupView::         View that can pop up and contain other views.
+*         spSplitview::         View with two subviews.
+*         spTextview::          A view for editable text.
+*             spCmdline::       A textview for command input.
+*         spWrapview::          A decorating view containing a subview.
+* spWindow::                    A drawable region of the screen.
+*     spCharWin::               A drawable region of a character screen.
+*         spCursesWin::         A drawable region of a curses screen.
+@end menu
+
+@node spEvent, spKeymap, Core Classes, Core Classes
+@section spEvent
+
+Superclass:  @code{spoor}.
+
+@deftypefn {Method on @code{spEvent}} void setup (long @var{sec}, long @var{usec}, int @var{relative}, int (*@var{func})(), void *@var{data})
+Initializes the data in @var{self}.  @var{sec} and @var{usec} are
+seconds and milliseconds representing when this event should trigger.
+If @var{relative} is non-zero, then the seconds and milliseconds are
+considered to be a time in the future relative to now; otherwise they
+signify an absolute time.  The @code{int}-returning callback function
+@var{func} is called when the event is triggered, and it takes two
+arguments:  the event object itself, and the interaction manager object
+in whose event queue the event was queued.  @var{func} should return
+zero if the event object should be simply forgotten by the interaction
+manager after the event is triggered, and non-zero if the interaction
+manager should actually destroy the event (using
+@code{spoor_DestroyInstance}) afterward.  @var{data} is a pointer to
+arbitrary data; this pointer can be accessed using @code{spEvent_data}.
+@end deftypefn
+
+@deftypefn {Method on @code{spEvent}} int process (struct spIm *@var{im})
+This method is invoked by the main @code{interact} loop of an
+interaction manager, @var{im}, to process an event in its event queue.
+The value returned to the interaction manager is the value of the
+event's callback function and indicates whether the interaction manager
+is to destroy the event after processing it.
+@end deftypefn
+
+@deftypefn {Method on @code{spEvent}} int cancel (int @var{destroy})
+Cancel an event.  The event remains in the interaction manager's event
+queue, but when @code{process} is invoked on the event, the callback
+function is not called.  @var{destroy} indicates whether the event
+should be destroyed by the interaction manager after it is processed.
+@end deftypefn
+
+@deftypefn {Accessor} {void *} spEvent_data (struct spEvent *@var{e})
+Yields the callback data associated with @var{e} in a call to the
+@code{setup} method.
+@end deftypefn
+
+@deftypefn {Accessor} {void *} spEvent_inqueue (struct spEvent *@var{e})
+Yields zero or non-zero depending on whether @var{e} is or isn't
+presently in some interaction manager's event queue.  Note that this can
+be true even if the event has been canceled with @code{cancel}.
+@end deftypefn
+
+@node spKeymap, spFullKm, spEvent, Core Classes
+@section spKeymap
+
+Superclass:  @code{spoor}.
+
+@tindex spKeymapEntry
+@table @code
+@item spKeymap_none
+@item spKeymap_function
+@item spKeymap_keymap
+@item spKeymap_removed
+@item spKeymap_translation
+@item spKeymap_undefined
+@end table
+
+@tindex spChar
+@table @code
+@item spKeymap_XMIN
+@item spKeymap_FKEYS
+@item spKeymap_F(@var{n})
+@item spKeymap_sF(@var{n})
+@item spKeymap_cF(@var{n})
+@item spKeymap_F0
+@item spKeymap_sF0
+@item spKeymap_cF0
+@item spKeymap_bTab
+@item spKeymap_break
+@item spKeymap_cTab
+@item spKeymap_delete
+@item spKeymap_down
+@item spKeymap_end
+@item spKeymap_home
+@item spKeymap_insert
+@item spKeymap_left
+@item spKeymap_pageDown
+@item spKeymap_pageUp
+@item spKeymap_pause
+@item spKeymap_printScreen
+@item spKeymap_right
+@item spKeymap_sTab
+@item spKeymap_scrollLock
+@item spKeymap_up
+@item spKeymap_XKEYS
+@end table
+
+@deftypefn {Method on @code{spKeymap}} void addFunction (spChar *@var{keys}, void (*@var{fn})(), struct spoor *@var{object}, void *@var{data})
+@end deftypefn
+
+@deftypefn {Method on @code{spKeymap}} void addKeymap (spChar *@var{keys}, struct spKeymap *@var{keymap})
+@end deftypefn
+
+@deftypefn {Method on @code{spKeymap}} void addTranslation (spChar *@var{keys}, spChar *@var{val})
+@end deftypefn
+
+@deftypefn {Method on @code{spKeymap}} void addUndefined (spChar *@var{keys})
+@end deftypefn
+
+@deftypefn {Method on @code{spKeymap}} {struct spKeymapEntry *} lookup (spChar *@var{keys})
+@end deftypefn
+
+@deftypefn {Method on @code{spKeymap}} void remove (spChar *@var{keys})
+@end deftypefn
+
+@deftypefn {Method on @code{spKeymap}} {struct spKeymap *} copy ()
+@end deftypefn
+
+@deftypefn {Function} {char *} spKeymap_charName (spChar @var{ch}, int @var{pretty})
+@end deftypefn
+
+@deftypefn {Function} spChar spKeymap_nameChar (char *@var{name}, char **@var{after})
+@end deftypefn
+
+@deftypefn {Function} int ci_strcmp (char *@var{s1}, char *@var{s2})
+@end deftypefn
+
+@node spFullKm, spSparseKm, spKeymap, Core Classes
+@section spFullKm
+
+Superclass:  @code{spKeymap} (@pxref{spKeymap}).
+
+@node spSparseKm, spObservable, spFullKm, Core Classes
+@section spSparseKm
+
+Superclass:  @code{spKeymap} (@pxref{spKeymap}).
+
+@node spObservable, spButton, spSparseKm, Core Classes
+@section spObservable
+
+Superclass:  @code{spoor}.
+
+@tindex spObservable_observation
+@table @code
+@item spObservable_contentChanged
+@item spObservable_destroyed
+@item spObservable_OBSERVATIONS
+@end table
+
+@deftypefn {Method on @code{spObservable}} void addObserver
+@end deftypefn
+
+@deftypefn {Method on @code{spObservale}} void notifyObservers
+@end deftypefn
+
+@deftypefn {Method on @code{spObservable}} void removeObserver
+@end deftypefn
+
+@deftypefn {Method on @code{spObservable}} void receiveNotification
+@end deftypefn
+
+@deftypefn {Method on @code{spObservable}} void setOwner
+@end deftypefn
+
+@deftypefn {Accessor} int spObservable_numObservers (struct spObservable *@var{obs})
+@end deftypefn
+
+@deftypefn {Accessor} {struct spoor *} spObservable_owner (struct spObservable *@var{obs})
+@end deftypefn
+
+@node spButton, spToggle, spObservable, Core Classes
+@section spButton
+
+Superclass:  @code{spObservable} (@pxref{spObservable}).
+
+@deftypefn {Method on @code{spButton}} void push ()
+@end deftypefn
+
+@deftypefn {Method on @code{spButton}} void setLabel (char *@var{label})
+@end deftypefn
+
+@deftypefn {Accessor} {char *} spButton_label (struct spButton *@var{b})
+@end deftypefn
+
+@node spToggle, spText, spButton, Core Classes
+@section spToggle
+
+Superclass:  @code{spButton} (@pxref{spButton}).
+
+@deftypefn Accessor int spToggle_state (struct spToggle *@var{t})
+@end deftypefn
+
+@node spText, spView, spToggle, Core Classes
+@section spText
+
+Superclass:  @code{spObservable} (@pxref{spObservable}).
+
+@tindex spText_observation
+@table @code
+@item spText_linesChanged
+@item spText_readOnlynessChanged
+@item spText_OBSERVATIONS
+@end table
+
+@deftypefn {Method on @code{spText}} void clear
+@end deftypefn
+
+@deftypefn {Method on @code{spText}} void insert (int @var{pos}, int @var{len}, char *@var{text}, int @var{afterMark})
+@end deftypefn
+
+@deftypefn {Method on @code{spText}} void delete (int @var{pos}, int @var{len})
+@end deftypefn
+
+@deftypefn {Method on @code{spText}} void substring (int @var{pos}, int @var{len}, char *@var{buf})
+@end deftypefn
+
+@deftypefn {Method on @code{spText}} int length
+@end deftypefn
+
+@deftypefn {Method on @code{spText}} int addMark (int @var{pos}, int @var{after})
+@end deftypefn
+
+@deftypefn {Method on @code{spText}} void removeMark (int @var{mark})
+@end deftypefn
+
+@deftypefn {Method on @code{spText}} void setMark (int @var{mark}, int @var{pos})
+@end deftypefn
+
+@deftypefn {Method on @code{spText}} int markPos (int @var{mark})
+@end deftypefn
+
+@deftypefn {Method on @code{spText}} void setReadOnly (int @var{readonly})
+@end deftypefn
+
+@deftypefn {Method on @code{spText}} void writePartial (FILE *@var{fp}, int @var{start}, int @var{len})
+@end deftypefn
+
+@deftypefn {Method on @code{spText}} void writeFile (char *@var{filename})
+@end deftypefn
+
+@deftypefn {Method on @code{spText}} void readFile (char *@var{filename})
+@end deftypefn
+
+@deftypefn {Method on @code{spText}} void fillDynstr (struct dynstr *@var{d})
+@end deftypefn
+
+@deftypefn {Method on @code{spText}} int rxpSearch (regexp_t @var{rxp}, int @var{pos}, int *@var{after})
+@end deftypefn
+
+@deftypefn {Accessor} int spText_readOnly (struct spText *@var{t})
+@end deftypefn
+
+@deftypefn {Accessor} int spText_newlines (struct spText *@var{t})
+@end deftypefn
+
+@node spView, spButtonv, spText, Core Classes
+@section spView
+
+Superclass:  @code{spObservable} (@pxref{spObservable}).
+
+@tindex spKeyState
+
+@tindex spViewFn_t
+
+@tindex spView_interaction
+
+@tindex spView_updateFlag
+@table @code
+@item spView_fullUpdate
+@item spView_parentUpdate
+@item spView_UPDATEFLAGS
+@end table
+
+@deftypefn {Method on @code{spView}} void setObserved (struct spObservable *@var{obs})
+@end deftypefn
+
+@deftypefn {Method on @code{spView}} void receiveFocus ()
+@end deftypefn
+
+@deftypefn {Method on @code{spView}} void loseFocus ()
+@end deftypefn
+
+@deftypefn {Method on @code{spView}} void wantFocus (struct spView *@var{requestor})
+@end deftypefn
+
+@deftypefn {Method on @code{spView}} void wantUpdate (struct spView *@var{requestor}, unsigned long @var{flags})
+@end deftypefn
+
+@deftypefn {Method on @code{spView}} void desiredSize (int *@var{minh}, int *@var{minw}, int *@var{maxh}, int *@var{maxw}, int *@var{besth}, int *@var{bestw})
+@end deftypefn
+
+@deftypefn {Method on @code{spView}} void embed (struct spView *@var{parent})
+@end deftypefn
+
+@deftypefn {Method on @code{spView}} void unEmbed ()
+@end deftypefn
+
+@deftypefn {Method on @code{spView}} {struct spIm *} getIm ()
+@end deftypefn
+
+@deftypefn {Method on @code{spView}} void install (struct spWindow *@var{window})
+@end deftypefn
+
+@deftypefn {Method on @code{spView}} void unInstall ()
+@end deftypefn
+
+@deftypefn {Method on @code{spView}} void overwrite (struct spWindow *@var{window})
+@end deftypefn
+
+@deftypefn {Method on @code{spView}} void destroyObserved ()
+@end deftypefn
+
+@deftypefn {Method on @code{spView}} void invokeInteraction (char *@var{name}, struct spoor *@var{requestor}, void *@var{data}, spChar *@var{keys})
+@end deftypefn
+
+@deftypefn {Method on @code{spView}} spViewFn_t nextSubview ()
+@end deftypefn
+
+@deftypefn {Method on @code{spView}} void wantNewSize (struct spView *@var{requestor}, int @var{minh}, int @var{minw}, int @var{maxh}, int @var{maxw}, int @var{besth}, int @var{bestw})
+@end deftypefn
+
+@deftypefn {Accessor} {struct spObservable *} spView_observed (struct spView *@var{v})
+@end deftypefn
+
+@deftypefn Accessor {struct spView *} spView_parent (struct spView *@var{v})
+@end deftypefn
+
+@deftypefn Accessor {struct spWindow *} spView_window (struct spView *@var{v})
+@end deftypefn
+
+@deftypefn Accessor {struct spKeymap *} spView_keymap (struct spView *@var{v})
+@end deftypefn
+
+@deffn {Interaction} view-invoke
+@end deffn
+
+@deftypefn Function {void} spView_addInteraction (struct glist *@var{list}, char *@var{name}, char *@var{descr}, void (*@var{func})())
+@end deftypefn
+
+@deftypefn Function {void} spView_addInteractionByClass (spoorClass_t *@var{class}, char *@var{name}, char *@var{descr}, void (*@var{fn})())
+@end deftypefn
+
+@deftypefn Function {struct glist *} spView_lookupInteractions (spoorClass_t *@var{class}, spoorClass_t **@var{outclass})
+@end deftypefn
+
+@deftypefn Function {(void (*) ())} spView_lookupInteraction (char *@var{name}, spoorClass_t *@var{class}, spoorClass_t **@var{outclass})
+@end deftypefn
+
+@deftypefn Function {struct spKeymap *} spView_classKeymap (spoorClass_t *@var{class}, int @var{full}, int @var{inherit})
+@end deftypefn
+
+@deftypefn Function {struct spKeymap *} spView_lookupKeymap (spoorClass_t *@var{class}, spoorClass_t **@var{outclass}, int *@var{inherit})
+@end deftypefn
+
+@deftypefn Function {void} spView_bindKeymapKey (struct spKeymap *@var{km}, char *@var{keys}, void (*@var{fn})(), struct spoor *@var{obj}, void *@var{data})
+@end deftypefn
+
+@deftypefn Function {void} spView_bindInstanceKey (struct spView *@var{self}, char *@var{keys}, void (*@var{fn})(), struct spoor *@var{obj}, void *@var{data})
+@end deftypefn
+
+@deftypefn Function {void} spView_bindClassKey (spoorClass_t *@var{class}, char *@var{keys}, void (*@var{fn})(), struct spoor *@var{obj}, void *@var{data})
+@end deftypefn
+
+@deftypefn Function {void} spView_unbindKeymapKey (struct spKeymap *@var{km}, char *@var{keys})
+@end deftypefn
+
+@deftypefn Function {void} spView_unbindInstanceKey (struct spView *@var{view}, char *@var{keys})
+@end deftypefn
+
+@deftypefn Function {void} spView_unbindClassKey (spoorClass_t *@var{class}, char *@var{keys})
+@end deftypefn
+
+@deftypefn Function {void} spView_BuildInteractionMap ()
+@end deftypefn
+
+@deftypefn Function {char *} spView_InteractionName (void (*@var{fn})())
+@end deftypefn
+
+@deftypefn Function {void} spView_AssociateLabel (char *@var{sequence}, void (*@var{fn})(), char *@var{label})
+@end deftypefn
+
+@deftypefn Function {char *} spView_LookupLabel (spChar *@var{sequence}, void (*@var{fn})())
+@end deftypefn
+
+@node spButtonv, spMenu, spView, Core Classes
+@section spButtonv
+
+Superclass:  @code{spView} (@pxref{spView}).
+
+@tindex spButtonv_style
+@table @code
+@item spButtonv_grid
+@item spButtonv_horizontal
+@item spButtonv_multirow
+@item spButtonv_vertical
+@item spButtonv_STYLES
+@end table
+
+@tindex spButtonv_toggleStyle
+@table @code
+@item spButtonv_brackets
+@item spButtonv_checkbox
+@item spButtonv_inverse
+@item spButtonv_STYLES
+@end table
+
+@tindex spButtonv_clickType
+@table @code
+@item spButtonv_click
+@item spButtonv_controlclick
+@item spButtonv_shiftclick
+@item spButtonv_CLICKTYPES
+@end table
+
+@deftypefn Accessor {int} spButtonv_anticipatedWidth (struct spButtonv *@var{b})
+@end deftypefn
+
+@deftypefn Accessor {struct spButton *} spButtonv_button (struct spButtonv *@var{b}, int *@var{num})
+@end deftypefn
+
+@deftypefn Accessor {struct glist *} spButtonv_buttons (struct spButtonv *@var{b})
+@end deftypefn
+
+@deftypefn Accessor {(void (*) ())} spButtonv_fn (struct spButtonv *@var{b})
+@end deftypefn
+
+@deftypefn Accessor {int} spButtonv_length (struct spButtonv *@var{b})
+@end deftypefn
+
+@deftypefn Accessor {int} spButtonv_selection (struct spButtonv *@var{b})
+@end deftypefn
+
+@deftypefn Accessor {enum spButtonv_style} spButtonv_style (struct spButtonv *@var{b})
+@end deftypefn
+
+@deftypefn Accessor {enum spButtonv_toggleStyle} spButtonv_toggleStyle (struct spButtonv *@var{b})
+@end deftypefn
+
+@deftypefn Accessor {struct spoor *} spButtonv_obj (struct spButtonv *@var{b})
+@end deftypefn
+
+@deftypefn Accessor {int} spButtonv_scrunch (struct spButtonv *@var{b})
+@end deftypefn
+
+@deftypefn Accessor {int} spButtonv_clickMeansPush (struct spButtonv *@var{b})
+@end deftypefn
+
+@deftypefn Accessor {int} spButtonv_highlightWithoutFocus (struct spButtonv *@var{b})
+@end deftypefn
+
+@deftypefn {Method on @code{spButtonv}} {void} insert (struct spButton *@var{b}, int @var{pos})
+@end deftypefn
+
+@deftypefn {Method on @code{spButtonv}} {void} remove (int @var{num})
+@end deftypefn
+
+@deffn Interaction buttonpanel-left
+@end deffn
+
+@deffn Interaction buttonpanel-right
+@end deffn
+
+@deffn Interaction buttonpanel-up
+@end deffn
+
+@deffn Interaction buttonpanel-down
+@end deffn
+
+@deffn Interaction buttonpanel-search
+@end deffn
+
+@deffn Interaction buttonpanel-first
+@end deffn
+
+@deffn Interaction buttonpanel-last
+@end deffn
+
+@deffn Interaction buttonpanel-click
+@end deffn
+
+@deffn Interaction buttonpanel-shiftclick
+@end deffn
+
+@deffn Interaction buttonpanel-controlclick
+@end deffn
+
+@deffn Interaction buttonpanel-next-page
+@end deffn
+
+@deffn Interaction buttonpanel-previous-page
+@end deffn
+
+@deffn Interaction buttonpanel-glitch-up
+@end deffn
+
+@deffn Interaction buttonpanel-glitch-down
+@end deffn
+
+@deffn Interaction buttonpanel-click-by-name
+@end deffn
+
+@node spMenu, spIm, spButtonv, Core Classes
+@section spMenu
+
+Superclass:  @code{spButtonv} (@pxref{spButtonv}).
+
+@tindex spMenu_type
+@table @code
+@item spMenu_function
+@item spMenu_menu
+@end table
+
+@tindex spMenu_entry
+
+@deftypefn {Method on @code{spMenu}} {void} addFunction (struct spButton *@var{b}, void (*@var{fn})(), int @var{pos}, struct spoor *@var{obj}, void *@var{data})
+@end deftypefn
+
+@deftypefn {Method on @code{spMenu}} {void} addMenu (struct spButton *@var{b}, struct spMenu *@var{m}, int @var{pos})
+@end deftypefn
+
+@deftypefn Accessor {struct spMenu *} spMenu_superMenu (struct spMenu *@var{m})
+@end deftypefn
+
+@deftypefn Accessor {char *} spMenu_label (struct spMenu *@var{m}, int @var{i})
+@end deftypefn
+
+@deftypefn Accessor {struct spMenu_entry *} spMenu_Nth (struct spMenu *@var{m}, int @var{i})
+@end deftypefn
+
+@deftypefn Accessor {(void (*) ())} spMenu_cancelfn (struct spMenu *@var{m})
+@end deftypefn
+
+@deffn Interaction menu-cancel
+@end deffn
+
+@deffn Interaction menu-left
+@end deffn
+
+@deffn Interaction menu-right
+@end deffn
+
+@deffn Interaction menu-down
+@end deffn
+
+@node spIm, spCharIm, spMenu, Core Classes
+@section spIm
+
+Superclass:  @code{spView} (@pxref{spView}).
+
+@deftypefn {Method on @code{spIm}} {void} setView (struct spView *@var{v})
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {struct spKeymapEntry *} updateKeystate (spChar *@var{keys}, spChar *@var{inbuf}, struct spView **@var{inview})
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {void} addTranslation (spChar *@var{keys}, spChar *@var{val})
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {void} addToFocusList (struct spView *@var{v}, int @var{afterp}, struct spView *@var{neighbor})
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {void} removeFromFocusList (struct spView *@var{v})
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {void} enqueueEvent (struct spEvent *@var{ev})
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {void} processEvent ()
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {void} message (char *@var{msg}, int @var{priority})
+@end deftypefn
+
+@deftypefn {Method on @code{setFocusView}} {void} setFocusView (struct spView *@var{v})
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {void} resetFocuslist ()
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {void} popupView (struct spPopupView *@var{pv}, void (*@var{fn})(), int @var{desiredy}, int @var{desiredx})
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {void} dismissPopup (int @var{which})
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {void} watchInputFD (int @var{fd}, void (*@var{fn})(), void *@var{data})
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {void} unwatchInputFD (int @var{fd})
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {void} transientMessage (char *@var{msg}, int @var{priority}, int @var{duration})
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {void} dequeueViewUpdates (struct spView *@var{v})
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {void} forceUpdate (int @var{suppressSyncs})
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {void} forceDraw ()
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {void} refocus ()
+@end deftypefn
+
+@deftypefn {Method on @code{spIm}} {void} processEvents ()
+@end deftypefn
+
+@deffn Interaction interact-exit
+@end deffn
+
+@deffn Interaction interact-next
+@end deffn
+
+@deffn Interaction interact-previous
+@end deffn
+
+@deffn Interaction interact-redraw
+@end deffn
+
+@node spCharIm, spCursesIm, spIm, Core Classes
+@section spCharIm
+
+@node spCursesIm, spPopupView, spCharIm, Core Classes
+@section spCursesIm
+
+@node spPopupView, spSplitview, spCursesIm, Core Classes
+@section spPopupView
+
+@node spSplitview, spTextview, spPopupView, Core Classes
+@section spSplitview
+
+@node spTextview, spCmdline, spSplitview, Core Classes
+@section spTextview
+
+@node spCmdline, spWrapview, spTextview, Core Classes
+@section spCmdline
+
+@node spWrapview, spWindow, spCmdline, Core Classes
+@section spWrapview
+
+@node spWindow, spCharWin, spWrapview, Core Classes
+@section spWindow
+
+@node spCharWin, spCursesWin, spWindow, Core Classes
+@section spCharWin
+
+@node spCursesWin,  , spCharWin, Core Classes
+@section spCursesWin
+
+@node Index,  , Core Classes, Top
+@unnumbered Index
+
+@printindex fn
+
+@contents
+
+@bye

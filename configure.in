@@ -1,0 +1,952 @@
+dnl $RCSfile: configure.in,v $
+dnl $Revision: 1.118 $
+dnl $Date: 1996/09/05 23:09:37 $
+dnl $Author: schaefer $
+
+AC_PREPARE(include/zmail.h)
+
+verbose=yes
+configdir=$srcdir/config
+
+if test -z "$SWITCHED_SHELLS"; then
+  AC_CHECKING(for case buffer overflow)
+  if ( . $configdir/overflow.sh ) 2>/dev/null; then
+    AC_VERBOSE(staying with current shell)
+  else
+    AC_VERBOSE(switching to ksh instead)
+    SWITCHED_SHELLS=1
+    export SWITCHED_SHELLS
+    exec ksh "./$0" "$@"
+  fi
+fi
+
+  
+AC_LANG_C
+
+[
+
+force=false
+five=false
+
+for ARG
+do
+    case $ARG in
+	-f) force=true; shift;;
+	*) break;;
+    esac
+done
+
+case $1 in
+'') cat - $configdir/ostype_list <<EOF
+usage: configure ostype-name
+
+possible ostype names are:
+EOF
+exit 1
+;;
+*) if grep $1 $configdir/ostype_list >/dev/null; then :; else
+     echo 'possible ostype names are:'; cat $configdir/ostype_list
+     echo '
+If this is a new ostype, add it to config/ostype_list, then rerun this script.'
+     exit 1
+   fi
+esac
+ostype=$1
+
+if test "$ostype" = sun41v
+then
+    five=true
+fi
+
+rm -f osconfig.h osmake.mk osmake.mk.epi osconfig.h.epi
+touch osconfig.h osmake.mk.epi osconfig.h.epi
+]
+
+AC_CHECKING(behavior of system utilities needed by this script ...)
+
+AC_LN_S
+[
+if test -f $configdir/os-$ostype.h
+then
+  rm -f osconfig.h
+  $LN_S $configdir/os-$ostype.h osconfig.h
+fi
+]
+
+TAR_CHASE=''
+if test "$LN_S" = "ln -s"
+then
+    AC_CHECKING(how to use 'test' to test for symlinks)
+    echo foo > Conftest1
+    ln -s Conftest1 Conftest2
+    if (eval 'test -l Conftest2 2>/dev/null')
+    then
+	TEST_LINK=-l
+    elif (eval 'test -h Conftest2 2>/dev/null')
+    then
+	TEST_LINK=-h
+    else
+	TEST_LINK=-f
+    fi
+    AC_VERBOSE(...it's 'test $TEST_LINK filename')
+    rm -rf Conftest*
+
+    AC_CHECKING(link-chasing option in tar)
+    echo foo > Conftest1
+    ln -s Conftest1 Conftest2
+    mkdir Conftestdir
+    (tar cLf - Conftest2 2>/dev/null || true) | \
+        (cd Conftestdir; (tar xf - 2>/dev/null || true))
+    if test -f Conftestdir/Conftest2
+    then
+	test $TEST_LINK Conftestdir/Conftest2 || TAR_CHASE=L
+    fi
+    if test -z "$TAR_CHASE"
+    then
+	rm -f Conftestdir/Conftest2 2>&1 >/dev/null
+	(tar chf - Conftest2 2>/dev/null || true) | \
+	    (cd Conftestdir; (tar xf - 2>/dev/null || true))
+	if test -f Conftestdir/Conftest2
+	then
+	    test $TEST_LINK Conftestdir/Conftest2 || TAR_CHASE=h
+	fi
+    fi
+fi
+
+if test -z "$TAR_CHASE"
+then
+    AC_VERBOSE(none available)
+else
+    AC_VERBOSE(using '$TAR_CHASE')
+fi
+
+
+AC_CHECKING(link-chasing option in find)
+if find Conftestdir -follow -print >/dev/null 2>&1; then
+    FIND_CHASE=-follow
+    AC_VERBOSE(using -follow)
+else
+    AC_VERBOSE(none available)
+fi
+
+rm -rf Conftest*
+
+$force || AC_CHECKING(whether existing configuration is up to date ...)
+
+test -f $configdir/os-$ostype.mk && $LN_S $configdir/os-$ostype.mk osmake.mk
+
+if $force || (find $srcdir/configure $srcdir/osconfig.h.in $FIND_CHASE -newer $configdir/os-$ostype.h -print; find $srcdir/configure $srcdir/osmake.mk.in $FIND_CHASE -newer $configdir/os-$ostype.mk -print) | grep . >/dev/null
+then
+  AC_VERBOSE(... proceeding with reconfiguration.)
+else
+  AC_VERBOSE(... linked old configure files to osconfig.h and osmake.mk.)
+  exit 0
+fi
+
+[
+if test -f $configdir/os-$ostype.mk
+then
+  if grep '^COMPILER' >/dev/null $configdir/os-$ostype.mk
+  then
+    CC=`sed -n 's/^COMPILER[ 	]*=//p' $configdir/os-$ostype.mk | tail -1`
+  fi
+  if grep 'END OF CONFIGURE INFO' >/dev/null $configdir/os-$ostype.mk
+  then
+    sed '1,/^# END OF CONFIGURE INFO/d' $configdir/os-$ostype.mk >osmake.mk.epi
+  else
+    cp $configdir/os-$ostype.mk osmake.mk.epi
+  fi
+fi
+if test -f $configdir/os-$ostype.h
+then
+  cp $configdir/os-$ostype.h osconfig.h.old
+  if grep 'END OF CONFIGURE INFO' >/dev/null osconfig.h.old
+  then
+    sed '1,/^.. END OF CONFIGURE INFO/d' $configdir/os-$ostype.h |
+      sed '/#endif.*OSCONFIG/,$d' >osconfig.h.epi
+  fi
+fi
+
+]
+
+AC_CONFIG_HEADER(osconfig.h)
+AC_HAVE_HEADERS(unistd.h)
+AC_AIX
+AC_ISC_POSIX
+AC_MINIX
+AC_IRIX_SUN
+AC_SCO_INTL
+AC_DYNIX_SEQ
+AC_DIR_HEADER
+AC_XENIX_DIR
+
+if test "$ostype" = osf1
+then
+    AC_DEFINE(_POSIX_SOURCE,)
+    AC_DEFINE(_XOPEN_SOURCE,)
+    AC_DEFINE(_OSF_SOURCE,)
+fi
+
+if test "$ostype" = motor
+then
+    AC_DEFINE(MOTOROLA)
+fi
+
+
+case "$ostype" in
+    ultrx)	SHELL=/bin/sh5 ;;
+    *)		SHELL=/bin/sh ;;
+esac
+AC_SUBST(SHELL)
+
+dnl AC_PROG_CPP  dnl don't want to do this twice...
+AC_PROG_RANLIB
+AC_PROG_YACC
+AC_PROG_LEX
+AC_PROG_AWK
+AC_SUBST(CURSES_LIB)
+AC_SUBST(TERM_LIB)
+AC_SUBST(LOCAL_LIBS)
+AC_SUBST(EXTRA_INCLUDES)
+
+# I'm not sure that NO_MINUS_C_MINUS_O works, and in any case neither it nor
+# PROG_CC_C_O (autoconf2) lend themselves to creating a make variable, so I
+# stole the guts from PROG_CC_C_O and rolled my own. <spencer>
+AC_CHECKING(whether $CC understands -c and -o together)
+DASH_C_WITH_DASH_O="";
+echo 'foo(){}' > conftest.c
+# Make sure it works both with $CC and with simple cc.
+# We do the test twice because some compilers refuse to overwrite an
+# existing .o file with -o, though they will create one.
+if ${CC-cc} -c conftest.c -o conftest.o >/dev/null 2>&1 &&
+  test -f conftest.o && ${CC-cc} -c conftest.c -o conftest.o >/dev/null 2>&1
+then
+  DASH_C_WITH_DASH_O='-o $*.o';
+fi
+rm -f conftest*
+AC_SUBST(DASH_C_WITH_DASH_O)
+if test -n "$DASH_C_WITH_DASH_O"
+then
+  AC_VERBOSE([yup, it does])
+else
+  AC_VERBOSE([nope, it doesn't])
+fi
+
+AC_HEADER_CHECK(cur00.h, AC_DEFINE(HAVE_AIX_CURSES))
+AC_HEADER_CHECK(cursesX.h, AC_DEFINE(HAVE_CURSESX))
+
+AC_HAVE_LIBRARY(dnet_stub)
+
+AC_HAVE_LIBRARY(nsl,
+ AC_HAVE_LIBRARY(socket,
+  AC_COMPILE_CHECK(networking without extra libraries,[],[endhostent();],,
+   AC_VERBOSE(using nsl and socket libraries)
+   LIBS="$LIBS -lnsl -lsocket")))
+
+LOCAL_LIBS="$LIBS"
+
+if $five && test -d /usr/5include
+then
+	EXTRA_INCLUDES="-I/usr/5include"
+	DEFS="$DEFS -I/usr/5include"
+fi
+
+
+oldLibs="$LIBS"
+LIBS="-L /"
+AC_COMPILE_CHECK(space after -L,[],[return 0;],
+DASH_L="-L "
+AC_VERBOSE(space is allowed),
+DASH_L="-L"
+AC_VERBOSE(space is not allowed))
+LIBS="$oldLibs"
+AC_SUBST(DASH_L)
+
+
+if $five && test -d /usr/5lib
+then
+	CURSES_LIB="$DASH_L/usr/5lib -lcurses"
+elif test -d /usr/local/include/ncurses
+then
+	EXTRA_INCLUDES="-I/usr/local/include/ncurses -I/usr/local/include $EXTRA_INCLUDES"
+	CURSES_LIB="$DASH_L/usr/local/lib -lncurses"
+	AC_DEFINE(HAVE_NCURSES)
+elif test -d /usr/include/ncurses
+then
+	EXTRA_INCLUDES="-I/usr/include/ncurses $EXTRA_INCLUDES"
+	CURSES_LIB="-lncurses"
+	AC_DEFINE(HAVE_NCURSES)
+elif test -f /lib/libcursesX.a
+then
+	CURSES_LIB="$DASH_L/lib -lcursesX"
+elif test -f /usr/ccs/lib/libcurses.a
+then
+	CURSES_LIB="$DASH_L/usr/ccs/lib -lcurses"
+elif test -f /lib/libxcurses.a
+then
+	CURSES_LIB="$DASH_L/lib -lxcurses"
+elif test -f /usr/lib/libxcurses.a
+then
+	CURSES_LIB="$DASH_L/usr/lib -lxcurses"
+else
+	CURSES_LIB="-lcurses"
+fi
+
+if $five && test -d /usr/5lib
+then
+	TERM_LIB="$DASH_L/usr/5lib -ltermlib"
+elif AC_HAVE_LIBRARY(termlib,true,false)
+then
+	TERM_LIB="-ltermlib"
+elif test -f /usr/ccs/lib/libtermlib.a
+then
+	TERM_LIB="$DASH_L/usr/ccs/lib -ltermlib"
+elif test -f /lib/libxtermlib.a
+then
+	TERM_LIB="$DASH_L/lib -lxtermlib"
+else
+	AC_HAVE_LIBRARY(termcap,TERM_LIB="-ltermcap")
+fi
+
+LIBS="$LIBS $CURSES_LIB $TERM_LIB"
+
+define(ZAC_TYPE_CHECK,
+  [AC_COMPILE_CHECK($2 in $1, [#include <$1>], [$2 x;],AC_DEFINE($3),$4)])
+
+ZAC_TYPE_CHECK(netdb.h, struct hostent, HAVE_HOSTENT)
+ZAC_TYPE_CHECK(sys/utsname.h, struct utsname, HAVE_UTSNAME)
+
+AC_COMPILE_CHECK(Xlib internals,[#include <X11/Xlib.h>],
+                 [Display x;],,AC_DEFINE(XLIB_ILLEGAL_ACCESS))
+
+AC_CHECKING(for Xt release 4)
+AC_PROGRAM_EGREP(^== +4 +==$,[
+#include <X11/Intrinsic.h>
+== XtSpecificationRelease ==
+],
+AC_CHECKING(for Xt internal headers)
+xtDir=/projects/zmail/sources/X11R4/mit/lib/Xt
+if test -d $xtDir; then
+   XT_R4_INCLUDES=-I$xtDir
+   AC_DEFINE_UNQUOTED(XT_R4_INCLUDES,$XT_R4_INCLUDES)
+else
+    xtDir=/zyrcon/usr1/src/X11R4/mit/lib/Xt
+    if test -d $xtDir; then
+       XT_R4_INCLUDES=-I$xtDir
+       AC_DEFINE_UNQUOTED(XT_R4_INCLUDES,$XT_R4_INCLUDES)
+    fi
+fi,
+AC_DEFINE(HAVE_XT_BASE_TRANSLATIONS))
+AC_SUBST(XT_R4_INCLUDES)
+
+AC_DEFINE(SELECT_POS_LIST)
+AC_DEFINE(USE_XM_LIST_C)
+
+AC_COMPILE_CHECK(getpwuid declarations, [#include <pwd.h>],
+    [struct passwd *p, *q; p = getpwuid(0); q = getpwnam("root");],,
+AC_DEFINE(DECLARE_GETPW))
+
+if test -f /hp-ux
+then
+  AC_DEFINE(HPUX)
+  AC_DEFINE(_POSIX_SOURCE)
+  AC_DEFINE(_XOPEN_SOURCE)
+  AC_DEFINE(_HPUX_SOURCE)
+fi
+
+dnl  Keep these function tests in alphabetical order
+dnl  so that when they run, whoever's watching them
+dnl  can have an idea how far along they've gotten.
+
+dnl  Please do NOT reformat this list for no reason,
+dnl  unless you really like to torture people (like me)
+dnl  with merge conflicts.
+
+AC_HAVE_FUNCS(cbreak chsize ftruncate getdtablesize)
+AC_HAVE_FUNCS(getenv gethostname getwd herror idlok index locking lstat)
+AC_HAVE_FUNCS(mkdir poll popen putenv putp qsort)
+AC_HAVE_FUNCS(random rdchk)
+AC_HAVE_FUNCS(re_comp readdir rename reset_shell_mode select)
+AC_HAVE_FUNCS(setregid setreuid sigblock siglongjmp sigprocmask)
+AC_HAVE_FUNCS(sigsetjmp slk_attron slk_init srand strcasecmp strchr)
+AC_HAVE_FUNCS(strerror strncasecmp strpbrk strsignal strspn strstr)
+AC_HAVE_FUNCS(strtoul tcgetattr)
+AC_HAVE_FUNCS(tcsetattr tigetstr timezone touchline tparm typeahead)
+AC_HAVE_FUNCS(uname vprintf wait2 waitpid wattron wattrset xstandout)
+
+define(ZC_IFDEF,[case "$DEFS" in *$1*) $2;; *) $3;; esac])
+
+ZC_IFDEF(HAVE_HOSTENT,,
+if test -f /usr/bin/uuname || test -f /bin/uuname; then
+  AC_DEFINE(HAVE_UUNAME)
+fi)
+
+AC_HEADER_CHECK(sys/types.h,
+		AC_COMPILE_CHECK(u_short and u_long, [#include <sys/types.h>],
+				 [u_short s; u_long l;],
+				 AC_DEFINE(HAVE_U_SHORT_AND_LONG)))
+
+AC_TEST_PROGRAM(
+ [main(){int id = gethostid();
+  if (id==0) exit(1);
+  exit(0);}],AC_DEFINE(HAVE_GETHOSTID))
+AC_COMPILE_CHECK(struct xutsname, [#include <sys/utsname.h>],
+ [struct xutsname xname;],AC_DEFINE(HAVE_XUTSNAME))
+
+AC_RETSIGTYPE
+AC_RESTARTABLE_SYSCALLS
+
+AC_SYS_SIGLIST_DECLARED
+AC_COMPILE_CHECK(sys_siglist, ,
+    [extern char *sys_siglist[]; char **x; x = sys_siglist;],
+    AC_DEFINE(HAVE_SIGLIST))
+
+AC_COMPILE_CHECK(errno declaration, [#include <errno.h>],
+    [int x = errno;],,
+    AC_DEFINE(DECLARE_ERRNO))
+
+AC_COMPILE_CHECK(sys_errlist declaration, [#include <errno.h>],
+    [char *x = *sys_errlist;],,
+    AC_DEFINE(DECLARE_SYS_ERRLIST))
+
+AC_COMPILE_CHECK(environ declaration, [
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+],[char *s = *environ;],,
+AC_DEFINE(DECLARE_ENVIRON))
+
+AC_HAVE_HEADERS(resource.h fcntl.h sys/select.h sys/bsdtypes.h stdlib.h)
+AC_HAVE_HEADERS(malloc.h string.h strings.h sys/ioctl.h maillock.h)
+AC_HAVE_HEADERS(sys/locking.h locale.h nl_types.h sys/systeminfo.h limits.h values.h)
+AC_HAVE_HEADERS(netdb.h net/errno.h)
+
+define(STRING_HEADERS,[#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif])
+
+
+AC_HEADER_CHECK(bstring.h,
+AC_DEFINE(HAVE_BSTRING_H)
+AC_DEFINE(HAVE_B_MEMFUNCS),
+AC_COMPILE_CHECK(b* memory functions, [STRING_HEADERS], [
+bcopy(0, 0, 0);
+bcmp(0, 0, 0);
+bzero(0, 0);
+], AC_DEFINE(HAVE_B_MEMFUNCS)))
+
+AC_HEADER_CHECK(memory.h,
+AC_DEFINE(HAVE_MEMORY_H)
+AC_DEFINE(HAVE_MEM_MEMFUNCS),
+AC_COMPILE_CHECK(mem* memory functions, [STRING_HEADERS], [
+memcpy(0, 0, 0, 0);
+memcmp(0, 0, 0);
+memset(0, 0, 0);
+],
+AC_DEFINE(HAVE_MEM_MEMFUNCS)))
+
+ZC_IFDEF(HAVE_NETDB_H,
+  AC_COMPILE_CHECK(h_errno, [#include <netdb.h>], [int x = h_errno;],
+    AC_DEFINE(HAVE_H_ERRNO)))
+
+AC_COMPILE_CHECK(stat.h, [#include <sys/stat.h>],
+ [struct stat x; int y = x.st_ino;],,AC_DEFINE(STAT_H_NEEDS_TYPES_H))
+
+AC_HEADER_EGREP(fd_set, sys/types.h,  AC_DEFINE(HAVE_FD_SET_TYPE),
+AC_HEADER_EGREP(fd_set, sys/select.h, AC_DEFINE(HAVE_FD_SET_TYPE)))
+
+AC_HEADER_EGREP(strcat, string.h, AC_DEFINE(HAVE_STRCAT_STRCPY_DECLARED))
+AC_HEADER_EGREP(strcmp, string.h, AC_DEFINE(HAVE_STRCMP_DECLARED))
+AC_HEADER_EGREP(strlen, string.h, AC_DEFINE(HAVE_STRLEN_DECLARED))
+
+AC_COMPILE_CHECK([index declaration], STRING_HEADERS,
+    [int index();], AC_DEFINE(DECLARE_INDEX))
+
+AC_CHECKING(for safe case transposition)
+AC_TEST_PROGRAM([
+#include <ctype.h>
+int main()
+{ exit(tolower('a') != 'a' || toupper('Z') != 'Z'); }],
+AC_DEFINE(SAFE_CASE_CHANGE))
+
+AC_LONG_FILE_NAMES
+
+AC_STDC_HEADERS
+
+AC_WAIT3
+sleep 2
+
+AC_TIME_WITH_SYS_TIME
+
+AC_HAVE_HEADERS(sys/utime.h utime.h sys/time.h)
+
+ZC_IFDEF(HAVE_SYS_TIME_H,,
+    test -f /usr/include/bsd/sys/time.h && AC_DEFINE(HAVE_BSD_SYS_TIME))
+
+define(TIME_COMPILE_CHECK,
+  [AC_COMPILE_CHECK($1, [
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else /* TIME_WITH_SYS_TIME */
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else /* HAVE_SYS_TIME_H */
+#  include <time.h>
+# endif /* HAVE_SYS_TIME_H */
+#endif /* TIME_WITH_SYS_TIME */
+$2], [$3], $4, $5)])
+
+TIME_COMPILE_CHECK(struct utimbuf in sys/utime.h,
+    [#include <sys/utime.h>], [struct utimbuf x;],
+    AC_DEFINE(HAVE_UTIMBUF),
+    TIME_COMPILE_CHECK(struct utimbuf in utime.h,
+	[#include <utime.h>], [struct utimbuf x;],
+	AC_DEFINE(HAVE_UTIMBUF)))
+
+
+AC_STRUCT_TM
+AC_TIMEZONE
+
+AC_COMPILE_CHECK(prototypes, ,
+    [void xx(char *);], AC_DEFINE(HAVE_PROTOTYPES))
+
+# check for stdarg.h only on machines which have prototypes.
+# otherwise, check for varargs.h.
+ZC_IFDEF(HAVE_PROTOTYPES,
+  AC_HEADER_CHECK(stdarg.h,  AC_DEFINE(HAVE_STDARG_H)),
+  AC_HEADER_CHECK(varargs.h, AC_DEFINE(HAVE_VARARGS_H)))
+
+TIME_COMPILE_CHECK(tzname declaration, ,
+ [char *tzname; printf(tzname);], , AC_DEFINE(DECLARE_TZNAME))
+
+
+AC_PID_T
+
+define(WAIT_COMPILE_CHECK,
+  [AC_COMPILE_CHECK("union wait using $1",[
+#include <$1>
+#ifdef HAVE_PROTOTYPES
+pid_t wait(union wait *);
+#endif /* HAVE_PROTOTYPES */
+],[union wait uw; int x = uw.w_coredump; x = WTERMSIG(uw);],
+  [AC_DEFINE(USE_UNION_WAIT)],$2)])
+
+WAIT_COMPILE_CHECK(sys/wait.h,WAIT_COMPILE_CHECK(wait.h))
+
+
+AC_CHECKING(sprintf return type)
+AC_TEST_PROGRAM([main(){char buf[80];exit(sprintf(buf,"%d%d%d",1,2,3)!=3);}],
+  AC_DEFINE(HAVE_INT_SPRINTF))
+
+AC_CHECKING(signal handler resetting)
+AC_TEST_PROGRAM([
+  int foo(){int x=0;}
+  main(){signal(1,foo);kill(getpid(),1);kill(getpid(),1);exit(0);}
+], ,AC_DEFINE(HANDLERS_NEED_RESETTING));
+
+ZAC_TYPE_CHECK(sys/ioctl.h, struct tchars, HAVE_TCHARS)
+ZAC_TYPE_CHECK(sys/ioctl.h, struct ltchars, HAVE_LTCHARS)
+ZAC_TYPE_CHECK(sys/ioctl.h, struct sgttyb, HAVE_SGTTYB)
+ZAC_TYPE_CHECK(sys/termio.h, struct termio, HAVE_TERMIO)
+
+ZAC_TYPE_CHECK(termios.h, struct termios, HAVE_TERMIOS,
+ZAC_TYPE_CHECK(sys/termios.h, struct termios, HAVE_TERMIOS))
+
+ZAC_TYPE_CHECK(sys/ttychars.h, struct ttychars, HAVE_TTYCHARS)
+ZAC_TYPE_CHECK(curses.h, SGTTY, HAVE_SGTTY_DECLARED)
+
+if test -r /usr/mail; then
+    AC_DEFINE(USE_USR_MAIL)
+  else
+    AC_DEFINE(USE_SPOOL_MAIL)
+  fi
+
+AC_TEST_PROGRAM([main(){exit ((sizeof (int)) != 4);}], AC_DEFINE(INTIS32BITS))
+AC_TEST_PROGRAM([main(){exit ((sizeof (long)) != 4);}], AC_DEFINE(LONGIS32BITS))
+
+AC_COMPILE_CHECK(generic pointer type, , [void *p = (void *) 0;],
+		 AC_DEFINE(HAVE_VOID_STAR))
+
+AC_CHECKING(how to copy overlapping memory)
+AC_TEST_PROGRAM([
+#include <stdio.h>
+#ifndef HAVE_B_MEMFUNCS
+# define bcopy(a,b,n) (memcpy((b),(a),(n)))
+#endif
+main() /* This program comes from Configure in the Perl distribution! */
+{
+    char buf[128];
+    register char *b;
+    register int l;
+    register int off;
+    register int align;
+
+    for (align = 7; align >= 0; align--) {
+	for (l = 36; l; l--) {
+	    b = buf+align;
+	    bcopy("abcdefghijklmnopqrstuvwxyz0123456789", b, l);
+	    for (off = 1; off <= l; off++) {
+		bcopy(b, b+off, l);
+		bcopy(b+off, b, l);
+		if (bcmp(b, "abcdefghijklmnopqrstuvwxyz0123456789", l))
+		    exit(1);
+	    }
+	}
+    }
+    exit(0);
+}
+], AC_VERBOSE(using bcopy or memcpy); AC_DEFINE(SAFE_BCOPY),
+AC_FUNC_CHECK(memmove,AC_VERBOSE(using memmove);AC_DEFINE(HAVE_MEMMOVE),
+AC_VERBOSE(using home-grown code)))
+
+
+AC_CHECKING(alignment constraints)
+
+AC_TEST_PROGRAM([
+#include <stdio.h>
+struct foobar {
+    char foo;
+    double bar;
+} try;
+main()
+{
+    FILE *fp = (FILE *) fopen("Conftestdata", "w");
+
+    if (!fp) exit(1);
+    fprintf(fp, "%d\n", (char *) &(try.bar) - (char *) &(try.foo));
+    exit(0);
+}
+],
+ALIGNMENT=`cat Conftestdata`
+AC_VERBOSE(...aligns on $ALIGNMENT-byte boundaries.),
+ALIGNMENT=8
+AC_VERBOSE(...can't determine constraint[[,]] guessing it's $ALIGNMENT.))
+AC_DEFINE_UNQUOTED(ALIGNMENT,"$ALIGNMENT")
+
+rm -f Conftestdata
+AC_CHECKING('fopen(..., a+)...')
+
+AC_TEST_PROGRAM([
+#include <stdio.h>
+main()
+{
+    char buf[10];
+    FILE *fp = (FILE *) fopen("Conftestdata", "a+");
+    if (!fp) exit(1);
+    fprintf(fp, "foo\n");
+    (void) fseek(fp, 0L, 0);
+    fprintf(fp, "bar\n");
+    fclose(fp);
+    fp = (FILE *) fopen("Conftestdata", "r");
+    fgets(buf, 10, fp);
+    if (strcmp(buf, "bar\n")) exit(1);
+    exit(0);
+}], AC_VERBOSE(...it works.), AC_VERBOSE(... it doesn't work.); AC_DEFINE(NO_FOPEN_A_PLUS))
+
+case $ostype in
+	irix*)  AC_DEFINE(USG);;		# We don't trust these to do it right
+	dgux*|sco)  AC_DEFINE(USG);;		# We don't trust this either
+	*)	AC_USG;;
+esac
+
+AC_GETGROUPS_T
+
+ZC_IFDEF(USG,
+    AC_DEFINE(SYSV_SETPGRP)
+    AC_DEFINE(SYSV_CURSES_BUG)
+    AC_DEFINE(SYSV)
+,
+    [if test -f /usr/include/sys/resource.h]
+		then
+			AC_TEST_PROGRAM([
+#include <sys/param.h>
+#include <stdio.h>
+main()
+{
+    FILE *fp = fopen("Conftestdata", "w");
+    fprintf(fp, "%d\n", BSD);
+    fclose(fp);
+    exit(0);
+}],
+			AC_DEFINE_UNQUOTED(BSD,`cat Conftestdata`),
+			AC_DEFINE(BSD))
+		else
+			AC_DEFINE(SYSV_SETPGRP)
+			AC_DEFINE(SYSV_CURSES_BUG)
+			AC_DEFINE(SYSV)
+		fi)
+
+AC_DEFINE(SAFE_REALLOC)
+
+case "$DEFS" in
+    *HAVE_TERMIOS*) AC_DEFINE(TERM_USE_TERMIOS) ;;
+    *HAVE_TERMIO*) AC_DEFINE(TERM_USE_TERMIO) ;;
+    *HAVE_SGTTYB*) AC_DEFINE(TERM_USE_SGTTYB) ;;
+    *) AC_WARN([None of HAVE_TERMIOS, HAVE_TERMIO, or HAVE_SGTTYB set]) ;;
+esac
+
+AC_DEFINE(HAVE_SAVEDUID)
+AC_DEFINE(HAVE_SAVEDGID)
+
+AC_COMPILE_CHECK(void free,
+[
+#ifdef STDC_HEADERS
+#include <stdlib.h>
+#else
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#else
+#ifdef HAVE_MEMORY_H
+#include <memory.h>
+#else
+choke me
+#endif
+#endif
+#endif
+], [int x = free(0);],
+AC_DEFINE(HAVE_CHAR_FREE),
+AC_DEFINE(HAVE_VOID_FREE))
+
+AC_CONST
+
+AC_DEFINE(UPLINE_CHECK)
+AC_DEFINE(MVINCH_WORKS)
+AC_DEFINE(PRINTW_WORKS)
+AC_DEFINE(HAVE_SENDMAIL)
+AC_VFORK
+
+AC_COMPILE_CHECK(signal declaration,
+[#include <signal.h>], [int x = signal();],
+  AC_DEFINE(DECLARE_SIGNAL))
+
+AC_COMPILE_CHECK(unctrl declaration,
+[#include <curses.h>], [int x = **_unctrl;], ,AC_DEFINE(DEFINE_UNCTRL))
+AC_COMPILE_CHECK(_tty declaration,
+[#include <curses.h>], [foox(&_tty);], ,AC_DEFINE(DECLARE_TTY))
+AC_COMPILE_CHECK(term inclusion in curses,
+[#include <curses.h>], [int x = ECHO;], ,AC_DEFINE(CURSES_NEEDS_INCLUDE_TERM))
+
+
+AC_CHECKING(whether 'cp -p' works...)
+mkdir Conftestdir
+echo foo > Conftest
+echo bar > ./-p
+if eval 'cp -p Conftest Conftestdir 2>/dev/null' && test ! -f Conftestdir/-p
+then
+    USE_CP_DASH_P=true
+    AC_VERBOSE(...it does)
+else
+    USE_CP_DASH_P=false
+    AC_VERBOSE(...it doesn't)
+fi
+rm -rf Conftest* ./-p
+
+AC_CHECKING(whether the 'o' option to tar is needed...)
+echo foo > Conftest
+mkdir Conftestdir
+(tar cof - Conftest 2>/dev/null || true) | \
+    (cd Conftestdir; (tar xof - 2>/dev/null || true))
+if test -s Conftestdir/Conftest
+then
+    TAR_NO_CHOWN=o
+    AC_VERBOSE(...it is)
+else
+    TAR_NO_CHOWN=''
+    AC_VERBOSE(...it isn't)
+fi
+rm -rf Conftest*
+
+
+AC_SUBST(TEST_LINK)
+AC_SUBST(TAR_CHASE)
+AC_SUBST(FIND_CHASE)
+AC_SUBST(USE_CP_DASH_P)
+AC_SUBST(TAR_NO_CHOWN)
+
+
+define(USING_LIBS,
+oldLibs="$LIBS"
+LIBS="$1"
+$2
+LIBS="$oldLibs")
+
+define(ADD_MOTIF_LIBS,[
+AC_VERBOSE(linking Motif with [$1])
+MOTIF_LIBS="$MOTIF_LIBS $1"])
+
+define(ADD_LOCAL_LIBS,[
+AC_VERBOSE(linking with [$1])
+LOCAL_LIBS="$LOCAL_LIBS $1"])
+
+
+if AC_HAVE_LIBRARY(C,true,false)
+then  
+    AC_HEADER_CHECK(fam.h,
+    AC_HAVE_LIBRARY(fam,
+    ADD_LOCAL_LIBS(-lfam)
+    AC_COMPILE_CHECK(FAMOpen arguments,
+    [#include <fam.h>],[FAMOpen(0, 0);],
+    AC_DEFINE(FAM_OPEN,FAMOpen),
+    AC_DEFINE(FAM_OPEN,FAMOpen2))))
+    
+    CXX=CC
+    AC_PROG_CXX
+
+    AC_CHECKING(for working Oz libraries)
+    USING_LIBS(-ldesktopFileicon,
+    AC_TEST_PROGRAM([
+#include <oz/fileicon.h>
+int main()
+{
+  return !fiString(fiNextString(fiSuperTypes(fiIconTypeFromTypeName(fiLoadDB("/usr/lib/filetype/desktop.otr"), "Script"))));
+}],
+      AC_DEFINE(OZ_DATABASE,"/usr/lib/filetype/desktop.otr")
+      ADD_MOTIF_LIBS(-ldesktopIcon -ldesktopUtil)
+      ADD_LOCAL_LIBS(-ldesktopFileicon)))
+
+    AC_HEADER_CHECK(soundscheme/ssDefaultScheme.h, AC_DEFINE(HAVE_SSDEFAULTSCHEME_H))
+fi
+
+
+AC_CHECKING(for linker)
+case "$DEFS" in
+  *OZ_DATABASE*) LINKER='$(CXX)';;
+  *FAM_OPEN*)	 LINKER='$(CXX)';;
+  *)		 LINKER='$(COMPILER)';;
+esac
+AC_SUBST(LINKER)
+AC_VERBOSE(using $LINKER)
+
+
+AC_HAVE_LIBRARY(printui,
+AC_HAVE_LIBRARY(spool,
+ADD_MOTIF_LIBS(-lprintui)
+ADD_LOCAL_LIBS(-lspool)
+AC_DEFINE(HAVE_IMPRESSARIO)))
+
+AC_HEADER_CHECK(helpapi/HelpBroker.h,
+AC_HAVE_LIBRARY(helpmsg,
+AC_DEFINE(HAVE_HELP_BROKER)
+ADD_MOTIF_LIBS(-lhelpmsg)))
+
+AC_CHECKING(Motif libraries)
+ADD_MOTIF_LIBS(-lXm)
+
+USING_LIBS(-lXmu -lXt -lX11,
+    AC_FUNC_CHECK(_XEditResCheckMessages,
+	AC_DEFINE(XEDITRES_HANDLER,_XEditResCheckMessages),
+    AC_FUNC_CHECK(_EditResCheckMessages,
+	AC_DEFINE(XEDITRES_HANDLER,_EditResCheckMessages))))
+ZC_IFDEF(XEDITRES_HANDLER,
+	 ADD_MOTIF_LIBS(-lXmu),
+	 [USING_LIBS(-lXext -lXmu -lXt -lX11,
+    	 AC_FUNC_CHECK(_XEditResCheckMessages,
+		 AC_DEFINE(XEDITRES_HANDLER,_XEditResCheckMessages),
+    	 AC_FUNC_CHECK(_EditResCheckMessages,
+		 AC_DEFINE(XEDITRES_HANDLER,_EditResCheckMessages))))
+	 ZC_IFDEF(XEDITRES_HANDLER,
+		  ADD_MOTIF_LIBS(-lXext -lXmu),)])
+
+AC_CHECKING(basic X libraries)
+ADD_MOTIF_LIBS(-lXt -lX11)
+
+define(MOTIF_CHECK,[
+USING_LIBS($MOTIF_LIBS $2,
+AC_COMPILE_CHECK([Motif $1],[],[
+extern int xmUseVersion;
+int version = xmUseVersion;
+#ifdef HAVE_RENAME
+rename();
+#endif /* HAVE_RENAME */
+],
+ifelse([$2],,
+ AC_VERBOSE(linking Motif $1),
+ ADD_MOTIF_LIBS([$2])),
+[$3]))])
+
+MOTIF_CHECK(without extra libraries,,
+MOTIF_CHECK(with libgen,-lgen,
+MOTIF_CHECK(with libPW,-lPW,
+MOTIF_CHECK(with libc before libPW,-lc -lPW,
+AC_WARN(unable to link with Motif)
+MOTIF_LIBS=""))))
+
+
+AC_SUBST(MOTIF_LIBS)
+
+
+AC_OUTPUT(osmake.mk)
+
+[
+sed -e 's/define vfork vfork/define HAVE_VFORK 1/' \
+    -e 's/define vfork fork/undef HAVE_VFORK/' \
+    -e "s/@ostype@/$ostype/" osconfig.h > osconfig.h.new
+
+echo '/* corrections to autoconf output follow */' >>osconfig.h.new
+
+# merge the old osconfig file with the new one
+
+echo 'END_OF_OLD_OSCONFIG' | cat osconfig.h.old - osconfig.h.new |
+sed -e 's:/\* *\(#undef[^/]*\)\*/:\1:' -e 's:/\*.*\*/::' -e '/(/d' |
+awk '
+BEGIN { new = 0; }
+/^#define/ {
+  if (new == 0){
+     defs[$2] = $3;
+     defed[$2] = 1;
+  }
+}
+/^#undef/  { if (new == 0) { defed[$2] = -1; defs[$2] = "undefined"; } }
+/^END_OF_OLD_OSCONFIG$/ { if (new == 0) { new = 1; next; } }
+new == 0 { next; }
+/^#define/ {
+  if (defed[$2] != 0 && defs[$2] != $3)
+    {
+    printf "warning: setting of %s conflicts with old config file\n", $2;
+    print "#undef " $2;
+    if (defed[$2] == 1) printf "#define %s %s\n", $2, defs[$2];
+    }
+  }
+/^#undef/ {
+  if (defed[$2] == 1)
+    {
+    printf "warning: setting of %s conflicts with old config file\n", $2;
+    printf "#define %s %s\n", $2, defs[$2];
+    }
+  }
+{ next; }
+' > zmconflicts
+
+grep '^warning:' zmconflicts 1>&2
+grep -v '^warning:' zmconflicts >> osconfig.h.new
+
+cat <<EOF >>osconfig.h.new
+
+/* END OF CONFIGURE INFO - add extra config info after this line */
+EOF
+
+mv osconfig.h.new osconfig.h
+
+cat osmake.mk.epi >>osmake.mk
+cat osconfig.h.epi >>osconfig.h
+echo '#endif /* OSCONFIG -- do not add stuff after this line */' >>osconfig.h
+rm -f osmake.mk.epi osconfig.h.epi
+
+cp $configdir/os-$ostype.mk $configdir/os-$ostype.mk.old >/dev/null 2>&1
+cp $configdir/os-$ostype.h  $configdir/os-$ostype.h.old  >/dev/null 2>&1
+#rm -f $configdir/os-$ostype.h $configdir/os-$ostype.mk osconfig.h.old zmconflicts
+
+# pf Tue Jun 29 12:26:48 1993: fix for symbolic link trees
+rm -f osconfig.h.old zmconflicts
+cat osconfig.h >$configdir/os-$ostype.h
+cat osmake.mk >$configdir/os-$ostype.mk
+rm -f osconfig.h osmake.mk
+$LN_S $configdir/os-$ostype.h osconfig.h
+$LN_S $configdir/os-$ostype.mk osmake.mk
+
+echo 'New config files installed in config directory.'
+]

@@ -1,0 +1,2653 @@
+# Copyright 1994 Z-Code Software, a Division of NCD.
+# Format of this file:
+#  --
+#  variable-name (case sensitive)
+#  flags (see note below)
+#  default-value (omit if readonly)
+#  number-of-values (omit if not multivalue)
+#  value-label (omit if not multivalue)
+#  value-description (omit if not multivalue, may be multi-line)
+#  %% (repeat this and above two fields for number-of-values, omit otherwise)
+#  prompt ("NULL" if inapplicable)
+#  description (multi-line)
+#  %%
+#
+# flags may be any -combination- of:
+#    tty, fullscreen, gui, readonly, boolean,
+#    string, multivalue, numeric, permanent, lite
+#
+# default-value may be any of:
+#    "NONE" or "FALSE" (to leave unset -- "FALSE" for booleans only!)
+#    "TRUE" (to set as boolean only)
+#    "*" (value is supplied from environment or internally)
+#    any string (or comma-separated list for multivalues)
+#    a conditional (is_gui, is_shell, redirect, etc. -- booleans only!)
+#    a ternary expression (is_gui?true:false)
+#
+#  Note that the ternary conditional scheme above means that setting
+#  a default value to a string that matches one of the conditionals
+#  (e.g. "is_gui") is impossible.  Ternary conditionals may omit the
+#  false case, and may use other defaults as their true/false cases,
+#  e.g. "is_gui?*" is equivalent to "*" when is_gui, otherwise empty.
+#  An omitted false case is not the same as "NONE".  Multivalues may
+#  have a comma-separated list of ternaries.
+#
+#  If a variable is boolean and string/multivalue, the first word on the
+#  line indicates the default boolean condition and the rest of the line
+#  indicates the value assumed when the variable is set (boolean TRUE).
+#  "gui compose" means that if the program is running in gui mode, then
+#  "compose" is the default value.
+#  If the first word is NONE instead of FALSE, no value is assumed.
+#
+#  If the first word is "*", the rest of the line may indicate a value to
+#  be used when no other value can be determined.  This will not override
+#  variables that are "set" internally, but WILL override internal values
+#  that are used as defaults for "unset" variables (e.g. DEF_PROMPT).
+#
+# NOTE: backslash-newline-newline is used below to kluge trailing spaces.
+Version 3.2
+
+
+--
+alternates
+tty fullscreen mac gui mswindows string
+NONE
+ホスト:
+When you reply to messages, Z-Mail does not send a copy of the message
+to your login name at any of the hosts listed on the alternates list.
+Hosts may be specified either as a single machine name or as a UUCP
+path, using "!" characters to separate machine names.
+
+The symbol "*" in the alternates list matches your login name at any
+host.  For instance, if you are bobg@zyrcon.com, then "*" means "do
+not reply to bobg@andrew.cmu.edu or uunet!bobg or anyone else whose ID
+is bobg".  If the "*" is followed immediately by some name, then that
+name is used in place of your login ID.  If you have another login
+name on the local or remote machine, then that login may be specified
+either as
+    user@machine
+or by preceding the login name or a UUCP path to the login name by a
+"!" character, as
+    !machine!user
+The leading "!" character tells Z-Mail that the path ends in a login
+name.  Without the "!", Z-Mail will append your login name.
+
+Note that the ~#alternates~cmd#~ command changes the value of this variable.
+%%
+
+--
+alwaysexpand
+tty fullscreen mac gui mswindows boolean
+FALSE
+NULL
+Setting alwaysexpand will cause mail address ~#aliases#~ to be expanded
+when they appear in the To, Cc, and Bcc fields of an outgoing message.
+
+To prevent a composition from being delivered with expanded aliases,
+set the ~#no_expand#~ variable after starting a composition but before
+sending the message.
+
+Alwaysexpand has no effect when defining new ~#aliases#~ via the ~#alias#~
+Z-Script command or in the GUI and Lite interface ~#Aliases#~ dialogs.
+%%
+
+--
+alwaysignore
+tty fullscreen mac gui mswindows boolean multivalue
+# default values:
+TRUE forward,include
+# number of multi-values in variable:
+4
+# list the values:
+forward
+Discard ~#ignored headers#~ when forwarding messages.
+%%
+include
+Discard ~#ignored headers#~ when including a message in your composition.
+%%
+pipe
+Discard ~#ignored headers#~ when passing a message to an external program.
+%%
+printer
+Discard ~#ignored headers#~ when printing messages.
+%%
+Conditions:
+If set with no value, the mail ~#headers#~ set by the ~#ignore~cmd#~
+command are always ignored.  Normally, ~#ignored headers#~ are not
+ignored when sending messages to the printer, or when including
+messages in a composition.  Setting alwaysignore will ignore those
+~#headers#~ even in these situations.  No ~#headers#~ can be ignored
+during ~#update~ui#~s or when using the ~#save#~ command.  This is to prevent
+the user from inadvertently ignoring ~#headers#~ that are required
+internally by Z-Mail and other mail systems.
+%%
+
+--
+always_sort
+tty fullscreen mac gui mswindows boolean
+FALSE
+NULL
+Setting always_sort will cause the system mailbox to be sorted
+whenever new mail arrives there.  This variable is ignored if
+the variable ~#sort#~ is not set.  If ~#sort#~ is set, but always_sort
+is not set, then the system mailbox will only be sorted upon
+entering Z-Mail, and new mail will be added unsorted to the end of
+the mailbox.
+
+NOTE: If you have always_sort set, the message numbers of messages
+may change every time new mail arrives.  If you have always_sort
+set, you should be very careful about performing actions on groups
+of messages that you specify only by message number.  For example,
+if you issue the command:
+
+        ~#pick#~ -f Fred
+
+all messages from Fred will be selected.  If new mail
+arrives, all the messages in the folder will be renumbered,
+but the same messages numbers will remain selected.
+If you issue the command:
+
+        ~#delete#~
+
+to delete the selected messages, you may be deleting
+that aren't from Fred and that you haven't read yet.
+
+%%
+
+--
+ask
+tty fullscreen gui mswindows boolean
+TRUE
+NULL
+Prompt for a subject when composing outgoing messages.  When using
+the "edit headers" mode, causes an empty Subject: header line to be
+placed in the ~#editor~var#~ file.  See also ~#edit_hdrs#~.
+%%
+
+--
+askbcc
+tty fullscreen gui mswindows boolean
+FALSE
+NULL
+
+Prompt for a list of Blind Carbon Copy recipients whenever sending
+mail.
+%%
+
+--
+askcc
+tty fullscreen gui mswindows boolean
+is_gui?TRUE:is_lite
+NULL
+Prompt for a list of Carbon Copy recipients whenever sending mail.
+When using the "edit headers" mode, causes an empty Cc: header line
+to be placed in the ~#editor~var#~ file.  See also ~#edit_hdrs#~.
+%%
+
+
+--
+attach_prune_size
+gui numeric gui_max=1048576
+10240
+Bytes:
+This variable specifies the cutoff point for pruning
+large attachments from mail messages when the Prune
+Large Parts toggle is on in the Save dialog.
+%%
+
+--
+attach_types
+tty fullscreen mac gui mswindows string
+NONE
+File Name:
+This variable specifies a file where encoding keys and file types for
+~#attachments#~ are defined.  Your system has a default file with some of
+these definitions.  The file named by attach_types may give
+alternate or additional encodings and types.
+
+The command "~#attach~cmd#~ -rehash" must be used to reload the attachment
+type definitions if you either change the value of ~#attach_types#~ or
+modify the file while Z-Mail is running.
+%%
+
+--
+autoclear
+mac mswindows gui boolean
+FALSE
+NULL
+Erase the text area of the ~#Compose window#~ after sending a message.
+This is useful only if ~#autodismiss#~ is not used to remove the window.
+Use this if you wish to leave the ~#Compose window#~ open but you are
+concerned that passers-by be prevented from reading the message text
+on your screen.
+%%
+
+--
+autodismiss
+mac lite gui mswindows multivalue
+# default values:
+print save sort templates open compose message
+# number of multi-values
+7
+# list each multi-value
+alias
+Close the Aliases dialog after mailing to an alias.
+%%
+compose
+Close the ~#Compose window#~ after sending or cancelling a message.
+%%
+message
+Close the ~#Message Display window#~ when the displayed message is
+~#delete~cmd#~d, unless ~#autoprint#~ is set and another message to display can
+be found.  Note that one of ~#show_deleted~var#~ or ~#autoprint#~ must be set
+in order for the ~#Message Display window#~ to remain open when the displayed
+message is ~#delete#~d.
+%%
+open
+Close the Open Folder dialog after opening a folder.
+%%
+print
+Close the Print Messages dialog after printing.
+%%
+save
+Close the Save dialog after ~#saving#~.
+%%
+templates
+Close the ~#Templates#~ dialog after selecting a template.
+%%
+Conditions:
+In GUI mode, automatically dismiss (close) selected windows after
+performing an operation.
+Setting ~#autodismiss#~ without giving any
+conditions is equivalent to setting all the possible conditions.
+If ~#autoiconify#~ is also set, it may override one or more of the
+conditions for ~#autodismiss#~.
+%%
+
+--
+autodisplay
+gui mswindows boolean string
+FALSE
+Keywords:
+This variable may be set to a space- or comma-separated list of
+attachment type keywords.  If a message is received that contains
+an attachment of one of the listed types, that attachment is
+automatically displayed when the message is read.
+
+Autodisplay is performed only in GUI mode.  To display a message
+without automatically displaying its ~#attachments#~, type its number
+(and only its number) in the Command: field of the ~#Main window#~ and
+press return.
+%%
+
+--
+autoedit
+tty fullscreen gui mswindows boolean multivalue
+FALSE
+2
+new
+Invoke the editor when composing new messages.
+%%
+reply
+Invoke the editor when replying to messages.
+%%
+Conditions:
+Automatically enter your editor of choice when composing outgoing
+messages.  If set, but not to any values, the editor is always started
+when a composition is begun.  Otherwise, the editor is started only in
+the specified circumstances.
+%%
+
+--
+autoformat
+mac gui mswindows lite boolean multivalue
+# default values
+FALSE
+# number of options
+1
+# list the options
+compose
+Automatically wrap text (according to the value of wrapcolumn) in the
+~#Compose window#~.
+%%
+NULL
+Cause text to be "word-wrapped" when lines are too long to fit in the
+window.  For the Message Display window, text wraps at the width of
+the window.  For the Compose window, text wraps at the column
+specified by ~#wrapcolumn#~ (and relieves you of needing to press
+RETURN at the ends of lines).  If wrapcolumn is not set, the width of
+the Compose window is used.
+
+When composing messages, it is recommended that text wrap earlier than
+column 80, since 80 columns is a reasonable guess about the width of
+the recipient's display.  (Lines longer than the width of the display
+are often difficult to read.)  In fact, for heightened readability,
+many consider 72 to be the ideal value for wrapcolumn.
+
+After you compose a message, autoformat may alter it to look slightly
+different from what you saw on the screen.  When precise line-wrapping
+is important, you are encouraged to manually insert newlines into the
+text rather than rely on the formatting characteristics of autoformat.
+
+If this variable is set, but not to any value, it behaves as if it
+were set to "compose".
+Autoformatting is not performed in Z-Mail's command-line interface.
+%%
+
+--
+autoiconify
+gui mswindows multivalue
+# default values:
+NONE
+# number of options
+3
+# list the options, each separated by "%%"
+alias
+Close the Aliases dialog after mailing to an alias.
+%%
+compose
+Iconify the ~#Compose window#~ after sending or cancelling a message.
+%%
+message
+Iconify the ~#Message Display window#~ when the displayed message is
+~#delete~cmd#~d, unless ~#autoprint#~ is set and another message to display can
+be found.  Note that one of ~#show_deleted~var#~ or ~#autoprint#~ must be set
+in order for the ~#Message Display window#~ to remain open when the displayed
+message is ~#delete#~d.
+%%
+Conditions:
+In GUI mode, automatically iconify selected windows after performing
+an operation.  If both ~#autodismiss#~ and ~#autoiconify#~ are set for a
+particular window, the window will be iconified.  Setting ~#autoiconify#~
+without any specific conditions is equivalent to setting all of the
+possible conditions.
+%%
+
+--
+autoinclude
+tty fullscreen mac gui mswindows boolean
+FALSE
+NULL
+When replying to mail, a copy of the message being replied to
+is automatically inserted into your message body, indented by
+the string described by ~#indent_str#~.
+
+See also the ~#pre_indent_str#~ and ~#post_indent_str#~ variables.
+%%
+
+--
+autoprint
+tty fullscreen mac gui mswindows boolean
+is_gui?TRUE:is_lite
+NULL
+Automatically display the ~#next#~ message on the list when a message
+is ~#delete#~d.
+%%
+
+--
+auto_route
+tty fullscreen mac gui mswindows boolean string
+NONE
+Host/Path:
+Remove redundant UUCP hostnames when replying to messages.  If set
+(but not to a text string), all the recipients in a message that is
+being replied to will be routed through the path back to the original
+author.  If auto_route is set to a specific pathname (host names
+separated by `!'s), all addresses in the reply will have this route
+prepended before redundant hosts are removed.  This variable is
+normally set by the system administrator if it is needed.
+%%
+
+--
+autosave_count
+lite gui numeric gui_max=1000
+100
+Value:
+This variable controls how often the composition will be automatically saved
+to a temporary file in GUI mode.  It specifies the number of keystrokes
+between saves.
+%%
+
+--
+autosign
+tty fullscreen mac gui mswindows boolean string
+FALSE ~/.signature
+Filename:
+Append a signature to outgoing mail.  If this variable is set, but not
+to a string, then the file
+.signature in your home directory
+is used.
+
+If set to a string beginning with a backslash -- \like this -- or
+enclosed in square braces -- [like this] -- then these strings
+(without the backslash or square braces) are added directly to the
+message instead of being treated as file names.
+
+By default, the string is interpreted as a filename, and the contents
+of the named file are used as the signature.
+A leading ~ or + character is expanded to your home or folder
+directory, respectively.
+
+If set to a string that starts with an exclamation point (!), the
+remainer of the string is interpreted as a command and run in a shell.
+The addresses of the message are passed to the command as arguments,
+and the output of the command is used as the signature.
+%%
+
+--
+autosign2
+tty fullscreen mac gui mswindows string
+NONE
+Addr:File:
+This alternate signature is available for special cases where a
+signature different than the regular ~#autosign#~ is desired.  The
+format for this variable is:
+
+ autosign2 = "address1, address2, ... : signature"
+
+where address1, address2, ... may be specific users' addresses
+or may have one of the forms:
+
+  !hostname     any user at the named host (usually your own)
+  @domain       any user in the given domain (e.g. @z-code.com)
+
+and the signature is the same as described for ~#autosign#~.  Note that
+~#autosign#~ must also be set in order for ~#autosign2#~ to work.
+
+If a list of addresses is given (terminated by a colon), then all
+recipients of the message must match the list of addresses in
+autosign2; otherwise, the signature in ~#autosign#~ is used instead.  If
+all addresses match but the ~#autosign2#~ signature is empty (no
+signature follows the colon), then the message is not signed.
+%%
+
+--
+autotyper
+tty fullscreen gui string
+NONE
+Program:
+Set the autotyper variable to the name of an autotyper 
+program. An autotyper program takes the name of a file 
+being attached to a message and returns an appropriate 
+MIME-type name.
+  
+Autotyper programs are not provided by default, but the 
+following examples are available in $ZMAIL/bin:
+  
+type-by-magic	Checks that magic number of a file to
+                determine its format.
+  
+type-by-suffix	Checks the suffix of a file's name to
+                determine its format. This script does
+                not look at a file's contents.
+%%
+
+--
+cdpath
+tty fullscreen gui mswindows string
+NONE
+Path:
+If set to a string of pathnames separated by spaces, this variable is
+used in searching for a directory when the ~#cd~cmd#~ command is issued.  The
+current directory is always searched before searching directories
+listed in ~#cdpath#~.
+%%
+
+--
+child
+tty fullscreen gui string readonly
+NULL
+When Z-Mail creates a child UNIX process in the background, this
+variables holds the process-id (PID) of the child process.
+This variable is read-only.
+%%
+
+--
+cmd_help
+tty fullscreen mac gui string permanent
+*
+Path:
+This variable gives the path name of the general ~#help#~ file, which is
+read by the ~#help#~ command.  This variable is normally reset only in the
+system initialization files, when the default location of the ~#help#~
+file has changed.  If an unset is attempted, this variable is
+automatically restored to its default value.
+
+The value of this variable is not saved when .zmailrc is
+written by the ~#saveopts~cmd#~ command.
+
+%%
+
+--
+complete
+tty fullscreen gui mswindows boolean string
+FALSE \E\CD
+Characters:
+The first character of the value of complete is used as the
+"completion character".  If ~#complete#~ is set, but not to a value,
+the escape (ESC) character is used as the default.  Completion is
+currently supported only for file names.  The escape character is
+treated specially by many GUI mode window managers, so completion may
+not operate normally in the GUI mode unless ~#complete#~ is set to
+some other character.
+
+The second character of the value of ~#complete#~ is used as the
+completion listing character.  When this character is typed, the
+possible completions will be printed, and Z-Mail will prompt again
+with the original prefix.  This feature is used only in the
+command-line interface of Z-Mail.
+
+If ~#complete#~ is set to only a single character, completion listing is
+disabled; if it is set with no value, Ctrl-D is used as the default
+listing character.  If both the completion and listing characters are
+the same, Z-Mail completes if possible and (in the command-line
+interface only) produce a listing if the completion is not unique.
+%%
+
+--
+comp_attach_label
+gui mswindows singlevalue
+comment
+5
+comment
+Display the comment from the local attachment type database.
+%%
+content
+Display the content name supplied by the sender.
+If no content name was sent, this is the same as "filename".
+%%
+description
+Display the descriptive text supplied by the sender.
+If no description was sent, this is the same as "comment".
+%%
+filename
+Display the file name.
+%%
+type
+Display the attachment type.
+%%
+Item:
+This variable controls what information will be displayed below each
+attachment icon in the attachments area of a compose window.  If this
+variable is not set, or if none of the other information can be found,
+the attachment type is displayed.
+%%
+
+--
+compose_lines
+gui mswindows numeric permanent
+NONE 18
+Lines:
+Sets the initial number of lines in the ~#Compose window#~ 
+in GUI mode.
+Changing this variable will not affect Compose windows that are
+already open, but may change the size of new ~#Compose window#~s.
+If this variable appears to be set to 0, then a size specified in
+your window system defaults is being used.
+
+This variable was formerly called "msg_win".
+%%
+
+--
+compose_panes
+mac gui mswindows lite multivalue
+folder,body,action_area,attachments,toolbar
+# number of multi-values in variable:
+6
+# list the values:
+toolbar
+The toolbar.
+%%
+folder
+The area that contains the text field where the current folder is specified.
+%%
+body
+The message body that is being edited.
+%%
+action_area
+The button panel where actions are displayed.
+%%
+status_bar
+The status bar.
+%%
+attachments
+The attachments icons.
+%%
+Conditions:
+Controls which "panes" in the Compose window are visible.  Unsetting
+this variable turns on all the panes.
+
+To remove the address headers pane, turn on the ~#edit_hdrs#~ variable.
+%%
+
+--
+crt
+tty fullscreen gui numeric permanent
+NONE 18
+Lines:
+The number of lines a message must have for ~#pager~var#~ to be invoked.
+Used only in the command line and fullscreen interfaces.
+%%
+
+--
+cwd
+tty fullscreen gui mswindows readonly string
+Directory:
+The current working directory.  Files and folders that do not have
+full path names (beginning with a `/', `+', or `~' character) are read
+from or written to this directory.
+
+The value of this variable is not saved when .zmailrc is written.
+%%
+
+--
+date_received
+tty fullscreen mac gui mswindows boolean
+FALSE
+NULL
+When message ~#headers#~ are printed, the dates and times normally shown
+are those when the sender sent the messages.  If this variable is set,
+then the dates displayed are the dates when the messages were
+received.  This also affects date ~#sorting#~ in the line and curses
+modes.
+%%
+
+--
+dead
+tty fullscreen mac gui mswindows string
+* ~/dead.letter
+Filename:
+Names the file to use instead of dead.letter when saving an outgoing
+message that has been interrupted or that otherwise fails to be sent.
+Your Mail Transport Agent may also save a copy of messages that failed
+to deliver.
+
+Also see the variable ~#nosave#~, which allows you to turn off the saving
+of dead letters by Z-Mail.  (This would not affect the transport agent.)
+%%
+
+--
+deletesave
+tty fullscreen mac gui mswindows boolean
+FALSE
+NULL
+Specifies that `saved' messages should be ~#delete#~d when the folder is
+~#update~ui#~d.  This is the default behavior in the system mailbox, but in
+other folders, `saved' messages are not normally ~#delete#~d.  Messages
+that have been preserved with the ~#preserve#~ command are not affected
+by ~#deletesave#~.  If both ~#keepsave#~ and ~#deletesave#~ are set, only
+~#keepsave#~ is used, so `saved' messages will not be ~#delete#~d.
+%%
+
+--
+detach_dir
+tty fullscreen mac gui mswindows string
+* +detach.dir
+Pathname:
+The pathname of the directory to use for temporary files when detaching
+and displaying ~#attachments#~ of messages you have received.  This path is
+used by the "~#detach~cmd#~ -display" command and when displaying ~#attachments#~
+from the ~#Message Display window#~ in GUI mode.
+
+Attachment temporary files are deleted when the folder from which they
+were detached is ~#update~ui#~d.
+%%
+
+--
+display_headers
+mac gui mswindows singlevalue
+standard
+5
+all
+Display all headers.
+%%
+none
+Do not display any headers.
+%%
+retained
+Display only headers that have been retained with the "retain" command.
+%%
+standard
+If there are any retained headers, display only those; otherwise, display
+all headers that have not been ignored.
+%%
+unignored
+Display only headers that have not been ignored with the "ignore" command.
+%%
+Condition:
+This variable specifies which headers will be displayed when the "display"
+command is used to read a message.
+%%
+
+--
+domain_route
+tty fullscreen mac gui mswindows boolean string
+NONE
+Host/Path:
+Specifies that addresses containing a fully-qualified domain should be
+short-circuited to mail directly to the rightmost fully-qualified
+domain.  If set boolean (not to a string), only short-circuiting is
+done.  If set to a string, the address is rewritten to UUCP form and
+the value of the variable is prepended.  This variable is normally
+set by the system administrator if and when it is needed.
+%%
+
+--
+dot
+tty fullscreen boolean
+FALSE
+NULL
+Causes Z-Mail to accept "." on a line by itself to send an outgoing
+message.  This is not used in the GUI mode.
+%%
+
+--
+dot_lock
+tty fullscreen mac gui mswindows boolean
+TRUE
+NULL
+Causes Z-Mail to create a lock file when ~#updating#~ the system mailbox.
+This is necessary if your system mail directory is NFS mounted, to
+ensure that Z-Mail and other programs such as the mail transport
+agent (MTA) are synchronized.
+
+Note: SGI does not support the use of NFS-mounted mail directories.
+%%
+
+--
+edit_hdrs
+tty fullscreen gui mswindows boolean
+FALSE
+NULL
+Allow the ~#headers#~ of messages to be edited using your editor.  When
+set, the "To:", "Cc:", "Subject:" lines and other ~#headers#~ appear in
+the same text area as the body of the message you are composing.
+%%
+
+--
+editor
+tty fullscreen gui string
+* vi
+Editor:
+This variable is only used in GUI mode if the ~#wineditor#~
+and ~#visual#~ variables are not set.
+
+The editor variable specifies the editor you prefer to use 
+when the editing outgoing messages.  Default is the value of the 
+environment string EDITOR or the variable ~#visual#~.  
+
+%%
+
+--
+escape
+tty fullscreen gui string permanent
+~
+Character:
+The escape character to begin extended editing commands when composing
+outgoing messages in the line mode or fullscreen interfaces.
+%%
+
+--
+exit_saveopts
+tty fullscreen gui mswindows mac boolean string
+# default values:
+true -f -g
+Options:
+When this variable is set, the saveopts command
+is automatically executed when you exit
+MediaMail,
+so changes you have made to your configuration
+are saved to your ~/.zmailrc file.
+
+The saveopts command is executed with the
+options specified in this variable.  
+By default, the -f and -g options are used,
+which means that you will not be prompted to
+have the changes saved, and that GUI-specific
+settings such as fonts will also be saved for you.
+
+To prevent your changes from being saved automatically, 
+unset this variable.
+
+See ~#saveopts~cmd#~ for more information.
+%%
+
+
+--
+fetch_timeout
+tty fullscreen mac gui mswindows numeric
+NONE 15
+Minutes:
+The number of minutes between mail fetches that also call the Z-Script
+function 'fetch_mail_hook()'.  The ~#timeout#~ variable is also
+respected.
+%%
+
+--
+fignore
+tty fullscreen gui string
+NONE
+Patterns:
+This variable is tested when filename completion is used (see the
+variable ~#complete#~ for details).  The value of fignore may be a list
+of filename extensions (".c", ".o", etc.), a list of filename patterns
+containing metacharacters (*?{}[]), or a mixture of the two.  Each
+element in the list must be separated from the others by a space.
+When a filename completion occurs, any filenames with the extensions
+listed in fignore, or matching the patterns given there, will be
+omitted from the completion.
+%%
+
+--
+filelist_fmt
+gui string
+# the is_gui? here prevents the ? in the value from being interpreted.
+is_gui?%(.?..                [親ディレクトリ]%|%17f %15t  %m/%d/%y   %T %11s%)
+Format:
+This variable controls the format of the filename entries in the
+file finder dialog.  The string may contain formatting characters
+to show information about each file.
+
+    %f  the filename
+    %t  the file's type, as in "[file]", "[empty]", etc.
+    %s  the file's size in bytes
+    %m  the month of the file's last-modified date
+    %d  the day of the file's last-modified date
+    %y  the year of the file's last-modified date
+    %T  the time of day of the file's last-modified date
+    %%  a literal %
+
+Any of the substitutions may take a width specification in the form of
+a number just after the `%'.  For example, "%10f" is a field ten characters
+wide which contains the filename.  A string of this form:
+
+    %(f?plain file%)
+
+is replaced with "plain file" if the file is a plain file, and is
+removed otherwise.  Also, a string of the form:
+
+    %(f?plain file%|not plain file%)
+
+is replaced with "plain file" if the file is a plain file, or the
+string "not plain file" otherwise.  The following conditions can
+be used for this construct:
+
+    f   the file is a plain file
+    d   the file is a directory
+    z   the file is zero size
+    .   the file is the directory ".."
+
+A string of this form:
+
+    %n(text%)
+
+(where "n" is a number) specifies that the "text" inside the parentheses
+should be filled or truncated to exactly n characters.
+%%
+
+--
+first_part_primary
+tty fullscreen mac gui mswindows boolean
+FALSE
+NULL
+When this variable is set, Z-Mail interprets the first body part of
+any multipart message as the primary body part.  If this primary part
+is text-typed or is an embedded message, Z-Mail displays this primary
+part as text in the Message Display Window or via the message pager, 
+but does NOT display any other body parts in this manner.  In the
+graphical user interface, the primary part and all additional parts
+appear as icons in the Attachments area of the Message Display window;
+to display a part, click on its icon.  In the command-line interface,
+the ~#detach~cmd#~ command must be used to display additional parts.
+
+When this variable is NOT set, Z-Mail displays "inline" all text and
+embedded message parts smaller than 10 kilobytes in size.  Messages
+that have only a single text part are shown inline regardless of the
+size of the part.
+
+Note:  Future versions of Z-Mail will recognize standardized message
+headers that define the inline behavior of message body parts.  If
+such a header is present in a particular message and is recognized
+by Z-Mail, this variable will have no effect on that message.
+%%
+
+--
+folder
+tty fullscreen mac gui mswindows string permanent
+* ~/Mail
+Pathname:
+Pathname to the directory where personal folders are kept.  This path
+is used by various commands to expand the `+' metacharacter.
+
+`~/Mail' is the default expansion of `+'.
+%%
+
+--
+folder_title
+tty fullscreen mac gui mswindows string
+NONE
+Title:
+In the 
+graphical user 
+interface, the title of each open folder is
+displayed in the Folder Status scrolled list below the menu bar in
+the ~#Main window#~, using the format specified by ~#folder_title#~.
+The string may contain formatting characters to show information about
+the status of your active folder.  
+See the ~#prompt#~ variable for a list of the possible formatting 
+characters.
+This string is also used to format the output of the ~#folder~cmd#~
+command when the "-list" option is used in any interface.
+See also ~#main_folder_title#~.
+
+This variable was formerly called "title".
+%%
+
+--
+fonts_db
+gui string
+~/.zmfonts
+File:
+The ~#Fonts dialog#~ allows you to change the fonts used by various
+objects in the graphical user interface.  You may also set the Label
+strings of objects as well.  When you want to reuse the font settings
+you have made for the next time you use Z-Mail, you must save the
+changes to some file.  This may be any file you like, but the file
+from which Z-Mail retrieves settings is identified by the value of
+~#fonts_db#~.  Therefore, you can use different schemes by saving these
+settings to number of different files and then setting fonts_db to any
+one of them for each scheme you want to use.
+%%
+
+--
+fortunates
+tty fullscreen gui mswindows string
+NONE
+Users:
+Lists the addresses of persons who receive fortunes appended to
+outgoing mail when fortune is set.  The format of the address list is
+the same as for the variable ~#autosign2#~.
+%%
+
+--
+fortune
+tty fullscreen gui mswindows boolean string
+FALSE *
+Flag:
+If fortune is set, a random fortune is appended to the end of all
+outgoing mail.  By default, "fortune -s" (short fortunes) is used.
+The ~#fortunates#~ variable can be used to control which recipients
+receive random fortunes and which do not.
+
+Some systems do not provide random fortunes.  In this case, this
+variable may be set to the full pathname of a program whose standard
+output will be appended to the message.
+%%
+--
+function_help
+tty fullscreen mac gui string permanent
+*
+Path:
+This variable gives the path name of the ~#help#~ file for functions
+defined within the system initialization files.
+
+The value of this variable is not saved when .zmailrc 
+is written by the ~#saveopts~cmd#~ command.
+%%
+
+--
+gui_help
+gui string permanent
+is_gui?*:NONE
+Path:
+Location of the ~#help#~ file for the graphical user interface mode.
+
+The value of this variable is not saved when .zmailrc is written.
+%%
+--
+hangup
+tty fullscreen gui boolean
+FALSE
+NULL
+If this variable is set, Z-Mail ~#update~ui#~s all open folders when its
+connection to a terminal (or to the X server in GUI mode) is lost.  As
+usual, Z-Mail attempts to load any new mail that has arrived in each
+folder before it ~#update~ui#~s that folder.
+
+CAUTION:  In the event of an error, Z-Mail cannot request that the
+user confirm any action, because user input is disabled by the loss of
+the connection.  It thus is not possible for Z-Mail to guarantee that
+~#update~ui#~ on hangup is non-destructive.
+
+If ~#hangup#~ is not set, Z-Mail exits on lost connection and leaves a
+temporary copy of each writable folder in the ~#tmpdir#~ directory (in
+your home directory if ~#tmpdir#~ is not set).
+%%
+
+--
+hidden
+gui mswindows multivalue
+NONE
+# number of multi-values in variable:
+8
+# list the values:
+deleted
+Hide deleted messages
+%%
+forwarded
+Hide forwarded messages
+%%
+new
+Hide new messages
+%%
+old
+Hide old messages
+%%
+preserved
+Hide ~#preserve#~d messages
+%%
+replied
+Hide messages that have been replied to
+%%
+saved
+Hide saved messages
+%%
+unread
+Hide unread messages
+%%
+Types:
+This variable specifies which types of messages should be hidden from
+the ~#headers#~ list in the ~#Main window#~.  By default, only ~#delete#~d
+messages are hidden, unless the ~#show_deleted#~ variable is set, in
+which case nothing is hidden.
+
+If this variable is set, but does not have any values, then all types
+of messages are displayed.
+%%
+
+--
+history
+tty fullscreen numeric gui_max=1000
+NONE
+Number:
+This variable is set to the number of commands the shell interface
+will remember.  It is just like the history variable used in `csh'.
+%%
+
+--
+hold
+tty fullscreen mac gui mswindows boolean
+TRUE
+NULL
+Normally, on termination of Z-Mail, messages that have been read in
+the system mailbox are saved in your personal mailbox.  Setting ~#hold#~
+prevents this from happening, so the messages remain in the system
+mailbox to which they are delivered.
+%%
+
+--
+home
+tty fullscreen gui mswindows string
+*
+Directory:
+Names your home directory.  You should not need to change this.
+
+The value of this variable is not saved when .zmailrc is written.
+%%
+
+--
+hostname
+tty fullscreen gui mswindows string
+*
+Hostname:
+The name of your machine.  This is set automatically from the list
+of hostnames in your operating system.  You should not need to
+change this, unless the first name in the list is not the preferred
+name for use in your return address on outgoing messages.  In that
+event, you may wish to change the order of the names.
+
+The value of this variable is not saved when .zmailrc is written.
+%%
+
+--
+i18n_read_mailbox
+tty fullscreen gui string
+/usr/sbin/jistoeuc
+Command:
+The command in this variable is run whenever Z-Mail reads the mail
+spool to process new mail.  New messages which have arrived since the
+last mail check are supplied to the command's standard input, and
+Z-Mail expects the message to appear on the commands standard output.
+
+The command specified in i18_read_mailbox must not affect the headers
+of the messages that are passed through it.
+
+Modifying this variable after Z-Mail starts is not recommended.
+
+This variable, along with ~#i18n_mail_transport#~ 
+and ~#i18n_write_mailbox#~, is intended for use in Asian-language
+environments where the encoding format used for message transport
+differs from that used for message storage.
+%%
+
+--
+i18n_write_mailbox
+tty fullscreen gui string
+/usr/sbin/euctojis
+Command:
+The command in this variable is run whenever Z-Mail writes messages to
+the mail spool.  Messages that Z-Mail wants to write to the spool are
+supplied to the command's standard input, and Z-Mail expects the
+messages to appear on the commands standard output.  The modified
+messages are then written to the mail spool.
+
+The command specified in i18_write_mailbox must not affect the headers
+of the messages that are passed through it.
+
+Modifying this variable after Z-Mail starts is not recommended.
+
+This variable, along with ~#i18n_mail_transport#~ 
+and ~#i18n_read_mailbox#~, is intended for use in Asian-language
+environments where the encoding format used for message transport
+differs from that used for message storage.
+%%
+
+--
+i18n_mail_transport
+tty fullscreen gui string
+/usr/sbin/euctojis
+Command:
+The command in this variable is run whenever Z-Mail sends a message
+via the mail transport agent (MTA).  The message is supplied on the
+command's standard input, and the command's output is passed to the MTA.
+
+The command specified in i18_mail_transport must not affect the
+headers of the messages that are passed through it.
+
+Modifying this variable after Z-Mail starts is not recommended.
+
+This variable, along with ~#i18n_write_mailbox#~
+and ~#i18n_read_mailbox#~, is intended for use in Asian-language
+environments where the encoding format used for message transport
+differs from that used for message storage.
+%%
+
+--
+ignore_bang
+tty fullscreen boolean
+FALSE
+NULL
+Ignore `!' as a history reference.  Note that this severely limits
+use of the ~#cmd~cmd#~ facility, which depends upon history references for
+argument substitutions.
+%%
+
+--
+ignoreeof
+tty fullscreen boolean string
+NONE
+Command:
+Ignores Ctrl-D as a command to ~#exit#~.  If set to a string, that string
+is executed as a command when Ctrl-D is typed.  This does not apply
+in the GUI mode.
+%%
+--
+indent_str
+tty fullscreen mac gui mswindows string
+>\
+
+String:
+When including messages into the text of a letter you are editing,
+each line of the included messages is preceded by the value of
+~#indent_str#~.  If this is not set, the message body is indented by the
+string "> ".
+
+See also the ~#pre_indent_str#~ and ~#post_indent_str#~ variables.
+%%
+
+--
+index_dir
+tty fullscreen mac gui mswindows string
+* +index.dir
+Pathname:
+The pathname of the directory where external folder index files are to
+be kept.  This path is used by "~#update~cmd#~ -external" (and other commands)
+to create the external index file for a folder.
+
+If a complete pathname is not given, the name of the folder directory
+(abbreviated as "+" (plus), see the ~#folder~var#~ variable) is prepended.
+If index_dir is not set or is an empty string, then the directory
+"+index.dir" is used for external index files.  The name of the index
+file within the index directory is the same as the name of the folder.
+If the index directory and the directory containing the folder are
+the same (e.g. index_dir is set to "+") then the index file name is
+the folder name with ".ix" appended.  On systems with file name length
+limits, the folder name is truncated before appending ".ix".
+
+Index files can be used to save the state of a read-only folder or to
+"checkpoint" a writable folder.  An index is created automatically if
+you ~#update~ui#~ a folder when you do not have permission to write to the
+folder file itself.  For writable folders, an index may be created
+within the folder file, so an external index is not normally used.
+However, "~#update~cmd#~ -external" may be used to create an external index
+as a checkpoint.  See also the ~#index_size#~ variable.
+
+External index files are removed by ~#rmfolder#~ -x foldername", or
+when the folder itself is removed by "~#rmfolder#~ foldername", or (for
+writable folders only) when all messages have been ~#delete#~d and the
+folder is ~#update~ui#~d.
+%%
+
+--
+index_size
+tty fullscreen mac gui mswindows boolean numeric
+FALSE
+Size to Index:
+The size (in tens of messages) that a ~#folder#~ must reach before an
+index of the folder is automatically created.  For example, a value
+of 10 (ten) would cause an index to automatically be created for
+any folder of 100 (one hundred) or more messages.  Note that an index is
+created only when a folder is ~#update~ui#~d.  If a folder is opened and
+closed without ~#update~ui#~, no index will be created regardless of the
+folder's size.
+
+Indices speed up opening of large folders by saving, in one place,
+the information that would otherwise have to be read separately from
+each message.  For smaller folders, however, an index may not be
+desired.  Set index_size according to your preference for automatic
+index creation.  A value of 0 (zero) or boolean true (set, but no
+numeric value) means that all folders should be indexed, regardless
+of size.  If index_size is not set, folders are not automatically
+indexed.
+
+A folder index may be either internal (stored in the folder along with
+the messages) or external (stored in a separate file).  An internal
+index is used for writable folders, and an external index for
+read-only folders.  See the variable ~#index_dir#~ for details about
+external folder index files.  It is possible for a folder to have both
+an internal and an external index, in which case the internal index is
+used first.  The external index is then referred to for status and
+sorting information.
+
+Note that the index of a folder opened in read-only mode (by the
+"-readonly" option when starting Z-Mail or when using the "folder"
+command) is not normally ~#update~ui#~d.  However, if index_size is set
+and the folder is large enough, an external index file is created
+when the read-only folder is ~#update~ui#~d or closed, even if the file
+already has an index.  An index is created automatically if you
+~#update~ui#~ a folder when you do not have permission to write to the
+folder file itself.
+
+Indexing is suppressed by "~#update~cmd#~ -noindex" or "~#close~cmd#~ -noindex".
+%%
+
+--
+intr_level
+gui mswindows mac numeric
+50
+Level:
+When commands or other operations take a long time to complete, Z-Mail
+sometimes posts a "task meter" that provides feedback about how much of
+the job is done.  The task meter also provides the ability to stop some
+tasks in progress.  If you start a long, time-consuming process, you
+can stop it with a mouse click instead of having to wait for it to
+complete.
+
+Rather than having the meter posted for each operation, Z-Mail tries to
+choose those operations that "take a long time," so you aren't bothered
+by excessive popping up and down of these dialogs.  However, some
+computers are faster than others, so it is not always possible to
+accurately guess how long a particular task may take.  Furthermore,
+people's expectations differ.  Therefore, the value of ~#intr_level#~ can
+be set to some value that suits your tastes.  The name indicates that
+this is the level at which you wish to be given the opportunity to
+interrupt an activity before it completes.
+
+The value is loosely based on the number of messages or size of the
+file that will be affected by the task.  A good estimate would be
+about 10 messages per intr_level increment.  So, for example, if
+intr_level were set to 5 and you were to search for a pattern from a
+folder with 50 or more messages, a task meter would pop up and provide
+feedback for how much of the task was complete.  If there were less
+than 50 messages, the task meter would not pop up.
+
+The task meter may also pop up when ~#opening folders#~ or
+~#updating#~ folders.  In this case, Z-Mail's guess is based on the
+size of the folder in bytes rather than on the number of messages.
+
+The drawback to the task meter is that performance may drop due to the
+frequent redisplaying of the task window.  If you desire a noticeable
+increase in speed, you might want to consider turning it off
+completely by unsetting intr_level.
+%%
+
+--
+in_reply_to
+tty fullscreen mac gui mswindows boolean string
+NONE
+String:
+This variable may be set to a string that will complete the
+"In-Reply-To:" header when responding to mail.  The metacharacters
+defined in the ~#help#~ for hdr_format may be used with in_reply_to.
+
+For example, the default in_reply_to string of
+  %f\n\t"%s" (%d)
+will create an In-Reply_to: header like the following:
+
+In-Reply-To: johnr@ugl.com (John Raoul)
+        "Help with wort pouring" (Oct 2, 1993)
+
+Note that if you place a newline (\n) character in the in_reply_to
+string, you must follow it with at least one space or tab (\t)
+character to maintain RFC 822 compliance.
+%%
+
+--
+input
+tty fullscreen gui mswindows readonly string
+Message list:
+When a user-defined function appears in a pipeline, this variable is
+set to the list of messages that are piped to that function.  If the 
+function does not appear as part of a pipeline, ~#input#~ is not set.
+%%
+
+--
+is_gui
+tty fullscreen mac gui mswindows readonly boolean
+NULL
+True if Z-Mail is running in GUI mode, false otherwise.
+%%
+
+--
+is_lite
+tty fullscreen mac mswindows gui readonly boolean
+NULL
+True if Z-Mail is running in Lite mode, false otherwise.
+%%
+
+--
+ispeller
+fullscreen string
+NONE
+Program:
+Names a program to be used for interactively ~#spell checking#~
+in compositions and other editable texts.  This program should
+expect a file name as its sole argument.
+
+The program specified by ~#ispeller#~ is given control of the 
+terminal.
+%%
+
+--
+keepsave
+tty fullscreen mac gui mswindows boolean
+FALSE
+NULL
+`Saved' messages are normally deleted when the system mailbox is
+~#update~ui#~d.  If ~#keepsave#~ is set, `saved' messages are not deleted in
+this way.  In other folders, `saved' messages are not deleted unless
+~#deletesave#~ is set.  Setting ~#keepsave#~ protects `saved' messages
+from deletion in any folder, even if ~#deletesave#~ is also set.
+
+See also ~#hold~var#~.
+%%
+
+--
+known_hosts
+tty fullscreen mac gui mswindows string
+NONE
+Host list:
+Used in conjunction with the variable ~#auto_route#~, this variable is
+set to a list of hosts, separated by spaces, tabs, and/or commas, and
+describes the hosts with whom you know your machine shares UUCP
+connections.  This is normally set by the system administrator if and
+when it is needed.
+%%
+
+--
+layout_db
+gui string
+~/.zmlayout
+File: 
+The file specified by this variable contains a list
+of dialogs and windows that were open the last time
+the application was terminated.
+
+%%
+
+--
+logfile
+tty fullscreen mac gui mswindows string
+NONE ~/mail.log
+Filename:
+Set to a filename which logs the ~#headers#~ of outgoing messages.  The
+message body of the message is not logged in the way that it is for
+the ~#record~var#~ filename.  The logfile can be read as a folder to scan
+for confirmation that messages have been sent.  If both ~#logfile#~ and
+~#record~var#~ are set, then the logfile and the record files will match.
+In this case, the record file can be quickly scanned by loading the
+log file instead.
+%%
+
+
+--
+mailhost
+tty fullscreen mac gui mswindows boolean string
+NONE
+Host:
+If you use POP (the Post Office Protocol) to fetch your messages from
+a POP mail server, this variable should be set to the name or address
+of that server.
+
+Z-Mail supports version 3 of the Post Office Protocol.
+
+See also the ~#fetch_timeout#~ and ~#pop_options#~ variables.
+%%
+
+--
+mail_icon
+gui string
+NONE
+Filename:
+Names a file containing an alternate pixmap to use when the GUI main
+window is iconified.  Changing this variable after the program is
+started will not affect the icon.
+%%
+
+--
+mailbox_name
+gui mswindows mac string
+Mailbox
+Name:
+This variable specifies the string used to describe the system mail folder.
+Whenever the name of the system mail folder is requested, this string will
+be used instead.  If this variable's value contains the string "%n", that
+string will be replaced by the user's login name.
+%%
+
+--
+main_folder_title
+tty fullscreen mac gui mswindows string
+NONE
+Title:
+
+The string value that ~#main_folder_title#~ is set to will be printed
+next to the menu of open folders near the top of your 
+~#Main window#~ in the graphical user interface.
+The string may contain formatting characters to show information about
+the status of your active folder. 
+See the ~#prompt#~ variable for a list of the possible formatting
+characters.  See also ~#folder_title#~.
+%%
+
+--
+main_panes
+gui mswindows mac multivalue
+# default values:
+folder,messages,buttons,output
+# number of multi-values in variable:
+8
+# list the values:
+toolbar
+The toolbar.
+%%
+status
+The message area that displays the status of the currently active folder.
+%%
+folder
+The area that contains the text field where the current folder is specified.
+%%
+messages
+The list of ~#message summaries#~ (~#headers#~).
+%%
+buttons
+The main panel where the user-defined buttons are displayed.
+%%
+output
+The multi-line text area that displays various non-critical output messages.
+%%
+command
+The text field where Z-Mail commands can be typed.
+%%
+status_bar
+The status bar.
+%%
+Conditions:
+Controls which "panes" in the Main window are visible.  Unsetting this
+variable turns on all the panes.
+%%
+
+--
+mbox
+tty fullscreen mac gui mswindows string permanent
+* ~/mbox
+Filename:
+Names a file to use for your default main mailbox instead of the file
+'mbox' in
+your home directory.
+%%
+
+--
+message_lines
+gui mswindows numeric permanent
+NONE 6
+Lines:
+Set to the initial number of lines of the ~#Message Display window#~.
+Changing ~#message_lines#~ after the ~#Message Display window#~ has been
+opened will not change the size of the window.
+
+This variable was formerly called "crt_win".
+%%
+
+--
+message_panes
+gui mswindows lite mac multivalue
+# default values:
+folder,headers,body,action_area,attachments
+# number of multi-values in variable:
+7
+# list the values:
+toolbar
+The toolbar.
+%%
+folder
+The area that contains the text field where the current folder is specified.
+%%
+headers
+The summary of the current message headers.
+%%
+body
+The message body that is being displayed.
+%%
+action_area
+The button panel where actions are displayed.
+%%
+status_bar
+The status bar.
+%%
+attachments
+The icons for the message's attachments, if any.
+%%
+Conditions:
+Controls which "panes" in the Message window are visible.  Unsetting
+this variable turns on all the panes.
+%%
+
+--
+metoo
+tty fullscreen gui mswindows mac boolean string
+FALSE
+NULL
+Normally, copies of messages you send to local mailing lists are not
+sent back to you, because most Mail Transport Agents will remove the
+message sender's name when forwarding to a mailing list.  Setting
+~#metoo#~ will preserve your name on such mailing lists if possible,
+so that you will get a copy of your own mail.  When you reply to
+mail, Z-Mail will also keep your name on any list of addresses that
+it generates when this variable is set.
+
+Z-Mail passes the string value of this variable as an argument to the
+Mail Transport Agent when sending mail.  If the string value begins
+with a hyphen (e.g., "-m"), Z-Mail separates it from the rest of the
+~#sendmail#~ command with a space.  If the string value does not begin with
+a hyphen, no space is added.  If the string value is empty, a default
+value is used, when one is known.
+%%
+
+--
+mil_time
+tty fullscreen mac gui mswindows boolean
+FALSE
+NULL
+24-hour military time format is used whenever the time of a message
+is printed, regardless of the format used in the message's Date:.
+
+If you change the state of this variable, you must update the 
+current folder in order to see the new time format in the
+message summaries area of the main window.
+%%
+
+--
+msg_attach_label
+gui mswindows singlevalue
+comment
+5
+comment
+Display the comment from the local attachment type database.
+%%
+content
+Display the content name supplied by the sender.
+If no content name was sent, this is the same as "filename".
+%%
+description
+Display the descriptive text supplied by the sender.
+If no description was sent, this is the same as "comment".
+%%
+filename
+Display the file name.
+%%
+type
+Display the attachment type.
+%%
+Item:
+This variable controls what information will be displayed below each
+attachment icon in the attachments area of a message reading window.
+If this variable is not set, or if none of the other information can
+be found, the attachment type is displayed.
+%%
+
+--
+msg_win_hdr_fmt
+lite mac gui mswindows string
+From:    %n <%a>\nDate:    %W %d %Z\nTo:      %?to?\nCc:      %?cc?\nSubject: %s
+Format:
+This variable controls the format of the text in the headers pane of
+the Message Reading window in the Motif, Windows, and Macintosh interfaces.  
+The following formatting characters may be used:
+
+    %a  address of the author
+    %c  number of characters (bytes) in the message
+    %d  date and time of the message (see ~#date_received#~ variable)
+    %f  "From" field (author name and address)
+    %i  the message-id (sometimes not available)
+    %l  number of lines in the message
+    %M  month name from the message date
+    %m  month number from the message date
+    %N  day of the month (number)
+    %n  name of the author
+    %s  subject of the message
+    %t  "To" field (recipients of the message)
+    %T  time of the message (see ~#mil_time#~ variable)
+    %u  user name (login) of the sender of the message
+    %W  day of the week (Sun, Mon, etc.) of the message date
+    %Y  year of the message date
+    %y  year, last 2 digits only
+    \n  a newline
+    \t  a tab
+
+%%
+
+--
+newline
+tty lite string
+NONE
+Command:
+This variable may be set to a command to be executed when a carriage
+return is the only input to the line mode or Lite mode prompt.
+%%
+
+
+--
+newmail_icon
+gui string
+NONE
+Filename:
+Names a file containing an alternate pixmap to use to signal the
+arrival of new mail when the GUI ~#Main window#~ is iconified.  Changing
+this variable after Z-Mail is running will not affect the icon.
+You must save the new setting of newmail_icon and restart Z-Mail to
+affect the icon.
+%%
+--
+newmail_scroll
+gui mswindows mac boolean
+TRUE
+NULL
+Causes the headers list to scroll to the bottom when new mail arrives.
+%%
+
+--
+no_expand
+tty fullscreen gui mswindows boolean
+FALSE
+NULL
+Prevents expansion of alias abbreviations in outgoing mail ~#headers#~.
+This is normally considered bad etiquette, but is useful in special
+cases for administering mailing lists.
+%%
+
+--
+no_hdrs
+tty fullscreen mac gui mswindows boolean
+FALSE
+NULL
+If set, personalized ~#headers#~ (the ~#Envelope#~) are NOT inserted into
+outgoing mail.  This is used to temporarily disable personalized ~#headers#~.
+%%
+
+
+--
+nonobang
+tty fullscreen boolean
+TRUE
+NULL
+If this variable is set, history references that don't match anything
+will be left unexpanded, rather than generating error messages.  This
+is handy if you frequently have to type UUCP-style addresses that
+contain numerous `!' characters.
+%%
+
+--
+nosave
+tty fullscreen mac lite gui mswindows boolean
+FALSE
+NULL
+Prevents outgoing mail from being saved when message composition is
+aborted.  
+In the ~#Compose window#~, the "Cancel" button normally saves
+the composition to a file named dead.letter. 
+Aborting with Ctrl-C or ~q in line mode also saves a dead letter.
+Note that ~#nosave#~ overrides the value of the ~#verify#~ variable.
+
+Also see the variable ~#dead#~, which describes the file Z-Mail uses
+to save aborted messages.
+%%
+
+--
+openfolders
+tty fullscreen gui mswindows mac readonly string
+Folder Numbers:
+This variable holds a string consisting of the numeric names of each
+of the open folders, separated by spaces.  The numeric name of a folder
+is a number sign (#) followed by one or more digits.  The system folder
+is always #0.  Other folders are #1, #2, etc.
+
+The ~#openfolders#~ variable can be used with the ~#foreach#~ command to
+apply an operation to every open folder.  For example, to ~#update~ui#~ all
+folders:
+
+    foreach f ($openfolders) 'update $f'
+
+See the ~#foreach#~ command for more information.
+%%
+
+--
+output
+tty fullscreen mac gui mswindows readonly string
+Messages:
+This variable holds a ~#message list#~ representing the output of the last
+successful command.  Commands which return an error status do not
+affect the value of ~#output#~, but successful commands that return no
+~#message list#~ will clear it.
+%%
+
+--
+pager
+tty fullscreen string
+* more
+Program:
+If a message is longer than the number of lines that the variable ~#crt~var#~
+indicates, then the program named by this variable is executed to view
+that message.  If the user does not have this variable set, the user's
+environment PAGER is checked.  If this isn't set, then Z-Mail's simple
+internal pager is used. In Lite and GUI modes, an internal pager is
+always used.
+%%
+
+--
+picky_mta
+tty fullscreen mac gui mswindows boolean multivalue
+# default values:
+FALSE
+# number of multi-values in variable:
+4 
+# list the values:
+eight_bit
+The MTA accepts full eight-bit text, not just seven-bit US ASCII.
+%%
+omit_commas
+The MTA is confused by the use of commas to separate addresses, so
+Z-Mail should omit them.
+%%
+omit_from
+When this is set, Z-Mail will not pass From: and Date: ~#headers#~ to
+the Mail Transport Agent when sending mail.  This may be necessary
+if your MTA insists on generating its own From: and Date: ~#headers#~.
+%%
+uucp_style
+All addresses passed to the MTA should be in UUCP format, host!user.
+Set this only if your MTA has trouble with user@host address format.
+Note that addresses within the message may appear unchanged, but any
+address seen by the MTA will have been converted.
+%%
+Restrictions:
+Impose various restrictions on the way Z-Mail communicates with the
+Mail Transport Agent.  Setting picky_mta to true (on) is equivalent
+to setting only the "omit_from" field.
+%%
+
+--
+pop_options
+tty fullscreen mac gui mswindows multivalue
+NONE
+1
+preserve
+Leave mail on the POP server.
+%%
+Options:
+This variable controls various options for POP (Post Office Protocol)
+support in Z-Mail.
+
+See also the ~#use_pop#~ variable.
+%%
+
+--
+pop_timeout
+tty fullscreen mac gui mswindows numeric
+NONE 15
+Minutes:
+The number of minutes between checks for new mail on the POP server.
+
+See also the ~#fetch_timeout#~ and ~#timeout#~ variables.
+%%
+
+--
+pop_user
+tty fullscreen mac gui mswindows string
+NONE
+User name:
+The name Z-Mail uses to identify you to the POP server.  If this is
+not set, the value of ~#user#~ is used instead.
+%%
+
+--
+post_indent_str
+tty fullscreen mac gui mswindows string
+NONE
+String:
+When including the body of a message into an outgoing message, a line
+following the last line of included text is printed using the string
+value of this variable.  See ~#indent_str#~.
+%%
+
+--
+pre_indent_str
+tty fullscreen mac gui mswindows string
+NONE
+String:
+When including the body of a message into an outgoing message, a line
+preceding the first line of included text is printed using the string
+value of this variable.  See ~#indent_str#~.
+%%
+
+--
+presign
+tty fullscreen gui mswindows string
+NONE
+String:
+When this is set, Z-mail will sign letters whenever a composition is started.
+That is, Z-mail will use the values of 
+autosign, autosign2, and fortune
+to generate a signature for a composition as soon as that composition is
+started, instead of waiting for the letter to be sent.
+
+If the address list is empty when a composition is started, the value of
+the presign is used as the address list for the purposes of generating
+a signature.  For example, if presign contains the address of someone in
+autosign2, then the signature file specified in autosign2 is generated
+whenever a composition is started with an empty address list.
+%%
+
+--
+print_cmd
+tty fullscreen gui mswindows string
+NONE
+Program:
+This string should describe a command for sending messages to the
+hardcopy printer.  If no ~#print_cmd#~ is specified, one of "lpr"
+or "lp" is used, depending on your operating system.  The message
+to be printed is supplied as the standard input of the command.
+The value of ~#print_cmd#~ may be a /bin/sh pipeline.
+
+The string %P in the value of ~#print_cmd#~ is replaced by the name
+of the printer (see ~#printer~var#~).  The string %O is replaced by the
+option described by ~#printer_opt#~, which includes the name of the
+printer (e.g., if %P is "lp", then %O might be "-Plp").  If neither
+%O nor %P appears, then the ~#printer~var#~ and ~#printer_opt#~ variables
+are ignored and the command is executed unchanged.
+
+If no ~#print_cmd#~ is specified, the command "$ZMLIB/bin/mailp -W80 %O"
+is used by default. 
+%%
+
+--
+printer
+tty fullscreen gui mswindows string
+*
+Printer:
+This variable gives the name of the printer to which the Z-Mail
+~#lpr#~ command is directed.  This name is normally prefixed with
+one of "-P" or "-d" (depending on your operating system) when
+passed to the printing program.  If the value of ~#printer~var#~ begins
+with a hyphen, then no prefix is added.  See also ~#printer_opt#~.
+
+If ~#printer~var#~ is set to a comma-separated list of names, Z-Mail
+will display that list at the time you print a message and request
+that you select a printer name.
+
+If ~#printer~var#~ is set to an empty string, Z-Mail will invoke the
+printing command with no printer argument.  This normally causes
+output to go to the system default printer.
+%%
+
+--
+printer_opt
+tty fullscreen gui mswindows string
+NONE
+Option:
+This string describes the command-line options used to tell your
+printing program what printer name to use.  If ~#printer_opt#~ is
+not set, the option defaults to "-P" for Berkeley UNIX and "-d"
+for all other systems.  The value of ~#printer_opt#~ is ignored if
+the printer name begins with a hyphen (see the ~#printer~var#~ variable).
+
+The string "%P" in the value of ~#printer_opt#~ is replaced by the
+name of the printer (see ~#printer~var#~).  Otherwise, the printer name
+is appended to the option with no intervening space, e.g. if the
+value of ~#printer_opt#~ is "-P" and the value of ~#printer~var#~ is "lp",
+then the option passed to the printing program is "-Plp".
+
+If ~#printer_opt#~ is set to an empty string, Z-Mail will invoke the
+printing command with no printer argument.  This normally causes
+output to go to the system default printer.
+%%
+
+--
+prompt
+tty fullscreen string permanent
+* Msg %m of %t:\
+
+String:
+The string value that ~#prompt#~ is set to will be printed as your
+prompt.  The string may contain formatting characters to show
+information about the status of your folder:
+
+    %F  full path of the active folder
+    %f  name (path tail) of the active folder
+    %m  current message number
+    %n  number of new messages
+    %u  number of unread messages
+    %d  number of ~#delete#~d messages
+    %t  total number of messages
+    %T  current time
+    %N  day of the month (number) (today)
+    %W  weekday name (today)
+    %M  month name (this month)
+    %Y  year (this year)
+    %y  year (last 2 digits only)
+    %$  introduces a variable name
+    \n  newline
+    \t  tab
+%%
+
+--
+quiet
+tty fullscreen gui mswindows mac boolean multivalue
+NONE
+9
+autosign
+Do not report that a signature was appended to an outgoing message.
+%%
+blink
+Do not flash and beep the error dialog in GUI mode.
+%%
+complete
+Do not beep when a file completion fails to match.
+%%
+fortune
+Do not report that a fortune was appended to an outgoing message.
+%%
+index
+Do not complain about an invalid index.
+%%
+newmail
+Do not announce the arrival of new mail.
+%%
+pick
+Do not verbosely describe message searches.
+%%
+save
+Do not print a message for every message saved; only report the total.
+%%
+startup
+Do not print the version information when starting the program
+in command-line mode.
+%%
+Conditions:
+This variable tells Z-Mail to be quiet in various circumstances.
+
+If set, but not to any values, Z-Mail does not print version
+information when the program begins executing in command-line mode.
+%%
+
+--
+realname
+tty fullscreen mac gui mswindows string
+*
+Name:
+Your real name, which is used in the From: header of outgoing messages.
+%%
+
+--
+record
+tty fullscreen mac gui mswindows string
+NONE
+Filename:
+Set to the name of a file to record all outgoing mail.  The pathname
+may begin with `+' (indicating the user's
+~/Mail
+directory or the value
+of the ~#folder~var#~
+variable) or with a `~' indicating the user's home
+directory (the value of the ~#home#~ variable).
+%%
+
+--
+record_control
+tty fullscreen mac gui mswindows multivalue
+NONE
+3
+attachments
+Don't record messages with attachments.
+%%
+resend
+Don't record messages that are being resent.
+%%
+priority
+Only record priority messages.
+%%
+Conditions:
+Specifies a series of conditions which control when an outgoing message is
+recorded to a file.
+%%
+
+--
+record_max
+tty fullscreen mac gui mswindows numeric gui_max=1000000
+NONE
+Size:
+Specifies the maximum size in bytes of outgoing messages
+that are recorded.  If a message is larger than this, it
+will not be recorded.
+%%
+
+--
+record_users
+tty fullscreen mac gui mswindows boolean
+FALSE
+NULL
+
+When this variable is set, addresses in outgoing mail are tested
+against file names in the folder directory (
+~/Mail
+or the value of the
+~#folder~var#~ variable).
+
+If the user name in the address matches a file name, then a copy of
+the message is stored in that file.  Note that the file must exist
+before the message is sent in order for a copy to be recorded.
+%%
+
+--
+recursive
+tty fullscreen mac gui mswindows boolean
+FALSE
+NULL
+This variable must be set in order for user-defined ~#functions#~ to
+call themselves (this is known as "recursion").  If it is not set, any
+recursive function call will result in an error.
+%%
+
+--
+redirect
+tty fullscreen gui mswindows readonly boolean
+NULL
+True if Z-Mail is running in send-only mode with redirected input,
+false otherwise.
+%%
+
+--
+reply_to_hdr
+tty fullscreen mac gui mswindows boolean string
+NONE
+Headers:
+When replying to mail, Z-Mail generates a return email path to the
+sender by examining various message ~#headers#~ in the original message.
+By default, the address is taken from the Reply-To: header, the From:
+header and the Return-Path: header.  You can override this behavior
+by setting the reply_to_hdr variable to specific header names.  For
+example,
+
+    set reply_to_hdr = "sender, reply_to, return_path"
+
+If reply_to_hdr is set, but not to a specific value, then the special
+header "From " is used.  This may or may not be supported on your
+particular system, and is only useful for UUCP sites only.  Ask your
+system administrator for more information if you are unsure about
+this setting.
+%%
+
+--
+save_empty
+tty fullscreen mac gui mswindows boolean
+FALSE
+NULL
+When ~#save_empty#~ is set, folders which have all messages ~#delete#~d are
+NOT removed when ~#update~ui#~d.  Note that the ~#update~cmd#~ command never
+removes folders.  Empty folders are removed only if ~#update~ui#~d by ~#close~cmd#~
+or if ~#update~ui#~d when Z-Mail quits.
+%%
+
+--
+screen
+tty fullscreen numeric permanent
+NONE 12
+ # of Headers:
+Sets the number of ~#message summaries#~ treated as a screenful by the
+~#headers#~ command.  This variable only applies to the tty interface.
+If this variable is not set, then a default value of 12 is used.
+%%
+
+
+--
+sendmail
+tty fullscreen gui string
+NONE
+Program:
+Names a program to use to deliver mail instead of using the default.
+This is normally set only by the system administrator.
+%%
+
+--
+show_deleted
+tty fullscreen mac lite gui mswindows boolean
+is_gui
+NULL
+Controls whether deleted messages may be displayed.  
+In line mode
+only, ~#show_deleted#~ also controls whether ~#delete#~d messages in
+header summary listings are shown.  In GUI mode, the Message Display
+window will close automatically when the displayed message is ~#delete#~d
+unless one of ~#show_deleted#~ or ~#autoprint#~ is set.
+%%
+
+--
+sort
+tty fullscreen mac gui mswindows boolean string
+NONE
+Option(s):
+This variable may be set in the initialization file to presort mail in
+the system mailbox upon entering Z-Mail.  The value of this variable
+is the same as the arguments to the ~#sort~cmd#~ command.  For example:
+
+  set sort="-r -d -s"
+
+will sort the system mailbox by reverse-date and subject.
+
+If the variable ~#always_sort#~ is also set, then the system mailbox
+will be sorted whenever new mail arrives there.
+%%
+
+--
+speller
+gui string
+/usr/bin/spell
+Program:
+Names a program to be used for ~#spell checking#~ in compositions
+and other editable texts.  This program should expect a file name as
+its sole argument and should print on its standard output the
+misspelled words found in that file, one word per line.
+
+The speller program is used to fill the list of misspelled words in the
+~#Search and Replace#~ dialog.
+%%
+
+--
+squeeze
+tty fullscreen mac gui mswindows boolean
+FALSE
+NULL
+If this variable is set, consecutive blank lines in message bodies
+are compressed to a single blank line for display.
+%%
+
+--
+status
+tty fullscreen mac gui mswindows readonly string
+NULL
+This variable records the success or failure status of the most
+recently executed command.  All line-mode commands return 0 (zero) for
+success and a negative value for error.  This variable is most useful
+in scripts to test the success of an operation before proceeding.
+%%
+
+--
+summary_lines
+gui mswindows numeric
+NONE 6
+ # of Headers:
+Sets the initial number of ~#message summaries#~ displayed for the
+graphical interface.  If this variable is not set, a default
+value is taken from your GUI window system environment.
+
+This variable was formerly called "screen_win".
+%%
+
+--
+summary_fmt
+tty fullscreen mac gui mswindows string permanent
+* %22n %M %-2N %T (%l) %.23s
+Format:
+This variable controls the format of the ~#message summaries#~ in the
+Main window.
+
+When printing the summaries, this variable is evaluated and each
+character in the string is duplicated unless a `%' character is
+encountered.  `%' introduces an abbreviation for one of the
+~#headers#~ of the message.  (This variable was formerly called
+"hdr_format".)
+
+    %a  address of the author
+    %c  number of characters (bytes) in the message
+    %d  date and time of the message (see ~#date_received#~ variable)
+    %f  "From" field (author name and address)
+    %i  the message-id (sometimes not available)
+    %l  number of lines in the message
+    %M  month name from the message date
+    %m  month number from the message date
+    %N  day of the month (number)
+    %n  name of the author
+    %s  subject of the message
+    %t  "To" field (recipients of the message)
+    %T  time of the message (see ~#mil_time#~ variable)
+    %u  user name (login) of the sender of the message
+    %W  day of the week (Sun, Mon, etc.) of the message date
+    %Y  year of the message date
+    %y  year, last 2 digits only
+    \n  a newline
+    \t  a tab
+%%
+
+--
+templates
+tty fullscreen mac gui mswindows string
+NONE
+Directories:
+
+Describes the default directories (separated by spaces) where message
+~#forms#~ (or ~#templates~ui#~)can be found.  The system administrator
+may provide a directory (usually
+$ZMLIB/forms
+) where prepared forms
+are stored.  However, each user can provide forms for his own use by
+placing them in the directories described by this variable.
+
+All files located in these directories are expected to be ~#forms#~.
+If a file in one of these directories is named "default", Z-Mail
+reads that file into every message you compose, unless you specify
+a different template.  Note that the ~#templates#~ variable must be
+set in order for the "default" template to be used, even if the
+"default" template is stored in the system templates directory.
+
+Note that the directories specified by this variable are searched
+in reverse order; if you specify the value of templates as:
+    
+    /usr/fred/templates /usr/jane/templates
+
+and both directories contain a template called "expenses",
+the version in /usr/jane/templates will be used.  
+%%
+
+--
+textpart_charset
+tty fullscreen gui mswindows string
+iso-2022-jp
+Character set:
+This variable names the character set that Z-Mail will use by default
+when sending text body parts in outgoing messages. (See below for a
+list of valid character sets.)  If you generate text message body
+parts that use non-ASCII characters (Cyrillic, for example), you
+should set this variable to the name of the character set with which
+you are composing your body parts.
+
+This variable is normally set by your system administrator.  See the
+ISO document 'Information Processing -- 8-bit Single-Byte Coded
+Graphic Character Sets' for a complete description of the character
+sets listed below.
+
+This variable's contents are not case-sensitive.
+
+The following is a list of valid character sets.  You can specify a
+character set in textpart_charset that is not listed here, but you
+must precede it with 'X-' to maintain compliance with the ~#MIME#~
+specification.
+
+ Variable value Common Name    Example languages
+ -------------- -----------    -----------------
+ US-ASCII       ASCII          English (7-bit)
+ ISO-8859-1     Latin 1        Western Europe
+ ISO-8859-2     Latin 2        Eastern Europe
+ ISO-8859-3     Latin 3        Dutch, Esperanto
+ ISO-8859-4     Latin 4        Northern Europe
+ ISO-8859-5     Latin/Cyrillic Cyrillic
+ ISO-8859-6     Latin/Arabic   Arabic
+ ISO-8859-7     Latin/Greek    Greek
+ ISO-8859-8     Latin/Hebrew   Hebrew
+ ISO-8859-9     Latin 5        Various European
+ ISO-2022-JP    JUNET          Japanese
+  
+RFC-1521 recommends downgrade of text/plain character
+sets to us-ascii whenever possible. Messages with
+only ASCII characters are marked us-ascii, regardless
+of the setting of textpart_charset.
+%%
+
+--
+thisfolder
+tty fullscreen mac gui mswindows readonly string
+Folder:
+Gives the current folder name.
+%%
+
+--
+timeout
+gui mswindows mac numeric
+NONE 30
+Seconds:
+Number of seconds between checks for new mail.
+If use_pop is set, then ~#pop_timeout#~ is used instead.
+%%
+
+--
+tmpdir
+tty fullscreen mac gui mswindows string permanent
+* /usr/tmp
+Directory:
+Names a directory to use for temporary files.  
+If not set, the directory "/tmp" or the value of the environment
+"TMPDIR" is used.
+%%
+
+--
+toplines
+tty fullscreen gui mswindows numeric permanent
+NONE 18
+Lines:
+Number of lines of a message to print for the 'top' command.
+%%
+
+--
+trusted_functions
+gui string boolean
+true trusted_mailto
+Functions:
+This variable contains a list of functions that other
+applications may cause 
+MediaMail
+to execute.
+
+You should be extremely careful about modifying the
+setting of this variable, and you should take steps
+to ensure that functions you add to it cannot be
+used to do malicious things.
+
+If this variable is set, you should be using
+X authorization to help control access to your
+X server.
+%%
+
+--
+use_pop
+tty fullscreen mac gui mswindows boolean permanent
+FALSE
+Use POP:
+If you use POP (the Post Office Protocol) to fetch your messages from
+a POP mail server, this variable should be set.  Changing this
+variable after Z-Mail is started will have no effect.
+
+Z-Mail supports version 3 of the Post Office Protocol.
+
+See also the ~#mailhost#~, ~#fetch_timeout#~, and ~#pop_options#~ variables.
+%%
+
+--
+user
+tty fullscreen mac gui mswindows string permanent
+*
+Login name:
+The name you use to log in.  You should not need to change this.
+
+The value of this variable is not saved when .zmailrc is written.
+%%
+
+--
+unix
+tty fullscreen boolean
+FALSE
+NULL
+When this variable is set, Z-Mail will attempt to execute as a UNIX
+program any command that it does not itself recognize.  
+In GUI mode, the output of the UNIX command is directed to the ~#Main window#~ 
+output text area, and the standard input of the UNIX command is closed.
+
+If a UNIX command is executed in this way from GUI mode, Z-Mail will
+wait a few seconds for it to complete.  If the command does not
+finish within this time, Z-Mail will display the Task Meter to let
+you know that an external command is running.  Press the Stop button
+to continue your Z-Mail session.
+%%
+
+--
+verbose
+tty fullscreen boolean string
+FALSE
+NULL
+Z-Mail passes this verbose flag to the Mail Transport Agent when sending
+mail, and will print additional information about the sending process.
+In GUI mode, a dialog appears containing the output from the MTA.
+
+If the string value of this variable begins with a hyphen (e.g., -v)
+Z-Mail separates it from the rest of the ~#sendmail#~ command with a
+space.  If the string value does not begin with a hyphen, no space is
+added.  If the string value is empty, a default value is used if one
+is known, otherwise verbosity is not enabled.
+%%
+
+# For verify, recall that the first word on the line must be the boolean
+# truth value, and the rest is the multivalue set when true.
+--
+verify
+tty fullscreen lite mac gui mswindows boolean multivalue
+is_gui?TRUE:is_lite close,dead,remove
+8
+addresses
+Same as "mail", but display all addresses for confirmation.
+%%
+close
+Ask for confirmation before ~#updating#~ any folder, only when
+that folder is being ~#close#~d.
+%%
+dead
+Confirm saving a dead letter when a Compose
+window is cancelled.  This is ignored if ~#nosave#~ is also set.
+%%
+mail
+Ask for confirmation before sending messages.
+%%
+mkdir
+Ask for confirmation when automatically creating directories.
+%%
+remove
+Ask for confirmation before removing a file.
+%%
+update
+Ask for confirmation before ~#updating#~ any folder, at any time.
+%%
+quit
+Ask for confirmation before quitting.
+%%
+Conditions:
+This variable causes Z-Mail to request confirmation of the
+specified actions.
+%%
+
+--
+version
+tty fullscreen mac gui mswindows readonly string
+NULL
+Holds the version identification of the Z-Mail program.  Used in the
+X-Mailer header of outgoing messages.  Read-only.
+%%
+
+--
+visual
+tty fullscreen gui string
+* vi
+Visual editor:
+This variable is only used if the wineditor variable is not set
+and there is no WINEDITOR environment variable.
+
+The visual variable May be set to the visual editor to use when 
+editing outgoing messages. 
+The default is specified by the environment string VISUAL or as set by
+the system administrator.
+%%
+
+--
+warning
+tty fullscreen mac gui mswindows boolean
+FALSE
+NULL
+When set, Z-Mail will display warning messages for non-critical
+errors.  Specifically, Z-Mail will warn you about:
+
+  Duplicate attachment definitions.
+
+  Missing headers in ~#undigest#~.
+
+  Attempts to set read-only variables.
+
+  Using the ~#unalias#~ command on an alias that
+  doesn't exist.
+
+  Using the ~#un_hdr#~ command on a header that
+  doesn't exist.
+
+  Using the ~#uncmd#~ command on a command that
+  doesn't exist.
+%%
+
+--
+window_shell
+gui string
+NONE
+Program:
+
+This variable specifies a program to use when a tty window
+is needed for input or output from Z-Mail and the
+~#winterm#~ variable is not set.  It is also used in GUI
+mode to create a new tty window for an external editor
+(named by ~#visual#~) to run in when the ~#wineditor#~
+variable is not set.
+
+Z-Mail starts an external editor in GUI mode by appending
+the value of ~#visual#~ (or ~#editor#~ if ~#visual#~ is
+undefined) to ~#window_shell#~, then executing the result
+as a UNIX command.
+
+If window_shell is unset, Z-Mail will use "xterm -e" by default.  If
+you use an external editor that creates its own window, you
+should set ~#wineditor#~ to the editor.
+%%
+
+--
+winterm
+gui string
+NONE
+Program:
+
+Set this variable to the name of the program to run when you
+create shell processes in GUI mode.  If the WINTERM environment
+variable is set, winterm is set by default to its value.
+If winterm is unset, the value of ~#window_shell#~ is used
+instead.
+%%
+
+--
+wineditor
+gui string
+ieditor
+Program:
+
+When you invoke an external editor in
+GUI mode, the program specified by wineditor is executed in
+favor of the programs specified by either the ~#visual#~ 
+or ~#editor#~ variables.
+
+Common settings of this variable include:
+
+     xterm -e vi
+     jot -f
+
+Do not specify wineditor in a way that will cause the
+external editor to be invoked as a background process.
+
+For example, the jot program is automatically invoked
+as a background process unless the -f option is specified.
+Therefore, in order to use jot as your external editor
+you should set this variable to
+
+     jot -f 
+
+rather than
+
+     jot
+
+If you unset this variable, the value of the WINEDITOR
+environment variable is used instead, if it is set.  
+If you choose to unset the wineditor variable, you should
+be certain that the WINEDITOR environment variable 
+is not specified in a way that causes the editor to
+be invoked as a background process, as described above.
+
+If the wineditor variable and the WINEDITOR environment
+variable are not set, Z-Mail invokes the external editor
+in GUI mode by appending the value of the ~#visual#~ variable 
+to the value of the ~#window_shell#~ variable and executing
+the result as a UNIX command.
+%%
+
+--
+wrap
+tty fullscreen mac gui mswindows boolean
+FALSE
+NULL
+Normally, when the last message is deleted, the current message pointer
+remains pointing to the last message and the user is done reviewing his
+mail.  If this variable is set, the current message pointer will wrap
+around to the beginning of the user's messages again to the ~#next#~
+undeleted message.  This also applies to the ~#next#~ command.
+%%
+
+--
+wrapcolumn
+tty fullscreen mac gui mswindows boolean numeric gui_max=200
+FALSE 72
+Column to wrap:
+The value of wrapcolumn specifies the length of lines in outgoing
+messages.  If wrapcolumn set to no value, a value of 72 is assumed,
+indicating that lines will be broken in between words at or before the
+seventy-second character on the line.
+
+Line wrapping can be disabled by unsetting wrapcolumn, by setting 
+it to zero, or by unsetting ~#autoformat#~ (see below).
+
+You should set wrapcolumn to a value less than 80, since most messages
+are read on displays that are 80 columns wide.  A value in the range
+of 72 to 78 is considered ideal.
+
+Note that wrapcolumn is used in the Motif, Macintosh, Windows, and Lite
+interfaces only when ~#autoformat#~ is also set.  If wrapcolumn has the
+value 0 (zero) but ~#autoformat#~ is set, ~#autoformat#~ ignores wrapcolumn
+and wraps at the width of the Compose window.
+%%

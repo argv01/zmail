@@ -1,0 +1,129 @@
+#
+# Refit the Compose window to add buttons that send MailTool format messages.
+#
+# Source this from $ZMLIB/system.zmailrc AFTER sourcing $ZMLIB/zmail.menus
+#
+
+#
+# Shorthands in case changing modes becomes more complicated in the future
+#
+cmd __MIME_attachment_format		'unset sun_attachment'
+cmd __MailTool_attachment_format	'set sun_attachment'
+
+#
+# NOTE: Change the right side of this cmd to reflect the desired default
+#
+cmd __default_attachment_format __MailTool_attachment_format
+
+#
+# Enter the proper mode first
+#
+__default_attachment_format
+
+#
+# Functions
+#
+function __save_warning() {
+    set __warning = $?warning
+    unset warning
+}
+function __restore_warning() {
+    if $__warning == 1
+	set warning
+    endif
+}
+function send-mime() {
+    __MIME_attachment_format
+    compcmd send
+}
+function send-mtool() {
+    __MailTool_attachment_format
+    compcmd send
+}
+function mime-buttons() {
+    __save_warning
+    unbutton -w compose -name Send-Sun
+    button -w compose -name Send-MIME -postition 3 \
+    	-sensitivity '$?compose_state:(active)' send-mime
+    __restore_warning
+}
+function mtool-buttons() {
+    __save_warning
+    unbutton -w compose -name Send-MIME
+    button -w compose -name Send-Sun -postition 3 \
+	-sensitivity '$?compose_state:(active)' send-mtool
+    __restore_warning
+}
+function __default_attachment_buttons() {
+    if $?sun_attachment
+	mtool-buttons
+    else
+	mime-buttons
+    endif
+}
+function compose_mode_hook() {
+    __default_attachment_format
+    __default_attachment_buttons
+}
+
+#
+# Install buttons
+#
+__save_warning
+unbutton -w compose -name Send
+__restore_warning
+
+#
+# Install Menus
+#
+# NOTE:  Change labels, mnemonics, and accelerators as desired here,
+#        or set all these to empty and assign values via X resources.
+#
+set __mime_label = 'Send, MIME Format'
+set __mt_label = 'Send, MailTool Format'
+set __send_mnemonic = S
+set __send_accelerator = 'Shift+Ctrl+S'
+# Change these two lines only to set the variables to empty
+set __mnemonic_arg = -mnemonic
+set __accelerator_arg = -accelerator
+#
+# NOTE: Change positions as desired in this conditional.
+#
+if $?sun_attachment
+    set __mt_position = 5
+    set __mime_position = 6
+    # Do not change the next five lines
+    set __mt_mnemonic_arg = "$__mnemonic_arg"
+    set __mt_mnemonic = "$__send_mnemonic"
+    set __mt_acceler_arg = "$__accelerator_arg"
+    set __mt_acceler = "$__send_accelerator"
+    set __mime_mnemonic_arg __mime_mnemonic __mime_acceler_arg __mime_acceler
+else
+    set __mt_position = 6
+    set __mime_position = 5
+    # Do not change the next five lines
+    set __mt_mnemonic_arg __mt_mnemonic __mt_acceler_arg __mt_acceler
+    set __mime_mnemonic_arg = "$__mnemonic_arg"
+    set __mime_mnemonic = "$__send_mnemonic"
+    set __mime_acceler_arg = "$__accelerator_arg"
+    set __mime_acceler = "$__send_accelerator"
+endif
+#
+menu -B ComposeMessageMenu
+unmenu -name mm_send
+# unmenu -name mm_send_n_close
+menu -name mm_send_mtool -position $__mt_position \
+    -sensitivity '$?compose_state:(active)' \
+    $__mt_mnemonic_arg $__mt_mnemonic \
+    $__mt_acceler_arg "$__mt_acceler" \
+    -label "$__mt_label" send-mtool
+menu -name mm_send_mime -position $__mime_position \
+    -sensitivity '$?compose_state:(active)' \
+    $__mime_mnemonic_arg $__mime_mnemonic \
+    $__mime_acceler_arg "$__mime_acceler" \
+    -label "$__mime_label" send-mime
+menu -B ComposeOptionsMenu
+menu -name com_sun_attachment -value '$?sun_attachment' \
+    -mnemonic M -label 'MailTool Format' -position 9 \
+    __default_attachment_buttons
+menu -W main

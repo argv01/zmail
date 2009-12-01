@@ -1,0 +1,78 @@
+#
+# Chronological sort, grouping by message thread
+#
+function chrono() {
+    #
+    # If we are first entering, initialize the beginning and end
+    # of the range to sort.  If an argument was given, use that
+    # as the place to begin the sort.
+    # Also create a few useful command shorthands for later.
+    #
+    if ! $?begin
+	unmark *
+	if $?1
+	    set begin = "$1"
+	else
+	    set begin = 1
+	endif
+	msg_list $ | set end
+	cmd next_number 'msg_list +'
+	cmd first_number 'msg_list - ; msg_list .'
+	cmd last_number 'msg_list + ; msg_list .'
+    endif
+    #
+    # Now sort all the messages from the beginning point
+    # through the end, by date ....
+    #
+    $begin - $ | sort -d | msg_list -
+    #
+    # Find the messages with the same subject as the current message.
+    # If the current message has no subject, find all messages that
+    # reference the message ID of the current message.
+    # Mark any messages that match.
+    #
+    if $?[%s]
+	eval -h pick -r $begin - $ -s %s$ | mark
+    else
+	eval -h pick -r $begin - $ -h references %i | mark
+    endif
+    #
+    # Sort by priority to move the marked messages to the top.
+    #
+    $begin - $ | sort -p
+    #
+    # Find the range boundaries of the set of marked messages,
+    # then unmark them.
+    #
+    :m | first_number | set first
+    :m | last_number | set last
+    unmark *
+    #
+    # If there is a range of more than one message,
+    # re-sort that range by date, and unset the vars.
+    #
+    if $first != $last
+	$first - $last | sort -d | next_number
+    endif
+    unset first last
+    #
+    # Advance the beginning point to the next message beyond those sorted.
+    #
+    next_number | set begin
+    #
+    # If we've reached the end of the list, clean up and return
+    #
+    if $begin == $end
+	unset begin end recursive
+	uncmd next_number first_number last_number
+	return 0
+    endif
+    #
+    # If we have more messages to sort, repeat.  This will abort
+    # without completing if there are more than 100 distinct subjects,
+    # because stack depth is limited.  The user can repeat the "chrono"
+    # command to continue sorting, because "begin" will still be set.
+    #
+    set recursive
+    chrono
+}

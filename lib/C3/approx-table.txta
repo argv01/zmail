@@ -1,0 +1,971 @@
+aoza
+%COMMENT_CCS 20006   :(approx-table.txta Ap46 950414 PSv)
+%RADIX 16
+%CONV_SYST 
+
+%APPROX_CONV         :The fundamental table for approximate conversions in C3
+%REVERSIBLE_TYPE 3
+
+   :WARNING: THIS TABLE IS PROVISIONAL. ITS CONTENT IS AT ALFA TEST LEVEL.
+
+   :This table has been compiled for the C3 Task Force within
+   :TERENA (formerly RARE) by:
+   :
+   :++ Olle Jarnefors <ojarnef@admin.kth.se>, fax: +46-8-10 25 10
+   :   Royal Institute of Technology, Stockholm, Sweden
+   :
+   :++ Peter Svanberg <psv@nada.kth.se>, fax: +46-8-790 09 30
+   :   Royal Institute of Technology, Stockholm, Sweden
+
+   :Publication, use and modification of this table is permitted if the
+   :source is explicitly acknowledged.
+
+   :More information about how the conversion tables of the C3 system are
+   :interpreted, how they can be modified, and about the C3 system in general
+   :can be found e.g. at
+   :   <URL:http://www.nada.kth.se/i18n/c3/> and
+   :   <URL:ftp://ftp.nada.kth.se/pub/i18n/c3/>
+   :Questions and comments can be sent to the email address
+   :   <c3-questions@nada.kth.se>
+
+   :The version of the table and the date when it was finished can be found
+   :on line 2. Recently changed entries in the table are indicated by the
+   :inclusion of the version when this was done within brackets at the end
+   :of the first line of the entry.
+   :
+   :The mark "[p-RFC]" indicates a newly proposed mnemonic representation
+   :used in conversion type 3. Other type 3 representations are mnemonics taken
+   :from [RFC1345], except those of the form "_Uhhhh_", where h stands for
+   :hexadecimal digits.
+
+'0000 =>> ""  / ""     / & "NU"   :NULL (NUL)
+'0001 =>> ""  / ""     / & "SH"   :START OF HEADING (SOH)
+'0002 =>> ""  / ""     / & "SX"   :START OF TEXT (STX)
+'0003 =>> ""  / ""     / & "EX"   :END OF TEXT (ETX)
+'0004 =>> ""  / ""     / & "ET"   :END OF TRANSMISSION (EOT)
+'0005 =>> ""  / ""     / & "EQ"   :ENQUIRY (ENQ)
+'0006 =>> ""  / ""     / & "AK"   :ACKNOWLEDGE (ACK)
+'0007 =>> "!" / "(!!)" / & "BL"   :BELL (BEL)
+'0008 =>> "x" / "x"    / & "BS"   :BACKSPACE (BS)
+'0009 =>> " " / " "    / & "HT"   :CHARACTER TABULATION (HT)
+'000A =>> "/" / "//"   / & "LF"   :LINE FEED (LF)
+'000B =>> "/" / "///"  / & "VT"   :LINE TABULATION (VT)
+'000C =>> "/" / "////" / & "FF"   :FORM FEED (FF)
+'000D =>> "<" / "<"    / & "CR"   :CARRIAGE RETURN (CR)
+'000E =>> ">" / ">"    / & "SO"   :SHIFT-OUT (SO)
+'000F =>> "<" / "<"    / & "SI"   :SHIFT-IN (SI)
+
+'0010 =>> ""  / ""     / & "DL"   :DATA LINK ESCAPE (DLE)
+'0011 =>> ""  / ""     / & "D1"   :DEVICE CONTROL ONE (DC1)
+'0012 =>> ""  / ""     / & "D2"   :DEVICE CONTROL TWO (DC2)
+'0013 =>> ""  / ""     / & "D3"   :DEVICE CONTROL THREE (DC3)
+'0014 =>> ""  / ""     / & "D4"   :DEVICE CONTROL FOUR (DC4)
+'0015 =>> ""  / ""     / & "NK"   :NEGATIVE ACKNOWLEDGE (NAK)
+'0016 =>> ""  / ""     / & "SY"   :SYNCHRONOUS IDLE (SYN)
+'0017 =>> ""  / ""     / & "EB"   :END OF TRANSMISSION BLOCK (ETB)
+'0018 =>> ""  / ""     / & "CN"   :CANCEL (CAN)
+'0019 =>> ""  / ""     / & "EM"   :END OF MEDIUM (EM)
+'001A =>> "<" / "<<<"  / & "SB"   :SUBSTITUTE (SUB)
+'001B =>> "!" / "!"    / & "EC"   :ESCAPE (ESC)
+'001C =>> ""  / ""     / & "FS"   :INFORMATION SEPARATOR FOUR (IS4)
+'001D =>> ""  / ""     / & "GS"   :INFORMATION SEPARATOR THREE (IS3)
+'001E =>> ""  / ""     / & "RS"   :INFORMATION SEPARATOR TWO (IS2)
+'001F =>> ""  / ""     / & "US"   :INFORMATION SEPARATOR ONE (IS1)
+
+'0020 =>> INVARIANT               :SPACE (SP)
+'0021 =>> INVARIANT               :EXCLAMATION MARK
+'0022 =>> INVARIANT               :QUOTATION MARK
+'0023 =>> "N" / "No"   / & "Nb"   :NUMBER SIGN
+'0024 =>> "S" / "S/"   / & "DO"   :DOLLAR SIGN
+'0025 =>> INVARIANT               :PERCENT SIGN
+'0026 =>> INVARIANT               :AMPERSAND
+'0027 =>> INVARIANT               :APOSTROPHE
+'0028 =>> INVARIANT               :LEFT PARENTHESIS
+'0029 =>> INVARIANT               :RIGHT PARENTHESIS
+'002A =>> INVARIANT               :ASTERISK
+'002B =>> INVARIANT               :PLUS SIGN
+'002C =>> INVARIANT               :COMMA
+'002D =>> INVARIANT               :HYPHEN-MINUS
+'002E =>> INVARIANT               :FULL STOP
+'002F =>> INVARIANT               :SOLIDUS
+
+'0030 =>> INVARIANT               :DIGIT ZERO
+'0031 =>> INVARIANT               :DIGIT ONE
+'0032 =>> INVARIANT               :DIGIT TWO
+'0033 =>> INVARIANT               :DIGIT THREE
+'0034 =>> INVARIANT               :DIGIT FOUR
+'0035 =>> INVARIANT               :DIGIT FIVE
+'0036 =>> INVARIANT               :DIGIT SIX
+'0037 =>> INVARIANT               :DIGIT SEVEN
+'0038 =>> INVARIANT               :DIGIT EIGHT
+'0039 =>> INVARIANT               :DIGIT NINE
+'003A =>> INVARIANT               :COLON
+'003B =>> INVARIANT               :SEMICOLON
+'003C =>> INVARIANT               :LESS-THAN SIGN
+'003D =>> INVARIANT               :EQUALS SIGN
+'003E =>> INVARIANT               :GREATER-THAN SIGN
+'003F =>> INVARIANT               :QUESTION MARK
+
+'0040 =>> "'" / "(a)"  / & "At"   :COMMERCIAL AT
+'0041 =>> INVARIANT               :LATIN CAPITAL LETTER A
+'0042 =>> INVARIANT               :LATIN CAPITAL LETTER B
+'0043 =>> INVARIANT               :LATIN CAPITAL LETTER C
+'0044 =>> INVARIANT               :LATIN CAPITAL LETTER D
+'0045 =>> INVARIANT               :LATIN CAPITAL LETTER E
+'0046 =>> INVARIANT               :LATIN CAPITAL LETTER F
+'0047 =>> INVARIANT               :LATIN CAPITAL LETTER G
+'0048 =>> INVARIANT               :LATIN CAPITAL LETTER H
+'0049 =>> INVARIANT               :LATIN CAPITAL LETTER I
+'004A =>> INVARIANT               :LATIN CAPITAL LETTER J
+'004B =>> INVARIANT               :LATIN CAPITAL LETTER K
+'004C =>> INVARIANT               :LATIN CAPITAL LETTER L
+'004D =>> INVARIANT               :LATIN CAPITAL LETTER M
+'004E =>> INVARIANT               :LATIN CAPITAL LETTER N
+'004F =>> INVARIANT               :LATIN CAPITAL LETTER O
+
+'0050 =>> INVARIANT               :LATIN CAPITAL LETTER P
+'0051 =>> INVARIANT               :LATIN CAPITAL LETTER Q
+'0052 =>> INVARIANT               :LATIN CAPITAL LETTER R
+'0053 =>> INVARIANT               :LATIN CAPITAL LETTER S
+'0054 =>> INVARIANT               :LATIN CAPITAL LETTER T
+'0055 =>> INVARIANT               :LATIN CAPITAL LETTER U
+'0056 =>> INVARIANT               :LATIN CAPITAL LETTER V
+'0057 =>> INVARIANT               :LATIN CAPITAL LETTER W
+'0058 =>> INVARIANT               :LATIN CAPITAL LETTER X
+'0059 =>> INVARIANT               :LATIN CAPITAL LETTER Y
+'005A =>> INVARIANT               :LATIN CAPITAL LETTER Z
+'005B =>> "/" / "(/"   / & "<("   :LEFT SQUARE BRACKET
+'005C =>> "/" / "-/"   / & "//"   :REVERSE SOLIDUS
+'005D =>> "/" / "/)"   / & ")>"   :RIGHT SQUARE BRACKET
+'005E =>> ">" / "**"   / & "'>"   :CIRCUMFLEX ACCENT
+'005F =>> INVARIANT               :LOW LINE
+
+'0060 =>> "!" / "-'"   / & "'!"   :GRAVE ACCENT
+'0061 =>> INVARIANT               :LATIN SMALL LETTER A
+'0062 =>> INVARIANT               :LATIN SMALL LETTER B
+'0063 =>> INVARIANT               :LATIN SMALL LETTER C
+'0064 =>> INVARIANT               :LATIN SMALL LETTER D
+'0065 =>> INVARIANT               :LATIN SMALL LETTER E
+'0066 =>> INVARIANT               :LATIN SMALL LETTER F
+'0067 =>> INVARIANT               :LATIN SMALL LETTER G
+'0068 =>> INVARIANT               :LATIN SMALL LETTER H
+'0069 =>> INVARIANT               :LATIN SMALL LETTER I
+'006A =>> INVARIANT               :LATIN SMALL LETTER J
+'006B =>> INVARIANT               :LATIN SMALL LETTER K
+'006C =>> INVARIANT               :LATIN SMALL LETTER L
+'006D =>> INVARIANT               :LATIN SMALL LETTER M
+'006E =>> INVARIANT               :LATIN SMALL LETTER N
+'006F =>> INVARIANT               :LATIN SMALL LETTER O
+
+'0070 =>> INVARIANT               :LATIN SMALL LETTER P
+'0071 =>> INVARIANT               :LATIN SMALL LETTER Q
+'0072 =>> INVARIANT               :LATIN SMALL LETTER R
+'0073 =>> INVARIANT               :LATIN SMALL LETTER S
+'0074 =>> INVARIANT               :LATIN SMALL LETTER T
+'0075 =>> INVARIANT               :LATIN SMALL LETTER U
+'0076 =>> INVARIANT               :LATIN SMALL LETTER V
+'0077 =>> INVARIANT               :LATIN SMALL LETTER W
+'0078 =>> INVARIANT               :LATIN SMALL LETTER X
+'0079 =>> INVARIANT               :LATIN SMALL LETTER Y
+'007A =>> INVARIANT               :LATIN SMALL LETTER Z
+'007B =>> "(" / "(*"   / & "(!"   :LEFT CURLY BRACKET
+'007C =>> "!" / "!I"   / & "!!"   :VERTICAL LINE
+'007D =>> ")" / "*)"   / & "!)"   :RIGHT CURLY BRACKET
+'007E =>> "-" / "!-"   / & "'?"   :TILDE
+'007F =>> ""  / ""     / & "DL"   :DELETE (DEL)
+
+'0080 =>> ""  / ""     / & "PA"   :"HIGH NULL"
+'0081 =>> ""  / ""     / & "HO"   :"HIGH CONTROL-A"
+'0082 =>> ""  / ""     / & "BH"   :BREAK PERMITTED HERE (BPH)
+'0083 =>> ""  / ""     / & "NH"   :NO BREAK HERE (NBH)
+'0084 =>> ""  / ""     / & "IN"   :INDEX (IND) (deprecated)
+'0085 =>> ""  / ""     / & "NL"   :NEXT LINE (NEL)
+'0086 =>> ""  / ""     / & "SA"   :START OF SELECTED AREA (SSA)
+'0087 =>> ""  / ""     / & "ES"   :END OF SELECTED AREA (ESA)
+'0088 =>> ""  / ""     / & "HS"   :CHARACTER TABULATION SET (HTS)
+'0089 =>> ""  / ""     / & "HJ"   :CHARACTER TABULATION WITH JUSTIFICATION (HTJ)
+'008A =>> ""  / ""     / & "VS"   :LINE TABULATION SET (VTS)
+'008B =>> ""  / ""     / & "PD"   :PARTIAL LINE FORWARD (PLD)
+'008C =>> ""  / ""     / & "PU"   :PARTIAL LINE BACKWARD (PLU)
+'008D =>> ""  / ""     / & "RI"   :REVERSE LINE FEED (RI)
+'008E =>> ""  / ""     / & "S2"   :SINGLE-SHIFT TWO (SS2)
+'008F =>> ""  / ""     / & "S3"   :SINGLE-SHIFT THREE (SS3)
+
+'0090 =>> ""  / ""     / & "DC"   :DEVICE CONTROL STRING (DCS)
+'0091 =>> ""  / ""     / & "P1"   :PRIVATE USE ONE (PU1)
+'0092 =>> ""  / ""     / & "P2"   :PRIVATE USE TWO (PU2)
+'0093 =>> ""  / ""     / & "TS"   :SET TRANSMIT STATE (STS)
+'0094 =>> ""  / ""     / & "CC"   :CANCEL CHARACTER (CCH)
+'0095 =>> ""  / ""     / & "MW"   :MESSAGE WAITING (MW)
+'0096 =>> ""  / ""     / & "SG"   :START OF GUARDED AREA (SPA)
+'0097 =>> ""  / ""     / & "EG"   :END OF GUARDED AREA (EPA)
+'0098 =>> ""  / ""     / & "SS"   :START OF STRING (SOS)
+'0099 =>> ""  / ""     / & "GC"   :"HIGH CONTROL-Y"
+'009A =>> ""  / ""     / & "SC"   :SINGLE CHARACTER INTRODUCER (SCI)
+'009B =>> "!" / "!!"   / & "Ci"   :CONTROL SEQUENCE INTRODUCER (CSI)
+'009C =>> ""  / ""     / & "ST"   :STRING TERMINATOR (ST)
+'009D =>> ""  / ""     / & "OC"   :OPERATING SYSTEM COMMAND (OSC)
+'009E =>> ""  / ""     / & "PM"   :PRIVACY MESSAGE (PM)
+'009F =>> ""  / ""     / & "AC"   :APPLICATION PROGRAM COMMAND (APC)
+
+'00A0 =>> " " / " "    / & "NS"   :NO-BREAK SPACE (NBSP)
+'00A1 =>> "!" / "-!"   / & "!I"   :INVERTED EXCLAMATION MARK
+'00A2 =>> "c" / "c/"   / & "Ct"   :CENT SIGN
+'00A3 =>> "L" / "L-"   / & "Pd"   :POUND SIGN
+'00A4 =>> "o" / "(x)"  / & "Cu"   :CURRENCY SIGN
+'00A5 =>> "Y" / "Y-"   / & "Ye"   :YEN SIGN
+'00A6 =>> "!"  ; '007C            :BROKEN BAR
+   +    / "!i" ; '007C
+   +    / & "BB"
+'00A7 =>> ">"  ; '0023            :SECTION SIGN
+   +    / ">"  ; '0023
+   +    / & "SE"
+'00A8 =>> ":" / "':"   / & "':"   :DIAERESIS
+'00A9 =>> "C" / "(c)"  / & "Co"   :COPYRIGHT SIGN
+'00AA =>> "a" / "a-"   / & "-a"   :FEMININE ORDINAL INDICATOR
+'00AB =>> "<" / "<<"   / & "<<"   :LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
+'00AC =>> "-" / "-i"   / & "NO"   :NOT SIGN
+'00AD =>> ""  / ""     / & "--"   :SOFT HYPHEN (SHY)
+'00AE =>> "R" / "(R)"  / & "Rg"   :REGISTERED SIGN
+'00AF =>> "-" / "'-"   / & "'m"   :MACRON
+
+'00B0 =>> "o" / "'o"   / & "DG"   :DEGREE SIGN
+'00B1 =>> ?   / "+-"   / & "+-"   :PLUS-MINUS SIGN
+'00B2 =>> "2" / "'2"   / & "2S"   :SUPERSCRIPT TWO
+'00B3 =>> "3" / "'3"   / & "3S"   :SUPERSCRIPT THREE
+'00B4 =>> "'" / "''"   / & "''"   :ACUTE ACCENT
+'00B5 =>> "u" / "*u"   / & "My"   :MICRO SIGN
+'00B6 =>> "P" / "!P"   / & "PI"   :PILCROW SIGN
+'00B7 =>> "." / "(.)"  / & ".M"   :MIDDLE DOT
+'00B8 =>> "," / ",,"   / & "',"   :CEDILLA
+'00B9 =>> "1" / "'1"   / & "1S"   :SUPERSCRIPT ONE
+'00BA =>> "o" / "o-"   / & "-o"   :MASCULINE ORDINAL INDICATOR
+'00BB =>> ">" / ">>"   / & ">>"   :RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+'00BC =>> "/" / " 1/4" / & "14"   :VULGAR FRACTION ONE QUARTER
+'00BD =>> "/" / " 1/2" / & "12"   :VULGAR FRACTION ONE HALF
+'00BE =>> "/" / " 3/4" / & "34"   :VULGAR FRACTION THREE QUARTERS
+'00BF =>> "?" / "-?"   / & "?I"   :INVERTED QUESTION MARK
+
+'00C0 =>> "A"                     :LATIN CAPITAL LETTER A WITH GRAVE
+   +    / "A-'" ; "A"'0060
+   +    / & "A!"
+'00C1 =>> "A"                     :LATIN CAPITAL LETTER A WITH ACUTE
+   +    / "A'" ; "A"'00B4
+   +    / & "A'"
+'00C2 =>> "A"                     :LATIN CAPITAL LETTER A WITH CIRCUMFLEX
+   +    / "A>" ; "A"'005E
+   +    / & "A>"
+'00C3 =>> "A"                     :LATIN CAPITAL LETTER A WITH TILDE
+   +    / "A-" ; "A"'007E
+   +    / & "A?"
+'00C4 =>> "A"                     :LATIN CAPITAL LETTER A WITH DIAERESIS
+   +    / "A%" ; "A"'00A8
+   +    / & "A:"
+'00C5 =>> "A"                     :LATIN CAPITAL LETTER A WITH RING ABOVE
+   +    / "A*" ; "A"'00B0; "A"'02DA
+   +    / & "AA"
+'00C6 =>> "A" / "AE"   / & "AE"   :LATIN CAPITAL LIGATURE AE
+'00C7 =>> "C"                     :LATIN CAPITAL LETTER C WITH CEDILLA
+   +    / "C," ; "C"'00B8
+   +    / & "C,"
+'00C8 =>> "E"                     :LATIN CAPITAL LETTER E WITH GRAVE
+   +    / "E-'" ; "E"'0060
+   +    / & "E!"
+'00C9 =>> "E"                     :LATIN CAPITAL LETTER E WITH ACUTE
+   +    / "E'" ; "E"'00B4
+   +    / & "E'"
+'00CA =>> "E"                     :LATIN CAPITAL LETTER E WITH CIRCUMFLEX
+   +    / "E>" ; "E"'005E
+   +    / & "E>"
+'00CB =>> "E"                     :LATIN CAPITAL LETTER E WITH DIAERESIS
+   +    / "E%" ; "E"'00A8
+   +    / & "E:"
+'00CC =>> "I"                     :LATIN CAPITAL LETTER I WITH GRAVE
+   +    / "I-'" ; "I"'0060
+   +    / & "I!"
+'00CD =>> "I"                     :LATIN CAPITAL LETTER I WITH ACUTE
+   +    / "I'" ; "I"'00B4
+   +    / & "I'"
+'00CE =>> "I"                     :LATIN CAPITAL LETTER I WITH CIRCUMFLEX
+   +    / "I>" ; "I"'005E
+   +    / & "I>"
+'00CF =>> "I"                     :LATIN CAPITAL LETTER I WITH DIAERESIS
+   +    / "I%" ; "I"'00A8
+   +    / & "I:"
+
+'00D0 =>> "D" / "D-"   / & "D-"   :LATIN CAPITAL LETTER ETH (Icelandic)
+'00D1 =>> "N"                     :LATIN CAPITAL LETTER N WITH TILDE
+   +    / "N-" ; "N"'007E
+   +    / & "N?"
+'00D2 =>> "O"                     :LATIN CAPITAL LETTER O WITH GRAVE
+   +    / "O-'" ; "O"'0060
+   +    / & "O!"
+'00D3 =>> "O"                     :LATIN CAPITAL LETTER O WITH ACUTE
+   +    / "O'" ; "O"'00B4
+   +    / & "O'"
+'00D4 =>> "O"                     :LATIN CAPITAL LETTER O WITH CIRCUMFLEX
+   +    / "O>" ; "O"'005E
+   +    / & "O>"
+'00D5 =>> "O"                     :LATIN CAPITAL LETTER O WITH TILDE
+   +    / "O-" ; "O"'007E
+   +    / & "O?"
+'00D6 =>> "O"                     :LATIN CAPITAL LETTER O WITH DIAERESIS
+   +    / "O%" ; "O"'00A8
+   +    / & "O:"
+'00D7 =>> "x" / "x"    / & "*X"   :MULTIPLICATION SIGN
+'00D8 =>> "O" / "O/"   / & "O/"   :LATIN CAPITAL LETTER O WITH STROKE
+'00D9 =>> "U"                     :LATIN CAPITAL LETTER U WITH GRAVE
+   +    / "U-'" ; "U"'0060
+   +    / & "U!"
+'00DA =>> "U"                     :LATIN CAPITAL LETTER U WITH ACUTE
+   +    / "U'" ; "U"'00B4
+   +    / & "U'"
+'00DB =>> "U"                     :LATIN CAPITAL LETTER U WITH CIRCUMFLEX
+   +    / "U>" ; "U"'005E
+   +    / & "U>"
+'00DC =>> "U"                     :LATIN CAPITAL LETTER U WITH DIAERESIS
+   +    / "U%" ; "U"'00A8
+   +    / & "U:"
+'00DD =>> "Y"                     :LATIN CAPITAL LETTER Y WITH ACUTE
+   +    / "Y'" ; "Y"'00B4
+   +    / & "Y'"
+'00DE =>> "T" / "TH"   / & "TH"   :LATIN CAPITAL LETTER THORN (Icelandic)
+'00DF =>> "s" / "ss"   / & "ss"   :LATIN SMALL LETTER SHARP S (German)
+
+'00E0 =>> "a"                     :LATIN SMALL LETTER A WITH GRAVE
+   +    / "a-'" ; "a"'0060
+   +    / & "a!"
+'00E1 =>> "a"                     :LATIN SMALL LETTER A WITH ACUTE
+   +    / "a'" ; "A"'00B4
+   +    / & "a'"
+'00E2 =>> "a"                     :LATIN SMALL LETTER A WITH CIRCUMFLEX
+   +    / "a>" ; "a"'005E
+   +    / & "a>"
+'00E3 =>> "a"                     :LATIN SMALL LETTER A WITH TILDE
+   +    / "a-" ; "a"'007E
+   +    / & "a?"
+'00E4 =>> "a"                     :LATIN SMALL LETTER A WITH DIAERESIS
+   +    / "a%" ; "a"'00A8
+   +    / & "a:"
+'00E5 =>> "a"                     :LATIN SMALL LETTER A WITH RING ABOVE
+   +    / "a*" ; "a"'00B0 ; "a"'02DA
+   +    / & "aa"
+'00E6 =>> "a" / "ae"   / & "ae"   :LATIN SMALL LIGATURE AE
+'00E7 =>> "c"                     :LATIN SMALL LETTER C WITH CEDILLA
+   +    / "c," ; "c"'00B8
+   +    / & "c,"
+'00E8 =>> "e"                     :LATIN SMALL LETTER E WITH GRAVE
+   +    / "e-'" ; "e"'0060
+   +    / & "e!"
+'00E9 =>> "e"                     :LATIN SMALL LETTER E WITH ACUTE
+   +    / "e'" ; "E"'00B4
+   +    / & "e'"
+'00EA =>> "e"                     :LATIN SMALL LETTER E WITH CIRCUMFLEX
+   +    / "e>" ; "e"'005E
+   +    / & "e>"
+'00EB =>> "e"                     :LATIN SMALL LETTER E WITH DIAERESIS
+   +    / "e%" ; "e"'00A8
+   +    / & "e:"
+'00EC =>> "i"                     :LATIN SMALL LETTER I WITH GRAVE
+   +    / "i-'" ; "i"'0060
+   +    / & "i!"
+'00ED =>> "i"                     :LATIN SMALL LETTER I WITH ACUTE
+   +    / "i'" ; "I"'00B4
+   +    / & "i'"
+'00EE =>> "i"                     :LATIN SMALL LETTER I WITH CIRCUMFLEX
+   +    / "i>" ; "i"'005E
+   +    / & "i>"
+'00EF =>> "i"                     :LATIN SMALL LETTER I WITH DIAERESIS
+   +    / "i%" ; "i"'00A8
+   +    / & "i:"
+
+'00F0 =>> "d" / "d/"   / & "d-"   :LATIN SMALL LETTER ETH (Icelandic)
+'00F1 =>> "n"                     :LATIN SMALL LETTER N WITH TILDE
+   +    / "n-" ; "n"'007E
+   +    / & "n?"
+'00F2 =>> "o"                     :LATIN SMALL LETTER O WITH GRAVE
+   +    / "o-'" ; "o"'0060
+   +    / & "o!"
+'00F3 =>> "o"                     :LATIN SMALL LETTER O WITH ACUTE
+   +    / "o'" ; "O"'00B4
+   +    / & "o'"
+'00F4 =>> "o"                     :LATIN SMALL LETTER O WITH CIRCUMFLEX
+   +    / "o>" ; "o"'005E
+   +    / & "o>"
+'00F5 =>> "o"                     :LATIN SMALL LETTER O WITH TILDE
+   +    / "o-" ; "o"'007E
+   +    / & "o?"
+'00F6 =>> "o"                     :LATIN SMALL LETTER O WITH DIAERESIS
+   +    / "o%" ; "o"'00A8
+   +    / & "o:"
+'00F7 =>> "/" / "-:"   / & "-:"   :DIVISION SIGN
+'00F8 =>> "o" / "o/"   / & "o/"   :LATIN SMALL LETTER O WITH STROKE
+'00F9 =>> "u"                     :LATIN SMALL LETTER U WITH GRAVE
+   +    / "u-'" ; "u"'0060
+   +    / & "u!"
+'00FA =>> "u"                     :LATIN SMALL LETTER U WITH ACUTE
+   +    / "u'" ; "U"'00B4
+   +    / & "u'"
+'00FB =>> "u"                     :LATIN SMALL LETTER U WITH CIRCUMFLEX
+   +    / "u>" ; "u"'005E
+   +    / & "u>"
+'00FC =>> "u"                     :LATIN SMALL LETTER U WITH DIAERESIS
+   +    / "u%" ; "u"'00A8
+   +    / & "u:"
+'00FD =>> "y"                     :LATIN SMALL LETTER Y WITH ACUTE
+   +    / "y'" ; "Y"'00B4
+   +    / & "y'"
+'00FE =>> "t" / "th"   / & "th"   :LATIN SMALL LETTER THORN (Icelandic)
+'00FF =>> "y" / "y%"   / & "y:"   :LATIN SMALL LETTER Y WITH 
+
+'0102 =>> "A"                     :LATIN CAPITAL LETTER A WITH BREVE
+   +    / "A(" ; "A"'02D8
+   +    / & "A("
+'0103 =>> "a"                     :LATIN SMALL LETTER A WITH BREVE
+   +    / "a(" ; "a"'02D8
+   +    / & "a("
+'0104 =>> "A"                     :LATIN CAPITAL LETTER A WITH OGONEK
+   +    / "A," ; "A"'02DB
+   +    / & "A;"
+'0105 =>> "a"                     :LATIN SMALL LETTER A WITH OGONEK
+   +    / "a," ; "a"'02DB
+   +    / & "a;"
+'0106 =>> "C"                     :LATIN CAPITAL LETTER C WITH ACUTE
+   +    / "C'" ; "C"'00B4
+   +    / & "C'"
+'0107 =>> "c"                     :LATIN SMALL LETTER C WITH ACUTE
+   +    / "c'" ; "c"'00B4
+   +    / & "c'"
+'010C =>> "C"                     :LATIN CAPITAL LETTER C WITH CARON
+   +    / "C<" ; "C"'02C7
+   +    / & "C<"
+'010D =>> "c"                     :LATIN SMALL LETTER C WITH CARON
+   +    / "c<" ; "c"'02C7
+   +    / & "c<"
+'010E =>> "D"                     :LATIN CAPITAL LETTER D WITH CARON
+   +    / "D<" ; "D"'02C7
+   +    / & "D<"
+'010F =>> "d"                     :LATIN SMALL LETTER D WITH CARON
+   +    / "d<" ; "d"'02C7
+   +    / & "d<"
+
+'0110 =>> "D" / "D-"   / & "D/"   :LATIN CAPITAL LETTER D WITH STROKE
+'0111 =>> "d" / "d-"   / & "d/"   :LATIN SMALL LETTER D WITH STROKE
+'0118 =>> "E"                     :LATIN CAPITAL LETTER E WITH OGONEK
+   +    / "E," ; "E"'02DB
+   +    / & "E;"
+'0119 =>> "e"                     :LATIN SMALL LETTER E WITH OGONEK
+   +    / "e," ; "e"'02DB
+   +    / & "e;"
+'011A =>> "E"                     :LATIN CAPITAL LETTER E WITH CARON
+   +    / "E<" ; "E"'02C7
+   +    / & "E<"
+'011B =>> "e"                     :LATIN SMALL LETTER E WITH CARON
+   +    / "e<" ; "e"'02C7
+   +    / & "e<"
+
+'0131 =>> "i" / ",i"   / & "i."   :LATIN SMALL LETTER DOTLESS I
+'0138 =>> "q" / "q"    / & "kk"   :LATIN SMALL LETTER KRA (Greenlandic)
+'0139 =>> "L"                     :LATIN CAPITAL LETTER L WITH ACUTE
+   +    / "L'" ; "L"'00B4
+   +    / & "L'"
+'013A =>> "l"                     :LATIN SMALL LETTER L WITH ACUTE
+   +    / "l'" ; "l"'00B4
+   +    / & "l'"
+'013D =>> "L"                     :LATIN CAPITAL LETTER L WITH CARON
+   +    / "L<" ; "L"'02C7
+   +    / & "L<"
+'013E =>> "l"                     :LATIN SMALL LETTER L WITH CARON
+   +    / "l<" ; "l"'02C7
+   +    / & "l<"
+
+'0141 =>> "L" / "L/"   / & "L/"   :LATIN CAPITAL LETTER L WITH STROKE
+'0142 =>> "l" / "l/"   / & "l/"   :LATIN SMALL LETTER L WITH STROKE
+'0143 =>> "N"                     :LATIN CAPITAL LETTER N WITH ACUTE
+   +    / "N'" ; "N"'00B4
+   +    / & "N'"
+'0144 =>> "n"                     :LATIN SMALL LETTER N WITH ACUTE
+   +    / "n'" ; "n"'00B4
+   +    / & "n'"
+'0147 =>> "N"                     :LATIN CAPITAL LETTER N WITH CARON
+   +    / "N<" ; "N"'02C7
+   +    / & "N<"
+'0148 =>> "n"                     :LATIN SMALL LETTER N WITH CARON
+   +    / "n<" ; "n"'02C7
+   +    / & "n<"
+'014A =>> "N" / "NG"   / & "NG"   :LATIN CAPITAL LETTER ENG (Sami)
+'014B =>> "n" / "ng"   / & "ng"   :LATIN SMALL LETTER ENG (Sami)
+
+'0150 =>> "O"                     :LATIN CAPITAL LETTER O WITH DOUBLE ACUTE
+   +    / "O""" ; "O"'02DD
+   +    / & "O"""
+'0151 =>> "o"                     :LATIN SMALL LETTER O WITH DOUBLE ACUTE
+   +    / "o""" ; "o"'02DD
+   +    / & "o"""
+'0152 =>> "O" / "OE"   / & "OE"   :LATIN CAPITAL LIGATURE OE
+'0153 =>> "o" / "oe"   / & "oe"   :LATIN SMALL LIGATURE OE
+'0154 =>> "R"                     :LATIN CAPITAL LETTER R WITH ACUTE
+   +    / "R'" ; "R"'00B4
+   +    / & "R'"
+'0155 =>> "r"                     :LATIN SMALL LETTER R WITH ACUTE
+   +    / "r'" ; "r"'00B4
+   +    / & "r'"
+'0158 =>> "R"                     :LATIN CAPITAL LETTER R WITH CARON
+   +    / "R<" ; "R"'02C7
+   +    / & "R<"
+'0159 =>> "r"                     :LATIN SMALL LETTER R WITH CARON
+   +    / "r<" ; "r"'02C7
+   +    / & "r<"
+'015A =>> "S"                     :LATIN CAPITAL LETTER S WITH ACUTE
+   +    / "S'" ; "S"'00B4
+   +    / & "S'"
+'015B =>> "s"                     :LATIN SMALL LETTER S WITH ACUTE
+   +    / "s'" ; "s"'00B4
+   +    / & "s'"
+'015E =>> "S"                     :LATIN CAPITAL LETTER S WITH CEDILLA
+   +    / "S," ; "S"'00B8
+   +    / & "S,"
+'015F =>> "s"                     :LATIN SMALL LETTER S WITH CEDILLA
+   +    / "s," ; "s"'00B8
+   +    / & "s,"
+
+'0160 =>> "S"                     :LATIN CAPITAL LETTER S WITH CARON
+   +    / "S<" ; "S"'02C7
+   +    / & "S<"
+'0161 =>> "s"                     :LATIN SMALL LETTER S WITH CARON
+   +    / "s<" ; "s"'02C7
+   +    / & "s<"
+'0162 =>> "T"                     :LATIN CAPITAL LETTER T WITH CEDILLA
+   +    / "T," ; "T"'00B8
+   +    / & "T,"
+'0163 =>> "t"                     :LATIN SMALL LETTER T WITH CEDILLA
+   +    / "t," ; "t"'00B8
+   +    / & "t,"
+'0164 =>> "T"                     :LATIN CAPITAL LETTER T WITH CARON
+   +    / "T<" ; "T"'02C7
+   +    / & "T<"
+'0165 =>> "t"                     :LATIN SMALL LETTER T WITH CARON
+   +    / "t<" ; "t"'02C7
+   +    / & "t<"
+'016E =>> "U"                     :LATIN CAPITAL LETTER U WITH RING ABOVE
+   +    / "U*" ; "U"'02DA
+   +    / & "U0"
+'016F =>> "u"                     :LATIN SMALL LETTER U WITH RING ABOVE
+   +    / "u*" ; "u"'02DA
+   +    / & "u0"
+
+'0170 =>> "U"                     :LATIN CAPITAL LETTER U WITH DOUBLE ACUTE
+   +    / "U""" ; "U"'02DD
+   +    / & "U"""
+'0171 =>> "u"                     :LATIN SMALL LETTER U WITH DOUBLE ACUTE
+   +    / "u""" ; "u"'02DD
+   +    / & "u"""
+'0178 =>> "Y"                     :LATIN CAPITAL LETTER Y WITH DIAERESIS
+   +    / "Y%" ; "Y"'00A8
+   +    / & "Y:"
+'0179 =>> "Z"                     :LATIN CAPITAL LETTER Z WITH ACUTE
+   +    / "Z'" ; "Z"'00B4
+   +    / & "Z'"
+'017A =>> "z"                     :LATIN SMALL LETTER Z WITH ACUTE
+   +    / "z'" ; "z"'00B4
+   +    / & "z'"
+'017B =>> "Z"                     :LATIN CAPITAL LETTER Z WITH DOT ABOVE
+   +    / "Z." ; "Z"'02D9
+   +    / & "Z."
+'017C =>> "z"                     :LATIN SMALL LETTER Z WITH DOT ABOVE
+   +    / "z." ; "z"'02D9
+   +    / & "z."
+'017D =>> "Z"                     :LATIN CAPITAL LETTER Z WITH CARON
+   +    / "Z<" ; "Z"'02C7
+   +    / & "Z<"
+'017E =>> "z"                     :LATIN SMALL LETTER Z WITH CARON
+   +    / "z<" ; "z"'02C7
+   +    / & "z<"
+
+'0192 =>> "f" / "f"    / & "f2"   :LATIN SMALL LETTER F WITH HOOK [p-RFC]
+
+'02C6 =>> ">" / "'>"   / & "1>"   :MODIFIER LETTER CIRCUMFLEX ACCENT [p-RFC]
+'02C7 =>> "<" / "'<"   / & "'<"   :CARON (Mandarin Chinese third tone)
+'02C9 =>> "-" / "'-"   / & "1-"   :MODIFIER LETTER MACRON (Mandarin Chinese first tone)
+'02CB =>> "!" / "-'"   / & "1!"   :MODIFIER LETTER GRAVE ACCENT (Mandarin Chinese fourth tone)
+
+'02D8 =>> "(" / "'("   / & "'("   :BREVE
+'02D9 =>> "." / "'."   / & "'."   :DOT ABOVE (Mandarin Chinese light tone)
+'02DA =>> "*" / "*"    / & "'0"   :RING ABOVE
+'02DB =>> "," / "-,"   / & "';"   :OGONEK
+'02DC =>> "-" / "!-"   / & "1?"   :SMALL TILDE [p-RFC]
+'02DD =>> """" / "'""" / & "'"""  :DOUBLE ACUTE ACCENT
+
+'0393 =>> "G" / "*G"   / & "G*"   :GREEK CAPITAL LETTER GAMMA
+'0394 =>> "D" / "*D"   / & "D*"   :GREEK CAPITAL LETTER DELTA [+Ap17]
+'0398 =>> "B" / "*B"   / & "H*"   :GREEK CAPITAL LETTER THETA
+'03A3 =>> "S" / "*S"   / & "S*"   :GREEK CAPITAL LETTER SIGMA
+'03A6 =>> "F" / "*F"   / & "F*"   :GREEK CAPITAL LETTER PHI
+'03A9 =>> "W" / "*W"   / & "W*"   :GREEK CAPITAL LETTER OMEGA
+'03B1 =>> "a" / "*a"   / & "a*"   :GREEK SMALL LETTER ALPHA
+'03B4 =>> "d" / "*d"   / & "d*"   :GREEK SMALL LETTER DELTA
+'03B5 =>> "e" / "*e"   / & "e*"   :GREEK SMALL LETTER EPSILON
+'03BC =>> "u" / "*u"   / & "m*"   :GREEK SMALL LETTER MU
+'03C0 =>> "p" / "*p"   / & "p*"   :GREEK SMALL LETTER PI
+'03C3 =>> "s" / "*s"   / & "s*"   :GREEK SMALL LETTER SIGMA
+'03C4 =>> "t" / "*t"   / & "t*"   :GREEK SMALL LETTER TAU
+'03C6 =>> "f" / "*f"   / & "f*"   :GREEK SMALL LETTER PHI
+
+'0401 =>> "E" ; '00CB             :CYRILLIC CAPITAL LETTER IO
+   +    / "E" ; '00CB
+   +    / & "IO"
+'0402 =>> "D"  ; '0110            :CYRILLIC CAPITAL LETTER DJE (Serbocroatian)
+   +    / "DJ" ; '0110
+   +    / & "D%"
+'0403 =>> "G"                     :CYRILLIC CAPITAL LETTER GJE
+   +    / "GJ" ; "G" '02D9
+   +    / & "G%"
+'0404 =>> "E"  ; '011A            :CYRILLIC CAPITAL LETTER UKRAINIAN IE
+   +    / "IE" ; '011A
+   +    / & "IE"
+'0405 =>> "Z"                     :CYRILLIC CAPITAL LETTER DZE
+   +    / "DZ" ; '017B
+   +    / & "DS"
+'0406 =>> "I"                     :CYRILLIC CAPITAL LETTER BYELORUSSIAN-UKRAINIAN I
+   +    / "II" ; '00CD
+   +    / & "II"
+'0407 =>> "I"                     :CYRILLIC CAPITAL LETTER YI (Ukrainian)
+   +    / "JI" ; '00CE
+   +    / & "YI"
+'0408 =>> "J" / "J"    / & "J%"   :CYRILLIC CAPITAL LETTER JE
+'0409 =>> "L" / "LJ"   / & "LJ"   :CYRILLIC CAPITAL LETTER LJE
+'040A =>> "N" / "NJ"   / & "NJ"   :CYRILLIC CAPITAL LETTER NJE
+'040B =>> "C"                     :CYRILLIC CAPITAL LETTER TSHE (Serbocroatian)
+   +    / "CY" ; "C" '02D9
+   +    / & "Ts"
+'040C =>> "K"                     :CYRILLIC CAPITAL LETTER KJE
+   +    / "KJ" ; "K" '02D9
+   +    / & "KJ"
+'040E =>> "W" / "W"    / & "V%"   :CYRILLIC CAPITAL LETTER SHORT U (Byelorussian)
+'040F =>> "D"                     :CYRILLIC CAPITAL LETTER DZHE
+   +    / "DZH" ; "D" '017D
+   +    / & "DZ"
+
+'0410 =>> "A" / "A"    / & "A="   :CYRILLIC CAPITAL LETTER A
+'0411 =>> "B" / "B"    / & "B="   :CYRILLIC CAPITAL LETTER BE
+'0412 =>> "V" / "V"    / & "V="   :CYRILLIC CAPITAL LETTER VE
+'0413 =>> "G" / "G"    / & "G="   :CYRILLIC CAPITAL LETTER GHE
+'0414 =>> "D" / "D"    / & "D="   :CYRILLIC CAPITAL LETTER DE
+'0415 =>> "E" / "E"    / & "E="   :CYRILLIC CAPITAL LETTER IE
+'0416 =>> "Z"  ;  '017D           :CYRILLIC CAPITAL LETTER ZHE
+   +    / "ZH" ; '017D
+   +    / & "Z%"
+'0417 =>> "Z" / "Z"    / & "Z="   :CYRILLIC CAPITAL LETTER ZE
+'0418 =>> "I" / "I"    / & "I="   :CYRILLIC CAPITAL LETTER I
+'0419 =>> "J" ;  '00CE            :CYRILLIC CAPITAL LETTER SHORT I
+   +    / "J" ;  '00CE
+   +    / & "J="
+'041A =>> "K" / "K"    / & "K="   :CYRILLIC CAPITAL LETTER KA
+'041B =>> "L" / "L"    / & "L="   :CYRILLIC CAPITAL LETTER EL
+'041C =>> "M" / "M"    / & "M="   :CYRILLIC CAPITAL LETTER EM
+'041D =>> "N" / "N"    / & "N="   :CYRILLIC CAPITAL LETTER EN
+'041E =>> "O" / "O"    / & "O="   :CYRILLIC CAPITAL LETTER O
+'041F =>> "P" / "P"    / & "P="   :CYRILLIC CAPITAL LETTER PE
+
+'0420 =>> "R" / "R"    / & "R="   :CYRILLIC CAPITAL LETTER ER
+'0421 =>> "S" / "S"    / & "S="   :CYRILLIC CAPITAL LETTER ES
+'0422 =>> "T" / "T"    / & "T="   :CYRILLIC CAPITAL LETTER TE
+'0423 =>> "U" / "U"    / & "U="   :CYRILLIC CAPITAL LETTER U
+'0424 =>> "F" / "F"    / & "F="   :CYRILLIC CAPITAL LETTER EF
+'0425 =>> "H" / "H"    / & "H="   :CYRILLIC CAPITAL LETTER HA
+'0426 =>> "C" / "C"    / & "C="   :CYRILLIC CAPITAL LETTER TSE
+'0427 =>> "C"  ; '010C            :CYRILLIC CAPITAL LETTER CHE
+   +    / "CH" ; '010C
+   +    / & "C%"
+'0428 =>> "S"  ; '0160            :CYRILLIC CAPITAL LETTER SHA
+   +    / "SH" ; '0160
+   +    / & "S%"
+'0429 =>> "S"    ; '015A          :CYRILLIC CAPITAL LETTER SHCHA
+   +    / "SHCH" ; '0160'010C
+   +    / & "Sc"
+'042A =>> """" / """"  / & "="""  :CYRILLIC CAPITAL LETTER HARD SIGN
+'042B =>> "Y" / "Y"    / & "Y="   :CYRILLIC CAPITAL LETTER YERU
+'042C =>> "'" / "'"    / & "%"""  :CYRILLIC CAPITAL LETTER SOFT SIGN
+'042D =>> "E"                     :CYRILLIC CAPITAL LETTER E
+   +    / "E" ; "E" '02D9
+   +    / & "JE"
+'042E =>> "U" ; '00DC             :CYRILLIC CAPITAL LETTER YU
+   +    / "IU"   
+   +    / & "JU"
+'042F =>> "I" ; '00C4             :CYRILLIC CAPITAL LETTER YA
+   +    / "IA"   
+   +    / & "JA"
+
+'0430 =>> "a" / "a"    / & "a="   :CYRILLIC SMALL LETTER A
+'0431 =>> "b" / "b"    / & "b="   :CYRILLIC SMALL LETTER BE
+'0432 =>> "v" / "v"    / & "v="   :CYRILLIC SMALL LETTER VE
+'0433 =>> "g" / "g"    / & "g="   :CYRILLIC SMALL LETTER GHE
+'0434 =>> "d" / "d"    / & "d="   :CYRILLIC SMALL LETTER DE
+'0435 =>> "e" / "e"    / & "e="   :CYRILLIC SMALL LETTER IE
+'0436 =>> "z"  ; '017E            :CYRILLIC SMALL LETTER ZHE
+   +    / "zh" ; '017E
+   +    / & "z%"
+'0437 =>> "z" / "z"    / & "z="   :CYRILLIC SMALL LETTER ZE
+'0438 =>> "i" / "i"    / & "i="   :CYRILLIC SMALL LETTER I
+'0439 =>> "j" ; '00EE             :CYRILLIC SMALL LETTER SHORT I
+   +    / "j" ; '00EE
+   +    / & "j="
+'043A =>> "k" / "k"    / & "k="   :CYRILLIC SMALL LETTER KA
+'043B =>> "l" / "l"    / & "l="   :CYRILLIC SMALL LETTER EL
+'043C =>> "m" / "m"    / & "m="   :CYRILLIC SMALL LETTER EM
+'043D =>> "n" / "n"    / & "n="   :CYRILLIC SMALL LETTER EN
+'043E =>> "o" / "o"    / & "o="   :CYRILLIC SMALL LETTER O
+'043F =>> "p" / "p"    / & "p="   :CYRILLIC SMALL LETTER PE
+
+'0440 =>> "r" / "r"    / & "r="   :CYRILLIC SMALL LETTER ER
+'0441 =>> "s" / "s"    / & "s="   :CYRILLIC SMALL LETTER ES
+'0442 =>> "t" / "t"    / & "t="   :CYRILLIC SMALL LETTER TE
+'0443 =>> "u" / "u"    / & "u="   :CYRILLIC SMALL LETTER U
+'0444 =>> "f" / "f"    / & "f="   :CYRILLIC SMALL LETTER EF
+'0445 =>> "h" / "h"    / & "h="   :CYRILLIC SMALL LETTER HA
+'0446 =>> "c" / "c"    / & "c="   :CYRILLIC SMALL LETTER TSE
+'0447 =>> "c"  ; '010D            :CYRILLIC SMALL LETTER CHE
+   +    / "ch" ; '010D
+   +    / & "c%"
+'0448 =>> "s"  ; '0161            :CYRILLIC SMALL LETTER SHA
+   +    / "sh" ; '0161
+   +    / & "s%"
+'0449 =>> "s"    ; '015B          :CYRILLIC SMALL LETTER SHCHA
+   +    / "shch" ; '0161'010D
+   +    / & "sc"
+'044A =>> """" / """"  / & "='"   :CYRILLIC SMALL LETTER HARD SIGN
+'044B =>> "y" / "y"    / & "y="   :CYRILLIC SMALL LETTER YERU
+'044C =>> "'" / "'"    / & "%'"   :CYRILLIC SMALL LETTER SOFT SIGN
+'044D =>> "e"                     :CYRILLIC SMALL LETTER E
+   +    / "e" ; "e" '02D9
+   +    / & "je"
+'044E =>> "i" ; '00FC             :CYRILLIC SMALL LETTER YU
+   +    / "iu"   
+   +    / & "ju"
+'044F =>> "i" ; '00E4             :CYRILLIC SMALL LETTER YA
+   +    / "ia"   
+   +    / & "ja"
+
+'0451 =>> "i"  ; '00EB            :CYRILLIC SMALL LETTER IO
+   +    / "io" ; '00EB
+   +    / & "io"
+'0452 =>> "d"  ; '0111            :CYRILLIC SMALL LETTER DJE (Serbocroatian)
+   +    / "dj" ; '0111
+   +    / & "d%"
+'0453 =>> "g"                     :CYRILLIC SMALL LETTER GJE
+   +    / "gj" ; "g" '02D9
+   +    / & "g%"
+'0454 =>> "i"  ; '011B            :CYRILLIC SMALL LETTER UKRAINIAN IE
+   +    / "ie" ; '011B
+   +    / & "ie"
+'0455 =>> "d"  ; '017C            :CYRILLIC SMALL LETTER DZE
+   +    / "dz"   
+   +    / & "ds"
+'0456 =>> "i" / "ii"   / & "ii"   :CYRILLIC SMALL LETTER BYELORUSSIAN-UKRAINIAN I
+'0457 =>> "i" / "ji"   / & "yi"   :CYRILLIC SMALL LETTER YI (Ukrainian)
+'0458 =>> "j" / "j"    / & "j%"   :CYRILLIC SMALL LETTER JE
+'0459 =>> "l" / "lj"   / & "lj"   :CYRILLIC SMALL LETTER LJE
+'045A =>> "n" / "nj"   / & "nj"   :CYRILLIC SMALL LETTER NJE
+'045B =>> "c"                     :CYRILLIC SMALL LETTER TSHE (Serbocroatian)
+   +    / "cy" ; "c" '02D9
+   +    / & "ts"
+'045C =>> "k"                     :CYRILLIC SMALL LETTER KJE
+   +    / "kj" ; "k" '02D9
+   +    / & "kj"
+'045E =>> "w" / "w"    / & "v%"   :CYRILLIC SMALL LETTER SHORT U (Byelorussian)
+'045F =>> "d"                     :CYRILLIC SMALL LETTER DZHE
+   +    / "dzh" ; "d" '017E
+   +    / & "dz"
+
+'2013 =>> "-" / "-"    / & "-N"   :EN DASH
+'2014 =>> "-" / "--"   / & "-M"   :EM DASH
+'2017 =>> "_" / "__"   / & "=2"   :DOUBLE LOW LINE
+'2018 =>> "'" ; '0060             :LEFT SINGLE QUOTATION MARK
+   +    / "'" ; '0060
+   +    / & "'6"
+'2019 =>> "'" / "'"    / & "'9"   :RIGHT SINGLE QUOTATION MARK
+'201A =>> "'" / ","    / & ".9"   :SINGLE LOW-9 QUOTATION MARK
+'201C =>> """"                    :LEFT DOUBLE QUOTATION MARK
+   +    / """" ; '0060'0060
+   +    / & """6"
+'201D =>> """"                    :RIGHT DOUBLE QUOTATION MARK
+   +    / """" ; "''"
+   +    / & """9"
+'201E =>> """" / ",,"  / & ":9"   :DOUBLE LOW-9 QUOTATION MARK
+'2020 =>> "+" / "!+"   / & "/-"   :DAGGER
+'2021 =>> "+"  ; '0023            :DOUBLE DAGGER
+   +    / "=!" ; '0023
+   +    / & "/="
+'2022 =>> "o" / "o"    / & "_U2022_"  :BULLET
+'2026 =>> ":" / "..."  / & ".3"   :HORIZONTAL ELLIPSIS [p-RFC]
+'2030 =>> ?   / "%o"   / & "%0"   :PER MILLE SIGN
+'2039 =>> "<" / "<"    / & "<1"   :SINGLE LEFT-POINTING ANGLE QUOTATION MARK
+'203A =>> ">" / ">"    / & ">1"   :SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
+'203C =>> "!" / "!!"   / & "_!*2_"  :DOUBLE EXCLAMATION MARK
+'203E =>> "-" / "'_"   / & "'-"   :OVERLINE
+'2044 =>> "/" / "/"    / & "/f"   :FRACTION SLASH
+'207F =>> "n" / "'n"   / & "nS"   :SUPERSCRIPT LATIN SMALL LETTER N
+'20A4 =>> "L" / "L="   / & "Li"   :LIRA SIGN
+'20A7 =>> "P" / "Pts"  / & "Pt"   :PESETA SIGN
+
+'2116 =>> "N" / "No"   / & "N0"   :NUMERO SIGN
+'2122 =>> "T" / "(TM)" / & "TM"   :TRADE MARK SIGN
+'2126 =>> "W" / "*W"   / & "Om"   :OHM SIGN
+'2190 =>> "<" / "<-"   / & "<-"   :LEFTWARDS ARROW
+'2191 =>> "A"  ; '005E            :UPWARDS ARROW
+   +    / "!A" ; '007C"A" ; "!"'005E ; '007C'005E
+   +    / & "-!"
+'2192 =>> ">" / "->"   / & "->"   :RIGHTWARDS ARROW
+'2193 =>> "V"                     :DOWNWARDS ARROW
+   +    / "!V" ; '007C"v"
+   +    / & "-v"
+'2194 =>> "-" / "<->"  / & "<>"   :LEFT RIGHT ARROW
+'2195 =>> "!"                     :UP DOWN ARROW
+   +    / "A!V" ; "A"'007C"V" ; '005E"!v" ; '005E'007C"v"
+   +    / & "UD"
+'21A8 =>> "!"                     :UP DOWN ARROW WITH BASE [p-RFC]
+   +    / "A!V_" ; "A"'007C"V_" ; '005E"!v_" ; '005E'007C"v_"
+   +    / & "_UD-_"
+
+'2202 =>> "d" / "!d"   / & "dP"   :PARTIAL DIFFERENTIAL
+'2206 =>> "D" / "*D"   / & "DE"   :INCREMENT
+'220F =>> "P" / "*P"   / & "*P"   :N-ARY PRODUCT
+'2211 =>> "S" / "*S"   / & "+Z"   :N-ARY SUMMATION
+'2212 =>> "-" / "-"    / & "-2"   :MINUS SIGN
+'2219 =>> "o" / "o"    / & "_U2219_"  :BULLET OPERATOR
+'221A =>> "V" / "!V"   / & "RT"   :SQUARE ROOT
+'221E =>> "%" / "oo"   / & "00"   :INFINITY
+'221F =>> "L" / "!_"   / & "-L"   :RIGHT ANGLE
+'2229 =>> ?   / "!U"   / & "(U"   :INTERSECTION
+'222B =>> "S" / "!S"   / & "In"   :INTEGRAL
+'223C =>> "-"  ; '007E            :TILDE OPERATOR
+   +    / "!-" ; '007E
+   +    / & "?1"
+'2248 =>> ?      ; '007E          :ALMOST EQUAL TO
+   +    / "=ca." ; '007E
+   +    / & "?2"
+'2260 =>> ?    ; '0023            :NOT EQUAL TO
+   +    / "=/" ; '0023
+   +    / & "!="
+'2261 =>> "=" / "=="   / & "=3"   :IDENTICAL TO
+'2264 =>> ?   / "<="   / & "=<"   :LESS-THAN OR EQUAL TO
+'2265 =>> ?   / ">="   / & ">="   :GREATER-THAN OR EQUAL TO
+'22C5 =>> "." / "(.)"  / & ".P"   :DOT OPERATOR
+
+'2302 =>> ?   / ?      / & "Eh"   :HOUSE
+'2310 =>> "-" / "i-"   / & "NI"   :REVERSED NOT SIGN
+'2318 =>> "*" ; '0023             :PLACE OF INTEREST SIGN [p-RFC]
+   +    / "(*)" ; "("'0023")" ; '005B"*"'005D ; '005B'0023'005D
+   +    / & "88"  
+'2320 =>> "f" / "!f"   / & "Iu"   :TOP HALF INTEGRAL
+'2321 =>> "j" / "!j"   / & "Il"   :BOTTOM HALF INTEGRAL
+
+'2500 =>> "-" / "-"    / & "hh"   :BOX DRAWINGS LIGHT HORIZONTAL
+'2502 =>> "!" ; '007C             :BOX DRAWINGS LIGHT VERTICAL
+   +    / "!" ; '007C
+   +    / & "vv"
+'250C =>> "+" / "+"    / & "dr"   :BOX DRAWINGS LIGHT DOWN AND RIGHT
+'2510 =>> "+" / "+"    / & "dl"   :BOX DRAWINGS LIGHT DOWN AND LEFT
+'2514 =>> "+" / "+"    / & "ur"   :BOX DRAWINGS LIGHT UP AND RIGHT
+'2518 =>> "+" / "+"    / & "ul"   :BOX DRAWINGS LIGHT UP AND LEFT
+'251C =>> "+" / "+"    / & "vr"   :BOX DRAWINGS LIGHT VERTICAL AND RIGHT
+'2524 =>> "+" / "+"    / & "vl"   :BOX DRAWINGS LIGHT VERTICAL AND LEFT
+'252C =>> "+" / "+"    / & "dh"   :BOX DRAWINGS LIGHT DOWN AND HORIZONTAL
+'2534 =>> "+" / "+"    / & "uh"   :BOX DRAWINGS LIGHT UP AND HORIZONTAL
+'253C =>> "+" / "+"    / & "vh"   :BOX DRAWINGS LIGHT VERTICAL AND HORIZONTAL
+
+'2550 =>> "=" / "="    / & "_U2550_"  :BOX DRAWINGS DOUBLE HORIZONTAL
+'2551 =>> "I" / "I"    / & "_U2551_"  :BOX DRAWINGS DOUBLE VERTICAL
+'2552 =>> "+" / "+"    / & "_U2552_"  :BOX DRAWINGS DOWN SINGLE AND RIGHT DOUBLE
+'2553 =>> "+" / "+"    / & "_U2553_"  :BOX DRAWINGS DOWN DOUBLE AND RIGHT SINGLE
+'2554 =>> "+" / "+"    / & "_U2554_"  :BOX DRAWINGS DOUBLE DOWN AND RIGHT
+'2555 =>> "+" / "+"    / & "_U2555_"  :BOX DRAWINGS DOWN SINGLE AND LEFT DOUBLE
+'2556 =>> "+" / "+"    / & "_U2556_"  :BOX DRAWINGS DOWN DOUBLE AND LEFT SINGLE
+'2557 =>> "+" / "+"    / & "_U2557_"  :BOX DRAWINGS DOUBLE DOWN AND LEFT
+'2558 =>> "+" / "+"    / & "_U2558_"  :BOX DRAWINGS UP SINGLE AND RIGHT DOUBLE
+'2559 =>> "+" / "+"    / & "_U2559_"  :BOX DRAWINGS UP DOUBLE AND RIGHT SINGLE
+'255A =>> "+" / "+"    / & "_U255A_"  :BOX DRAWINGS DOUBLE UP AND RIGHT
+'255B =>> "+" / "+"    / & "_U255B_"  :BOX DRAWINGS UP SINGLE AND LEFT DOUBLE
+'255C =>> "+" / "+"    / & "_U255C_"  :BOX DRAWINGS UP DOUBLE AND LEFT SINGLE
+'255D =>> "+" / "+"    / & "_U255D_"  :BOX DRAWINGS DOUBLE UP AND LEFT
+'255E =>> "+" / "+"    / & "_U255E_"  :BOX DRAWINGS VERTICAL SINGLE AND RIGHT DOUBLE
+'255F =>> "+" / "+"    / & "_U255F_"  :BOX DRAWINGS VERTICAL DOUBLE AND RIGHT SINGLE
+
+'2560 =>> "+" / "+"    / & "_U2560_"  :BOX DRAWINGS DOUBLE VERTICAL AND RIGHT
+'2561 =>> "+" / "+"    / & "_U2561_"  :BOX DRAWINGS VERTICAL SINGLE AND LEFT DOUBLE
+'2562 =>> "+" / "+"    / & "_U2562_"  :BOX DRAWINGS VERTICAL DOUBLE AND LEFT SINGLE
+'2563 =>> "+" / "+"    / & "_U2563_"  :BOX DRAWINGS DOUBLE VERTICAL AND LEFT
+'2564 =>> "+" / "+"    / & "_U2564_"  :BOX DRAWINGS DOWN SINGLE AND HORIZONTAL DOUBLE
+'2565 =>> "+" / "+"    / & "_U2565_"  :BOX DRAWINGS DOWN DOUBLE AND HORIZONTAL SINGLE
+'2566 =>> "+" / "+"    / & "_U2566_"  :BOX DRAWINGS DOUBLE DOWN AND HORIZONTAL
+'2567 =>> "+" / "+"    / & "_U2567_"  :BOX DRAWINGS UP SINGLE AND HORIZONTAL DOUBLE
+'2568 =>> "+" / "+"    / & "_U2568_"  :BOX DRAWINGS UP DOUBLE AND HORIZONTAL SINGLE
+'2569 =>> "+" / "+"    / & "_U2569_"  :BOX DRAWINGS DOUBLE UP AND HORIZONTAL
+'256A =>> "+" ; '0023             :BOX DRAWINGS VERTICAL SINGLE AND HORIZONTAL DOUBLE
+   +    / "+" ; '0023
+   +    / & "_U256A_"
+'256B =>> "+" ; '0023             :BOX DRAWINGS VERTICAL DOUBLE AND HORIZONTAL SINGLE
+   +    / "+" ; '0023
+   +    / & "_U256B_"
+'256C =>> "+" ; '0023             :BOX DRAWINGS DOUBLE VERTICAL AND HORIZONTAL
+   +    / "+" ; '0023
+   +    / & "_U256C_"  
+'2571 =>> "/" / "/"    / & "FD"   :BOX DRAWINGS LIGHT DIAGONAL UPPER RIGHT TO LOWER LEFT
+
+'2580 =>> """" ; '007E ; '00AF ; '203E  :UPPER HALF BLOCK
+   +    / """" ; '007E ; '00AF ; '203E
+   +    / & "TB"
+'2584 =>> "_"  / "_"   / & "LB"   :LOWER HALF BLOCK
+'2588 =>> "*"                     :FULL BLOCK
+   +    / "*" ; '005B'005D
+   +    / & "FB"
+'258C =>> "(" ; '005B             :LEFT HALF BLOCK
+   +    / "(" ; '005B
+   +    / & "lB"
+'2590 =>> ")" ; '005D             :RIGHT HALF BLOCK
+   +    / ")" ; '005D
+   +    / & "RB"
+'2591 =>> "." / "."    / & ".S"   :LIGHT SHADE
+'2592 =>> "-" / "-"    / & ":S"   :MEDIUM SHADE
+'2593 =>> "+" / "+"    / & "?S"   :DARK SHADE
+'25A0 =>> "*" / "*"    / & "fS"   :BLACK SQUARE
+'25AC =>> "*" / "*"    / & "SR"   :BLACK RECTANGLE
+'25B2 =>> "A"  ; '005E            :BLACK UP-POINTING TRIANGLE
+   +    / "!A" ; '007C'005E
+   +    / & "UT"
+'25BA =>> ">" / "->"   / & "PR"   :BLACK RIGHT-POINTING POINTER [p-RFC]
+'25BC =>> "V"                     :BLACK DOWN-POINTING TRIANGLE
+   +    / "!V" ; '007C"v"
+   +    / & "Dt"
+'25C4 =>> "<" / "<-"   / & "PL"   :BLACK LEFT-POINTING POINTER [p-RFC]
+'25C6 =>> ?   / "<>"   / & "Db"   :BLACK DIAMOND
+'25CA =>> ?   / "<>"   / & "LZ"   :LOZENGE
+'25CB =>> "O" / "(O)"  / & "0m"   :WHITE CIRCLE
+'25D8 =>> "."                     :INVERSE BULLET
+   +    / "-(.)" ; '005B"o"'005D
+   +    / & "Sn"
+'25D9 =>> "." / "-(.)" / & "Ic"   :INVERSE WHITE CIRCLE
+
+'263A =>> ")" / ":-)"  / & "0u"   :WHITE SMILING FACE
+'263B =>> ")" / ":-)"  / & "0U"   :BLACK SMILING FACE
+'263C =>> "o" / "(x)"  / & "SU"   :WHITE SUN WITH RAYS
+'2640 =>> "+" / "o-+"  / & "Fm"   :FEMALE SIGN
+'2642 =>> ">" / "o->"  / & "Ml"   :MALE SIGN
+'2660 =>> "S" / "Sp"   / & "cS"   :BLACK SPADE SUIT
+'2663 =>> "C" / "Cl"   / & "cC"   :BLACK CLUB SUIT
+'2665 =>> "H" / "He"   / & "_cH-_"   :BLACK HEART SUIT
+'2666 =>> "D" / "Di"   / & "_cD-_"   :BLACK DIAMOND SUIT
+'266A =>> "N" / "(N)"  / & "M8"   :EIGHTH NOTE
+'266B =>> "N" / "(NN)" / & "M2"   :BEAMED EIGHTH NOTES
+'2713 =>> "V" / "V"    / & "OK"   :CHECK MARK
+
+'E000 =>> "a" / "(a)"  / & "Mc"   :"APPLE LOGO" [p-RFC]
+
+'FB01 =>> ?   / "fi"   / & "fi"   :LATIN SMALL LIGATURE FI
+'FB02 =>> ?   / "fl"   / & "fl"   :LATIN SMALL LIGATURE FL
+
+   :Table history:
+   :Ap17 941113: First prototype to be distributed for review. (OJ)
+   :Ap45 941215: The same table, for C3_TERENA_Ap45. (OJ)
+
+%END_OF_TABLE

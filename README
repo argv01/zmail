@@ -1,0 +1,100 @@
+-*- Outline -*-
+* TO BUILD
+
+    1. Check out source from CVS.
+    2. Configure for platform.
+    3. If building a distribution, check out doc from DocRep.
+    4. (Optional) Set up "make" dependencies.
+    5. "make"
+    6. If building a distribution, build metamail
+    7. If building a distribution, "make distribution".
+
+* TO CHECK OUT FROM CVS
+
+    cvs co metamail
+    cvs co mm-contrib/sh-versions
+    cvs co mp
+    cvs co zmail
+
+You may use "cvs co zmail-motif" if you don't need Lite, Windows, or Mac.
+
+* TO CONFIGURE
+
+    sh configure <ostype-name>
+    sh mkmakes <ostype-name> <ui-name>
+
+If you don't know the parameters to configure or mkmakes, type the
+commands without them, and you'll get an informative usage message.
+
+BE SURE TO EXAMINE osconfig.h AND VERIFY THAT THE "Corrections" SECTION
+IS SANE BEFORE YOU CONTINUE BUILDING!!
+
+If you are making a distribution, you must also configure mp:
+
+    cd ../mp
+    sh configure
+
+* TO CHECK OUT DOC
+
+    sh doc.sh
+
+This requires NFS access to the DocRep on zyrcon.
+
+* TO SET UP MAKE DEPENDENCIES
+
+    make depend
+    sh mkmakes <ostype-name> <ui-name>
+
+"make depend" requires the availability of Perl.  It's OK to omit the
+"make depend" step as long as you're careful
+
+* TO BUILD METAMAIL
+
+    cd ../metamail
+    make
+
+You may need to edit Makefile for the particular platform.  (Be careful if
+you are working out of a symlinked shadow tree!)  There's no automated
+configure script, but the plain Makefile works almost everywhere.
+
+* TO MAKE A DISTRIBUTION
+
+Determine an appropriate value for DISTROOT (could be ".").  Then,
+
+    setenv DISTROOT value
+    make DISTROOT=value distribution
+
+When building for a UNIX shipping distribution, you must build both the
+"small" and "motif" UIs, in that order, with a "make clean" between,
+before "make distribution".
+
+* TO ADD NEW MODULES OR HEADER FILES
+
+Add them to the appropriate place in zmail_files and Files.  Then,
+re-run mkmakes.  Do not edit any of the Makefiles directly if you want
+your changes to be permanent.
+
+* HERE'S HOW THE SOURCE IS ORGANIZED
+
+bitmaps		X11 bitmaps used by the Motif version.
+child		Unix code for dealing with child processes.
+config		OS configuration and build info.
+general		non Z-Mail-specific support code, such as Dynadt and Except.
+gui		An implementation of the stubs in the "core" which any
+			GUI must implement.
+include		Most headers. (*)
+install		Scripts, etc., for the user to run when he or she installs.
+lib		Miscellanea of all kinds, including Z-Script files,
+			help files, etc.
+license		Z-Mail licensing code.
+motif		The Motif front end.
+msgs		Mail-related "core" functions.
+shell		"Core" functions that aren't specifically mail-related.
+spoor		A GUI-like curses-based toolkit used by Z-Mail Lite.
+uisupp		Beginnings of an attempt to tease out code common to,
+			and shareable by all Z-Mail GUIs.
+util		Support programs, such as atob and btoa.
+zmlite		The Z-Mail Lite front end.
+
+(*) Some components, such as SPOOR, Dynadt, Except, Zmlite, and the
+Timer API have headers that live in the same directory as the C code.

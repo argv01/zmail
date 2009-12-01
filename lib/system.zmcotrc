@@ -1,0 +1,393 @@
+if x$TERM == xvt220 # custom Chevron SmarTerm, not a real vt220
+    multikey \eOP   \<f1>
+    multikey \eOQ   \<f2>
+    multikey \eOR   \<f3>
+    multikey \eOS   \<f4>
+    multikey \e[28~ \<f5>
+    multikey \e[17~ \<f6>
+    multikey \e[5~  \<f7>
+    multikey \e[6~  \<f8>
+    multikey \e[20~ \<f9>
+    multikey \e[21~ \<f10>
+    multikey \e[3~  \<f11>
+    multikey \e[2~  \<f12>
+
+    multikey \e[25~ \<shift+f1>
+    multikey \e[26~ \<shift+f2>
+    multikey \e[31~ \<shift+f3>
+    multikey \e[32~ \<shift+f4>
+    multikey \e[33~ \<shift+f5>
+    multikey \e[29~ \<shift+f6>
+    multikey \e[34~ \<shift+f7>
+    multikey \e[18~ \<shift+f8>
+    multikey \e[19~ \<shift+f9>
+    multikey \e[23~ \<shift+f10>
+    multikey \e[24~ \<shift+f11>
+    multikey \e[1~  \<shift+f12>
+
+    multikey \eOy   \<ctrl+f1>
+    multikey \e[4~  \<ctrl+f2>
+    multikey \eOp   \<ctrl+f3>
+    multikey \eOq   \<ctrl+f4>
+    multikey \eOr   \<ctrl+f5>
+    multikey \eOs   \<ctrl+f6>
+    multikey \eOt   \<ctrl+f7>
+    multikey \eOu   \<ctrl+f8>
+    multikey \eOv   \<ctrl+f9>
+    multikey \eOw   \<ctrl+f10>
+    multikey \eOx   \<ctrl+f11>
+    multikey \e[40~ \<ctrl+f12>
+
+    multikey \e[H   \<home>
+    multikey \e[35~ \<pageup>
+    multikey \e[36~ \<pagedown>
+    multikey \e[37~ \<delete>
+    multikey \e[38~ \<insert>
+    multikey \e[39~ \<end>
+    multikey \e[41~ \<backtab>
+endif
+
+if x$TERM == xxterm
+    multikey \e[11~ \<f1>
+    multikey \e[12~ \<f2>
+    multikey \e[13~ \<f3>
+    multikey \e[14~ \<f4>
+    multikey \e[15~ \<f5>
+    multikey \e[17~ \<f6>
+    multikey \e[18~ \<f7>
+    multikey \e[19~ \<f8>
+    multikey \e[20~ \<f9>
+    multikey \e[21~ \<f10>
+    multikey \e[23~ \<f11>
+    multikey \e[24~ \<f12>
+    multikey \e[f13~ \<f13>
+    multikey \e[f14~ \<f14>
+    multikey \e[f15~ \<f15>
+    multikey \e[2~ \<insert>
+    multikey \e[[home \<home>
+    multikey \e[[end \<end>
+    multikey \e[A \<up>
+    multikey \e[B \<down>
+    multikey \e[D \<left>
+    multikey \e[C \<right>
+    multikey \e[Z \<backtab>
+    multikey \e[6~ \<pagedown>
+    multikey \e[5~ \<pageup>
+    multikey '\e[s01~' '\<shift+f1>'
+    multikey '\e[s02~' '\<shift+f2>'
+    multikey '\e[s03~' '\<shift+f3>'
+    multikey '\e[s04~' '\<shift+f4>'
+    multikey '\e[s05~' '\<shift+f5>'
+    multikey '\e[s06~' '\<shift+f6>'
+    multikey '\e[s07~' '\<shift+f7>'
+    multikey '\e[s08~' '\<shift+f8>'
+    multikey '\e[s09~' '\<shift+f9>'
+    multikey '\e[s10~' '\<shift+f10>'
+    multikey '\e[s11~' '\<shift+f11>'
+    multikey '\e[s12~' '\<shift+f12>'
+    multikey '\e[s13~' '\<shift+f13>'
+    multikey '\e[s14~' '\<shift+f14>'
+    multikey '\e[s15~' '\<shift+f15>'
+    multikey '\e[c01~' '\<ctrl+f1>'
+    multikey '\e[c02~' '\<ctrl+f2>'
+    multikey '\e[c03~' '\<ctrl+f3>'
+    multikey '\e[c04~' '\<ctrl+f4>'
+    multikey '\e[c05~' '\<ctrl+f5>'
+    multikey '\e[c06~' '\<ctrl+f6>'
+    multikey '\e[c07~' '\<ctrl+f7>'
+    multikey '\e[c08~' '\<ctrl+f8>'
+    multikey '\e[c09~' '\<ctrl+f9>'
+    multikey '\e[c10~' '\<ctrl+f10>'
+    multikey '\e[c11~' '\<ctrl+f11>'
+    multikey '\e[c12~' '\<ctrl+f12>'
+    multikey '\e[c13~' '\<ctrl+f13>'
+    multikey '\e[c14~' '\<ctrl+f14>'
+    multikey '\e[c15~' '\<ctrl+f15>'
+    multikey '\e[cs01~' '\<ctrl+shift+f1>'
+    multikey '\e[cs02~' '\<ctrl+shift+f2>'
+    multikey '\e[stab' '\<shift+tab>'
+    multikey '\e[ctab' '\<ctrl+tab>'
+endif
+
+bindkey -l 1/Next -c Zmcot \<f1> zscript next
+bindkey -l 2/Prev -c Zmcot \<f2> zscript previous
+bindkey -l 3/Redrw -c Zmcot \<f3> zmcot-redraw
+bindkey -l 4/Send -c Zmcot \<f4> zmcot-send
+bindkey -l 5/Search -c Zmcot \<f5> zscript "askDate"
+bindkey -l 6/Copy -c Zmcot \<f6> zmcot-copy-msg
+bindkey -l 7/Print -c Zmcot \<f7> zscript lpr
+bindkey -l 8/Beep -c Zmcot \<f8> zscript toggleBell
+bindkey -l Incoming -c Zmcot \<f9> zscript toggleIncomingDisplay
+bindkey -l Outgng -c Zmcot \<f10> zscript toggleOutgoingLog
+bindkey -l Users -c Zmcot \<f11> zmcot-directory
+bindkey -l Oldest -c Zmcot \<f12> zscript 'msg_list * {`:d`} | pick +1 | read'
+bindkey -l DayLast -c Zmcot \<f14> zscript "pick -1 -d / | read"
+bindkey -l DayFrst -c Zmcot \<f15> zscript "pick +1 -d / | read"
+bindkey -c Zmcot \<shift+f1> zscript "pick +2 -1 -r .-$ -t -e $USER | read"
+bindkey -c Zmcot \<shift+f2> zscript "pick -2 +1 -r ^-. -t -e $USER | read"
+bindkey -c Zmcot \<shift+f3> zscript 'msg_list * {`:d`} | pick +1 | read'
+bindkey -c Zmcot \<shift+f4> zscript 'msg_list * {`:d`} | pick -1 | read'
+bindkey -c Zmcot \<shift+f6> do-sequence '!* zscript save $default_mail_folder!* zmcot-delete!* zscript echo Message saved.'
+bindkey -c Zmcot \<shift+f8> zscript "dialog printer"
+bindkey -c Zmcot \<shift+f10> zmcot-toggle-mail
+bindkey -c Zmcot \<shift+f11> zmcot-toggle-new-mail
+bindkey -c Zmcot \<shift+f12> zscript 'quit -f'
+bindkey -c Zmcot \<shift+f15> zscript "quit"
+bindkey -c Zmcot \<ctrl+f1> do-sequence '!* zmcot-grab-to!* zscript fastSearchForwardAuthor'
+bindkey -c Zmcot \<ctrl+f2> do-sequence '!* zmcot-grab-to!* zscript fastSearchBackwardAuthor'
+bindkey -c Screen \<ctrl+f3> show-help
+bindkey -c Zmcot \<ctrl+f4> do-sequence '!* zmcot-delete!* zscript echo Message deleted.'
+bindkey -l DayLast -c Zmcot \<ctrl+f7> zscript "pick -1 -d / | read"
+bindkey -l DayFrst -c Zmcot \<ctrl+f8> zscript "pick +1 -d / | read"
+# bindkey -c Zmcot \<ctrl+F11> zscript toggle_trader_filtering
+bindkey -c Zmcot \<ctrl+shift+f1> zmcot-scan-forward
+bindkey -c Zmcot \<ctrl+shift+f2> zmcot-scan-backward
+bindkey -c Zmcot \e\<ctrl+f1> do-sequence '!* zmcot-grab-to!* zscript searchForwardAuthor'
+bindkey -c Zmcot \e\<ctrl+f2> do-sequence '!* zmcot-grab-to!* zscript searchBackwardAuthor'
+
+bindkey -c App \e^L redraw
+bindkey -c App \en do-sequence "zmlite focus-next"
+
+bindkey -c Screen \e! goto-zmcot
+bindkey -c Screen \eq zscript 'quit -f'
+bindkey -c Screen \eQ zscript 'quit -f'
+
+bindkey -c EditText \<delete> text-delete-forward-char
+bindkey -c EditText ^U do-sequence '!* text-end-of-line!* text-delete-to-beginning-of-line'
+
+bindkey -c Text ^A text-end-of-line
+bindkey -c Text ^B text-backward-word
+bindkey -c Text ^F text-forward-word
+bindkey -c Text \eD text-deselect
+
+bindkey -c Zmcot \ec zmcot-clear-all
+bindkey -c Zmcot \eC zmcot-clear-all
+bindkey -c Zmcot ^L do-sequence '!zmcot zmcot-clear-composition!zmcot zmcot-to'
+bindkey -c Zmcot ^X\<f6> zmcot-clear-composition
+bindkey -c Zmcot \<home> zmcot-to
+bindkey -c Zmcot \e! goto-main
+bindkey -c Zmcot \ep do-sequence "zmlite focus-previous"
+
+unbindkey -c EditText \<tab>
+
+# Let the Screen binding for \eq work
+unbindkey -c Buttonpanel \eq
+unbindkey -c List \eq
+unbindkey -c Text \eq
+
+unbindkey -c Screen \en
+
+unbindkey -c Text ^E
+unbindkey -c Text \ec
+unbindkey -c Text \eC
+
+unbindkey -c Zmcot \e8
+unbindkey -c Zmcot \eo
+unbindkey -c Zmcot \em
+
+unbindkey zmcot-body \<home>
+unbindkey zmcot-compose-body \<home>
+unbindkey zmcot-subject \<home>
+unbindkey zmcot-to \<home>
+
+function searchForwardAuthor() {
+    if $?lastAuthorSearch
+	set dflt = $lastAuthorSearch
+    else
+	set dflt = $USER
+    endif
+    ask -i author "Enter author name" $dflt
+    if $status == -1
+	exit
+    endif
+    set lastAuthorSearch = $author
+    pick -i +2 -1 -r .-$ -f -e $author
+    if x$output == x
+	echo -d No messages found.
+    else
+	read $output
+    endif
+}
+
+function searchBackwardAuthor() {
+    if $?lastAuthorSearch
+	set dflt = $lastAuthorSearch
+    else
+	set dflt = $USER
+    endif
+    ask -i author "Enter author name" $dflt
+    if $status == -1
+	exit
+    endif
+    set lastAuthorSearch = $author
+    pick -i -2 +1 -r ^-. -f -e $author
+    if x$output == x
+	echo -d No messages found.
+    else
+	read $output
+    endif
+}
+
+function fastSearchForwardAuthor() {
+    if $?lastAuthorSearch
+	pick -i +2 -1 -r .-$ -f -e $lastAuthorSearch
+	if x$output == x
+	    echo -d No messages found.
+	else
+	    read $output
+	endif
+    else
+	searchForwardAuthor
+    endif
+}
+
+function fastSearchBackwardAuthor() {
+    if $?lastAuthorSearch
+	pick -i -2 +1 -r ^-. -f -e $lastAuthorSearch
+	if x$output == x
+	    echo -d No messages found.
+	else
+	    read $output
+	endif
+    else
+	searchBackwardAuthor
+    endif
+}
+
+set incomingDisplay
+function toggleIncomingDisplay() {
+    if $?incomingDisplay
+	unset incomingDisplay
+	echo Incoming display off
+    else
+	set incomingDisplay
+	echo Incoming display on
+    endif
+}
+
+function toggleOutgoingLog() {
+    if $?record
+	unset record
+	echo Log outgoing messages off
+    else
+	set record = $mail
+	echo Log outgoing messages on
+    endif
+}
+
+function toggleBell() {
+    if $?quiet
+	if "$quiet" =~ "*newmail*"
+	        set quiet -= newmail
+	        echo Bell turned on
+	else
+		set quiet += newmail
+		echo Bell turned off
+	endif
+    else
+        set quiet = newmail
+        echo Bell turned off
+    endif
+}
+
+function askDate() {
+    ask -i date "Enter a date as mm/dd/yy"
+    if $status == -1
+	exit
+    endif
+    pick -1 -d -$date
+    if x$output == x
+	echo No messages found.
+    else
+	read $output
+    endif
+}
+
+function startup_hook() {
+    if $?main_state:(folder_has_messages)
+	read $
+    endif
+    unset record
+    toggleOutgoingLog
+}
+
+function trader_filter_fn() {
+    if $?trader_flag
+	if $?trader_filter_flag
+	    if "X$[%?x-trader?]" == X
+		save $new_mail_folder | delete
+	    endif
+        endif
+    endif
+}
+
+function toggle_trader_filter_mode() {
+    if $# == 0
+        if $?trader_filter_flag
+            unset trader_filter_flag
+        else
+            set trader_filter_flag
+        endif
+    else
+	if $1 == 1
+	    set trader_filter_flag
+	else
+	    unset trader_filter_flag
+	endif
+    endif
+}
+
+function toggle_trader_mode() {
+    if $# == 0
+        if $?trader_flag
+            unset trader_flag
+        else
+            set trader_flag
+        endif
+    else
+	if $1 == 1
+	    set trader_flag
+	else
+	    unset trader_flag
+	endif
+    endif
+    if $?trader_flag
+	my_hdr X-Trader: "$USER"
+    else
+        un_hdr X-Trader
+    endif
+}
+
+set default_mail_folder = +mail
+set new_mail_folder = +new_mail
+set active_timeout = 1
+unset autoprint
+set inactive_interval = 300
+set inactive_timeout = 1
+set intr_level = 500
+unset show_deleted
+set timeout = 1
+set verify -= quit
+set lookup_max = 10
+set pre_indent_str='\nOn %M %N, %T, %.50n wrote:'
+set indent_str=''
+set post_indent_str='[End of excerpt from %.50n]'
+
+set lookup_sep = '::'
+set address_filter = '[!%@]'
+set address_check = send
+set address_book = 'sh $ZMLIB/bin/cotlookup.sh'
+
+set quiet += copyright
+
+set alwaysignore=forward,include,printer
+set hangup
+set printer=fastport
+set print_cmd='lpfastp %P'
+
+bindkey -c Text \<up> text-previous-line
+bindkey -c Text \<down> text-next-line
+
+ignore *
+
+# toggle_trader_filter_mode 1

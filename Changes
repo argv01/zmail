@@ -1,0 +1,479 @@
+This document describes the differences between Z-Mail 2.1.4 and
+Z-Mail 3.0/SGI.
+
+
+Menu and Button Configuration
+-----------------------------
+
+Main Window Buttons:
+    Compose
+    	brings up a compose window
+    Read
+    Delete
+    Undelete
+    Save
+    	brings up the save dialog
+    Print
+    	brings up the printer dialog
+    Resend
+    Update
+
+Compose Window Buttons:
+    Done
+    	closes the compose window
+    Send
+    	sends the message
+    Include
+    	includes a message, indented    
+    Attachments
+    	brings up the attachments dialog
+    Cancel
+    	cancels the composition
+
+Message Window Buttons:
+    Done
+    	closes the message window
+    Next
+    Prev
+    Delete
+    Save
+    Print
+    Reply
+    	replies to sender
+    ReplyAll
+    	replies to all recipients
+    Forward
+
+Main Window Menus:
+    Folder
+    	New ...
+    	    allows user to create new folders and directories
+        Open ... (Ctrl+O)
+    	    open a folder
+        Rename ...
+        Remove ...
+        Update
+        Close Folder
+    	    closes current folder
+        ---
+	Quit (Ctrl+C)
+    Message
+        Read
+        Save ... (Ctrl+S)
+        Delete (Ctrl+D)
+        Undelete
+        Print ... (Ctrl+P)
+        ---
+        Prioritize
+            A
+            B
+            C
+            D
+            E
+            None
+        Mark
+        Unmark
+        Preserve
+        Unpreserve
+        ---
+        Select All (Shift+Meta+A)
+    View
+        View All
+    	    causes all message summaries to be displayed
+        View Selected Only
+    	    hides all unselected messages
+        ---
+    	Hide Deleted
+    	    hides all deleted messages
+    	Hide Old
+    Find
+        All References By
+            Subject
+    	    	selects all messages with the same subject as current one
+            Author
+    	    	selects all messages with the same author as current one
+            Message ID
+    	    	selects all messages which reference this one
+            Priority
+    	    	selects all messages which have same priority as this one
+            Mark
+    	    	selects all marked messages
+        Next Reference By
+            Subject
+    	    	finds next message with same subject
+            Author
+    	    	finds next message with same author
+            Message ID
+    	    	finds next message which references this one
+            Priority
+    	    	finds next message with same priority
+            Mark
+    	    	finds next marked message
+        Previous Reference By
+            Subject
+            Author
+            Message ID
+            Priority
+            Mark
+        ---
+        Pattern Search ...
+        Date Search ...
+    Sort
+        By Date
+        By Subject
+        By Author
+        By Message Length
+        By Priority/Mark
+        By Status
+        ---
+        Custom Sort ...
+    Compose
+        Compose New (Ctrl+N)
+    	    brings up new compose window
+        ---
+        Reply
+            Sender Only  (Ctrl+R)
+	    All Recipients  (Shift+Ctrl+R)
+            Sender (Include Msg.)
+            All (Include Msg.)
+        Forward
+            Resend ...
+            Edited
+            As attachment(s)
+        ---
+        Templates ...
+    Options
+        Aliases ...
+        Signature ...
+    	    edits .signature file
+        Headers ...
+    	    changes which headers will be displayed
+        Envelope ...
+    	    changes which headers will be added to outgoing messages
+        ---
+        Colors ...
+        Fonts ...
+        Toolbox ... (Ctrl+T)
+        ---
+        Variables ... (Ctrl+V)
+        Save Configuration ...
+    Layout
+        Folder Status
+        Folder Panel
+        Message Summaries
+        Button Panel
+        Output Window
+    Help
+        Click for Help
+        Overview
+        ---
+        About the Main Window
+        Composing a message
+        Reading a message
+        Printing a message
+        Saving a message to a folder
+        Updating a folder
+        Opening a folder
+        Changing among open folders
+        ---
+        Index
+        ---
+        Product Info
+
+Compose Window Menus:
+    Message 
+        Compose New (Shift+Ctrl+N)
+    	    brings up another compose window
+        Reuse
+    	    when this item is selected on an inactive compose window, it
+    	    starts up a new composition, using the text in the window
+    	    as the body of the message.
+        Templates ...
+        ---
+        Send (Shift+Ctrl+S)
+        Send, Close window (Shift+Ctrl+D)
+        Write to file ... (Shift+Ctrl+W)
+    	    writes the composition text to a file
+        ---
+        Cancel
+        Done   (Ctrl+C)
+    Edit 
+        Cut (Shift+Meta+X)
+        Copy (Shift+Meta+C)
+        Paste (Shift+Meta+V)
+        Paste Special
+            Indent
+    	    	paste text into the composition, and indent the pasted text
+            Fill
+    	    	paste text into the composition, and format the pasted text
+        Delete (Shift+Meta+D)
+    	    delete the selected text
+        Format
+            Fill
+    	    	format the selected text
+            Indent
+            Unindent
+            Pipe through Command ...
+    	    	pipe the selected text through a user-specified command
+        ---
+        Select All (Shift+Meta+A)
+        ---
+        Search/Replace/Spell ... (Ctrl+S)
+        ---
+        Editor ...
+    Include 
+        Message(s)
+            Indented
+            Nonindented
+            As Attachment(s)
+        File
+            Insert ...
+            Replace ...
+    Address 
+        Aliases ...
+        ---
+        To
+        Subject
+        Cc
+        Bcc
+    Options 
+        Autosign
+        Autoformat
+        Return-Receipt
+        Record to File
+        Prioritize
+            A
+            B
+            C
+            D
+            E
+            None
+        Options ...
+    Layout 
+        Folder Panel
+        Message Headers
+        Message Body
+        Buttons
+        Attachment Panel
+    Help
+        Click For Help (Shift+F1)
+        ---
+        About the Compose Window (F1)
+        Addressing the message
+        Adding attachments
+        Including messages and files
+        Sending the message
+        ---
+        Index
+
+Message Window Menus:
+    Message 
+        Save ... (Ctrl+S)
+        Delete   (Ctrl+D)
+        Print ... (Ctrl+P)
+        Pin-Up
+        ---
+	Prioritize
+	   A
+	   B
+	   C
+	   D
+	   E
+           None
+        Mark
+        Unmark
+        Preserve
+        Unpreserve
+        ---
+        Attachments ...
+    	    bring up the attachments dialog
+        ---
+        Done (Ctrl+C)
+    Edit 
+        Copy (Shift+Meta+C)
+        Select All (Shift+Meta+A)
+    Find 
+        Read Next (Shift+Ctrl+N)
+        Read Previous (Shift+Ctrl+P)
+        Next Reference By
+            Subject
+            Author
+            Message ID
+            Priority
+            Mark
+        Previous Reference By
+            Subject
+            Author
+            Message ID
+            Priority
+            Mark
+        ---
+        Search ...
+    Compose 
+        Compose New (Ctrl+N)
+        Templates ...
+    Reply 
+        Sender Only (Ctrl+R)
+	All Recipients (Shift+Ctrl+R)
+	Sender (Include Msg.)
+	All (Include Msg.)
+    Forward 
+        Resend ...
+        Edited
+        As attachment(s)
+    Layout 
+        Folder Panel
+        Message Headers
+        Message Body
+        Button Panel
+        Attachment Panel
+        ---
+        Full Headers
+    	    toggle between showing all message headers and just showing
+    	    "To" and "Cc" in the message body
+    Help
+        Click For Help
+        ---
+        About the Message Window (F1)
+        Reading messages
+        Displaying attachments
+        Replying to a message
+        ---
+        Index
+
+Main Summaries Popup Menu:
+    Read
+    Delete
+    Undelete
+    Save
+    Hide Summary
+    Priorities
+        A
+        B
+        C
+        D
+        E
+        None
+    Print
+    Select All
+
+Other Changes from 2.1.4 to 3.0 Basic
+-------------------------------------
+
+Miscellaneous:
+    POP3 support, variable pop_options to allow choice of leaving mail on
+    the host.
+
+    MIME support: conformance with Internet Draft, "MIME
+    (Multipurpose Internet Mail Extensions) Part One: Mechanisms for
+    Specifying and Describing the Format of Internet Message Bodies",
+    April 1993, a standard format for multimedia messages.
+
+    Fully localizable international support
+
+New variables (see variables file):
+    alternates
+    alwaysexpand
+    autoclear
+    child
+    compose_panes
+    default_mime_char_set
+    filelist_fmt
+    file_test
+    hidden
+    is_lite
+    ispeller
+    pop_options
+    pop_timeout
+    timeout
+    use_pop                     Toggles POP3 support on and off.
+
+Changed variables:
+    record_users		May be set to "all" to create files.
+    quiet			New field: blink, index
+    verify			New fields: addresses,close,mkdir
+    				Changed field: quit
+
+New X Resources:
+    *finderFullPaths		Boolean: show full path names in FileFinder
+    *iconGeometry:		Geometry: placement and size of main icon
+    *maxTextLength		Integer: limit of largest paged text (bytes)
+    *scrollLength		Integer: main output scrollback size (bytes)
+
+    Assorted others for new dialogs; old dialogs have had more strings made
+    available in the resource file for localization purposes.
+
+Licensing:
+    Single-user mode: one copy of Z-Mail is allowed to run per workstation.
+
+Aliases dialog:
+    Uses interface similar to Compose window for address entry/editing.
+
+Main window:
+    See $hidden, and "New X Resources" above.  New 'Folder Popup' that
+    replaces old Opened Folders dialog.
+
+Compose window:
+    'Expand' button under Addresses list expands aliases.
+
+File Finder (all dialogs that have one):
+    Full path display can be turned off (see *finderFullPaths resource).
+    Format of file display can be changed (see filelist_fmt variable).
+    Navigation can be limited to a subtree (see chroot command).
+
+Help Index:
+    New hypertext navigation feature, searching. Much of the help text
+    has been reformatted and/or rewritten to take advantage of
+    hypertext feature.
+
+Message window:
+    Limit size of displayed message (see *maxTextLength resource).
+
+Paging dialog ("page" command):
+    Limit size of displayed text (see *maxTextLength resource).
+    Allowing editing and file operations in pager dialog.
+
+Variables dialog:
+    Hypertext search and cross-references with Help Index.
+    No "Save/Load" file name field; Save button pops up dialog.
+
+New Commands (sse online help):
+    chroot		(Name may change to differentiate from UNIX chroot.)
+    compcmd             Manipulates compositions in progress.
+    disable, enable	Turn off (on) Z-Script commands from system.zmailrc.
+    hide, unhide	(See $hidden and flags command)
+    :h, :v		(See headers command)
+
+Changed commands:
+    alias		Syntax for including addresses from file.
+    cd			Restricted by the chroot command
+    edit		Works in GUI mode now.
+    flags		Options -H to hide, -V to unhide.
+    headers		Options -H:h and -H:v for hidden/visible summaries.
+    mail		New "default" template (may change slightly).
+			New -R option for return-receipt (new in 2.1.5).
+			See "address_book" etc. variables.
+    my_hdr		New syntax for dynamic headers (see command.hlp).
+    quit		verify=quit now prompts separately from update.
+    			See also "exit_hook".
+    sort		New option -t (not in on-line help, partially works).
+    trap		Signal names (HUP, INT, etc.) may be used.
+    update		Automatically creates full path to $mbox.
+    write		No longer sets S (saved) flag on messages.
+    			Warns of loss of attachments.
+
+Hook functions:
+    startup_hook	Called at startup after loading first folder.
+    exit_hook		Called at quit after closing last folder.
+    fetch_mail_hook	Called every 15 minutes (period settable).
+    receive_mail_hook	Called after fetch_mail_hook finishes.
+
+    To use a hook function, simply create a user-defined function with
+    that name.
+
+Removed for Basic:
+    Buttons and Functions dialog
+    Z-Script commands in help index
+
+Removed:
+    Support for IXI's X.desktop drag and drop.

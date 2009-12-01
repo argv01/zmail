@@ -1,0 +1,43 @@
+# The TRACE directive specifies where to log errors and debugging messages (if
+# any).  If a trace file is not specified, any error or debugging messages that
+# are generated will be reported via the syslog() facility. 
+trace /usr/tmp/zpop-trace
+
+# The DEBUG directive specifies which debugging and warning messages should be
+# reported.  zpop will always report serious errors, regardless of the value of
+# this directive.  By default, zpop will also generate warnings for situations
+# which are not fatal, but probably require attention.  Please see the
+# CONFIG.TXT file for more information on possible values of this directive. 
+debug ERRORS WARNINGS
+
+# The SPOOL directive tells zpop where the mail spool directory is.
+spool @spool@
+
+# The SPOOL-FORMAT directive tells zpop about the format of your mail spool.
+# Possible values are:
+#   mmdf            you are using an MMDF-style mail delivery agent (MDA)
+#   content-length  your MDA generates valid Content-Length headers
+#   none            none of the above (you can also simply omit this directive)
+# Please see the CONFIG.TXT file to be sure you are using the correct setting.
+spool-format @spool_format@
+
+# The MESSAGE-SEPARATOR directive is only used if your SPOOL-FORMAT is MMDF.
+# 3-digit octal escapes (\xxx) are recognized; use \\ for a literal backslash.
+@msg_sep@message-separator \001\001\001\001
+
+# The PREFS directive tells zpop where to store and retrieve users' preferences
+# files for the remote preferences service. 
+prefs /usr/local/etc/zpoplib/prefs
+
+# The LIBRARY directive tells zpop where to locate the configuration files that
+# it offers to clients as part of the configuration file downloading service. 
+library /usr/local/etc/zpoplib/lib
+
+# The LIBRARY-STRUCTURE directive tells zpop the organizational hierarchy
+# of the download library.  This should not need to be changed. 
+library-structure PRODUCT PLATFORM VERSION
+
+# The TIMEOUT directive tells zpop how many seconds to wait for input from the
+# client before it gives up and closes the connection.  A value of 0 means
+# never time out; otherwise this value cannot be set below 600 seconds.
+timeout 600

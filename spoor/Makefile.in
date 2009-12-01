@@ -1,0 +1,492 @@
+SHELL = /bin/sh
+
+DYNSRCS = dlist.c dynstr.c glist.c prqueue.c hashtab.c intset.c
+
+# menuFrame.c removed
+#SPSRCS = button.c buttonv.c charim.c charwin.c cmdline.c cursim.c
+SPSRCS = button.c buttonv.c charim.c charwin.c cmdline.c \
+curswin.c event.c fullkm.c im.c keymap.c menu.c obsrvbl.c \
+popupv.c rtext.c rtextv.c sparsekm.c splitv.c spoor.c text.c \
+textview.c toggle.c view.c window.c wrapview.c
+
+DYNOBJS = dlist.o dynstr.o glist.o prqueue.o hashtab.o htstats.o intset.o
+
+# menuFrame.o removed
+#SPOBJS = button.o buttonv.o charim.o charwin.o cmdline.o cursim.o
+SPOBJS = button.o buttonv.o charim.o charwin.o cmdline.o \
+curswin.o event.o fullkm.o im.o keymap.o menu.o obsrvbl.o \
+popupv.o rtext.o rtextv.o sparsekm.o splitv.o spoor.o text.o \
+textview.o toggle.o view.o window.o wrapview.o
+
+MAINHDRS = spoor.h glist.h dlist.h dynstr.h prqueue.h hashtab.h \
+intset.h except.h vargs.h osconf.h
+
+# menuFrame.h removed
+CLASSHDRS = button.h buttonv.h charim.h charwin.h cmdline.h cursim.h \
+curswin.h event.h fullkm.h im.h keymap.h menu.h obsrvbl.h \
+popupv.h rtext.h rtextv.h sparsekm.h splitv.h spoor.h text.h \
+textview.h toggle.h view.h window.h wrapview.h
+
+INFOFILES = spoor.info except.info spcore.info dynadt.info
+
+prefix = @prefix@
+
+CC = @CC@
+RANLIB = @RANLIB@
+INSTALL = @INSTALL@
+INSTALL_DATA = @INSTALL_DATA@
+
+OPTIMIZE = -g
+
+CFLAGS = $(OPTIMIZE) $(INCLUDES) $(DEFINES) -I.
+
+.c.o:
+	$(CC) -c $(CFLAGS) $<
+
+all: libspoor.a libdynadt.a libexcept.a
+
+doc: $(INFOFILES)
+
+spoor.info: spoor.texinfo
+	makeinfo $?
+
+except.info: except.texinfo
+	makeinfo $?
+
+spcore.info: spcore.texinfo
+	makeinfo $?
+
+dynadt.info: dynadt.texinfo
+	makeinfo $?
+
+everything: all doc
+
+libspoor.a:  $(SPOBJS)
+	-rm -f libspoor.a
+	ar clq libspoor.a $(SPOBJS)
+	$(RANLIB) libspoor.a
+
+libdynadt.a:  $(DYNOBJS)
+	-rm -f libdynadt.a
+	ar clq libdynadt.a $(DYNOBJS)
+	$(RANLIB) libdynadt.a
+
+libexcept.a:  except.o
+	-rm -f libexcept.a
+	ar clq libexcept.a except.o
+	$(RANLIB) libexcept.a
+
+install: all $(MAINHDRS) $(CLASSHDRS)
+	-mkdir $(prefix)/lib
+	-mkdir $(prefix)/include
+	-mkdir $(prefix)/include/spoor
+	-rm -f $(prefix)/lib/libspoor.a
+	$(INSTALL_DATA) libspoor.a $(prefix)/lib
+	$(RANLIB) $(prefix)/lib/libspoor.a
+	chmod 0444 $(prefix)/lib/libspoor.a
+	-rm -f $(prefix)/lib/libdynadt.a
+	$(INSTALL_DATA) libdynadt.a $(prefix)/lib
+	$(RANLIB) $(prefix)/lib/libdynadt.a
+	chmod 0444 $(prefix)/lib/libdynadt.a
+	-rm -f $(prefix)/lib/libexcept.a
+	$(INSTALL_DATA) libexcept.a $(prefix)/lib
+	$(RANLIB) $(prefix)/lib/libexcept.a
+	chmod 0444 $(prefix)/lib/libexcept.a
+	cd $(prefix)/include && rm -f $(MAINHDRS)
+	$(INSTALL_DATA) $(MAINHDRS) $(prefix)/include
+	cd $(prefix)/include && chmod 0444 $(MAINHDRS)
+	cd $(prefix)/include/spoor && rm -f $(CLASSHDRS)
+	$(INSTALL_DATA) $(CLASSHDRS) $(prefix)/include/spoor
+	cd $(prefix)/include/spoor && chmod 0444 $(CLASSHDRS)
+
+instdoc: doc
+	-mkdir $(prefix)/lib/emacs
+	-mkdir $(prefix)/lib/emacs/info
+	cd $(prefix)/lib/emacs/info && rm -f $(INFOFILES)
+	$(INSTALL_DATA) $(INFOFILES) $(prefix)/lib/emacs/info
+
+insteverything: instdoc install
+
+clean:
+	-rm -f *.o *.a *~ *.bak *.BAK \#*
+	-rm -f *.ps *.aux *.log *.toc *.dvi
+	-rm -f *.cp *.cps *.fn *.fns *.ky *.kys
+	-rm -f *.pg *.pgs *.tp *.tps *.vr *.vrs
+	-rm -f core a.out l.out mon.out gmon.out
+	-rm -f $(INFOFILES)
+	-rm -f osconf.h sigarray.h
+
+# These dependencies are the sorted output of
+#     perl depend.pl *.[ch]
+# AFTER running configure (to generate osconf.h)
+button.o: button.h
+button.o: dlist.h
+button.o: except.h
+button.o: glist.h
+button.o: obsrvbl.h
+button.o: osconf.h
+button.o: spoor.h
+button.o: vargs.h
+buttonv.o: button.h
+buttonv.o: buttonv.h
+buttonv.o: charwin.h
+buttonv.o: dlist.h
+buttonv.o: event.h
+buttonv.o: except.h
+buttonv.o: fullkm.h
+buttonv.o: glist.h
+buttonv.o: im.h
+buttonv.o: keymap.h
+buttonv.o: menu.h
+buttonv.o: obsrvbl.h
+buttonv.o: osconf.h
+buttonv.o: prqueue.h
+buttonv.o: sparsekm.h
+buttonv.o: spoor.h
+buttonv.o: textview.h
+buttonv.o: toggle.h
+buttonv.o: vargs.h
+buttonv.o: view.h
+buttonv.o: window.h
+charim.o: charim.h
+charim.o: dlist.h
+charim.o: event.h
+charim.o: except.h
+charim.o: glist.h
+charim.o: im.h
+charim.o: keymap.h
+charim.o: obsrvbl.h
+charim.o: osconf.h
+charim.o: prqueue.h
+charim.o: sparsekm.h
+charim.o: spoor.h
+charim.o: textview.h
+charim.o: vargs.h
+charim.o: view.h
+charim.o: window.h
+charwin.o: charwin.h
+charwin.o: except.h
+charwin.o: glist.h
+charwin.o: osconf.h
+charwin.o: spoor.h
+charwin.o: vargs.h
+charwin.o: window.h
+cmdline.o: cmdline.h
+cmdline.o: dlist.h
+cmdline.o: except.h
+cmdline.o: glist.h
+cmdline.o: keymap.h
+cmdline.o: obsrvbl.h
+cmdline.o: osconf.h
+cmdline.o: spoor.h
+cmdline.o: text.h
+cmdline.o: textview.h
+cmdline.o: vargs.h
+cmdline.o: view.h
+cmdline.o: window.h
+cursim.o: charim.h
+cursim.o: charwin.h
+cursim.o: cursim.h
+cursim.o: curswin.h
+cursim.o: dlist.h
+cursim.o: dynstr.h
+cursim.o: event.h
+cursim.o: except.h
+cursim.o: glist.h
+cursim.o: im.h
+cursim.o: keymap.h
+cursim.o: obsrvbl.h
+cursim.o: osconf.h
+cursim.o: popupv.h
+cursim.o: prqueue.h
+cursim.o: sparsekm.h
+cursim.o: spoor.h
+cursim.o: textview.h
+cursim.o: vargs.h
+cursim.o: view.h
+cursim.o: window.h
+curswin.o: charwin.h
+curswin.o: curswin.h
+curswin.o: except.h
+curswin.o: glist.h
+curswin.o: osconf.h
+curswin.o: spoor.h
+curswin.o: vargs.h
+curswin.o: window.h
+dlist.o: dlist.h
+dlist.o: except.h
+dlist.o: glist.h
+dlist.o: osconf.h
+dosim.o: charim.h
+dosim.o: dlist.h
+dosim.o: dynstr.h
+dosim.o: event.h
+dosim.o: except.h
+dosim.o: glist.h
+dosim.o: im.h
+dosim.o: keymap.h
+dosim.o: obsrvbl.h
+dosim.o: osconf.h
+dosim.o: popupv.h
+dosim.o: prqueue.h
+dosim.o: sparsekm.h
+dosim.o: spoor.h
+dosim.o: textview.h
+dosim.o: vargs.h
+dosim.o: view.h
+dosim.o: window.h
+doswin.o: charwin.h
+doswin.o: doswin.h
+doswin.o: except.h
+doswin.o: glist.h
+doswin.o: osconf.h
+doswin.o: spoor.h
+doswin.o: vargs.h
+doswin.o: window.h
+dynstr.o: dynstr.h
+dynstr.o: osconf.h
+event.o: event.h
+event.o: except.h
+event.o: glist.h
+event.o: osconf.h
+event.o: spoor.h
+event.o: vargs.h
+except.o: except.h
+except.o: osconf.h
+except.o: sigarray.h
+except.o: vargs.h
+fullkm.o: except.h
+fullkm.o: fullkm.h
+fullkm.o: glist.h
+fullkm.o: keymap.h
+fullkm.o: osconf.h
+fullkm.o: spoor.h
+fullkm.o: vargs.h
+glist.o: except.h
+glist.o: glist.h
+glist.o: osconf.h
+hashtab.o: dlist.h
+hashtab.o: except.h
+hashtab.o: glist.h
+hashtab.o: hashtab.h
+hashtab.o: osconf.h
+htstats.o: dlist.h
+htstats.o: except.h
+htstats.o: glist.h
+htstats.o: hashtab.h
+htstats.o: osconf.h
+im.o: dlist.h
+im.o: event.h
+im.o: except.h
+im.o: glist.h
+im.o: im.h
+im.o: keymap.h
+im.o: obsrvbl.h
+im.o: osconf.h
+im.o: popupv.h
+im.o: prqueue.h
+im.o: sparsekm.h
+im.o: spoor.h
+im.o: text.h
+im.o: textview.h
+im.o: vargs.h
+im.o: view.h
+im.o: window.h
+intset.o: dlist.h
+intset.o: except.h
+intset.o: glist.h
+intset.o: intset.h
+intset.o: osconf.h
+keymap.o: except.h
+keymap.o: glist.h
+keymap.o: keymap.h
+keymap.o: osconf.h
+keymap.o: spoor.h
+keymap.o: vargs.h
+menu.o: button.h
+menu.o: buttonv.h
+menu.o: charwin.h
+menu.o: dlist.h
+menu.o: event.h
+menu.o: except.h
+menu.o: glist.h
+menu.o: im.h
+menu.o: keymap.h
+menu.o: menu.h
+menu.o: obsrvbl.h
+menu.o: osconf.h
+menu.o: popupv.h
+menu.o: prqueue.h
+menu.o: sparsekm.h
+menu.o: spoor.h
+menu.o: textview.h
+menu.o: vargs.h
+menu.o: view.h
+menu.o: window.h
+obsrvbl.o: dlist.h
+obsrvbl.o: except.h
+obsrvbl.o: glist.h
+obsrvbl.o: obsrvbl.h
+obsrvbl.o: osconf.h
+obsrvbl.o: spoor.h
+obsrvbl.o: vargs.h
+popupv.o: charwin.h
+popupv.o: curswin.h
+popupv.o: dlist.h
+popupv.o: doswin.h
+popupv.o: event.h
+popupv.o: except.h
+popupv.o: glist.h
+popupv.o: im.h
+popupv.o: keymap.h
+popupv.o: obsrvbl.h
+popupv.o: osconf.h
+popupv.o: popupv.h
+popupv.o: prqueue.h
+popupv.o: sparsekm.h
+popupv.o: spoor.h
+popupv.o: textview.h
+popupv.o: vargs.h
+popupv.o: view.h
+popupv.o: window.h
+prqueue.o: except.h
+prqueue.o: glist.h
+prqueue.o: osconf.h
+prqueue.o: prqueue.h
+rtext.o: dlist.h
+rtext.o: except.h
+rtext.o: glist.h
+rtext.o: intset.h
+rtext.o: obsrvbl.h
+rtext.o: osconf.h
+rtext.o: rtext.h
+rtext.o: spoor.h
+rtext.o: text.h
+rtext.o: vargs.h
+rtextv.o: charwin.h
+rtextv.o: dlist.h
+rtextv.o: except.h
+rtextv.o: glist.h
+rtextv.o: intset.h
+rtextv.o: keymap.h
+rtextv.o: obsrvbl.h
+rtextv.o: osconf.h
+rtextv.o: rtext.h
+rtextv.o: rtextv.h
+rtextv.o: spoor.h
+rtextv.o: text.h
+rtextv.o: textview.h
+rtextv.o: vargs.h
+rtextv.o: view.h
+rtextv.o: window.h
+sparsekm.o: dlist.h
+sparsekm.o: except.h
+sparsekm.o: glist.h
+sparsekm.o: keymap.h
+sparsekm.o: osconf.h
+sparsekm.o: sparsekm.h
+sparsekm.o: spoor.h
+sparsekm.o: vargs.h
+splitv.o: charwin.h
+splitv.o: dlist.h
+splitv.o: event.h
+splitv.o: except.h
+splitv.o: glist.h
+splitv.o: im.h
+splitv.o: keymap.h
+splitv.o: obsrvbl.h
+splitv.o: osconf.h
+splitv.o: prqueue.h
+splitv.o: sparsekm.h
+splitv.o: splitv.h
+splitv.o: spoor.h
+splitv.o: textview.h
+splitv.o: vargs.h
+splitv.o: view.h
+splitv.o: window.h
+spoor.o: dlist.h
+spoor.o: except.h
+spoor.o: glist.h
+spoor.o: hashtab.h
+spoor.o: osconf.h
+spoor.o: spoor.h
+spoor.o: vargs.h
+text.o: dlist.h
+text.o: dynstr.h
+text.o: except.h
+text.o: glist.h
+text.o: obsrvbl.h
+text.o: osconf.h
+text.o: regexpr.h
+text.o: spoor.h
+text.o: text.h
+text.o: vargs.h
+textview.o: charwin.h
+textview.o: dlist.h
+textview.o: dynstr.h
+textview.o: event.h
+textview.o: except.h
+textview.o: fullkm.h
+textview.o: glist.h
+textview.o: im.h
+textview.o: keymap.h
+textview.o: obsrvbl.h
+textview.o: osconf.h
+textview.o: prqueue.h
+textview.o: sparsekm.h
+textview.o: spoor.h
+textview.o: text.h
+textview.o: textview.h
+textview.o: vargs.h
+textview.o: view.h
+textview.o: window.h
+toggle.o: button.h
+toggle.o: dlist.h
+toggle.o: except.h
+toggle.o: glist.h
+toggle.o: obsrvbl.h
+toggle.o: osconf.h
+toggle.o: spoor.h
+toggle.o: toggle.h
+toggle.o: vargs.h
+view.o: dlist.h
+view.o: dynstr.h
+view.o: event.h
+view.o: except.h
+view.o: fullkm.h
+view.o: glist.h
+view.o: im.h
+view.o: keymap.h
+view.o: obsrvbl.h
+view.o: osconf.h
+view.o: prqueue.h
+view.o: sparsekm.h
+view.o: spoor.h
+view.o: textview.h
+view.o: vargs.h
+view.o: view.h
+view.o: window.h
+window.o: except.h
+window.o: glist.h
+window.o: osconf.h
+window.o: spoor.h
+window.o: vargs.h
+window.o: window.h
+wrapview.o: charim.h
+wrapview.o: charwin.h
+wrapview.o: dlist.h
+wrapview.o: event.h
+wrapview.o: except.h
+wrapview.o: glist.h
+wrapview.o: im.h
+wrapview.o: keymap.h
+wrapview.o: obsrvbl.h
+wrapview.o: osconf.h
+wrapview.o: prqueue.h
+wrapview.o: sparsekm.h
+wrapview.o: spoor.h
+wrapview.o: textview.h
+wrapview.o: vargs.h
+wrapview.o: view.h
+wrapview.o: window.h
+wrapview.o: wrapview.h

@@ -1,0 +1,10 @@
+:
+: Wrapper for xwud to hide bizarre exit status
+output=`xwud ${1+"$@"} 2>&1`
+if test -z "$output"
+then
+    exit 0
+else
+    echo "$output" 1>&2
+    exit 1
+fi

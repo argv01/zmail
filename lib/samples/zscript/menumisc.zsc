@@ -1,0 +1,93 @@
+#
+# These are additional functions that can be useful in building menu items.
+#
+# Copyright 1995 NCD Software Corporation.  All rights reserved.
+#
+
+function zmenu_insert_indented_file () {
+    ask -f __file "Double click on a directory in the list below to open it.  Select$(\n)the file you want to include in your message.  Then click on [Ok]."
+    if $status == 0
+        set __pfx=''
+        if $?indent_str != 0
+            set __pfx="$indent_str"
+        endif
+        if "x$__pfx" == "x"
+            ask -i __pfx "Indent with:"
+        else
+            ask -i __pfx -d "$__pfx" "Indent with:"
+        endif
+	if $status == 0
+	    if $1 == replace
+		textedit set-item compose-body
+		textedit delete-all
+	    endif
+            textedit set-item compose-body
+	    textedit get-cursor-position __indentstart
+            compcmd insert-file "$__file"
+            textedit get-cursor-position __indentend
+	    textedit set-selection-position $__indentstart $__indentend
+	    textedit indent "$__pfx"
+	endif
+        unset __file __pfx
+    endif
+}
+
+function zmenu_include_message_at_cursor() {
+    textedit set-item compose-body
+    textedit text-deselect
+    textedit text-open-line
+    textedit text-forward-char
+    textedit text-get-cursor-position __current_cursor
+    textedit text-end
+    textedit text-get-cursor-position __old_end_of_file
+    compcmd include-message
+    if $status != 0
+	textedit text-set-cursor-position $__current_cursor
+	textedit text-delete-backward-char
+	return
+    endif
+    textedit text-set-cursor-position $__old_end_of_file
+    textedit text-start-selecting
+    textedit text-end
+    textedit text-cut-selection
+    textedit text-deselect
+    textedit text-set-cursor-position $__current_cursor
+    textedit text-paste
+}
+
+function zmenu_all_ref_thread () {
+    set __mid="$[%i]" __ref="$[%?references?]"
+    if "x$__mid" != "x"
+	set __msgidlist="$__mid"'\|'
+    endif
+    if x"$__ref" != x
+	foreach i ($[%?references?]) 'set __msgidlist += $i"\|"'
+    endif
+    set __msgidlist += NONEXISTENT
+    if "$__msgidlist" == NONEXISTENT
+        eval error "Message $__msgno has no Message-Id."
+	unset __ref __mid __msgidlist
+	return
+    endif
+    search -h message-id,references "$__msgidlist"
+}
+
+function zmenu_toolbar_next() {
+    if $?message_state:(pinup)
+	if $?message_state:(is_next)
+	    msg_list .-$ | pick +2 -1 | pinup
+	    return
+	endif
+    endif
+    next
+}
+
+function zmenu_toolbar_previous() {
+    if $?message_state:(pinup)
+	if $?message_state:(is_prev)
+	    msg_list ^-. | pick -2 +1 | pinup
+	    return
+	endif
+    endif
+    previous
+}

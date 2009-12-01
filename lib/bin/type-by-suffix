@@ -1,0 +1,56 @@
+#!/bin/sh -e
+# -*- sh -*-
+
+# This file Copyright (c) 1994 Z-Code Software, a Division of NCD.
+# Permission to use, copy, modify, and distribute this material
+# for any purpose and without fee is hereby granted, provided
+# that the above copyright notice and this permission notice
+# appear in all copies, and that the name of Z-Code Software not
+# be used in advertising or publicity pertaining to this
+# material without the specific, prior written permission
+# of an authorized representative of Z-Code.  Z-CODE SOFTWARE
+# MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
+# OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+# WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+
+
+if [ $# -eq 1 ]; then
+
+  cat << end-of-mappings |
+\
+application/postscript		*.ps
+application/x-framemaker	*.fm
+application/x-showcase		*.sc
+audio/basic			*.au
+audio/x-aiff			*.aiff
+image/gif			*.gif
+image/jpeg			*.jfif
+image/jpeg			*.jpeg
+image/jpeg			*.jpg
+image/pbm			*.pbm
+image/tiff			*.tif
+image/tiff			*.tiff
+image/x-sgi-image		*.rgb
+image/x-xwd			*.xwd
+text/plain			*.[ch]
+text/plain			*.sh
+text/plain			*.text
+text/plain			*.txt
+video/mpeg			*.m2v
+video/mpeg			*.mpeg
+video/mpeg			*.mpg
+\
+end-of-mappings
+
+  while read mime key; do
+    case "$1" in
+      $key ) echo $mime; exit 0 ;;
+    esac
+  done
+
+else
+
+  echo "Usage: $0 <file-name>"
+  exit 1
+
+fi

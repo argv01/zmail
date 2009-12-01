@@ -1,0 +1,26 @@
+need to catch up on zmail, technical, sgi-support, support lists
+
+			   Z-Mail Motif 3.0
+			Consolidated Bug List
+
+Error == bug, error, or omission that causes Z-Mail to perform in an
+unexpected manner or otherwise not in accordance with specs/doc.
+
+Severity class
+1. Crash or loss of data
+2. Incorrect behavior, no workaround
+3. Incorrect behavior, workaround exists - even if workaround
+is ignoring Z-Mail
+4. Correct behavior, inadequate user feedback or confusing UI
+5. Error in documentation
+6. Performance
+7. Enhancement
+Obscurity rating
+A. Every user is likely to experience it
+B. Casual user may experience it
+C. Unlikely to recur often
+Triage rating
+*** = must fix before release (if we can reproduce)
+** = would be very nice to fix before release
+nothing = defer until after release
+(RN) = indicates that they are reported as "known" in 3.0 release notes.

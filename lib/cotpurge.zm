@@ -1,0 +1,9 @@
+# This script must run as the user whose folders are to be affected
+
+folder %
+pick -r * { `:u` } -ago -${mail_retention_days}d | delete
+update
+
+folder $new_mail_folder
+pick -r * { `:u` } -ago -${mail_retention_days}d | delete
+update

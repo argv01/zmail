@@ -1,0 +1,11 @@
+/*
+ * Copyright 1994 by Z-Code Software Corp., an NCD company
+ */
+AC_INIT(zyncd.c)
+AC_CONFIG_HEADER(config.h)
+
+AC_HAVE_HEADERS(stdarg.h)
+
+AC_HAVE_FUNCS(vsprintf)
+
+AC_OUTPUT(Makefile)

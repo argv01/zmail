@@ -1,0 +1,87 @@
+#
+#	Extended MIME types for various applications, and definitions
+#	for viewing messages from Z-Mail 2.1 and earlier
+#
+
+# Newly registered MIME type
+
+TYPE	image/pbm	"xloadimage '%s' &"	None	"Portable Bitmap"
+BITMAP	image/pbm	bitmaps/bitmap.xbm
+# type name which might be used by other MIME implentations
+ALIAS	image/x-pbm	image/pbm
+
+# X and OpenLook types.  These may require modifying the PATH.
+# PATH	/usr/bin/X11:/usr/openwin/bin
+TYPE	image/x-bitmap	"bitmap '%s' &"		None	"X11 bitmap"
+TYPE	image/x-xpm1	"olpixmap '%s' &"	None	"OL pixmap"
+ALIAS	bitmap		image/x-bitmap
+ALIAS	xpm1		image/x-xpm1
+ALIAS	xwd		image/x-xwd
+ALIAS	gif		image/gif
+
+# Supply icons for these types.  This first line is a bit mind-boggling,
+BITMAP	image/x-bitmap	bitmaps/bitmap.xbm
+BITMAP	image/x-xpm1	bitmaps/bitmap.xbm
+
+# type name which might be used by other MIME implentations
+ALIAS	image/xwd	image/x-xwd
+
+# Island Graphics products.  These first three types invoke the Island
+# tools directly.  These will work anywhere that has the Island tools.
+# If you are using PATH directives, you may need to add the local path.
+# PATH	/usr/local/Island/bin
+TYPE	application/x-Island-Write	"IslandWrite '%s' &"	\
+	"IslandWrite '%s' &"	"IslandWrite document"
+TYPE	application/x-Island-Draw	"IslandDraw '%s' &"	\
+	"IslandDraw '%s' &"	"IslandDraw document"
+TYPE	application/x-Island-Paint	"IslandPaint '%s' &"	\
+	"IslandPaint '%s' &"	"IslandPaint document"
+ALIAS	Island-Write	application/x-Island-Write
+ALIAS	Island-Draw	application/x-Island-Draw
+ALIAS	Island-Paint	application/x-Island-Paint
+# type names which might be used by other MIME implentations
+ALIAS	application/Island-Write	application/x-Island-Write
+ALIAS	application/Island-Draw		application/x-Island-Draw
+ALIAS	application/Island-Paint	application/x-Island-Paint
+
+# These two types use the a special Z-Code utility to contact a running
+# copy of the Island software and pass it a picture to display.  This
+# works only with recent versions of Island software and only when the
+# island_rq program is present in /usr/lib/Zmail/bin.
+#TYPE	application/x-Island-Draw	"island_rq -draw '%s' &"	\
+	"island_rq -draw '%s'"	IslandDraw	"IslandDraw document"
+#TYPE	application/x-Island-Paint	"island_rq -paint '%s' &"	\
+	"island_rq -paint '%s'"	IslandPaint	"IslandPaint document"
+
+# The Island bitmaps.
+BITMAP	application/x-Island-Write	bitmaps/islwrite.xbm
+BITMAP	application/x-Island-Draw	bitmaps/isldraw.xbm
+BITMAP	application/x-Island-Paint	bitmaps/islpaint.xbm
+
+# FrameMaker.  If you are using PATH directives, you may need to add the
+# local path to frame here.
+# PATH	/usr/frame/bin
+TYPE	application/x-FrameMaker	"maker -f '%s' &"	\
+	"maker -f '%s'"		"FrameMaker document"
+#TYPE	application/x-FrameMaker	"viewer -f '%s' &"	\
+	"fmclient -f '%s'"	"FrameMaker document"
+BITMAP	application/x-FrameMaker	bitmaps/frame.xbm
+ALIAS	FrameMaker			application/x-FrameMaker
+# type names which might be used by other MIME implentations
+ALIAS	application/FrameMaker		application/x-FrameMaker
+# mailtool type
+ALIAS	framemaker-document		application/x-FrameMaker
+
+# The Wingz spreadsheet.
+TYPE	application/x-Wingz	"Wingz '%s' &"		"Wingz '%s' &"	\
+	"Wingz document"
+# The following alternate definition was contributed by SGI
+#TYPE	application/x-Wingz	'if [ -z "`ps -ef|grep -v grep|grep Wingz`" ]; then Wingz '%s' & else xconfirm -t "Wingz is already running. Open detached document instead." -noframe > /dev/null; fi'	 None "Wingz document"
+
+BITMAP	application/x-Wingz	bitmaps/wingz.xbm
+ALIAS	Wingz			application/x-Wingz
+# type name which might be used by other MIME implentations
+ALIAS	application/Wingz	application/x-Wingz
+
+
+

@@ -1,0 +1,1299 @@
+<HTML>
+<HEAD>
+<!-- This HTML file has been created by texi2html 1.35
+     from ../richtext/rt-api.texi on 9 August 1996 -->
+
+<TITLE>Richtext API</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>Richtext API</H1>
+
+
+<H1><A NAME="SEC1" HREF="rt-api_toc.html#SEC1">Data</A></H1>
+
+<P>
+One aspect of the widget's behavior is a separation between "data" and
+"view."  The data is what's contained; the view is what's rendered.
+Certain operations--specifically, those described in this chapter--are
+independent of the view, and in fact it must be possible to manipulate a
+richtext data object without ever instantiating a view for it.
+Additionally, it should be possible to instantiate more than one view
+"observing" the same data object.
+
+</P>
+<P>
+In the functions described below, <STRONG><VAR>self</VAR></STRONG> is assumed to mean the
+richtext data object on which the operation is being performed.
+
+</P>
+
+
+
+<H2><A NAME="SEC2" HREF="rt-api_toc.html#SEC2">Content Locations</A></H2>
+
+<P>
+There are two ways to refer to individual locations in a text data
+object: positions and markers.  Positions are simple and lightweight;
+markers give additional functionality at the cost of additional
+complexity or overhead.  Regions build further upon these to address
+extended spans of text.
+
+</P>
+
+
+
+<H3><A NAME="SEC3" HREF="rt-api_toc.html#SEC3">Positions</A></H3>
+
+<P>
+A <STRONG>position</STRONG> represents a numeric offset from the start of a text
+data object.  Conceptually, positions are natural numbers or a subset
+thereof; the first character of the text data object begins at some
+minimal position, and positions monotonically increase in value
+throughout the content of a text data object.
+
+</P>
+<P>
+Positions increase with respect to the logical ordering of the text, not
+the display ordering.  In a text data object with bidirectional content,
+sequential positions may appear to "jump" from the right edge of a
+left-to-right span to the right edge of a right-to-left span that
+follows.  However, the positions are running in correct logical order,
+the same order in which one would read or speak the text.  Positions are
+ordered linguistically, not necessarily visually.
+
+</P>
+
+
+
+<H4><A NAME="SEC4" HREF="rt-api_toc.html#SEC4">Position stability</A></H4>
+
+<P>
+Positions address the textual content of a text data object, but are
+required to be insensitive to the style attributes of this text.  Thus,
+if the word "furfuraceous"<A NAME="FOOT1" HREF="rt-api_foot.html#FOOT1">(1)</A> begins at position twenty, it would remain at position
+twenty regardless of any changes to the color, size, slant, alignment,
+or other style attributes of text anywhere in the text data object.
+
+</P>
+
+<BLOCKQUOTE>
+<P>
+<I>Open question: there may be one exception to this rule.  If an
+implementation uses positions to count individual characters, and if
+there is a "language" or "encoding" or "character-set" style
+attribute that determines how bytes are to be grouped into characters, 
+then changing this attribute could potentially change the position of 
+characters at and after the change.  Do we need to permit this as an
+exception?  Or should we allow the restrictions above to implicitly
+forbid this behavior, thus mandating that implementations wishing to use
+positions as characters must not depend on style attributes to guide
+byte grouping?</I>
+</BLOCKQUOTE>
+
+<P>
+Positions are also stable with respect to textual content changes that
+appear <EM>at</EM> or <EM>after</EM> them in the text data object, but are
+unstable with respect to changes <EM>before</EM> them.  Again, if the word
+"furfuraceous" begins at position twenty and ends at position
+thirty-two, it would still begin at position twenty if changed to
+"furry antibodies", but there is no guarantee that position thirty-two
+still represents a word boundary or even a character boundary.
+
+</P>
+
+
+<H4><A NAME="SEC5" HREF="rt-api_toc.html#SEC5">Position opacity</A></H4>
+
+<P>
+Positions do not necessarily count characters or bytes.  The units they
+measure are implementation dependent and therefore opaque to the
+application.  Consequently, modifying positions by adding or subtracting
+arbitrary numeric values is in general unsafe.  If a document starts at
+position @math{n}, position @math{n+1} is not guaranteed to represent
+the second character, or even to lie on the boundary of <EM>any</EM>
+character.
+
+</P>
+<P>
+For example, an implementation may choose to represent positions as byte
+offsets, with a starting value of zero.  If an internationalized text
+data object contains ISO 10646.UCS-4 data (also known, albeit
+incorrectly, as "32-bit Unicode"), the first character may occupy
+positions zero through three, with the second character not beginning
+until position four.
+
+</P>
+<P>
+On the other hand, a different implementation might use UCS-4 natively
+to store all content, and therefore might use positions to count whole
+UCS-4 characters.  In that case, if the first character appears as
+position zero, the second character <EM>would</EM> appear at position one.
+Thus, even with special knowledge of the text encoding scheme, it is not
+safe to assume that positions have a one-to-one correspondence with
+bytes, characters, or any other unit meaningful to the application.
+
+</P>
+
+
+<H4><A NAME="SEC6" HREF="rt-api_toc.html#SEC6">Position granularity</A></H4>
+
+<P>
+Positions count units that are opaque to the application.  However,
+these units must have sufficient granularity to identify every
+individual location in the content of a text data object.  It must be
+possible to associate a unique position with every individual character,
+glyph, or other linguistically indivisible element in a text data
+object.
+
+</P>
+<P>
+Another way to think of this requirement is in terms of an insertion
+pointer.  If an insertion pointer can traverse across some discrete span
+of a text document, then the old and new locations of the pointer must
+have distinct positions.  Similarly, any range of text that may be
+selected must necessarily span at least two differing positions.
+
+</P>
+<P>
+Opaque embedded objects that flow with the textual content also occupy
+positions, since they are linguistically indivisible.  Thus, an inline
+image or text entry field would have a unique starting position.  A text
+entry field may contain words and characters of its own, but from the
+perspective of the text data object itself, such an embedded control is
+atomic.
+
+</P>
+
+
+<H4><A NAME="SEC7" HREF="rt-api_toc.html#SEC7">Position capabilities and limitations</A></H4>
+
+<P>
+Positions are simple, lightweight, and fast.  They are intended for
+short-term, transient use anywhere the application needs to navigate
+around in a document.  A rich set of operations are available for
+navigating using positions.  These include methods for locating nearby
+word boundaries, line breaks, and other landmarks.  See section <A HREF="rt-api.html#SEC13">Textual Landmarks</A> for more details on position-based navigation.
+
+</P>
+<P>
+However, positions are less suitable for long-term place holding, as
+positions do not know how to "slide along" when the underlying text
+data changes in length or content.  Positions know nothing of tracking
+dynamic changes to the text content.  If the text content is changed at
+or before some position, that position may no longer point anywhere
+useful; in fact, in multibyte or wide-character environments, it may not
+even point to a character boundary!
+
+</P>
+<P>
+A text data object can report the positions of various landmarks.
+However, positions themselves do not remember the text data object from
+which they were obtained.  They are simple offsets, nothing more.
+
+</P>
+<P>
+In the text that follows, positions may also sometimes be referred to as
+<STRONG>raw positions</STRONG> to contrast them with markers, which exist at
+positions but add greater functionality beyond a simple scalar.
+
+</P>
+
+
+<H4><A NAME="SEC8" HREF="rt-api_toc.html#SEC8">Position bindings and implementation</A></H4>
+
+<P>
+Because positions do not remember their originating text data object, a
+binding of positions to a particular language will often use nothing
+more than some native type for large unsigned integers.  When so bound,
+the largest representable position effectively determines the largest
+addressable text data object.  Thus, care must be taken to choose a
+representation format that is large enough to not unduly constrain
+client applications.
+
+</P>
+
+
+<H3><A NAME="SEC9" HREF="rt-api_toc.html#SEC9">Markers</A></H3>
+
+<P>
+A <STRONG>marker</STRONG> is a data structure which refers to a position within a
+text object.  Markers move along with their surrounding text, so that
+conceptually they continue to point to the same character, rather than
+simply to the same numeric position in the buffer.  Each insertion or
+deletion of text must update all affected markers.
+
+</P>
+
+
+
+<H4><A NAME="SEC10" HREF="rt-api_toc.html#SEC10">Marker properties</A></H4>
+
+<P>
+<U>Instance Variable:</U> Marker <B>position</B><P>
+<A NAME="IDX1"></A>
+At any moment in time, a marker refers to exactly one <VAR>position</VAR> in
+a text data object.  This position may be set to relocate the marker.
+The position may also be queried at any time, effectively allowing the
+application to use markers anywhere it might use lightweight positions.
+Unlike raw positions, though, a marker's position will be continuously
+updated as the underlying content changes.
+
+</P>
+<P>
+<U>Enumeration of Marker:</U> <B>Insertion-Preference</B> <I>{ before, after }</I><P>
+<A NAME="IDX2"></A>
+
+</P>
+<P>
+<U>Instance Variable:</U> Marker <B>insertion-preference</B><P>
+<A NAME="IDX3"></A>
+Each marker has an <VAR>insertion-preference</VAR> which describes how it is
+to be updated when insertions occur at exactly its position.  The type
+is either <CODE>before</CODE> or <CODE>after</CODE>, signifying that insertions
+should occur before or after the marker, respectively.
+
+</P>
+<P>
+For example, suppose that one <CODE>before</CODE> and one <CODE>after</CODE> marker
+both lie at position ten.  If five positions' worth of new text were
+inserted at position zero, both markers would move to fifteen.  If
+instead, the new text was inserted at position twelve, both markers
+would stay at ten.  However, if the text were inserted exactly at
+position ten, only the <CODE>before</CODE> marker would move to fifteen, while
+the <CODE>after</CODE> marker would remain at ten.
+
+</P>
+<P>
+<U>Instance Constant:</U> Marker <B>host</B><P>
+<A NAME="IDX4"></A>
+A marker addresses a position in exactly one text data object, its
+<VAR>HOST</VAR>.  A marker's host is responsible for updating its position
+whenever the host's textual content changes.
+
+</P>
+<P>
+Each marker has one and only one host for its entire lifetime.  This
+host is fixed when the marker is created.  A marker's host can be
+queried, but cannot be changed.
+
+</P>
+
+<BLOCKQUOTE>
+<P>
+<I>Open question: this restriction is here because I [BRL] cannot think
+of any actual cases where it would be useful to transplant a marker from
+one host to another.  Can anyone else think of a case where this would
+be useful?</I>
+
+</P>
+<P>
+<I>If so, it would be pretty straightforward to give markers the ability
+to "embed" and "unembed" from hosts at will.  We would want a pair
+of methods rather than a single instance variable, though, to reflect
+the fact that changing a marker's host will require further computation
+in old and new hosts.</I>
+
+</P>
+<P>
+<I>What about carrying markers along with cut and paste (only to/from
+our own widget, of course) so that they could be used as targets for
+automatically-updated HTML HREFs?  -- Bart</I>
+
+</P>
+<P>
+<I>I disagree.  Cut is conceptually like copy+delete, and in order to
+support copy at all, we're probably going to need to be able to copy
+markers as well.  Given that requirement, I still don't know that
+rehosting markers is useful.  -- BRL</I>
+</BLOCKQUOTE>
+
+<P>
+
+<U>Constructor:</U> Marker <B>create</B> <I>host position insertion-preference</I><P>
+<A NAME="IDX5"></A>
+A new marker is constructed at an initial <VAR>position</VAR> and with an
+initial <VAR>insertion-preference</VAR>.  The marker is embedded in a given
+text data object, the <VAR>host</VAR>.
+
+</P>
+
+
+<H4><A NAME="SEC11" HREF="rt-api_toc.html#SEC11">Marker navigation</A></H4>
+
+<P>
+Navigation using markers parallels navigation using positions
+(see section <A HREF="rt-api.html#SEC13">Textual Landmarks</A>).
+
+</P>
+<P>
+<U>Inquiry:</U> Marker <B>find-next-landmark</B> <I>landmark repeat</I><P>
+<A NAME="IDX6"></A>
+Locate the <VAR>repeat</VAR>'th textual landmark in the marker's host whose
+type is given by <VAR>landmark</VAR>, and which begins at or after the
+marker's current position.  Return the region enclosing this landmark,
+or a specially designated value if no such landmark exists.
+
+</P>
+<P>
+<U>Inquiry:</U> Marker <B>find-previous-landmark</B> <I>landmark repeat</I><P>
+<A NAME="IDX7"></A>
+Locate the <VAR>repeat</VAR>'th textual landmark in the marker's host whose
+type is given by <VAR>landmark</VAR>, and which ends at or before the
+marker's current position.  Return the region enclosing this landmark,
+or a specially designated value if no such landmark exists.
+
+</P>
+<P>
+<U>Inquiry:</U> Marker <B>find-enclosing-landmark</B> <I>landmark</I><P>
+<A NAME="IDX8"></A>
+Locate the textual landmark in the marker's host whose type is given by
+<VAR>landmark</VAR>, and which includes the marker's current position.
+Return the region enclosing this landmark, or a specially designated
+value if no such landmark exists.
+
+</P>
+
+
+<H3><A NAME="SEC12" HREF="rt-api_toc.html#SEC12">Regions</A></H3>
+
+<P>
+A region is a pair of markers in a text data object.  A region includes
+all text starting the position of its beginning marker, up to but not
+including the position of its ending marker.  In this sense, regions
+express half-closed intervals.
+
+</P>
+<P>
+If a region is nonempty, the beginning of a region is always
+linguistically before the ending of that region, regardless of display
+direction.  This is consistent with how positions are ordered: the
+position at which a region begins is always lesser than the position at
+which it ends.
+
+</P>
+
+<BLOCKQUOTE>
+<P>
+<I>Open question: we may need to distinguish regions based on a pair of
+markers from those based on a pair of positions.  Clearly, marker
+regions would be needed for recording style runs, but that's just one
+context.  Position regions should be more lightweight and may still
+suffice for most common uses.</I>
+</BLOCKQUOTE>
+
+
+
+<H4><A NAME="SEC13" HREF="rt-api_toc.html#SEC13">Textual Landmarks</A></H4>
+
+<P>
+The API provides a number of methods for navigating around within a text
+data object.  Navigation is based on textual and linguistic landmarks.
+<STRONG>Landmarks</STRONG> are interesting features of a run of text, such as the
+locations of character boundaries or the places where styles change.
+Style landmarks are described in section <A HREF="rt-api.html#SEC16">Styles</A>, below.  Here we describe
+navigation based on properties of the textual content itself.
+
+</P>
+<P>
+<U>Enumeration of Text-Data:</U> <B>Textual-Landmark</B> <I>{ character, word, white-space, sentence, hard-line, paragraph, division, document }</I><P>
+<A NAME="IDX9"></A>
+Textual landmarks are contiguous regions within the content of a text
+data object.  The text enclosed in such a range forms some sort of
+predefined larger group that may be of interest to the application.  The
+above enumeration lists all such predefined groupings.<A NAME="FOOT2" HREF="rt-api_foot.html#FOOT2">(2)</A>
+
+</P>
+<P>
+The landmarks of any given type are disjoint.  For example, any given
+position can be a member of no more than one paragraph at a time.  Thus,
+it is reasonable to refer to the @math{n}'th landmark beginning or
+ending before or after any position.  However, the landmarks of any
+given type are not necessarily strictly adjacent.  For example, in
+English text, the position(s) occupied by a space character are not part
+of any word landmark.
+
+</P>
+<P>
+Note that soft line breaks are not considered textual landmarks, as they
+are also a function of the view in which text is being displayed.
+See section <A HREF="rt-api.html#SEC23">View landmarks</A> for ways to probe how lines have been wrapped for
+display.
+
+</P>
+<P>
+<U>Inquiry:</U> Text-Data <B>find-next-landmark</B> <I>landmark repeat pos</I><P>
+<A NAME="IDX10"></A>
+Locate the <VAR>repeat</VAR>'th textual landmark whose type is given by
+<VAR>landmark</VAR>, and which begins at or after the position <VAR>pos</VAR>.
+Return the region enclosing this landmark, or a specially designated
+value if no such landmark exists.
+
+</P>
+<P>
+<U>Inquiry:</U> Text-Data <B>find-previous-landmark</B> <I>landmark repeat pos</I><P>
+<A NAME="IDX11"></A>
+Locate the <VAR>repeat</VAR>'th textual landmark whose type is given by
+<VAR>landmark</VAR>, and which ends at or before the position <VAR>pos</VAR>.
+Return the region enclosing this landmark, or a specially designated
+value if no such landmark exists.
+
+</P>
+<P>
+<U>Inquiry:</U> Text-Data <B>find-enclosing-landmark</B> <I>landmark pos</I><P>
+<A NAME="IDX12"></A>
+Locate the textual landmark whose type is given by <VAR>landmark</VAR>, and
+which includes the position <VAR>pos</VAR>.  Return the region enclosing this
+landmark, or a specially designated value if no such landmark exists.
+
+</P>
+
+<BLOCKQUOTE>
+<P>
+<I>Open question: the following alternate specification is more compact
+than the above.  I [BRL] think I like the above better, but I'm not
+sure.  The following might be cuter, but I don't think it is any more
+expressive.</I>
+
+</P>
+<P>
+<U>Inquiry:</U> Text-Data <B>find-landmark</B> <I>landmark repeat pos</I><P>
+<A NAME="IDX13"></A>
+Finds <VAR>repeat</VAR>'th following landmark for positive values of
+<VAR>repeat</VAR>, -<VAR>repeat</VAR>'th previous landmark for negative values of
+<VAR>repeat</VAR>, or enclosing landmark when <VAR>repeat</VAR> is zero.
+</BLOCKQUOTE>
+
+
+
+<H2><A NAME="SEC14" HREF="rt-api_toc.html#SEC14">Contents</A></H2>
+
+<P>
+This section describes operations that manipulate the contents of a text
+data object.
+
+</P>
+<P>
+<U>Function:</U> <B>clear</B><P>
+<A NAME="IDX14"></A>
+Erases the entire contents of <VAR>self</VAR>.
+
+</P>
+
+<BLOCKQUOTE>
+<P>
+<I>Not yet specified: what effect does this have on style information?</I>
+</BLOCKQUOTE>
+
+<P>
+
+<U>Mutagen:</U> Text-Data <B>insert-string</B> <I>string pos [insert-type]</I><P>
+<A NAME="IDX15"></A>
+Inserts <VAR>string</VAR> at position <VAR>pos</VAR>.  Optional argument
+<VAR>insert-type</VAR> controls how the insertion should affect markers that
+are positioned at <VAR>pos</VAR>.  Possible values for <VAR>insert-type</VAR> are
+<CODE>before</CODE>, <CODE>after</CODE>, and <CODE>neutral</CODE>.  If <VAR>insert-type</VAR>
+is <CODE>before</CODE>, insertions take place before any markers at <VAR>pos</VAR>,
+regardless of the markers' types.  If <VAR>insert-type</VAR> is <CODE>after</CODE>,
+insertions take place after the markers.  If <VAR>insert-type</VAR> is
+<CODE>neutral</CODE> (the default), insertions obey the type of the affected
+markers.
+
+</P>
+<P>
+<VAR>string</VAR> is a textual string in the "natural" representation
+format for the language binding in use.  For example, this might be
+(char *) in C.  When the string representation format includes special
+nonprinting or "control" characters, the result of inserting such
+characters shall be defined by the language binding.  For example, the C
+string "Paris\rin the\nspring." contains two special characters whose
+expected behavior might be to break lines or paragraphs, but it is not
+clear which would do what.  The actual behavior here is left to the
+language binding.
+
+</P>
+<P>
+<U>Mutagen:</U> Text-Data <B>replace-string</B> <I>string begin end [insert-type]</I><P>
+<A NAME="IDX16"></A>
+Inserts <VAR>string</VAR> in place of the contents of <VAR>self</VAR> which begin
+at <VAR>begin</VAR> and end before <VAR>end</VAR>.  Optional argument
+<VAR>insert-type</VAR> controls how the insertion should affect markers that
+are positioned at <VAR>begin</VAR> (see <CODE>insert</CODE>).
+
+</P>
+<P>
+<U>Mutagen:</U> Text-Data <B>delete</B> <I>begin end</I><P>
+<A NAME="IDX17"></A>
+Deletes the contents of <VAR>self</VAR> beginning at <VAR>begin</VAR> and ending
+before <VAR>end</VAR>.
+
+</P>
+<P>
+<U>Inquiry:</U> Text-Data <B>substring</B> <I>begin end</I><P>
+<A NAME="IDX18"></A>
+Returns the contents of <VAR>self</VAR> beginning at <VAR>begin</VAR> and ending
+before <VAR>end</VAR>.
+
+</P>
+<P>
+<U>Inquiry:</U> Text-Data <B>length</B><P>
+<A NAME="IDX19"></A>
+Returns the length of the contents of <VAR>self</VAR>.<A NAME="FOOT3" HREF="rt-api_foot.html#FOOT3">(3)</A>
+
+</P>
+<P>
+<U>Mutagen:</U> Text-Data <B>insert-control</B> <I>control pos [insert-type]</I><P>
+<A NAME="IDX20"></A>
+Inserts graphical control <VAR>control</VAR> at position <VAR>pos</VAR>.  Optional
+argument <VAR>insert-type</VAR> controls how the insertion should affect
+markers that are positioned at <VAR>pos</VAR>.
+
+</P>
+<P>
+Graphical controls flow with the text as though they were large (but
+atomic) characters.  The actual means of representing a control is
+defined by a particular language binding.
+
+</P>
+
+
+<H2><A NAME="SEC15" HREF="rt-api_toc.html#SEC15">Searching</A></H2>
+
+<P>
+<U>Function:</U> <B>find</B> <I>str pos</I><P>
+<A NAME="IDX21"></A>
+Find the position of the first occurrence of the string <VAR>str</VAR> within
+<VAR>self</VAR> at or beyond <VAR>pos</VAR>, or a null value if unsuccessful.
+
+</P>
+
+
+<H2><A NAME="SEC16" HREF="rt-api_toc.html#SEC16">Styles</A></H2>
+
+<P>
+A style is a set of attribute-value pairs which applies to a region of
+text.  The ends of the region operate like markers, in that they "move
+along with the text."  Style regions may nest or overlap.
+
+</P>
+<P>
+The set of defined attributes, and the types of these attributes, is
+fixed when the application is built.  We describe a minimal set of
+attributes that will be supported by all implementations.  Implementors
+are free to extend this set as they see fit, so long as such extensions
+behave in a manner consistent with what is described here.<A NAME="FOOT4" HREF="rt-api_foot.html#FOOT4">(4)</A>
+
+</P>
+<P>
+From the point of view of the common style API, every style attribute is
+considered to be defined at every position.  If, for a particular
+attribute, it is a useful and meaningful notion to consider it to be
+"undefined" at some places, then "undefined" shall simply be part of
+the representation type of values for that attribute.
+
+</P>
+<P>
+For example, a numeric attribute might have values drawn from the set of
+integers.  An <EM>optional</EM> numeric attribute might instead have
+values drawn from the set of integers union a special "omitted" value.
+Either way, each attribute always has a single, well-defined value.
+Querying the value of either attribute always returns a valid member of
+some known, well-defined set of possible values.
+
+</P>
+<P>
+Style attributes are broadly classified as either "character" or
+"paragraph" attributes.  This classification affects the granularity
+with which attributes can be applied to text.  Loosely speaking,
+character attributes apply to individual characters, while paragraph
+attributes apply to whole paragraphs.  This will be defined in greater
+detail below.
+
+</P>
+
+
+
+<H3><A NAME="SEC17" HREF="rt-api_toc.html#SEC17">Common style behavior</A></H3>
+
+
+<BLOCKQUOTE>
+<P>
+<I>Open question: how useful is a unified notion of style attributes
+regardless of character/paragraph granularity?  Should there be methods
+that operate on all attributes together?  Or should character and
+paragraph attributes be part of completely distinct worlds?  For
+example, should there only be "next-character-style-change" and
+"next-paragraph-style-change" methods, or should there also be a
+"next-style-change" method that picks up changes to both?  Should
+there be distinct "get-character-styles-at-position" and
+"get-paragraph-styles-at-position" methods, or just a unified
+"get-styles-at-position" method?</I>
+</BLOCKQUOTE>
+
+<P>
+<U>Inquiry:</U> Text-Data <B>next-value-change</B> <I>pos [limit]</I><P>
+<A NAME="IDX22"></A>
+Starting at position <VAR>pos</VAR>, scan forward for the first change in any
+style attribute and return that position.  Optional position <VAR>limit</VAR>
+limits the search and defaults to the end of the text.  If no style
+change is found, return a null value.
+
+</P>
+<P>
+<U>Inquiry:</U> Text-Data <B>get-attribute-value</B> <I>position attribute</I><P>
+<A NAME="IDX23"></A>
+Get the value of a single <VAR>attribute</VAR> at <VAR>position</VAR>.
+
+</P>
+<P>
+<U>Mutagen:</U> Text-Data <B>set-attribute-value</B> <I>region attribute value</I><P>
+<A NAME="IDX24"></A>
+Set the <VAR>value</VAR> of a single <VAR>attribute</VAR> in <VAR>region</VAR>.  Other
+attributes are unaffected, and retain their previous values.
+
+</P>
+<P>
+<U>Inquiry:</U> Text-Data <B>get-attribute-values</B> <I>position</I><P>
+<A NAME="IDX25"></A>
+Get the values of all attributes at <VAR>position</VAR>.
+
+</P>
+<P>
+<U>Inquiry:</U> Text-Data <B>get-consistent-attributes</B> <I>region</I><P>
+<A NAME="IDX26"></A>
+Identify all attributes whose values are consistent across <VAR>region</VAR>.
+This provides attributes only; if the application requires the values of
+these attributes, it can use "get-attribute-values" at any position
+within the region.
+
+</P>
+<P>
+<U>Mutagen:</U> set-values <B>region</B> <I>pairs-subset</I><P>
+<A NAME="IDX27"></A>
+Set the values of multiple attributes in <VAR>region</VAR>.  The
+attribute-value pairs are given by <VAR>pairs-subset</VAR>.  As the name
+suggests, it is not necessary to provide values for all possible
+attributes.  Other attributes not in <VAR>pairs-subset</VAR> are unaffected,
+and retain their previous values.
+
+</P>
+<P>
+<U>Function:</U> <B>style</B> <I>pos</I><P>
+<A NAME="IDX28"></A>
+Return the set of style attributes in effect at position <VAR>pos</VAR>.
+
+</P>
+
+
+
+<H4><A NAME="SEC18" HREF="rt-api_toc.html#SEC18">Boolean attributes</A></H4>
+
+<P>
+Boolean attributes are a special case where the only possible values for
+the attribute are "true" and "false".  Single-weight boldfacing is
+an obvious example of a boolean attribute.  The common "set" methods
+work just the same for boolean attributes as they do for other
+attributes.  That is, they give attributes single, uniform values across
+entire ranges of text.
+
+</P>
+<P>
+However, boolean attributes provide a second interface for setting their
+values.  This interface toggles the value of the attribute at each
+position in a region.  Where the value was true, it becomes false; where
+false, it becomes true.
+
+</P>
+<P>
+<U>Mutagen:</U> Text-Data <B>toggle-attribute</B> <I>region attribute</I><P>
+<A NAME="IDX29"></A>
+Toggle the value of a single <VAR>attribute</VAR> in <VAR>region</VAR>.  Where the
+attribute's value was previously true, it becomes false.  Where false,
+it becomes true.  Other attributes are unaffected, and retain their
+previous values.
+
+</P>
+
+
+<H4><A NAME="SEC19" HREF="rt-api_toc.html#SEC19">Nested numeric attributes</A></H4>
+
+<P>
+Nested numeric attributes represent levels of deviation from some
+baseline.  One example of such an attribute would be left indent, where
+the baseline is a document-wide left margin.  The common "set" methods
+work just the same for nested numeric attributes as they do for other
+attributes.  That is, they give attributes single, uniform values across
+entire ranges of text.
+
+</P>
+<P>
+However, nested numeric attributes provide a second interface for
+setting their values.  This interface allows attributes to be adjusted
+relative to their current values.  For example, suppose one has a region
+that includes some unindented text, some text indented one inch, and
+some text indented three inches.  The common "set" methods would allow
+the application to set all indents across the entire region to, say,
+exactly two inches.  However, the additional methods below could be used
+to <EM>increase</EM> the indent by one inch, resulting in text variously
+indented one, two, and four inches.  The attribute does not receive a
+uniform value across the region, but rather is <EM>adjusted</EM> by a
+uniform value.
+
+</P>
+<P>
+<U>Mutagen:</U> Text-Data <B>adjust-attribute</B> <I>region attribute delta</I><P>
+<A NAME="IDX30"></A>
+Uniformly adjust the values associated with <VAR>attribute</VAR> across
+<VAR>region</VAR>.  All values are adjusted by the same <VAR>delta</VAR>, which
+must be of a type that can represent the difference between two values
+of <VAR>attribute</VAR>.  Other attributes are unaffected, and retain their
+previous values.
+
+</P>
+<P>
+If the attribute's value was originally consistent across <VAR>region</VAR>,
+it will remain consistent after the adjustment.  However, if the value
+was not originally consistent, it may or may not become consistent.
+Using the above example, increasing the left indent will tend to
+preserve inconsistencies.  However, subtracting twenty inches from the
+left indent would probably leave all text uniformly unindented.
+
+</P>
+
+
+<H3><A NAME="SEC20" HREF="rt-api_toc.html#SEC20">Character attributes</A></H3>
+
+<P>
+Character attributes affect the display or rendering of individual
+characters.  These attributes always apply to whole characters.  Setting
+a character attribute at a single position is equivalent to setting it
+across the entire region of the character enclosing that position.  In
+other words, character attributes are "granular" down to the level of
+whole characters.
+
+</P>
+<P>
+For example, suppose the first character occupies positions zero through
+three, inclusive.  Suppose nothing is bold initially, and that we then
+turn on the "bold" attribute at position two.  The character landmark
+enclosing position two is @math{[0, 4)}, so bold is effectively turned
+on for this entire region.  Querying the "bold" attribute at position
+zero, one, two, or three would return "true".  Even though the change
+was only applied at position two, it affects the whole character
+uniformly and simultaneously.
+
+</P>
+
+<BLOCKQUOTE>
+<P>
+<I>Open question: </I>italicized<I> items below may not be required.
+Deeper consideration is required of the benefit these would provide
+versus the additional burden they would place on implementors.  At the
+very least, implementors should do nothing to preclude adding these at a
+later date.</I>
+</BLOCKQUOTE>
+
+<DL COMPACT>
+
+<DT><I>blink</I>
+<DD>
+boolean
+<DT>bold
+<DD>
+boolean
+<DT>font-family
+<DD>
+{ proportional, monospace }
+<DT>font-size
+<DD>
+nested integer
+<DT>foreground-color
+<DD>
+color
+<DT>italic
+<DD>
+boolean
+<DT><I>strike-through</I>
+<DD>
+boolean
+<DT><I>vertical-offset</I><A NAME="FOOT5" HREF="rt-api_foot.html#FOOT5">(5)</A>
+<DD>
+nested integer
+<DT>underline
+<DD>
+boolean
+</DL>
+
+
+
+<H3><A NAME="SEC21" HREF="rt-api_toc.html#SEC21">Paragraph attributes</A></H3>
+
+<P>
+Paragraph attributes affect the display or rendering of individual
+paragraphs.  These attributes always apply to whole paragraphs.  Setting
+a paragraph attribute at a single position is equivalent to setting it
+across the entire region of the paragraph enclosing that position.  In
+other words, paragraph attributes are "granular" down to the level of
+whole paragraphs.
+
+</P>
+<P>
+For example, suppose the first paragraph occupies positions zero through
+nineteen, inclusive, and the second runs from twenty through thirty.
+Suppose nothing is centered initially, and that we turn on centering on
+the region @math{[10, 25)}.  The union of paragraph landmarks completely
+enclosing this region is @math{[0, 31)}, so centering is effectively
+turned on for this entire, larger region.  Querying the
+"justification" attribute at any position from zero through thirty
+would return "center".  Even though the change was only applied on
+parts of the paragraphs, it affects whole paragraphs uniformly and
+simultaneously.
+
+</P>
+
+<BLOCKQUOTE>
+<P>
+<I>Open question: <I>italicized</I> items below may not be required.
+Deeper consideration is required of the benefit these would provide
+versus the additional burder they would place on implementors.  At the
+very least, implementors should do nothing to preclude adding these at a
+later date.</I>
+</BLOCKQUOTE>
+
+<DL COMPACT>
+
+<DT><I>initial-left-indent</I>
+<DD>
+nested integer
+<DT>justification
+<DD>
+{ <I>full</I>, left, right, center, lingual, antilingual }
+<DT>left-indent
+<DD>
+nested integer
+<DT>right-indent
+<DD>
+nested integer
+<DT><I>minimum-space-above</I>
+<DD>
+natural number
+<DT><I>minumum-space-below</I>
+<DD>
+natural number
+</DL>
+
+
+<BLOCKQUOTE>
+<P>
+<I>Open question: how to express intangible paragraph prefix text, such
+as the bullets or numbers in lists.</I>
+</BLOCKQUOTE>
+
+
+
+<H1><A NAME="SEC22" HREF="rt-api_toc.html#SEC22">View</A></H1>
+
+
+
+<H2><A NAME="SEC23" HREF="rt-api_toc.html#SEC23">View landmarks</A></H2>
+
+<P>
+<U>Function:</U> <B>prev-soft-bol</B> <I>pos</I><P>
+<A NAME="IDX31"></A>
+Starting at <VAR>pos</VAR>, scan backwards for the first <STRONG>soft
+beginning-of-line</STRONG>.  This is either the beginning of text or a text
+position following a soft <EM>or hard</EM> newline.  If <VAR>pos</VAR> is a
+soft bol, return it.
+
+</P>
+<P>
+Note to implementors: this function can be expressed by a call to
+<CODE>prev-hard-bol</CODE> followed by repeated calls to <CODE>next-soft-bol</CODE>,
+stopping before the result of <CODE>next-soft-bol</CODE> exceeds <VAR>pos</VAR>.
+
+</P>
+<P>
+<U>Function:</U> <B>next-soft-bol</B> <I>pos</I><P>
+<A NAME="IDX32"></A>
+Starting at <VAR>pos</VAR>, <EM>which is assumed to be a hard or a soft
+beginning-of-line</EM>, scan forward for the next soft bol return it.  The
+result is strictly greater than <VAR>pos</VAR>, or a null value if no soft
+bol is found.
+
+</P>
+
+
+<H2><A NAME="SEC24" HREF="rt-api_toc.html#SEC24">View styles</A></H2>
+
+<P>
+View styles augment the basic character and paragraph styles described
+earlier.  However, these additional attributes are only meaningful in
+the context of live user interaction.  Thus, they are controlled not by
+a text data object, but rather by a text view.
+
+</P>
+
+<BLOCKQUOTE>
+<P>
+<I>Open question: if one asks a text data object for the next change,
+and the only changes are to view styles, how does it behave?  Is it
+aware of view styles but unable to set them?  Or is it completely
+unaware of view styles?  If so, do views need their own next-change
+method?</I>
+</BLOCKQUOTE>
+
+
+
+<H3><A NAME="SEC25" HREF="rt-api_toc.html#SEC25">View character attributes</A></H3>
+
+<P>
+All of the attributes listed below have values that are closures.  A
+<STRONG>closure</STRONG> is a piece of application-provided code to be executed
+when the user performs certain actions.  This provides a notification
+mechanism whereby the application can attach its own special behavior to
+various events in the text view.
+
+</P>
+<P>
+The actual type of a "closure" will vary from one language binding to
+another.  It might be an STL-like functional object, or a simple
+function pointer with callback data, or even a literal string to be
+evaluated by some scripting engine.
+
+</P>
+
+<BLOCKQUOTE>
+<P>
+<I>Open question: what additional data is provided to the closure?  The
+single position of the interesting event?  The entire surrounding region
+of text sharing the same value for the attribute in question?  Something
+else entirely?  Somehow I feel that leaving that entirely up the
+language binding is not the right answer.  The answers may vary, by the
+way, among the different attributes themselves.</I>
+</BLOCKQUOTE>
+
+<DL COMPACT>
+
+<DT>pointer-button-up
+<DD>
+closure
+<DT>pointer-button-down
+<DD>
+closure
+<DT>pointer-motion-enter
+<DD>
+closure
+<DT>pointer-motion-exit
+<DD>
+closure
+</DL>
+
+
+
+<H2><A NAME="SEC26" HREF="rt-api_toc.html#SEC26">The selection</A></H2>
+
+<P>
+The <STRONG>selection</STRONG> is a set of regions on which certain user
+interactions apply.  Note that the selection is a set of regions, not a
+single region; this is to support implementations that wish to provide
+disjoint selections.
+
+</P>
+
+
+
+<H3><A NAME="SEC27" HREF="rt-api_toc.html#SEC27">Selection state</A></H3>
+
+<P>
+<U>Enumeration of Text-View:</U> <B>Selection-State</B> <I>{ none, insertion, single-selection, multiple-selection }</I><P>
+<A NAME="IDX33"></A>
+At any moment in time, a text view has exactly one of four possible
+kinds of active selection.
+
+</P>
+<DL COMPACT>
+
+<DT><STRONG>none</STRONG>
+<DD>
+No text is selected, and no insertion point is active.  This can
+generally only happen in read-only text.<A NAME="FOOT6" HREF="rt-api_foot.html#FOOT6">(6)</A>
+
+<DT><STRONG>insertion</STRONG>
+<DD>
+No text is selected, and an insertion point is active.  This can
+generally only happen in read-write text.
+
+<DT><STRONG>single-selection</STRONG>
+<DD>
+Exactly one contiguous region of text is selected, and no insertion
+point is active.
+
+<DT><STRONG>multiple-selection</STRONG>
+<DD>
+Two or more non-contiguous regions of text are selected, and no
+insertion point is active.  Some implementations might not ever enter
+this state.
+
+</DL>
+<P>
+
+<U>Inquiry:</U> Text-View <B>selection-state</B><P>
+<A NAME="IDX34"></A>
+Retrieve <VAR>self</VAR>'s current selection state.  This value determines
+which of the selection accessors (see section <A HREF="rt-api.html#SEC28">Selection access</A>) are valid.
+
+</P>
+
+
+<H3><A NAME="SEC28" HREF="rt-api_toc.html#SEC28">Selection access</A></H3>
+
+<P>
+<U>Accessor:</U> Text-View <B>selection-regions</B><P>
+<A NAME="IDX35"></A>
+Accesses the set of regions defining <VAR>self</VAR>'s current selection.
+
+</P>
+<P>
+If the selection state is "multiple-selection", this is a set
+containing two or more regions.  Conversely, setting
+<VAR>selection-regions</VAR> to such a set places the text view object in
+"multiple-selection" state.<A NAME="FOOT7" HREF="rt-api_foot.html#FOOT7">(7)</A>
+
+</P>
+<P>
+If the selection state is "single-selection", this is a set containing
+exactly one nonempty region.  Conversely, setting
+<VAR>selection-regions</VAR> to such a set places the text view object in
+"single-selection" state.
+
+</P>
+<P>
+If the selection state is "insertion", this is a set containing
+exactly on empty region beginning and ending at the insertion point.
+Conversely, setting <VAR>selection-regions</VAR> to such a set places the
+text view object in "insertion" state.
+
+</P>
+<P>
+If the selection state is "none", this is the empty set.  Conversely,
+setting <VAR>selection-regions</VAR> to such the empty set places the text
+view object in "none" state.
+
+</P>
+<P>
+<U>Accessor:</U> Text-View <B>selection-region</B><P>
+<A NAME="IDX36"></A>
+Accesses the single region defining <VAR>self</VAR>'s current selection.
+
+</P>
+<P>
+If the selection state is "single-selection", this is a set containing
+exactly one nonempty region.  Conversely, setting
+<VAR>selection-regions</VAR> to such a set places the text view object in
+"single-selection" state.
+
+</P>
+<P>
+If the selection state is "insertion", this is a set containing
+exactly on empty region beginning and ending at the insertion point.
+Conversely, setting <VAR>selection-regions</VAR> to such a set places the
+text view object in "insertion" state.
+
+</P>
+<P>
+If the selection state is "none" or "multiple-selection", this is
+undefined.<A NAME="FOOT8" HREF="rt-api_foot.html#FOOT8">(8)</A>
+
+</P>
+<P>
+<U>Accessor:</U> Text-View <B>insertion-point</B><P>
+<A NAME="IDX37"></A>
+Accesses the marker defining <VAR>self</VAR>'s current insertion point.
+Setting <VAR>insertion-point</VAR> places the text view object in
+"insertion" state.
+
+</P>
+<P>
+If the selection state is not "insertion", this is
+undefined.<A NAME="FOOT9" HREF="rt-api_foot.html#FOOT9">(9)</A>
+
+</P>
+
+
+<H2><A NAME="SEC29" HREF="rt-api_toc.html#SEC29">User Interactions</A></H2>
+
+<P>
+These interactions can only be performed in read-write text.
+
+</P>
+<P>
+<U>Interaction:</U> <B>clear-selection</B><P>
+<A NAME="IDX38"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>cut-selection</B><P>
+<A NAME="IDX39"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>delete-backward-char</B><P>
+<A NAME="IDX40"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>delete-backward-word</B><P>
+<A NAME="IDX41"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>delete-forward-char</B><P>
+<A NAME="IDX42"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>delete-forward-word</B><P>
+<A NAME="IDX43"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>delete-to-beginning-of-line</B><P>
+<A NAME="IDX44"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>delete-to-end-of-line</B><P>
+<A NAME="IDX45"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>insert</B><P>
+<A NAME="IDX46"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>open-line</B><P>
+<A NAME="IDX47"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>paste</B><P>
+<A NAME="IDX48"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>self-insert</B><P>
+<A NAME="IDX49"></A>
+
+</P>
+<P>
+The following interactions can be performed in read-only text and in
+read-write text.
+
+</P>
+<P>
+<U>Interaction:</U> <B>toggle-wrap</B><P>
+<A NAME="IDX50"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>backward-char</B><P>
+<A NAME="IDX51"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>backward-word</B><P>
+<A NAME="IDX52"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>beginning</B><P>
+<A NAME="IDX53"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>beginning-of-line</B><P>
+<A NAME="IDX54"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>copy-selection</B><P>
+<A NAME="IDX55"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>deselect</B><P>
+<A NAME="IDX56"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>end</B><P>
+<A NAME="IDX57"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>end-of-line</B><P>
+<A NAME="IDX58"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>forward-char</B><P>
+<A NAME="IDX59"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>forward-word</B><P>
+<A NAME="IDX60"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>next-line</B><P>
+<A NAME="IDX61"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>next-page</B><P>
+<A NAME="IDX62"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>previous-line</B><P>
+<A NAME="IDX63"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>previous-page</B><P>
+<A NAME="IDX64"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>resume-selecting</B><P>
+<A NAME="IDX65"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>scroll-down</B><P>
+<A NAME="IDX66"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>scroll-up</B><P>
+<A NAME="IDX67"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>select-all</B><P>
+<A NAME="IDX68"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>start-selecting</B><P>
+<A NAME="IDX69"></A>
+
+</P>
+<P>
+<U>Interaction:</U> <B>stop-selecting</B><P>
+<A NAME="IDX70"></A>
+
+</P>
+</BODY>
+</HTML>

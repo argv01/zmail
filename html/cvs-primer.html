@@ -1,0 +1,254 @@
+<HTML>
+<HEAD>
+<TITLE>CVS Primer</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>CVS Primer</H1>
+<ADDRESS>srwebster</ADDRESS> 5/10/94
+<P>
+CVS is the system Z-Code uses to maintain a repository of C source
+files, installation files, and textual documentation for products we
+develop.  Nearly everything that makes up a Z-Code product is stored
+in the CVS repository.
+<P>
+CVS allows each engineer to check out a copy of a source file, edit
+it, and commit their changes back into the repository for other
+engineers to use.
+<P>
+Several engineers can modify their own copy of a file simultaneously,
+and when each commits their changes, CVS takes care of folding all the
+changes into one consistent file in the repository.  When CVS can't
+figure out how to insert a particular set of changes into the
+repository, it warns the engineer and won't commit the changes.
+<P>
+The CVS software is a GNU product, and is based on RCS, a popular
+source code control system.
+<P>
+<H3>Some terminology:</H3>
+<P>
+<DL>
+<DT>repository
+<DD>the central CVS warehouse of files.  You NEVER
+directly modify a file in the repository; it is only modified by
+CVS tools that you invoke with the <tt>cvs</tt> command.
+<DT>vault file
+<DD>a file in the repository.
+<DT>check out
+<DD>You <I>check out</I> a file from the repository to make a
+private copy that you can modify.
+<DT>update
+<DD>When you <I>update</I> your copy of a file, changes that other
+engineers have made to that file are folded into your private copy.
+If there are conflicts with changes you've made, you are warned.
+<DT>commit
+<DD>You <I>commit</I> a file to the repository to cause the changes
+you've made to your copy to be written into the vault file.  Only
+files that have been previously <I>checked out</I> may be committed.
+<DT>branch
+<DD>A <I>branch</I> is a splitting-off of a set of files in the
+repository from the main trunk.  Essentially, files on a branch
+are in their own sub-repository, and are checked out and committed
+separately from the rest of the repository.
+<DT>trunk
+<DD>When part of the repository has been split off to form a
+branch, the remainder of the repository is called the <I>trunk</I>.
+<DT>attic
+<DD>special directories in the repository that hold
+old vault files.  Sometimes if things go very badly, you can
+recover an old file from the attic, dust it off, and use it.
+</DL>
+<P>
+<H3><A NAME="setup">Setting up</A></H3>
+<P>
+To get ready to use CVS, you need to set the <tt>CVSROOT</tt> environment
+variable as follows:
+<P><blockquote><samp>
+setenv CVSROOT /zyrcon/usr1/build/SrcRep
+</samp></blockquote>
+<P>
+<tt>CVSROOT</tt> tells the CVS system where the repository lives. Since this
+path won't change anytime soon, you can place the above command in
+your <tt>~/.cshrc</tt> (or equivalent) and forget about it.
+<P>
+<H3>The commands</H3>
+<P>
+For the purposes of this primer, the only command you need to use is
+<tt>cvs</tt>.  The <tt>cvs</tt> command has several subcommands, some of
+which are described here.  For complete information about CVS, read the cvs
+man page and the CVS info page (<tt>M-x info</tt> in emacs).
+<P>
+Note that the <tt>cvs</tt> command is currently only available on the SGI IRIX
+and certain SunOS 4 machines at Z-Code.  If you have a pressing need
+for cvs to be available on another platform, rlogin to an IRIX machine
+and lump it.  Alternatively, use an IRIX machine to check the sources out of
+the repository, then build it on your platform.
+<P>
+Use the <tt>-H</tt> switch to the <tt>cvs</tt> command, or any subcommand,
+to get quick online help.
+A brief summary of the <tt>cvs</tt> commands of note follows:
+<P>
+<DL>
+<DT><tt>cvs checkout modules</tt>
+<DD>A necessary preliminary for most cvs work: creates your
+private copy of the source for modules (modules are named
+collections of source; you can also use a path relative
+to the source repository here). You can work with this
+copy without interfering with others' work.  At least
+one subdirectory level is always created.
+<P>
+Example:
+<P><blockquote><samp><pre>
+cd ~/z-code            (you've already created z-code)
+cvs checkout zmail     (check out the "zmail" tree)
+</pre></samp></blockquote>
+<P>
+The keyword <tt>checkout</tt> may be abbreviated as <tt>co</tt>.
+<P>
+<DT><A NAME="update"><tt>cvs update [-d] [path]</tt></A>
+<DD> Execute this command from within your private source
+directory when you wish to update your copies of source
+files from changes that other developers have made to
+the source in the repository.
+You can specify a relative path to the file or
+directory you want to update.  The default
+path to update is <tt>.</tt> (the current directory).
+<P>
+The <tt>-d</tt> option to update tells cvs that it should
+implicitly check out subdirectories that aren't in
+your private tree.
+<P>
+As the update proceeds, each file that is updated
+is listed and marked with a flag:
+<P>
+<DL>
+<DT>U
+<DD>file updated OK, changes were made by CVS
+<DT>M
+<DD>file updated OK, changes were made by CVS, and this
+file contains uncommitted changes that you've made
+<DT>C
+<DD>file <B>NOT</B> updated OK; changes were made by CVS, but
+there are conflicts, which have been marked in the file with
+&gt;&gt;&gt;&gt;&gt;&gt; and &lt;&lt;&lt;&lt;&lt;&lt; around problem areas.
+This file is now un-committable until these conflicts
+are resolved.
+<DT>?
+<DD>This file wasn't checked out from the repository, so CVS won't touch it.
+</DL>
+<P>
+Example:
+<P><blockquote><samp><pre>
+cvs update zmail/lib    (update the files in your
+			private zmail/lib directory)
+</pre></samp></blockquote>
+<P>
+<DT><A NAME="commit"><tt>cvs commit [path]</tt></A>
+<DD>Use this command to commit the changes to your private
+copies of files into the repository.  When other
+engineers perform a <tt>cvs update</tt>, they'll pick up your
+changes from the repository.
+When you perform a <tt>cvs commit</tt>, <tt>cvs</tt> will automatically
+start the editor specified in your <tt>EDITOR</tt> environment
+variable so that you may type in a commit-log message.
+This message should be brief and concisely describe the
+changes you've made to the file(s).  When you commit
+several files at the same time from the same directory,
+cvs will apply the same log message to all of them.
+<P>
+See <A HREF="#commit-advice">About committing</A>, below, for more suggestions.
+<P>
+Example:               
+<P><blockquote><samp><pre>
+cvs commit zmail/lib    (commit changes to the files in your
+			private zmail/lib directory
+			to the repository)
+</pre></samp></blockquote>
+<P>
+<DT><tt>cvs diff [diff-options] file</tt>
+<DD>Shows the differences between your private copy of file
+and the vault file.  You can supply <tt>diff</tt> command
+options if you like, otherwise you'll get standard <tt>diff</tt>
+output.
+<P>
+<DT><tt>cvs log file</tt>
+<DD>Shows the complete log history for file.
+<P>
+<DT><tt>cvs add file
+<br>cvs remove file</tt>
+<DD>Add files to and remove files from the repository.  If you
+need to do this, refer to the man page.
+</DL>
+<P>
+<H3><A NAME="commit-advice">About committing:</A></H3>
+<P>
+When you commit changes to the repository, your commit-log message is
+e-mailed to everyone on the appropriate <I>cvs-commit-*</I> mailing list.
+Your log message is the primary way other engineers know what you've
+done to the file and whether it affects them, so it is important that
+you describe WHY you made the changes, not just what you did.  For
+example:
+<blockquote>
+<DL>
+<DT><I>BAD</I>
+<DD><tt>Fixed bugs for AT&T.</tt>
+<DT><I>GOOD</I>
+<DD><tt>Properly compute size of dynamic buffer.  This fixes memory corruption bug reported by AT&T.</tt>
+<P>
+<DT><I>BAD</I>
+<DD><tt>Comment out prototype for frob_foo().</tt>
+<DT><I>GOOD</I>
+<DD><tt>Comment out prototype for frob_foo(); it causes compile
+errors on Pyramid.</tt>
+<P>
+<DT><I>BAD</I>
+<DD><tt>Whitespace cleanup.</tt>
+<DT><I>GOOD</I>
+<DD><tt>Fixed line terminations to make help text display properly in Lite's Help Index. Closes PR #5022.</tt>
+</DL>
+</blockquote>
+<P>
+<H3>Additional helpful programs:</H3>
+<P>
+(The following <tt>perl</tt> scripts are a Paul Falstad production.  They can be checked out as
+the <TT>cvsutils</TT> module from the SrcRep.)
+<P>
+<DL>
+<DT><tt>cvsblame [-b] file [rev]</tt>
+<DD>The <tt>cvsblame</tt> program shows who last committed each line
+in vault <tt>file</tt>, as of optional revision <I>rev</I>. The
+<tt>-b</tt> flag generates brief output (revision numbers only).
+<P>
+<DT><tt>cvsdelta file [rev] [-revdelta]</tt>
+<DD>Shows the diffs between version <I>rev</I> of <tt>file</tt> and the
+revision <I>-revdelta</I> versions before that.  If you omit
+<I>rev</I> and <I>-revdelta</I>, <tt>cvsdelta</tt> shows
+the diffs between the current and previous versions of <tt>file</tt>.
+Changes you've made to your private copy of <tt>file</tt> are not shown.
+<P>Examples:
+<blockquote><samp>
+cvsdelta configure.in 1.8 -2
+</samp></blockquote>
+shows the diffs between versions 1.8 and 1.6 of
+the vault file <tt>configure.in</tt>.
+<blockquote><samp>
+cvsdelta configure.in -2
+</samp></blockquote>
+shows the diffs between the current version and the
+version two before that of the vault file <tt>configure.in</tt>.
+<P>
+<DT><tt>cvsgetrev file date [branch-tag]</tt>
+<DD>Shows the revision number of <tt>file</tt> as of <I>date</I>, on the
+optional <I>branch-tag</I>.  The format for <I>date</I> is
+<samp>year.month.day.hour.minute.second</samp>
+<P>
+Example:
+<blockquote><samp>
+cvsgetrev configure.in 94.05.01.00.00.00
+</samp></blockquote>
+<P>
+<DT><tt>cvstat [file]</tt>
+<DD>Shows the name and current revision of all the files in the
+current directory, or just for the specified file.
+</DL>
+</BODY>
+</HTML>

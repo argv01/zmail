@@ -1,0 +1,19 @@
+function bugreport() {
+#%
+# Use this function to send mail to report problems with Z-Mail.
+#%
+    mail -p bugs		# mail using prepared bugreport form
+}
+# button -n Gripe bugreport
+
+# This function may used for adding new types automatically.
+# Currently, defining this is a security hole in that arbitrary text
+# can be executed as Z-Mail commands, with possible bad consequences.
+#
+# function addtype() {
+#     # This should be improved to allow ONLY "attach" commands
+#     echo "Adding new attachment type ..."
+#     source $1
+#     sh rm $1
+#     attach
+# }

@@ -1,0 +1,400 @@
+<HTML>
+<HEAD>
+<TITLE>Mail Folder Synchronization</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<pre>
+This is a preliminary design document for a mail folder
+synchronization facility.  An abstract model of folder synchronization
+is developed first, and common synchronization scenarios are then
+examined in terms of the underlying model.  Finally, implementation
+issues are summarized.
+
+It is hoped that by developing a sufficiently broad underlying model
+we will be able to implement several different types of
+synchronization behavior in a unified way, as well as easily implement
+additional synchronization behaviors in the future.  With an
+appropriate layer of user interface, the user may be shielded from 
+the details of the underlying model.
+
+[Comments and unresolved issues that were brought up during a
+ preliminary review of this design are included below delimited in
+ square brackets.]
+
+
+Underlying Model
+================
+ 
+Synchronization is viewed as an atomic process which occurs between
+two mail folders, one of which is designated the "master" and the
+other the "slave."  The extent of these designations is a single
+synchronization.  Note that no relation between the master and slave
+folders of a synchronization and local and remote mail folders is
+either assumed or implied, and that the folders may play or have
+played opposite roles in future or past synchronizations.
+ 
+We will consider the union of all messages present in both folders.
+This may be partitioned into three subsets:
+ 
+  "M", the set of messages that are present in the master folder, but
+  not in the slave folder.
+
+  "B", the set of messages that are present in both the master folder
+  and the slave folder.
+   
+  "S", the set of messages that are present in the slave folder, but
+  not in the master folder.  S may be further partitioned into:
+
+    "SNew", the set of all "new" messages in S.
+    "SOld", the set of all messages in S that are not "new."
+
+  [There is some concern that identification of "new" messages will be
+   non-trivial.  Originally, I had thought of using the heuristic that
+   any message without an "R" status header should be considered
+   "new"; Bart pointed out that this will not work for the case of the
+   record folder, where all messages have the "R" status.]
+
+        
+Each of these subsets will be processed individually, as detailed
+below:
+ 
+  M - Messages present only in the master folder will be copied to the
+      slave folder.
+
+  B - Messages present in both folders will have their status flags
+      updated in the slave folder to reflect their status in the
+      master folder.
+
+      [Ben asks whether this update operation should be "copy" or
+       "union."  Probably some combination of both, depending on the
+        semantics of the particular status flags involved.]
+
+  S - Messages present only in the slave folder may be further
+      partitioned into subsets which are processed as follows:
+
+      SNew - These messages may be copied to the master folder at the
+             discretion of the agent that requested the
+             synchronization. 
+
+             [The original design called for this copy to happen
+              unconditionally; Carlyn asks if this is really always
+              desirable.  I'm beginning to think not, and that the
+              decision to copy new mail or not in this direction
+              should be pushed off to the same place as the decision
+              of how to dispose SOld (i.e. "behavior sets", see
+              below.)]
+
+      SOld - These messages may be copied to the master folder,
+             deleted from the slave folder, or left alone, at the
+             discretion of the agent that requested the
+             synchronization.
+
+ 
+Here is a schematic representation of a synchronization:
+ 
+ 
+        MASTER FOLDER                  SLAVE FOLDER
+ 
+       +-------------+                . . . . . . . .
+       |  new mail   |  >>-copy->>    .             .
+       +-------------+                . . . . . . . .
+       |             |  >>-copy->>    .             .
+       +-------------+                +-------------+
+       |             |                |             |
+       |             |  >>-update->>  |             |
+       |             |                |             |
+       +-------------+                +-------------+
+       .             .  <<-copy-<<    |  new mail   |
+       . . . . . . . .                +-------------+
+       .             .  <<-copy-<<    |             |
+       . . . . . . . .                +-------------+
+                                      |             |
+                                      +-------------+
+                                      |>>>DELETED<<<|
+                                      +-------------+
+ 
+ 
+It is asserted that after the above processing has taken place:
+ 
+ - all messages present in the master folder will be present in the
+   slave folder.
+ 
+ - any messages present in both folders will have the same status
+   flags.
+ 
+The messages in the slave folder are now reordered such that all
+messages now present only in the slave folder appear at the end of the
+slave folder, and all messages now present in both folders have the
+same ordering as they do in the master folder.
+ 
+ 
+Synchronization Scenarios
+=========================
+ 
+A number of common mail usage scenarios will next be examined, and it
+will be shown how the underlying synchronization model may be applied
+to support each of them.  In the descriptions of the scenarios below,
+reference is made to online, offline, and disconnected mail usage
+modes.  For the purposes of this discussion, these terms are defined
+as follows:
+ 
+ - Online mail usage
+ 
+     In this usage mode, the user is assumed to have uninterrupted
+     direct access to a message store which includes all of the user's
+     new and retained messages.  All mail manipulations are done
+     directly to this message store.  This usage mode is typical of
+     UNIX based messaging systems such as "mh" and "mail."
+ 
+ - Offline mail usage
+ 
+     In this usage mode, the user is assumed to receive new mail at a
+     message drop.  The user is only periodically connected to the
+     drop, and when connected may retrieve any new messages and delete
+     them from the drop.  All mail manipulations are done directly to
+     a local message store, independent of (and without requiring a
+     continuous connection to) the message drop.  Offline mail usage
+     is typically supported via the POP or IMAP protocols.
+ 
+ - Disconnected mail usage
+ 
+     In this usage mode, the user is assumed to have only periodic
+     access to a remote message store which nominally includes all of
+     the user's new and retained messages.  At such times as the user
+     is connected to the remote message store, the user may retrieve
+     some subset of the messages stored there.  All mail manipulations
+     are then done directly to a local message store, and any changes
+     may be incorporated back into the remote message store when the
+     user is subsequently reconnected.
+ 
+ 
+We now consider the following mail usage scenarios, expressed in terms
+of the previous definitions:
+ 
+
+On the Road
+-----------
+ 
+In this scenario, the user is assumed to alternate between periods 
+of online mail usage (typically in an office environment), and 
+disconnected mail usage (typically from a portable computer while 
+traveling.)
+
+Before leaving the office, the user will want to make sure that the
+state of the mail folders on the laptop reflect the state of the
+corresponding folders on the server.  This may be accomplished by
+synchronizing the folders, with the server folders acting as masters.
+
+While traveling, the user will probably wish to periodically connect
+to the server to receive new mail and send messages.  At such times,
+they may also wish to "checkpoint" changes made to their mail folders
+on the portable back up to the server.  This checkpointing may be
+accomplished by synchronizing the folders, with the folders on the
+portable acting as masters.
+
+Upon return to the office, the user will definitely wish to
+incorporate changes made to their mail folders on the portable back
+into their mail folders on the server.  This may be accomplished by
+synchronizing the folders, with the folders on the portable acting as
+masters, once again.
+
+What about the disposition of messages in S for each of the above
+synchronizations?  In the "before leaving" synchronization (server is
+master), messages in SOld are likely to be "leftovers" that were
+deleted from the server after the user returned from their last trip.
+The user should be informed of the presence of these messages, and
+should have a default action available to delete them (other available
+actions being to copy them to the server, or leave them alone.)
+Messages in SNew are unlikely to occur, but should also be brought to
+the attention of the user.  The default action for these (unlikely)
+messages should probably be to copy them back to the server.
+
+In the "while traveling" synchronizations (portable is master),
+messages in SNew are new mail that has appeared on the server and
+should be copied without user interaction.  Messages in SOld are
+likely to be messages which the user has deleted on the portable since
+the last synchronization.  It is probably desirable to keep a log of
+messages deleted on the portable since the last synchronization, and
+delete any messages in both SOld and the log without user
+interaction.  Other (unlikely) messages in SOld should probably be
+brought to the attention of the user, with a default action of copy.
+
+[There was some discussion on this matter.  Dan maintained that
+ handling multiple cases here was not worth the effort, and all
+ messages in SOld should be silently deleted in this case.  I maintain
+ that I would rather have a dialog notify me when something as strange
+ as a message in SOld that I have not deleted on the portable occurs,
+ since it is very unlikely to happen anyway, and the implementation
+ overhead is not that significant (the necessary dialogs will need to
+ have been implemented anyway for other S processing cases.)
+
+ David mentioned that the user may want a "delete locally" facility
+ for removing messages from the portable without having them purged
+ from the server at the next synchronization (i.e. to recover disk
+ space on the portable.)]
+
+The "upon return" synchronization (portable is master) is essentially
+the same as the "while traveling" synchronization, except that the
+default action of messages in S that aren't in the delete log may
+possibly be different.  Cases can be made for:
+
+  Do nothing - why bother copying stuff to the portable since we're
+  back in the office?  Any resulting disparity between the portable
+  and the laptop will be resolved at the "before leaving"
+  synchronization before the next trip.  In actuality the user may
+  want to blow away the folders on the portable at this point anyway,
+  if it is a shared resource and may subsequently be issued to
+  somebody else.
+
+  Copy - why not copy all messages in S that aren't in the delete log,
+  since this will bring the folders totally into synchronization, and
+  the user probably has high bandwidth, low cost connectivity between
+  the portable and server in the office environment?
+
+[Another possible approach is to eliminate the distinction between the
+ "while traveling" and "upon return" synchronizations entirely
+ (i.e. just have one "update server" synchronization, whose semantics
+ are identical to the "while traveling" synchronization above.)
+ The distinction may be useful, however, if the user is given a finer
+ grain of control over each of the synchronizations.  For example, it
+ may be desirable to give the user the ability to "turn off" the
+ processing of B in the "while traveling" synchronizations to reduce
+ connect time, while leaving B processing "turned on" in the "upon
+ return" synchronization where connect time may no longer be an issue.]
+
+
+In summary:
+
+  Before leaving office:
+    synch with server as master
+    query user about SOld, default delete
+    query user about SNew (unlikely), default copy 
+
+  While traveling (optional):
+    synch with portable as master
+    copy SNew
+    delete messages in SOld if also in delete log
+    query user about messages in SOld, not in delete log (unlikely),
+      default copy
+
+  Upon return:
+    synch with portable as master
+    delete messages in SOld if also in delete log
+    copy S [or not?]
+
+ 
+Nomad
+----- 
+
+In this scenario, the user is assumed to store mail on a server
+machine, and access it in disconnected mode from any of several other
+machines.  This scenario encompasses users who may read their mail on
+any of a cluster of small machines.
+
+At the beginning of a user's session (when the mail application is
+launched) the user will want to make sure that the state of
+mail folders on the local machine reflects the state of folders on
+the server.  This may be accomplished by synchronizing the folders
+with the folders on the server acting as masters.  Messages in S will
+be handled as in the "before leaving" synchronization of the "On the
+Road" scenario above, for the same reasons.
+
+[David points out that in a public computing cluster environment,
+ there probably won't be any folders on the local machine at the start
+ of the session (they are likely to be removed at the end of each
+ session for security reasons.)  In this case the synchronization
+ degenerates to a simple copy operation (S and B are empty.)]
+
+Throughout the session, and at least once at the end, the user will
+want to update the folders on the server to reflect the changes that
+have been made on the local machine.  This may be accomplished by 
+synchronizing the folders with the folders on the local machine acting
+as masters.  Messages in S will be handled the same way as the "while
+traveling" synchronization of the "On the Road" scenario above, for
+the same reasons.
+
+In summary:
+
+  At beginning of each session:
+    synch with server as master
+    query user about SOld, default delete
+    query user about SNew (unlikely), default copy 
+
+  Subsequently:
+    synch with local machine as master
+    copy SNew
+    delete messages in SOld if also in delete log
+    query user about messages in SOld, not in delete log (unlikely),
+      default copy
+
+[Bart points out that these synchronizations are substantially the
+ same as the synchronizations in the "On the Road" scenario; can they
+ both be handled with one set of behaviors?  I think there is some
+ value in preserving the distinction; by maintaining separate
+ scenarios we assure the ability to "tweak" the behavior of one
+ without necessarily affecting the other.]
+ 
+
+Implementation Issues
+=====================
+
+A client/server architecture is envisioned for implementing the
+synchronization facility described above. Synchronizations will
+always be initiated by the client (sometimes in the role of master,
+and sometimes in the role of slave.)
+
+In the case of Z-Mail, the Z-Mail application itself will be the
+client, and the Zync server will be the server.  This will require
+some additional capabilities be added to both Z-Mail and Zync:
+
+   
+Client requirements
+-------------------
+ 
+ - Z-Mail will need some user interface extensions to support
+   synchronization configuration ("behavior sets") and user
+   interaction during the synchronization process (dialogs for
+   processing messages in S.)
+
+ - Z-Mail will need to be augmented to optionally maintain a deletion
+   log, under the control of the synchronization facility.
+
+ - Z-Mail will need to be augmented with a synchronization "engine"
+   which can communicate with the server and synchronization user
+   interface to drive synchronizations.  This engine will call into
+   existing Z-Mail core code for such primitive operations as
+   determining which messages are present in local folders,
+   determining and modifying the disposition of messages in those
+   folders, deleting messages from and incorporating new messages
+   into local folders, and reordering messages in local folders.
+
+
+Server requirements
+-------------------
+ 
+The Zync server (currently POP based) will need some extensions to
+support the synchronization facility.  Note that as long as the Zync
+server is POP based, synchronization can be done on the spool folder
+only.)  Note also that some of the following extensions would not be
+necessary in an IMAP based Zync server, since the capabilities they
+add are already supported by the IMAP protocol.
+
+ - The Zync server will need a method for uniquely identifying each
+   message in a folder in such a way that the client can determine
+   which messages correspond in local and remote folders, and a
+   protocol extension to allow client retrieval of these identifiers.
+
+ - The Zync server will need protocol extension to allow incorporation
+   of new messages into the spool folder.
+
+ - The Zync server will need a protocol extension to facilitate
+   efficient communication of message status to the client.
+
+ - The Zync server will need a protocol extension to allow
+   modification of messages status.
+
+ - The Zync server will need a protocol extension to allow reordering
+   messages in the spool folder.
+<pre>
+</BODY>
+</HTML>

@@ -1,0 +1,4 @@
+:
+file=${TMPDIR=/tmp}/UUP$$
+cat ${1-"-"} | sed "s:begin [0-9][0-9]* .*:begin 600 $file:" | uudecode
+cat $file && rm -f $file

@@ -1,0 +1,2287 @@
+<HTML>
+<HEAD>
+<!-- This HTML file has been created by texi2html 1.35
+     from ../uisupp/uisupp.texinfo on 9 August 1996 -->
+
+<TITLE>UI Support Library</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>UI Support Library</H1>
+
+
+<H1><A NAME="SEC1" HREF="uisupp_toc.html#SEC1">About uisupp</A></H1>
+
+<P>
+This manual describes uisupp, a support library for zmail UI writers.
+
+</P>
+
+
+
+<H1><A NAME="SEC2" HREF="uisupp_toc.html#SEC2">Why have uisupp?</A></H1>
+
+<P>
+The UI support library was created for the following reasons:
+
+</P>
+
+<OL>
+<LI>
+
+to promote code sharing among UIs, and to make it easier to provide a
+consistent interface across all UIs.
+<LI>
+
+to decrease the amount of work a UI writer has to do to implement
+something which is already in another UI.
+<LI>
+
+to modularize things.
+<LI>
+
+<A NAME="IDX1"></A>
+<A NAME="IDX2"></A>
+to insulate the UI from the core and reduce its dependence on z-script
+syntax.  This will make it easier for the UI code to adapt to the
+reorganized
+core.  In the new core, there's probably (I hope) going to be a lot of
+API routines to manipulate core objects.  The core itself will not
+generate and run bits z-script code to do things, like it does now;
+and the z-script implementation will do nothing but call the core API
+routines.
+</OL>
+
+<P>
+uisupp is something which we were planning to add in the reorg, but it
+turned out to be useful to have it around even before that.  uisupp
+will probably survive after the reorg, although perhaps in a different
+form, since a lot of things which are provided in uisupp now may be in
+the core later (e.g.  API routines to manipulate core objects).
+Still, uisupp should be more than just a core API; core API routines
+should probably not do things like print stuff to the output window
+and generate error messages, whereas the uisupp code <EM>should</EM>
+do that
+(so that the error messages are the same on all platforms).
+
+</P>
+
+
+<H1><A NAME="SEC3" HREF="uisupp_toc.html#SEC3">Conventions</A></H1>
+<P>
+<A NAME="IDX3"></A>
+<A NAME="IDX4"></A>
+
+</P>
+<P>
+uisupp is intended to be object-oriented; for the most part, each
+module implements an object and has the same name as that object.
+Since uisupp is a library, and since a given UI may only use part of
+it, the modules in uisupp should be made small, to minimize the amount
+of unused code that gets linked in with the main zmail binary.
+
+</P>
+<P>
+Why do all the filenames start with ui?  Well, if we called
+<TT>`uitaskm.c'</TT> (for
+example) <TT>`taskm.c'</TT>, then we'd probably have to call the
+include file <TT>`taskm.h'</TT>;
+this would be bad, because we already have a <TT>`taskm.h'</TT>
+in the windows UI code.
+Even if we didn't have one there, we later want to have one in the core's
+<TT>`include/'</TT>
+directory.  We can't say <CODE>#include "uisupp/taskm.h"</CODE>, because that doesn't
+work on the Mac.  So, to avoid naming conflicts, and to identify each
+file and object as belonging to the uisupp library, it was decided to
+prefix everything with <TT>`ui'</TT>.
+(Why doesn't <TT>`xface'</TT> start with <TT>`ui'</TT>?  Who
+knows...)
+
+</P>
+<P>
+Naming conventions in uisupp attempt to follow naming conventions in the
+Dynadt library.
+
+</P>
+
+
+<H1><A NAME="SEC4" HREF="uisupp_toc.html#SEC4">Symbols</A></H1>
+<P>
+<A NAME="IDX5"></A>
+<A NAME="IDX6"></A>
+<A NAME="IDX7"></A>
+<A NAME="IDX8"></A>
+<A NAME="IDX9"></A>
+
+</P>
+<P>
+Every uisupp include file includes <TT>`uisupp.h'</TT>,
+which defines these symbols:
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>zmFlags</CODE>
+<DD>
+I use this for any flag variable or argument.  It's a <CODE>typedef</CODE>
+for <CODE>unsigned long</CODE>.
+<DT><CODE>zmBool</CODE>
+<DD>
+I use this for any boolean variable or argument.  It's an
+alternative to <CODE>BOOL</CODE> or <CODE>Bool</CODE> or whatever.
+</DL>
+
+<P>
+<TT>`uisupp.h'</TT> also declares <CODE>uiscript_Exec()</CODE>;
+any UI which calls a uisupp routine
+must provide this function.  In the Motif version, it just calls
+<CODE>gui_cmd_line()</CODE>.
+uisupp can't just call <CODE>cmd_line()</CODE> itself, because routines
+like <CODE>gui_cmd_line()</CODE> do a lot of extra stuff like updating the summaries
+for the messages which were changed, and setting the current folder and
+composition.
+
+</P>
+
+
+<H1><A NAME="SEC5" HREF="uisupp_toc.html#SEC5">Notes</A></H1>
+<P>
+<A NAME="IDX10"></A>
+
+</P>
+<P>
+uisupp routines don't throw exceptions.  If they did, the Windows UI
+code wouldn't be
+able to use them, because the MFC exception package
+conflicts with <TT>`except.h'</TT>.  This should be fixed in the reorg.
+
+</P>
+<P>
+Some uisupp objects can only be dynamically created.  In that case,
+they provide <CODE>uiobject_Create</CODE>/<CODE>Delete</CODE> routines
+rather than providing
+Init/Destroy.
+
+</P>
+<P>
+Some include files in the <TT>`uisupp'</TT> directory contain
+<CODE>#define</CODE>s for
+messages and error strings you might use in your dialog.  This is
+just so that the strings can be contained in one place, so that we
+don't have <VAR>n</VAR> copies in all our various UI implementations.
+
+</P>
+
+
+<H1><A NAME="SEC6" HREF="uisupp_toc.html#SEC6">Sample</A></H1>
+
+<P>
+Here is a sample implementation of a uisupp modules.  uisort, the module
+used to help implement the sort dialog, provides the following in its
+include file:
+
+</P>
+
+<PRE>
+/*
+ * sort indices.  The sort dialog code depends on them being
+ * in this order.
+ */
+typedef enum uisort_index_enum {
+    uisort_IndexDate = 0,
+    uisort_IndexSubject,
+    uisort_IndexAuthor,
+    uisort_IndexLength,
+    uisort_IndexPriority,
+    uisort_IndexStatus,
+    uisort_IndexMax
+} uisort_index_t ;
+
+/*
+ * this is the main sort object.  Every sort dialog keeps one of these
+ * around to keep track of the sort description.
+ */
+struct _uisort {
+    /* none of your business */
+};
+typedef struct _uisort uisort_t;
+
+/* check to see if a uisort object is sorting on a given index (i.e.
+ * if the user has clicked the toggle for that index
+ */
+#define uisort_HasIndex(X, Y) ...
+
+/* add an index when a user toggles it on */
+extern void uisort_AddIndex P ((uisort_t *, uisort_index_t));
+
+/* remove an index when a user toggles it off */
+extern void uisort_RemoveIndex P ((uisort_t *, uisort_index_t));
+
+/* reverse sorting on an index when a user clicks one of the "Reverse"
+ * toggles
+ */
+extern void uisort_ReverseIndex P ((uisort_t *, uisort_index_t,
+                                    zmBool on_or_off));
+
+/* generate an string vector which describes the sort.  This is
+ * displayed in the sort dialog's "Sorting Order:" window.
+ */
+extern char **uisort_DescribeSort P ((uisort_t *));
+
+/* perform a sort. */
+extern zmBool uisort_DoSort P ((uisort_t *));
+
+/*
+ * set some options on the sort.  This should probably be
+ * called SetFlags.  The flags are guaranteed to be bit flags
+ * in the order shown below, since they're in that order in the
+ * sort options toggle in the dialog (and we want them to be in
+ * that order for all UI's, I would think).
+ */
+extern void uisort_UseOptions P ((uisort_t *, zmFlags));
+#define uisort_FlagIgnoreCase   ULBIT(0)
+#define uisort_FlagUseRe        ULBIT(1)
+#define uisort_FlagDateReceived ULBIT(2)
+
+/* constructor and destructor */
+extern void uisort_Init P ((uisort_t *));
+extern void uisort_Destroy P ((uisort_t *));
+</PRE>
+
+
+
+<H1><A NAME="SEC7" HREF="uisupp_toc.html#SEC7">uiact</A></H1>
+<P>
+<A NAME="IDX11"></A>
+<A NAME="IDX12"></A>
+<A NAME="IDX13"></A>
+
+</P>
+<P>
+A uiact is the UI's representation of an action to be performed by the
+core, usually on a series of messages.  This action may be performed
+by a filter, or on the results of a search, or when the user clicks a button
+or selects a menu item.
+
+</P>
+<P>
+The kind of action to perform (i.e. save, delete, mark) is represented 
+by the action type.  Each action type may take an argument, which must a
+string.  This argument must be of a specific argument type, which is
+determined by the action type.  For example, the <SAMP>`save'</SAMP> action takes an
+argument type of <SAMP>`file'</SAMP>, and the <SAMP>`forward'</SAMP> action takes an
+argument type
+of <SAMP>`address'</SAMP>.
+
+</P>
+<P>
+Once you have created an action and defined its type and argument, you
+may perform the action using <CODE>uiact_Perform</CODE>, or you may generate
+a z-script command to perform the action using <CODE>uiact_GetScript</CODE>.
+
+</P>
+<P>
+Here are some datatypes relevant to uiacts:
+<A NAME="IDX14"></A>
+<A NAME="IDX15"></A>
+<A NAME="IDX16"></A>
+<A NAME="IDX17"></A>
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>uiact_t</CODE>
+<DD>
+A UI action, with a type and an optional argument.
+<DT><CODE>uiact_Type</CODE>
+<DD>
+This represents an action type, e.g. <CODE>uiact_Mark</CODE>, <CODE>uiact_Delete</CODE>,
+and <CODE>uiact_Copy</CODE>.
+<DT><CODE>uiact_ArgType</CODE>
+<DD>
+This represents an argument type, e.g. <CODE>uiact_Arg_File</CODE>.  An action
+which doesn't need an argument would require an argument type of
+<CODE>uiact_Arg_None</CODE>.
+<DT><CODE>uiacttypelist_t</CODE>
+<DD>
+A list of ui action types.
+</DL>
+
+<P>
+Here are the functions and macros relevant to uiacts:
+
+</P>
+<P>
+<U>Function:</U> void <B>uiact_Init</B> <I>(uiact_t *<VAR>a</VAR>)</I><P>
+<A NAME="IDX18"></A>
+Initializes <VAR>a</VAR>, giving it a default type.
+
+</P>
+<P>
+<U>Function:</U> void <B>uiact_Destroy</B> <I>(uiact_t *<VAR>a</VAR>)</I><P>
+<A NAME="IDX19"></A>
+Deinitializes <VAR>a</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> uiact_ArgType <B>uiact_GetType</B> <I>(uiact_t *<VAR>a</VAR>)</I><P>
+<A NAME="IDX20"></A>
+Returns <VAR>a</VAR>'s action type.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uiact_SetType</B> <I>(uiact_t *<VAR>a</VAR>, uiact_Type <VAR>t</VAR>)</I><P>
+<A NAME="IDX21"></A>
+Sets <VAR>a</VAR>'s action type to <VAR>t</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> char * <B>uiact_GetArg</B> <I>(uiact_t *<VAR>a</VAR>)</I><P>
+<A NAME="IDX22"></A>
+Returns <VAR>a</VAR>'s argument, or returns <CODE>NULL</CODE> if one has not been
+specified.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uiact_SetArg</B> <I>(uiact_t *<VAR>a</VAR>, const char *<VAR>arg</VAR>)</I><P>
+<A NAME="IDX23"></A>
+Sets <VAR>a</VAR>'s argument to <VAR>arg</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> zmBool <B>uiact_NeedsArg</B> <I>(uiact_t *<VAR>a</VAR>)</I><P>
+<A NAME="IDX24"></A>
+Returns <CODE>True</CODE> if <VAR>a</VAR> requires an argument.
+
+</P>
+<P>
+<U>Function:</U> uiact_ArgType <B>uiacttype_GetArgType</B> <I>(uiact_Type <VAR>at</VAR>)</I><P>
+<A NAME="IDX25"></A>
+Gets the argument type associated with <VAR>at</VAR>.
+
+</P>
+<P>
+<U>Function:</U> uiact_ArgType <B>uiact_GetArgType</B> <I>(uiact_t *<VAR>a</VAR>)</I><P>
+<A NAME="IDX26"></A>
+Gets the argument type associated with <VAR>a</VAR>'s action type.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uiact_SupplyArg</B> <I>(uiact_t *<VAR>a</VAR>)</I><P>
+<A NAME="IDX27"></A>
+Fills in the argument required by <VAR>a</VAR> (if needed) by ask the user
+with an appropriate query string.  If no argument is required, or if it
+has already been filled in, do nothing.  Returns <CODE>True</CODE> if an argument
+was successfully supplied, or if there was no need to supply an argument.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uiact_GetScript</B> <I>(struct dynstr *<VAR>ds</VAR>, uiact_t *<VAR>a</VAR>)</I><P>
+<A NAME="IDX28"></A>
+Generates a Z-Script command to perform action <VAR>a</VAR>.  Puts the
+resulting command in <VAR>ds</VAR>.  Returns <CODE>True</CODE> if successful.
+<VAR>ds</VAR> been initialized first with <CODE>dynstr_Init()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uiact_Perform</B> <I>(uiact_t *<VAR>a</VAR>)</I><P>
+<A NAME="IDX29"></A>
+Performs the action <VAR>a</VAR>.  Returns <CODE>True</CODE> if successful.
+
+</P>
+<P>
+<U>Function:</U> const char * <B>uiact_GetTypeDesc</B> <I>(uiact_t *<VAR>a</VAR>)</I><P>
+<A NAME="IDX30"></A>
+Returns the type description associated with <VAR>a</VAR>'s action type.
+For example, <SAMP>`Save by Author'</SAMP> and <SAMP>`Mark'</SAMP> are type descriptions.
+
+</P>
+<P>
+<U>Function:</U> void <B>uiact_InitFrom</B> <I>(uiact_t *<VAR>a</VAR>, char *<VAR>scr</VAR>)</I><P>
+<A NAME="IDX31"></A>
+Initializes <VAR>a</VAR> with an action that matches the Z-Script commands
+in <VAR>scr</VAR>.  For example, if <VAR>scr</VAR> contains a Z-Script command
+to saves messages in the file <TT>`foo'</TT>, then <VAR>a</VAR> will be initialized
+with action type <CODE>uiact_Save</CODE>, and argument <TT>`foo'</TT>.  This function
+attempts to find the most specific action type possible; it will only
+use an action type of <CODE>uiact_Script</CODE> if nothing more specific
+is found.
+
+</P>
+<P>
+<U>Function:</U> char * <B>uiacttype_GetDefaultArg</B> <I>(uiact_Type <VAR>at</VAR>)</I><P>
+<A NAME="IDX32"></A>
+Returns the default argument associated with <VAR>at</VAR>, or <CODE>NULL</CODE> if
+there isn't one.
+
+</P>
+<P>
+<U>Function:</U> const char * <B>uiacttype_GetPromptStr</B> <I>(uiact_Type <VAR>at</VAR>)</I><P>
+<A NAME="IDX33"></A>
+Returns a short prompt string requesting the user to fill in an argument
+suitable for <VAR>at</VAR>.  For example, <SAMP>`Filename:'</SAMP> and
+<SAMP>`Address:'</SAMP> are
+possible prompt strings.
+
+</P>
+<P>
+<U>Function:</U> const char * <B>uiacttype_GetMissingStr</B> <I>(uiact_Type <VAR>at</VAR>)</I><P>
+<A NAME="IDX34"></A>
+Returns an error message to print when an action of type <VAR>at</VAR> has its
+argument missing.  For example, <SAMP>`You must provide a directory name.'</SAMP>
+
+</P>
+<P>
+<U>Function:</U> char ** <B>uiacttypelist_GetDescList</B> <I>(uiacttypelist_t *<VAR>atl</VAR>)</I><P>
+<A NAME="IDX35"></A>
+Returns a list of action type descriptions corresponding to the action
+types in <VAR>atl</VAR>.  The string vector returned must be freed with
+<CODE>xfree()</CODE>.
+
+</P>
+<P>
+<U>Macro:</U> uiact_Type <B>uiacttypelist_GetType</B> <I>(uiacttypelist_t *<VAR>atl</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX36"></A>
+Returns the <VAR>n</VAR>th entry in <VAR>atl</VAR>.
+
+</P>
+<P>
+<U>Function:</U> int <B>uiacttypelist_GetIndex</B> <I>(uiacttypelist_t *<VAR>atl</VAR>, uiact_Type <VAR>at</VAR>)</I><P>
+<A NAME="IDX37"></A>
+Returns the index of <VAR>at</VAR> in <VAR>atl</VAR>, or -1 if it is not contained
+in <VAR>atl</VAR>.
+
+</P>
+
+
+<H1><A NAME="SEC8" HREF="uisupp_toc.html#SEC8">uichoose</A></H1>
+<P>
+<A NAME="IDX38"></A>
+<A NAME="IDX39"></A>
+<A NAME="IDX40"></A>
+
+</P>
+<P>
+A uichoose is used to ask the user for input.  At present, it is a front
+end to <CODE>dyn_choose_one()</CODE> (not <CODE>ask()</CODE>).  To use,
+you first create
+and initialize the <CODE>uichoose_t</CODE> structure,
+set the query, set the default (if any),
+and then call <CODE>uichoose_Ask()</CODE>.  Then you get the result from it,
+and destroy the structure.  Example:
+
+</P>
+
+<PRE>
+    uichoose_t ch;
+    char *result = NULL;
+    
+    uichoose_Init(&#38;ch);
+    uichoose_SetQuery(&#38;ch, "Username?");
+    if (uichoose_Ask(&#38;ch))
+        result = uichoose_GetResult(&#38;ch);
+    uichoose_Destroy(&#38;ch);
+</PRE>
+
+<P>
+<U>Function:</U> void <B>uichoose_Init</B> <I>(uichoose_t *<VAR>c</VAR>)</I><P>
+<A NAME="IDX41"></A>
+Initializes <VAR>c</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>uichoose_Destroy</B> <I>(uichoose_t *<VAR>c</VAR>)</I><P>
+<A NAME="IDX42"></A>
+Deinitializes <VAR>c</VAR>.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uichoose_Ask</B> <I>(uichoose_t *<VAR>c</VAR>)</I><P>
+<A NAME="IDX43"></A>
+Performs the ask operation described by <VAR>c</VAR>.  If successful,
+returns <CODE>True</CODE> and sets the result to the string entered by the user.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uichoose_SetResult</B> <I>(uichoose_t *<VAR>c</VAR>, const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX44"></A>
+Sets <VAR>c</VAR>'s result to <VAR>str</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> char * <B>uichoose_GetResult</B> <I>(uichoose_t *<VAR>c</VAR>)</I><P>
+<A NAME="IDX45"></A>
+Returns <VAR>c</VAR>'s result.  Copy this if you want it to persist.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uichoose_SetQuery</B> <I>(uichoose_t *<VAR>c</VAR>, const char *<VAR>q</VAR>)</I><P>
+<A NAME="IDX46"></A>
+Sets <VAR>c</VAR>'s query to <VAR>q</VAR>.  The caller must guarantee that
+<VAR>q</VAR> persists until <VAR>c</VAR> is destroyed.
+
+</P>
+<P>
+<U>Macro:</U> char * <B>uichoose_GetQuery</B> <I>(uichoose_t *<VAR>c</VAR>)</I><P>
+<A NAME="IDX47"></A>
+Returns <VAR>c</VAR> query string.  Copy this if you want it to persist.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uichoose_SetDefault</B> <I>(uichoose_t *<VAR>c</VAR>, const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX48"></A>
+Sets <VAR>c</VAR>'s default result string to <VAR>str</VAR>.  The caller
+must guarantee that <VAR>str</VAR> persists until <VAR>c</VAR> is destroyed.
+
+</P>
+<P>
+<U>Macro:</U> char * <B>uichoose_GetDefault</B> <I>(uichoose_t *<VAR>c</VAR>)</I><P>
+<A NAME="IDX49"></A>
+Returns <VAR>c</VAR>'s default result string.  Copy this if you want it to
+persist.
+
+</P>
+
+
+<H1><A NAME="SEC9" HREF="uisupp_toc.html#SEC9">uifilter</A></H1>
+<P>
+<A NAME="IDX50"></A>
+<A NAME="IDX51"></A>
+<A NAME="IDX52"></A>
+<A NAME="IDX53"></A>
+<A NAME="IDX54"></A>
+<A NAME="IDX55"></A>
+
+</P>
+<P>
+A filter is a search followed by a core action; that is, it is a
+<CODE>uiact_t</CODE> attached to a <CODE>uipick_t</CODE>.  <CODE>uifilter_t</CODE> is
+a front end to the core notion of filters; since the core maintains
+the list of filters, special routines are required to convert a core
+filter into a <CODE>uifilter_t</CODE>.
+
+</P>
+<P>
+To create a new filter, create one with <CODE>uifilter_Create()</CODE>, set
+its attributes and install it with <CODE>uifilter_Install()</CODE>.  Then
+delete it with <CODE>uifilter_Delete()</CODE>.  (When you delete a
+<CODE>uifilter_t</CODE>, you do not delete or remove the associated core
+filter structure.)
+
+</P>
+<P>
+To examine an installed filter, get a copy of it with <CODE>uifilter_Get()</CODE>,
+look at it, and then delete it with <CODE>uifilter_Delete()</CODE>.
+
+</P>
+<P>
+To change an installed filter, get a copy of it with
+<CODE>uifilter_Get()</CODE>, change it if desired, and then
+install it with <CODE>uifilter_Install()</CODE>.
+Then delete it with <CODE>uifilter_Delete()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> uifilter_t * <B>uifilter_Create</B> <I>()</I><P>
+<A NAME="IDX56"></A>
+Dynamically allocates space for a new <CODE>uifilter_t</CODE> and initializes it,
+returning a pointer to it.
+
+</P>
+<P>
+<U>Function:</U> void <B>uifilter_Delete</B> <I>(uifilter_t *<VAR>f</VAR>)</I><P>
+<A NAME="IDX57"></A>
+Deinitializes <VAR>f</VAR> and frees its associated storage.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uifilter_SetName</B> <I>(uifilter_t *<VAR>f</VAR>, const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX58"></A>
+Sets <VAR>f</VAR>'s filter name to a copy of <VAR>str</VAR>.  A filter name is required
+before installing a filter.
+
+</P>
+<P>
+<U>Macro:</U> char * <B>uifilter_GetName</B> <I>(uifilter_t *<VAR>f</VAR>)</I><P>
+<A NAME="IDX59"></A>
+Gets <VAR>f</VAR>'s filter name.  Copy this if you want it to persist.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uifilter_SetFlags</B> <I>(uifilter_t *<VAR>f</VAR>, zmFlags <VAR>fl</VAR>)</I><P>
+<A NAME="IDX60"></A>
+Sets the flags <VAR>fl</VAR> for <VAR>f</VAR>.  Currently, the only flag
+is <CODE>uifilter_NewMail</CODE>, which signifies that this filter is
+only run on new mail.
+
+</P>
+<P>
+<U>Macro:</U> zmFlags <B>uifilter_GetFlags</B> <I>(uifilter_t *<VAR>f</VAR>, zmFlags <VAR>fl</VAR>)</I><P>
+<A NAME="IDX61"></A>
+Gets the state of the flags <VAR>fl</VAR> for <VAR>f</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> uipick_t * <B>uifilter_GetPick</B> <I>(uifilter *<VAR>f</VAR>)</I><P>
+<A NAME="IDX62"></A>
+Returns a pointer to <VAR>f</VAR>'s <CODE>uipick_t</CODE> structure
+for inspection
+or modification.
+
+</P>
+<P>
+<U>Macro:</U> uiact_t * <B>uifilter_GetAction</B> <I>(uifilter *<VAR>f</VAR>)</I><P>
+<A NAME="IDX63"></A>
+Returns a pointer to <VAR>f</VAR>'s <CODE>uiact_t</CODE> structure
+for inspection
+or modification.
+
+</P>
+<P>
+<U>Function:</U> uifilter_t * <B>uifilter_Get</B> <I>(int <VAR>n</VAR>)</I><P>
+<A NAME="IDX64"></A>
+Returns a copy of an installed core filter.  Returns the <VAR>n</VAR>th
+filter in the list.  You must delete this structure later with
+<CODE>uifilter_Delete()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uifilter_Install</B> <I>(uifilter_t *<VAR>f</VAR>)</I><P>
+<A NAME="IDX65"></A>
+Installs <VAR>f</VAR> as a core filter.  Returns <CODE>True</CODE> if successfull.
+You must still delete <VAR>f</VAR>
+with <CODE>uifilter_Delete()</CODE> after installing it.
+
+</P>
+<P>
+<U>Function:</U> char ** <B>uifilter_List</B> <I>()</I><P>
+<A NAME="IDX66"></A>
+Returns a list of installed filters.  This list is suitable for display
+in a filters dialog.  Don't assume anything about the contents of this
+list; in the future, we may want to provide more info than just the
+names of each filter.  Free this list with <CODE>free_vec()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uifilter_SupplyName</B> <I>(uifilter_t *<VAR>f</VAR>)</I><P>
+<A NAME="IDX67"></A>
+Supply a name for the filter, if needed.  If <VAR>f</VAR>'s name has not
+been set, this function asks the user for one, supplying an appropriate
+default name.  Returns <CODE>True</CODE> if a filter name was supplied, or if
+a name was already assigned.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uifilter_Remove</B> <I>(int <VAR>n</VAR>)</I><P>
+<A NAME="IDX68"></A>
+Removes the <VAR>n</VAR>th installed filter from the filter list.
+Returns <CODE>True</CODE> if successful.
+
+</P>
+
+
+<H1><A NAME="SEC10" HREF="uisupp_toc.html#SEC10">uifldr</A></H1>
+<P>
+<A NAME="IDX69"></A>
+<A NAME="IDX70"></A>
+<A NAME="IDX71"></A>
+<A NAME="IDX72"></A>
+The uifldr module is used to maintain a list of open folders.  Later,
+it may be used to maintain a list of recently closed folders, to display
+in an open folder dialog.
+
+</P>
+<P>
+This module keeps folder information in a <CODE>uifolder_t</CODE> structure.
+The <CODE>uifolder_t</CODE> structures are kept in a folder list
+(<CODE>uifolderlist_t</CODE>).
+
+</P>
+<P>
+A <CODE>uifolder_t</CODE> has the following attributes:
+
+</P>
+<DL COMPACT>
+
+<DT><SAMP>`filename'</SAMP>
+<DD>
+This is the file where the folder is stored.
+
+<DT><SAMP>`basename'</SAMP>
+<DD>
+This is the base portion (without the directory) of the filename.
+
+<DT><SAMP>`long name'</SAMP>
+<DD>
+This is a long representation of the folder's name.  This looks like
+the base portion of the folder's filename, unless that would create
+an ambiguity, or unless the folder is temporary.  To disambiguate
+folder names, uifldr specifies the directory name of a folder in
+parentheses after the basename.  For example, if the folders
+<CODE>/users/pf/test</CODE> and <CODE>/tmp/test</CODE> were open, their long
+names would be <CODE>test (/users/pf)</CODE> and <CODE>test (/tmp)</CODE>.
+The long name is suitable for display in a scrolling list.
+
+<DT><SAMP>`short name'</SAMP>
+<DD>
+<A NAME="IDX73"></A>
+This is the same as the long name, except shortened if it is
+longer than <CODE>MAX_SHORT_NAME_LENGTH</CODE> (which is currently 40 characters).
+This is suitable for display in a folder popup.
+
+<DT><SAMP>`number'</SAMP>
+<DD>
+This is the core folder number.  The spool folder is number 0,
+and the rest of the open folders start at 1 and go up from there.
+</DL>
+
+<P>
+Here are the functions and macros relevant to uifolders:
+
+</P>
+<P>
+<U>Macro:</U> char * <B>uifolder_GetShortName</B> <I>(uifolder_t *<VAR>f</VAR>)</I><P>
+<A NAME="IDX74"></A>
+Returns the short name of <VAR>f</VAR>.  Copy this if you want it to persist.
+
+</P>
+<P>
+<U>Macro:</U> char * <B>uifolder_GetLongName</B> <I>(uifolder_t *<VAR>f</VAR>)</I><P>
+<A NAME="IDX75"></A>
+Returns the long name of <VAR>f</VAR>.  Copy this if you want it to persist.
+
+</P>
+<P>
+<U>Macro:</U> msg_folder * <B>uifolder_GetFolder</B> <I>(uifolder_t *<VAR>f</VAR>)</I><P>
+<A NAME="IDX76"></A>
+Returns the core folder structure associated with <VAR>f</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> int <B>uifolder_GetFolderNo</B> <I>(uifolder_t *<VAR>f</VAR>)</I><P>
+<A NAME="IDX77"></A>
+Returns the folder number associated with <VAR>f</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> zmBool <B>uifolder_IsSpool</B> <I>(uifolder_t *<VAR>f</VAR>)</I><P>
+<A NAME="IDX78"></A>
+Returns <CODE>True</CODE> if <VAR>f</VAR> is the spool folder.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uifolder_ChangeTo</B> <I>(uifolder_t *<VAR>f</VAR>)</I><P>
+<A NAME="IDX79"></A>
+Makes <VAR>f</VAR> the current folder.  Returns <CODE>True</CODE> if successful.
+
+</P>
+<P>
+<U>Function:</U> char * <B>uifolder_GetFolderFilename</B> <I>(uifolder_t *<VAR>f</VAR>)</I><P>
+<A NAME="IDX80"></A>
+Returns the filename associated with <VAR>f</VAR>.  Copy this if you want
+it to persist.
+
+</P>
+<P>
+<U>Function:</U> int <B>uifolderlist_Sort</B> <I>(uifolderlist_t *<VAR>fl</VAR>)</I><P>
+<A NAME="IDX81"></A>
+Sorts <VAR>fl</VAR>, and returns a sequence number.  If <VAR>fl</VAR> had not
+changed since the last time <CODE>uifolderlist_Sort()</CODE> was called,
+the sequence number will be the same as it was the last time
+<CODE>uifolderlist_Sort()</CODE> was called.  Otherwise, it will be different.
+This should be called after making any changes to the folder list,
+and before refreshing it.
+
+</P>
+<P>
+<U>Function:</U> void <B>uifolderlist_Init</B> <I>(uifolderlist_t *<VAR>fl</VAR>)</I><P>
+<A NAME="IDX82"></A>
+Initializes <VAR>fl</VAR>, and adds all the open core folders to it.
+
+</P>
+<P>
+<U>Function:</U> uifolder_t * <B>uifolderlist_Get</B> <I>(uifolderlist_t *<VAR>fl</VAR>, msg_folder *<VAR>mf</VAR>)</I><P>
+<A NAME="IDX83"></A>
+Returns a pointer to the <CODE>uifolder_t</CODE> structure associated with
+the core folder <VAR>mf</VAR>.
+
+</P>
+<P>
+<U>Function:</U> uifolder_t * <B>uifolderlist_GetAt</B> <I>(uifolderlist_t *<VAR>fl</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX84"></A>
+Returns a pointer to the <VAR>n</VAR>th folder in <VAR>fl</VAR>.  The number
+<VAR>n</VAR> has nothing to do with the folder number; it is an index into
+the (presumably sorted) list of folders maintained by <VAR>fl</VAR>.
+
+</P>
+<P>
+<U>Function:</U> int <B>uifolderlist_GetIndex</B> <I>(uifolderlist_t *<VAR>fl</VAR>, msg_folder *<VAR>mf</VAR>)</I><P>
+<A NAME="IDX85"></A>
+Returns the index into the <CODE>uifolder_t</CODE> structure associated with
+the core folder <VAR>mf</VAR>.  This index is the one used by
+<CODE>uifolderlist_GetAt()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>uifolderlist_Remove</B> <I>(uifolderlist_t *<VAR>fl</VAR>, msg_folder *<VAR>mf</VAR>)</I><P>
+<A NAME="IDX86"></A>
+Remove <VAR>mf</VAR> from the folder list, if it's there.  This should be called
+when a core folder is closed.
+
+</P>
+<P>
+<U>Function:</U> void <B>uifolderlist_Add</B> <I>(uifolderlist_t *<VAR>fl</VAR>, msg_folder *<VAR>mf</VAR>)</I><P>
+<A NAME="IDX87"></A>
+Add <VAR>mf</VAR> to the folder list, if it's not there.  This should be called
+when a core folder is opened.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uifolderlist_FOREACH</B> <I>(uifolderlist_t *<VAR>fl</VAR>, uifolder_t *<VAR>f</VAR>, int <VAR>i</VAR>)</I><P>
+<A NAME="IDX88"></A>
+Step through each entry in <VAR>fl</VAR>.  For each folder in the list,
+<VAR>f</VAR> is set to point to the associated <CODE>uifolder_t</CODE> structure,
+and <VAR>i</VAR> is set to <VAR>f</VAR>'s index.  Example:
+
+</P>
+
+<PRE>
+uifolderlist_FOREACH(fl, f, i) {
+    printf("the %dth folder is %s\n", i, uifolder_GetLongName(f));
+}
+</PRE>
+
+<P>
+
+<U>Variable:</U> <B>uifolderlist_NO_FOLDER_STR</B><P>
+<A NAME="IDX89"></A>
+This is the string to display if there is no folder in the folder
+list.  This was <CODE>[No folder]</CODE> last time I checked.
+
+</P>
+
+
+<H1><A NAME="SEC11" HREF="uisupp_toc.html#SEC11">uifunc</A></H1>
+<P>
+<A NAME="IDX90"></A>
+
+</P>
+<P>
+This module is used to maintain the core list of functions.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uifunctions_GetText</B> <I>(const char *<VAR>name</VAR>, const char *<VAR>sep</VAR>, struct dynstr *<VAR>dstr</VAR>)</I><P>
+<A NAME="IDX91"></A>
+Get the text of function <VAR>name</VAR> and put it in <VAR>dstr</VAR>, separating
+each line with the separator <VAR>sep</VAR>.  Returns <CODE>True</CODE> if successful.
+<VAR>dstr</VAR> is initialized in the course of this function,
+if it succeeds (which is probably not a good thing).
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uifunctions_Delete</B> <I>(const char *<VAR>name</VAR>)</I><P>
+<A NAME="IDX92"></A>
+Deletes function <VAR>name</VAR> from the list of installed functions.
+Returns <CODE>True</CODE> if successful.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uifunctions_Add</B> <I>(const char *<VAR>name</VAR>, const char *<VAR>text</VAR>, GuiItem <VAR>fname_item</VAR>, GuiItem <VAR>script_item</VAR>)</I><P>
+<A NAME="IDX93"></A>
+Installs the function <VAR>name</VAR> with the body <VAR>text</VAR>.
+If <VAR>name</VAR> is <CODE>NULL</CODE>, empty, or invalid, this function sets
+<CODE>ask_item</CODE>
+to <VAR>fname_item</VAR> (if it's non-<CODE>NULL</CODE>), complains to the
+user, and returns <CODE>False</CODE>.
+If <VAR>text</VAR> is <CODE>NULL</CODE> or empty, this function sets <CODE>ask_item</CODE>
+to <VAR>script_item</VAR> (if it's non-<CODE>NULL</CODE>), complains to the
+user, and returns <CODE>False</CODE>.
+Otherwise, this function attempts to install the function; it returns
+<CODE>True</CODE> if successful.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uifunctions_List</B> <I>(char ***<VAR>list</VAR>, zmBool <VAR>sort</VAR>)</I><P>
+<A NAME="IDX94"></A>
+This function makes a list of installed function names, and puts it in
+<CODE>*list</CODE>.  This list is then sorted if <VAR>sort</VAR> is set.
+The vector returned in <CODE>*list</CODE> must be freed with <CODE>xfree()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>uifunctions_HelpScript</B> <I>(const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX95"></A>
+This function provides help on the z-script command string <VAR>str</VAR>.
+<VAR>str</VAR> can contain a z-script command name or function name followed by
+a series of arguments; this function provides help on the command or function
+by calling <CODE>help()</CODE>.
+
+</P>
+
+
+<H1><A NAME="SEC12" HREF="uisupp_toc.html#SEC12">uipick</A></H1>
+<P>
+<A NAME="IDX96"></A>
+<A NAME="IDX97"></A>
+<A NAME="IDX98"></A>
+
+</P>
+<P>
+The uipick object is used for searches.  At the moment, it can only
+be used for describing filters, but it eventually should be used for
+searching by date or pattern.
+
+</P>
+<P>
+A <CODE>uipick_t</CODE> contains a list of <CODE>uipickpat_t</CODE> structures.
+Each <CODE>uipickpat_t</CODE> describes
+a specific search pattern.  A <CODE>uipick_t</CODE> successfully matches
+a message only
+if all its <CODE>uipickpat_t</CODE>s successfully match.  A
+<CODE>uipickpat_t</CODE> contains a series
+of flags, an optional pattern, an optional header string, and a series of
+optional date values.  The pattern, header string, and date values are
+only looked at if the appropriate flags are set.
+
+</P>
+<P>
+A <CODE>uipick_t</CODE> may have one or more of the following flags set:
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>uipick_FirstN</CODE>
+<DD>
+Only match the first <VAR>N</VAR> messages which match the specified
+patterns.  The value of <VAR>N</VAR> is set using
+<CODE>uipick_SetFirstNCount()</CODE>.
+
+<DT><CODE>uipick_LastN</CODE>
+<DD>
+Only match the last <VAR>N</VAR> messages which match the specified
+patterns.  The value of <VAR>N</VAR> is set using
+<CODE>uipick_SetLastNCount()</CODE>.
+</DL>
+
+<P>
+A <CODE>uipickpat_t</CODE> may have one or more of the following flags set:
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>uipickpat_Invert</CODE>
+<DD>
+Invert the sense of the search.  Match all messages which would
+otherwise <EM>not</EM> match.
+<DT><CODE>uipickpat_IgnoreCase</CODE>
+<DD>
+Ignore case differences when matching the pattern string.
+<DT><CODE>uipickpat_ExpFixed</CODE>
+<DD>
+Don't interpret any special regular expression characters except
+for leading <CODE>^</CODE> and trailing <CODE>$</CODE>.
+<DT><CODE>uipickpat_ExpExtended</CODE>
+<DD>
+Interpret a larger set of regular expression characters than normal.
+See <CODE>pick -X</CODE>.
+<DT><CODE>uipickpat_DateAbsolute</CODE>
+<DD>
+Search by date.
+One of 
+<CODE>uipickpat_DateOn</CODE>,
+<CODE>uipickpat_DateAfter</CODE>, or
+<CODE>uipickpat_DateBefore</CODE> must be set as well.
+<DT><CODE>uipickpat_DateRelative</CODE>
+<DD>
+Search by date, relative to today's date.
+One of 
+<CODE>uipickpat_DateOn</CODE>,
+<CODE>uipickpat_DateAfter</CODE>, or
+<CODE>uipickpat_DateBefore</CODE> must be set as well.
+<DT><CODE>uipickpat_DateBefore</CODE>
+<DD>
+Search for messages which were sent before a certain date.
+<DT><CODE>uipickpat_DateAfter</CODE>
+<DD>
+Search for messages which were sent after a certain date.
+<DT><CODE>uipickpat_DateOn</CODE>
+<DD>
+Search for messages which were sent on a certain date.
+<DT><CODE>uipickpat_SearchFrom</CODE>
+<DD>
+Search the <CODE>From:</CODE> header for the pattern string.
+<DT><CODE>uipickpat_SearchSubject</CODE>
+<DD>
+Search the <CODE>Subject:</CODE> header for the pattern string.
+<DT><CODE>uipickpat_SearchTo</CODE>
+<DD>
+Search the recipient headers for the pattern string.
+<DT><CODE>uipickpat_SearchHdr</CODE>
+<DD>
+Search a specified header for the pattern string.
+The header is specified using <CODE>uipickpat_SetHeader()</CODE>.
+<DT><CODE>uipickpat_SearchBody</CODE>
+<DD>
+Search the body of the message for the pattern string.
+<DT><CODE>uipickpat_SearchEntire</CODE>
+<DD>
+Search the entire message for the pattern string.
+</DL>
+
+<P>
+The date is expressed as four values, one for each date unit (years, months,
+weeks, and days).  The date values are multiplied by the units and added
+together to get the total date, which may be an absolete date or
+a relative measure of time.  For example, if you set the <SAMP>`weeks'</SAMP> unit
+of a <CODE>uipickpat_t</CODE> to 5, set the <SAMP>`days'</SAMP> unit to 3, and set the flags
+<CODE>uipickpat_DateBefore|uipickpat_DateRelative</CODE>, you'll be searching
+for messages which are dated before 5 weeks and 3 days ago.
+
+</P>
+<P>
+<U>Macro:</U> zmFlags <B>uipick_GetFlags</B> <I>(uipick_t *<VAR>up</VAR>, zmFlags <VAR>f</VAR>)</I><P>
+<A NAME="IDX99"></A>
+Returns the state of flags <VAR>f</VAR> in the structure <VAR>up</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> int <B>uipick_SetFirstNCount</B> <I>(uipick_t *<VAR>up</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX100"></A>
+Specifies that <VAR>up</VAR> should return only the first <VAR>n</VAR>
+messages which match
+a given pattern.  This only works if the <CODE>uipick_FirstN</CODE> flag
+is set for <VAR>up</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> int <B>uipick_GetFirstNCount</B> <I>(uipick_t *<VAR>up</VAR>)</I><P>
+<A NAME="IDX101"></A>
+If <VAR>up</VAR> is set up to return only the first <VAR>n</VAR> messages which match
+a given pattern, returns <VAR>n</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> int <B>uipick_GetLastNCount</B> <I>(uipick_t *<VAR>up</VAR>)</I><P>
+<A NAME="IDX102"></A>
+If <VAR>up</VAR> is set up to return only the last <VAR>n</VAR> messages which match
+a given pattern, returns <VAR>n</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> int <B>uipick_SetLastNCount</B> <I>(uipick_t *<VAR>up</VAR>)</I><P>
+<A NAME="IDX103"></A>
+Specifies that <VAR>up</VAR> should return only the last <VAR>n</VAR>
+messages which match
+a given pattern.  This only works if the <CODE>uipick_LastN</CODE> flag
+is set for <VAR>up</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uipickpat_SetPattern</B> <I>(uipickpat_t *<VAR>upp</VAR>, char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX104"></A>
+Sets the pattern string associated with <VAR>upp</VAR> to a copy of <VAR>str</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uipickpat_SetHeader</B> <I>(uipickpat_t *<VAR>upp</VAR>, char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX105"></A>
+Sets the header string associated with <VAR>upp</VAR> to a copy of <VAR>str</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> char * <B>uipickpat_GetHeader</B> <I>(uipickpat_t *<VAR>upp</VAR>)</I><P>
+<A NAME="IDX106"></A>
+Returns the header string associated with <VAR>upp</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> char * <B>uipickpat_GetPattern</B> <I>(uipickpat_t *<VAR>upp</VAR>)</I><P>
+<A NAME="IDX107"></A>
+Returns the pattern string associated with <VAR>upp</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uipickpat_SetFlags</B> <I>(uipickpat_t *<VAR>upp</VAR>, zmFlags <VAR>fl</VAR>)</I><P>
+<A NAME="IDX108"></A>
+Sets the flags <VAR>fl</VAR> in <VAR>upp</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uipickpat_ClearFlags</B> <I>(uipickpat_t *<VAR>upp</VAR>, zmFlags <VAR>fl</VAR>)</I><P>
+<A NAME="IDX109"></A>
+Clears the flags <VAR>fl</VAR> in <VAR>upp</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> zmFlags <B>uipickpat_GetFlags</B> <I>(uipickpat_t *<VAR>upp</VAR>, zmFlags <VAR>fl</VAR>)</I><P>
+<A NAME="IDX110"></A>
+Returns the state of the flags <VAR>fl</VAR> in <VAR>upp</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uipickpat_SetDate</B> <I>(uipickpat_t *<VAR>upp</VAR>, uipickpat_date_units_t <VAR>units</VAR>, int <VAR>num</VAR>)</I><P>
+<A NAME="IDX111"></A>
+Sets the date value associated with <VAR>upp</VAR> and <VAR>units</VAR> to <VAR>num</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> int <B>uipickpat_GetDate</B> <I>(uipickpat_t *<VAR>upp</VAR>, uipickpat_date_units_t <VAR>units</VAR>)</I><P>
+<A NAME="IDX112"></A>
+Gets the date value associated with <VAR>upp</VAR> and <VAR>units</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uipick_FOREACH</B> <I>(uipick_t *<VAR>up</VAR>, uipickpat_t *<VAR>upp</VAR>, int <VAR>i</VAR>)</I><P>
+<A NAME="IDX113"></A>
+Step through each pattern in <VAR>up</VAR>.  For each pattern associated with
+<VAR>up</VAR>,
+<VAR>upp</VAR> is set to point to the associated <CODE>uipickpat_t</CODE> structure,
+and <VAR>i</VAR> is set to <VAR>upp</VAR>'s index.
+
+</P>
+<P>
+
+<U>Function:</U> void <B>uipick_Init</B> <I>(uipick_t *<VAR>up</VAR>)</I><P>
+<A NAME="IDX114"></A>
+Initialize <VAR>up</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>uipick_Destroy</B> <I>(uipick_t *<VAR>up</VAR>)</I><P>
+<A NAME="IDX115"></A>
+Destroy <VAR>up</VAR>.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uipick_Parse</B> <I>(uipick_t *<VAR>up</VAR>, char **<VAR>argv</VAR>)</I><P>
+<A NAME="IDX116"></A>
+Parse the <CODE>pick</CODE> arguments contained in <VAR>argv</VAR>, and modify <VAR>up</VAR>
+so that it specifies a search operation which is identical to the one
+specified by <VAR>argv</VAR>.  <VAR>up</VAR> must already be initialized.
+Returns <CODE>True</CODE> if successful.
+
+</P>
+<P>
+<U>Function:</U> uipickpat_t * <B>uipick_AddPattern</B> <I>(uipick_t *<VAR>up</VAR>)</I><P>
+<A NAME="IDX117"></A>
+Create a new <CODE>uipickpat_t</CODE> associated with <VAR>up</VAR>, and return
+a pointer to it.
+
+</P>
+<P>
+<U>Function:</U> char ** <B>uipick_MakeCmd</B> <I>(uipick_t *<VAR>up</VAR>, zmBool <VAR>single</VAR>)</I><P>
+<A NAME="IDX118"></A>
+Convert the search operation specified by <VAR>up</VAR> into a <CODE>pick</CODE>
+command which performs that search operation.  Returns a string vector
+if successful, otherwise <CODE>NULL</CODE>.  This vector's first element
+will be <CODE>"pick"</CODE>, and may contain pipes (<CODE>"|"</CODE>) if <VAR>single</VAR>
+is <CODE>True</CODE>.  The vector must be freed with <CODE>free_vec()</CODE>.
+If <VAR>single</VAR> is set, the return
+value is guaranteed to be a single <CODE>pick</CODE> command, rather than
+a pipeline.  If this is not possible, this routine will return
+<CODE>NULL</CODE>.
+
+</P>
+<P>
+<U>Function:</U> char ** <B>uipickpat_GetDateUnitDescs</B> <I>()</I><P>
+<A NAME="IDX119"></A>
+Returns a vector of date unit descriptions (for example,
+"years" and "months"), suitable for display.
+This vector must be freed with <CODE>free_vec()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>uipickpat_GetDateInfo</B> <I>(uipickpat_t *<VAR>upp</VAR>, int *<VAR>ago_time</VAR>, uipickpat_date_units_t *<VAR>ago_units</VAR>)</I><P>
+<A NAME="IDX120"></A>
+This is a convenience routine to take the date information specified
+by <VAR>upp</VAR> and convert it into a simpler form.  <VAR>ago_time</VAR> must be
+a pointer to an array of <CODE>int</CODE>s, and <VAR>ago_units</VAR> must point to
+an array of <CODE>uipickpat_date_units_t</CODE>s.  Both arrays must be of
+size <CODE>uipickpat_Date_Count</CODE>.
+If <VAR>upp</VAR> specifies a search by date, then the appropriate elements
+of <VAR>ago_time</VAR> and <VAR>ago_units</VAR> will be filled in with the
+date value and unit of the search.  (The appropriate elements are
+the ones index by either <CODE>uipickpat_Date_Older</CODE> or
+<CODE>uipickpat_Date_Newer</CODE>.)  If <VAR>upp</VAR> does not specify a search
+by date, <VAR>ago_time</VAR> and <VAR>ago_units</VAR> are unchanged.  Example:
+
+</P>
+
+<PRE>
+int ago_time[uipickpat_Date_Count], i;
+uipick_t *pick;
+uipickpat_t *pat;
+uipickpat_date_units_t date_units[uipickpat_Date_Count];
+
+for (i = 0; i != uipickpat_Date_Count; i++) ago_time[i] = 0;
+uipick_FOREACH(pick, pat, i) {
+    uipickpat_GetDateInfo(pat, ago_time, date_units);
+}
+if (ago_time[uipickpat_Date_Older])
+    printf("older than %d\n", ago_time[uipickpat_Date_Older]);
+if (ago_time[uipickpat_Date_Newer])
+    printf("newer than %d\n", ago_time[uipickpat_Date_Newer]);
+</PRE>
+
+<P>
+This example extracts date information out of <VAR>pick</VAR>.
+Notice that this code is not fully general; for example, if <VAR>pick</VAR>
+specifies a search for messages older than 4 weeks and 6 days,
+this code will work, since <CODE>ago_time[uipickpat_Date_Older]</CODE> cannot
+be both 4 and 6.  Only one unit may be used at a time.  The function
+<CODE>uipickpat_GetDateInfo()</CODE> can be used to simplify the parsing of
+a subset of possible pattern specifications.
+
+</P>
+<P>
+
+
+
+<H1><A NAME="SEC13" HREF="uisupp_toc.html#SEC13">uiprefs</A></H1>
+<P>
+<A NAME="IDX121"></A>
+<A NAME="IDX122"></A>
+<A NAME="IDX123"></A>
+<A NAME="IDX124"></A>
+
+</P>
+<P>
+These two functions save and load the options, possibly using the zync
+server.  This functionality should be moved to the core.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uiprefs_Save</B> <I>()</I><P>
+<A NAME="IDX125"></A>
+Ask the user for a location to save the application state, defaulting
+to <CODE>~/.zmailrc</CODE> or the equivalent; then save the options to that
+location.  If <CODE>$zync_options:(prefs)</CODE> is set, first ask the user
+whether to save the options on the zync server instead.
+Returns <CODE>True</CODE> if successful.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uiprefs_Load</B> <I>()</I><P>
+<A NAME="IDX126"></A>
+Ask the user for a location to load the application state from, defaulting
+to <CODE>~/.zmailrc</CODE> or the equivalent; then load the options from that
+location.  If <CODE>$zync_options:(prefs)</CODE> is set, first ask the user
+whether to load the options from the zync server instead.
+Returns <CODE>True</CODE> if successful.
+
+</P>
+
+
+<H1><A NAME="SEC14" HREF="uisupp_toc.html#SEC14">uiprint</A></H1>
+<P>
+<A NAME="IDX127"></A>
+<A NAME="IDX128"></A>
+<A NAME="IDX129"></A>
+
+</P>
+<P>
+A <CODE>uiprint_t</CODE> describes a printing operation.  To print a series
+of messages, create an initialize a <CODE>uiprint_t</CODE> object, set its
+atttributes, and call <CODE>uiprint_Print()</CODE>.  Then destroy it.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uiprint_SetPrinterName</B> <I>(uiprint_t *<VAR>uip</VAR>, char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX130"></A>
+Sets <VAR>uip</VAR>'s printer name to a copy of <VAR>str</VAR>.  If this is not
+called, the default printer is used.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uiprint_SetPrintCmd</B> <I>(uiprint_t *<VAR>uip</VAR>, char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX131"></A>
+Sets <VAR>uip</VAR>'s print command to a copy of <VAR>str</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uiprint_SetHdrType</B> <I>(uiprint_t *<VAR>uip</VAR>, uiprint_HdrType_t <VAR>ht</VAR>)</I><P>
+<A NAME="IDX132"></A>
+Sets the header type of <VAR>uip</VAR> to <VAR>ht</VAR>.  The <SAMP>`header type'</SAMP> is the
+class of headers which get printed.
+The possible header types are:
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>uiprint_HdrAll</CODE>
+<DD>
+Print all headers.
+<DT><CODE>uiprint_HdrStd</CODE>
+<DD>
+Print the standard headers, depending on the value of
+<CODE>$display_headers</CODE> and the headers specified in
+<CODE>retain</CODE> and <CODE>ignore</CODE> commands.
+<DT><CODE>uiprint_HdrNone</CODE>
+<DD>
+Don't print any headers.
+</DL>
+
+<P>
+
+<U>Macro:</U> uiprint_HdrType_t <B>uiprint_GetHdrType</B> <I>(uiprint_t *<VAR>uip</VAR>)</I><P>
+<A NAME="IDX133"></A>
+Gets the header type of <VAR>uip</VAR>.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uiprint_Print</B> <I>(uiprint_t *<VAR>uip</VAR>)</I><P>
+<A NAME="IDX134"></A>
+Prints the current messages using the attributes defined by <VAR>uip</VAR>.
+Returns <CODE>True</CODE> if successful.
+The return value of <CODE>gui_msg_context()</CODE> is assumed to accurately
+reflect what the <SAMP>`current messages'</SAMP> are.
+
+</P>
+<P>
+<U>Function:</U> void <B>uiprint_Init</B> <I>(uiprint_t *<VAR>uip</VAR>)</I><P>
+<A NAME="IDX135"></A>
+Initializes <VAR>uip</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>uiprint_Destroy</B> <I>(uiprint_t *<VAR>uip</VAR>)</I><P>
+<A NAME="IDX136"></A>
+Destroys <VAR>uip</VAR>.
+
+</P>
+<P>
+<U>Function:</U> int <B>uiprint_ListPrinters</B> <I>(char ***<VAR>vecp</VAR>, int *<VAR>dflt</VAR>)</I><P>
+<A NAME="IDX137"></A>
+Generates a sorted list of printer names.  If successful, this function will
+set <CODE>*vecp</CODE> to point to a vector of printer names; the return value
+will be the number of printers in the list.  Also, <CODE>*dflt</CODE> will be
+the index of the default printer in <CODE>*vecp</CODE>.  If unsuccessful, this
+function will return -1.  The vector returned in <CODE>*vecp</CODE> must be
+freed with <CODE>free_vec()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> char * <B>uiprint_GetPrintCmdInfo</B> <I>(char **<VAR>strp</VAR>)</I><P>
+<A NAME="IDX138"></A>
+Returns the current print command (depending on the
+value of <CODE>$print_cmd</CODE>), or <CODE>NULL</CODE> if there isn't one.
+If <CODE>strp</CODE> is non-<CODE>NULL</CODE>, then <CODE>*strp</CODE> is set to the
+string <CODE>"Print Command:"</CODE> if there is a current print command, or
+<CODE>"Printer Name:"</CODE> if there is not.  Neither
+the return value nor <CODE>*strp</CODE>
+have to be freed.
+
+</P>
+<P>
+<U>Function:</U> uiprint_HdrType_t <B>uiprint_GetDefaultHdrType</B> <I>()</I><P>
+<A NAME="IDX139"></A>
+Returns an appropriate default header type, depending on the value
+of <CODE>$alwaysignore</CODE>.
+
+</P>
+
+
+<H1><A NAME="SEC15" HREF="uisupp_toc.html#SEC15">uisort</A></H1>
+<P>
+<A NAME="IDX140"></A>
+<A NAME="IDX141"></A>
+
+</P>
+<P>
+A <CODE>uisort_t</CODE> is an object used to sort the messages in the current
+folder.
+To sort the messages, first create an initialize a <CODE>uisort_t</CODE> object.
+Then, add the sort indices in the order you want them used; if you want
+to sort in descending order by one of the indices, then reverse that index.
+Then call <CODE>uisort_DoSort()</CODE>, and then destroy the sort object.
+
+</P>
+<P>
+For example, to sort by subject (in alphabetical order) and then by
+date (from newest to oldest):
+
+</P>
+
+<PRE>
+    uisort_t sort;
+    uisort_Init(&#38;sort);
+    uisort_AddIndex(&#38;sort, uisort_IndexSubject);
+    uisort_AddIndex(&#38;sort, uisort_IndexDate);
+    uisort_ReverseIndex(&#38;sort, uisort_IndexDate, True);
+    uisort_DoSort(&#38;sort);
+    uisort_Destroy(&#38;sort);
+</PRE>
+
+<P>
+<U>Macro:</U> zmBool <B>uisort_HasIndex</B> <I>(uisort_t *<VAR>s</VAR>, uisort_index_t <VAR>i</VAR>)</I><P>
+<A NAME="IDX142"></A>
+Returns <CODE>True</CODE> if the index <VAR>i</VAR> has been added to <VAR>s</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>uisort_AddIndex</B> <I>(uisort_t *<VAR>s</VAR>, uisort_index_t <VAR>i</VAR>)</I><P>
+<A NAME="IDX143"></A>
+Adds the index <VAR>i</VAR> to the sort operation described by <VAR>s</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>uisort_RemoveIndex</B> <I>(uisort_t *<VAR>s</VAR>, uisort_index_t <VAR>i</VAR>)</I><P>
+<A NAME="IDX144"></A>
+Removes the index <VAR>i</VAR> from the sort operation described by <VAR>s</VAR>,
+if it has been added.
+
+</P>
+<P>
+<U>Function:</U> void <B>uisort_ReverseIndex</B> <I>(uisort_t *<VAR>s</VAR>, uisort_index_t <VAR>i</VAR>, zmBool <VAR>rev</VAR>)</I><P>
+<A NAME="IDX145"></A>
+Reverses (if <VAR>rev</VAR> is <CODE>True</CODE>) or unreverses (if <VAR>rev</VAR> is <CODE>False</CODE>)
+index <VAR>i</VAR> in the sort described by <VAR>s</VAR>.  For example, if you add
+<CODE>uisort_IndexLength</CODE> to <VAR>s</VAR> and then reverse it, <VAR>s</VAR> will sort
+in descending order of length.
+
+</P>
+<P>
+<U>Function:</U> char ** <B>uisort_DescribeSort</B> <I>(uisort_t *<VAR>s</VAR>)</I><P>
+<A NAME="IDX146"></A>
+Returns a vector of strings which describe the sorting operation specified by
+<VAR>s</VAR>.  This vector is suitable for display, and must be freed
+with <CODE>xfree()</CODE>.  This routine never returns NULL unless it runs
+out of memory.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uisort_DoSort</B> <I>(uisort_t *<VAR>s</VAR>)</I><P>
+<A NAME="IDX147"></A>
+Performs the sort specified by <VAR>s</VAR>.  Returns <CODE>True</CODE> if successful.
+
+</P>
+<P>
+<U>Function:</U> void <B>uisort_UseOptions</B> <I>(uisort_t *<VAR>s</VAR>, zmFlags <VAR>f</VAR>)</I><P>
+<A NAME="IDX148"></A>
+Sets the sort options to <VAR>f</VAR> in the sort specified by <VAR>s</VAR>.
+Options included in <VAR>f</VAR> will be turned on, and options not included
+in <VAR>f</VAR> will be turned off.
+
+</P>
+<P>
+<U>Function:</U> void <B>uisort_Init</B> <I>(uisort_t *<VAR>s</VAR>)</I><P>
+<A NAME="IDX149"></A>
+Initializes the sort structure <VAR>s</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>uisort_Destroy</B> <I>(uisort_t *)</I><P>
+<A NAME="IDX150"></A>
+Deinitializes the sort structure <VAR>s</VAR>.
+
+</P>
+
+
+<H1><A NAME="SEC16" HREF="uisupp_toc.html#SEC16">uitaskm</A></H1>
+<P>
+<A NAME="IDX151"></A>
+<A NAME="IDX152"></A>
+<A NAME="IDX153"></A>
+
+</P>
+<P>
+The uitaskm module is a simplified way for UI writers to implement
+the task meter.  This module provides an implementation of the
+<CODE>gui_handle_intrpt()</CODE> function to the core, and makes calls
+to <CODE>gui_taskm_update()</CODE> and <CODE>gui_taskm_get_event()</CODE>.
+These two functions are much simpler to implement than
+<CODE>gui_handle_intrpt()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> int <B>gui_handle_intrpt</B> <I>(u_long <VAR>flags</VAR>, int <VAR>nest</VAR>, char *<VAR>str</VAR>, long <VAR>percentage</VAR>)</I><P>
+<A NAME="IDX154"></A>
+You really don't want to know.  The core calls this routine when it
+needs to display task meter information.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>gui_taskm_update</B> <I>(uitaskm_Update_t *<VAR>upd</VAR>)</I><P>
+<A NAME="IDX155"></A>
+This routine, which must be provided by the UI implementor, must
+update the task meter to conform to the state specified in <VAR>upd</VAR>.
+<CODE>uitaskm_Update_t</CODE> contains the following fields:
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>main_msg</CODE>
+<DD>
+The main message to display in the task meter.  This does not change
+as long as an operation is in progress.  An example of a main message
+is <CODE>"Loading /users/pf/mail/mail.log (160883 bytes)"</CODE>.
+If this
+field is <CODE>NULL</CODE>, then there is no main message, or it has not
+changed since last time <CODE>gui_taskm_update()</CODE> was called.
+<DT><CODE>sub_msg</CODE>
+<DD>
+Another message to display in the task meter.  This message typically
+changes while an operation is in progress.  An example of a sub-message
+is <CODE>"Loading message 58"</CODE>.
+If this
+field is <CODE>NULL</CODE>, then there is no sub-message, or it has not
+changed since last time <CODE>gui_taskm_update()</CODE> was called.
+<DT><CODE>percent</CODE>
+<DD>
+A percentage value from 0 to 100 which shows how much of the task has
+been completed.
+
+<DT><CODE>state</CODE>
+<DD>
+A series of bitflags describing what the task meter should look like.
+</DL>
+
+<P>
+The following flags may be set in the <CODE>state</CODE> field:
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>uitaskm_StateVisible</CODE>
+<DD>
+The task meter should be visible.  If this is unset, the task meter
+should be hidden.
+<DT><CODE>uitaskm_StateMessage</CODE>
+<DD>
+The main message should be displayed.  If <CODE>main_msg</CODE> is <CODE>NULL</CODE>,
+display the previous main message.
+<DT><CODE>uitaskm_StateSubMessage</CODE>
+<DD>
+The sub-message should be displayed.  If <CODE>sub_msg</CODE> is <CODE>NULL</CODE>,
+display the previous sub-message.
+<DT><CODE>uitaskm_StatePercent</CODE>
+<DD>
+The task completion percentage should be displayed.
+<DT><CODE>uitaskm_StateStop</CODE>
+<DD>
+The user should be allowed to press the stop button.
+<DT><CODE>uitaskm_StateContinue</CODE>
+<DD>
+The user should be allowed to press the continue button.
+<DT><CODE>uitaskm_StateLong</CODE>
+<DD>
+This is a <SAMP>`long'</SAMP> operation.  Once set, this flag is guaranteed not to
+be cleared as long as the task meter is visible.  For example,
+in the Windows UI,
+we only display task meter information in a separate window if this
+flag is set; otherwise, we display the information in a status bar.
+So, the windows code uses this flag to decide where to display the
+information.  This flag may be set while the task meter is visible, but
+will not be cleared until the task meter is made invisible again.
+</DL>
+
+<P>
+
+<U>Function:</U> uitaskm_Event_t <B>gui_taskm_get_event</B> <I>(zmFlags <VAR>type</VAR>)</I><P>
+<A NAME="IDX156"></A>
+Return a task meter event.  If an event has occurred since the last time
+this function was called, return that event.  If not, and if
+<CODE>uitaskm_EventFlags_Wait</CODE> is set in <VAR>type</VAR>,
+wait for an event to occur.  Otherwise, return
+<CODE>uitaskm_EventNone</CODE>.
+Possible return values are:
+
+</P>
+<DL COMPACT>
+
+<DT><CODE>uitaskm_EventNone</CODE>
+<DD>
+Nothing has happened. If <CODE>uitaskm_EventFlags_Wait</CODE> is
+set, you must not return this.
+
+<DT><CODE>uitaskm_EventStop</CODE>
+<DD>
+The user has pressed the <SAMP>`stop'</SAMP> button.
+
+<DT><CODE>uitaskm_EventContinue</CODE>
+<DD>
+The user has pressed the <SAMP>`continue'</SAMP> button.
+</DL>
+<P>
+
+
+
+<H1><A NAME="SEC17" HREF="uisupp_toc.html#SEC17">uitempl</A></H1>
+<P>
+<A NAME="IDX157"></A>
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uitemplate_List</B> <I>(char ***<VAR>vptr</VAR>)</I><P>
+<A NAME="IDX158"></A>
+List the available templates.  Creates a vector of template names
+and puts a pointer to it in <CODE>*vptr</CODE>, and returns <CODE>True</CODE> if successful.
+This list must be freed with <CODE>free_vec()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uitemplate_New</B> <I>()</I><P>
+<A NAME="IDX159"></A>
+Creates a new template.  Asks the user for the name of the new template,
+then creates it and allows the user to edit it.
+Returns <CODE>True</CODE> if successful.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uitemplate_Edit</B> <I>(const char *<VAR>name</VAR>)</I><P>
+<A NAME="IDX160"></A>
+Starts an editing session to edit the existing template <VAR>name</VAR>.
+Returns <CODE>True</CODE> if successful.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uitemplate_Mail</B> <I>(const char *<VAR>name</VAR>)</I><P>
+<A NAME="IDX161"></A>
+Starts a new composition using the template <VAR>name</VAR>.  Returns
+<CODE>True</CODE> if successful.
+
+</P>
+
+
+<H1><A NAME="SEC18" HREF="uisupp_toc.html#SEC18">uivars</A></H1>
+<P>
+<A NAME="IDX162"></A>
+<A NAME="IDX163"></A>
+<A NAME="IDX164"></A>
+
+</P>
+<P>
+The uivars module is a front-end to the core variables functionality.
+To use it, you must first create an initialize a <CODE>uivarlist_t</CODE>.
+You can then <CODE>uivarlist_GetVar()</CODE> to get information on
+a specific variable.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uivarlist_Init</B> <I>(uivarlist_t *<VAR>vl</VAR>, unsigned long <VAR>flags</VAR>)</I><P>
+<A NAME="IDX165"></A>
+Initializes <VAR>vl</VAR>, filling it with all available variables that
+match the criteria specified by <VAR>flags</VAR>.  I'm not sure that it
+does this correctly; probably not.
+
+</P>
+<P>
+<U>Function:</U> void <B>uivarlist_Destroy</B> <I>(uivarlist_t *<VAR>vl</VAR>)</I><P>
+<A NAME="IDX166"></A>
+Destroys the variable list <VAR>vl</VAR>.
+
+</P>
+<P>
+<U>Function:</U> uivar_t <B>uivarlist_GetVar</B> <I>(uivarlist_t *<VAR>vl</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX167"></A>
+Returns a pointer to the <VAR>n</VAR>th variable in <VAR>vl</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> void <B>uivarlist_FOREACH</B> <I>(uivarlist_t *<VAR>vl</VAR>, uivar_t <VAR>v</VAR>, int <VAR>i</VAR>)</I><P>
+<A NAME="IDX168"></A>
+Step through all the variables in <VAR>vl</VAR>, setting <VAR>v</VAR> to each
+one in turn.  In each case, <VAR>i</VAR> is set to the index of each
+variable.  Example:
+
+</P>
+
+<PRE>
+uivarlist_FOREACH(vl, v, i) {
+    printf("the %dth variable is %s\n", i, uivar_GetName(v));
+}
+</PRE>
+
+<P>
+
+<U>Macro:</U> int <B>uivarlist_GetCount</B> <I>(uivarlist_t *<VAR>vl</VAR>)</I><P>
+<A NAME="IDX169"></A>
+Returns the number of variables in <VAR>vl</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> zmBool <B>uivar_IsReadonly</B> <I>(uivar_t <VAR>v</VAR>)</I><P>
+<A NAME="IDX170"></A>
+Returns <CODE>True</CODE> if <VAR>v</VAR> is readonly.
+
+</P>
+<P>
+<U>Macro:</U> zmBool <B>uivar_IsBoolean</B> <I>(uivar_t <VAR>v</VAR>)</I><P>
+<A NAME="IDX171"></A>
+Returns <CODE>True</CODE> if <VAR>v</VAR> is a boolean variable.
+
+</P>
+<P>
+<U>Macro:</U> zmBool <B>uivar_IsString</B> <I>(uivar_t <VAR>v</VAR>)</I><P>
+<A NAME="IDX172"></A>
+Returns <CODE>True</CODE> if <VAR>v</VAR> is a string variable.
+
+</P>
+<P>
+<U>Macro:</U> zmBool <B>uivar_IsSingleval</B> <I>(uivar_t <VAR>v</VAR>)</I><P>
+<A NAME="IDX173"></A>
+Returns <CODE>True</CODE> if <VAR>v</VAR> is a singlevalue variable.
+
+</P>
+<P>
+<U>Macro:</U> zmBool <B>uivar_IsMultival</B> <I>(uivar_t <VAR>v</VAR>)</I><P>
+<A NAME="IDX174"></A>
+Returns <CODE>True</CODE> if <VAR>v</VAR> is a multivalue variable.
+
+</P>
+<P>
+<U>Macro:</U> zmBool <B>uivar_HasSubVals</B> <I>(uivar_t <VAR>v</VAR>)</I><P>
+<A NAME="IDX175"></A>
+Returns <CODE>True</CODE> if <VAR>v</VAR> is singlevalue or multivalue.
+
+</P>
+<P>
+<U>Macro:</U> zmBool <B>uivar_IsNumeric</B> <I>(uivar_t <VAR>v</VAR>)</I><P>
+<A NAME="IDX176"></A>
+Returns <CODE>True</CODE> if <VAR>v</VAR> is a numeric variable.
+
+</P>
+<P>
+<U>Macro:</U> char * <B>uivar_GetName</B> <I>(uivar_t <VAR>v</VAR>)</I><P>
+<A NAME="IDX177"></A>
+Returns the name of <VAR>v</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> char * <B>uivar_GetPrompt</B> <I>(uivar_t <VAR>v</VAR>)</I><P>
+<A NAME="IDX178"></A>
+Returns the prompt label for <VAR>v</VAR>; for example, <SAMP>`Address:'</SAMP>.
+
+</P>
+<P>
+<U>Macro:</U> int <B>uivar_GetNumMax</B> <I>(uivar_t <VAR>v</VAR>)</I><P>
+<A NAME="IDX179"></A>
+Returns the maximum numeric value that <VAR>v</VAR> if the user sets
+it using the variables dialog.  Note that <VAR>v</VAR>'s value may still
+be larger than <VAR>v</VAR> if the user sets it some other way.
+
+</P>
+<P>
+<U>Macro:</U> int <B>uivar_GetSubValCount</B> <I>(uivar_t <VAR>v</VAR>)</I><P>
+<A NAME="IDX180"></A>
+Returns the number of sub-values in <VAR>v</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> char * <B>uivar_GetSubValLabel</B> <I>(uivar_t <VAR>v</VAR>, int <VAR>i</VAR>)</I><P>
+<A NAME="IDX181"></A>
+Returns the name of subvalue <VAR>i</VAR> of <VAR>v</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>uivar_GetValue</B> <I>(uivar_t <VAR>v</VAR>, uivarvalue_t *<VAR>val</VAR>)</I><P>
+<A NAME="IDX182"></A>
+Gets the value of <VAR>v</VAR> and puts it in <VAR>val</VAR>.  <VAR>val</VAR> does
+not have to be initialized or destroyed, but its contents are subject
+to go away without warning if you change variable values.  You should
+copy the value with <CODE>uivarvalue_Copy()</CODE> if you want <VAR>val</VAR> to
+persist.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uivarvalue_Copy</B> <I>(uivarvalue_t *<VAR>vd</VAR>, uivarvalue_t *<VAR>vs</VAR>)</I><P>
+<A NAME="IDX183"></A>
+Copies the value <VAR>vs</VAR>, putting the copy in <VAR>vd</VAR>.  To free the
+storage used by <VAR>vd</VAR>, call <CODE>uivarvalue_Destroy()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>uivarvalue_Destroy</B> <I>(uivarvalue_t *<VAR>val</VAR>)</I><P>
+<A NAME="IDX184"></A>
+Destroys the storage used by <VAR>val</VAR>.
+
+</P>
+<P>
+<U>Macro:</U> zmBool <B>uivarvalue_GetSubValBool</B> <I>(uivar_t <VAR>val</VAR>, int <VAR>n</VAR>)</I><P>
+<A NAME="IDX185"></A>
+Returns <CODE>True</CODE> if <VAR>val</VAR> has subvalue <VAR>i</VAR> set to boolean <CODE>True</CODE>.
+
+</P>
+<P>
+<U>Macro:</U> zmBool <B>uivarvalue_GetBool</B> <I>(uivar_t <VAR>val</VAR>)</I><P>
+<A NAME="IDX186"></A>
+Returns <CODE>True</CODE> if <VAR>val</VAR> has the value of boolean <CODE>True</CODE>.
+
+</P>
+<P>
+<U>Function:</U> char * <B>uivar_GetLongDescription</B> <I>(uivar_t <VAR>v</VAR>)</I><P>
+<A NAME="IDX187"></A>
+Returns the long description of <VAR>v</VAR> in a static buffer which does
+not have to be freed.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uivar_SetSubVal</B> <I>(uivar_t <VAR>v</VAR>, int <VAR>n</VAR>, zmBool <VAR>on</VAR>)</I><P>
+<A NAME="IDX188"></A>
+Sets the value of subvalue <VAR>n</VAR> of <VAR>v</VAR> to the boolean value <VAR>on</VAR>.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uivar_SetBool</B> <I>(uivar_t <VAR>v</VAR>, zmBool <VAR>on</VAR>)</I><P>
+<A NAME="IDX189"></A>
+Sets the value of <VAR>v</VAR> to the boolean value <VAR>on</VAR>.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uivar_SetStr</B> <I>(uivar_t <VAR>v</VAR>, const char *<VAR>str</VAR>)</I><P>
+<A NAME="IDX190"></A>
+Sets the value of <VAR>v</VAR> to the string value <VAR>str</VAR>.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uivar_SetLong</B> <I>(uivar_t <VAR>v</VAR>, long <VAR>val</VAR>)</I><P>
+<A NAME="IDX191"></A>
+Sets the value of <VAR>v</VAR> to the integer value <VAR>val</VAR>.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uivarvalue_GetLong</B> <I>(uivarvalue_t *<VAR>v</VAR>, long *<VAR>val</VAR>)</I><P>
+<A NAME="IDX192"></A>
+Puts the integer value of <VAR>v</VAR> into the longword pointed to by <VAR>val</VAR>,
+and returns <CODE>True</CODE> if successful.  If <VAR>v</VAR> is not an integer variable,
+then this call will not be successful.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uivarvalue_GetStr</B> <I>(uivarvalue_t *<VAR>v</VAR>, char **<VAR>val</VAR>)</I><P>
+<A NAME="IDX193"></A>
+Puts the string value of <VAR>v</VAR> into the string pointed to by <VAR>val</VAR>,
+and returns <CODE>True</CODE> if successful.  If <VAR>v</VAR> is not a string variable,
+then this call will not be successful.  The string pointed to by <VAR>val</VAR>
+must be copied if the caller wants to keep it around for a long time.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uivar_SetValue</B> <I>(uivar_t <VAR>v</VAR>, uivarvalue_t *<VAR>vl</VAR>)</I><P>
+<A NAME="IDX194"></A>
+Sets the value of <VAR>v</VAR> to a copy of <VAR>vl</VAR>.
+
+</P>
+
+
+<H1><A NAME="SEC19" HREF="uisupp_toc.html#SEC19">uivsrch</A></H1>
+<P>
+<A NAME="IDX195"></A>
+<A NAME="IDX196"></A>
+<A NAME="IDX197"></A>
+
+</P>
+<P>
+The uivsrch module is used to search variable descriptions.
+To use it, create a <CODE>uivarsearch_t</CODE> and initialize it.
+This structure should persist as long as a search can be in progress.
+(For a variables dialog, this should last as long as the dialog is up.)
+
+</P>
+<P>
+A typical search UI works like this: the user enters a search string and
+clicks <SAMP>`Search'</SAMP>.  If the currently displayed variable description contains
+that search string, the match is highlighted; otherwise, the first variable
+in the list which contains that search string is brought up, and the
+matching text is highlighted.  If the user clicks <SAMP>`Search'</SAMP> again without
+changing the search string or the currently displayed variable, then the
+search continues; the next match is highlighted, in the current variable
+description if possible; otherwise, the next variable with matching text
+is brought up.  If there are no matches, an error is reported, and the
+search stops.  If the user clicks <SAMP>`Search'</SAMP> after that, a new search is
+initiated.
+
+</P>
+<P>
+To begin a search, call <CODE>uivarsearch_Search()</CODE>, passing it the
+search string and the current selection.  If it returns <CODE>False</CODE>, the
+search was unsuccessful; you should call <CODE>uivarsearch_ReportNoMatch()</CODE>.
+If it returns <CODE>True</CODE>, then get the variable
+number from it using <CODE>uivarsearch_GetVarNum()</CODE>, and get the
+offset using <CODE>uivarsearch_GetOffset()</CODE>.
+
+</P>
+<P>
+To continue a search, just call <CODE>uivarsearch_Search()</CODE> again.
+If the search string is the same, this function will just continue
+the previous search; otherwise, it will start a new one.
+
+</P>
+<P>
+If the user selects another variable, you should terminate any
+search that may be in process by calling <CODE>uivarsearch_EndSearch()</CODE>.
+
+</P>
+<P>
+<U>Function:</U> void <B>uivarsearch_Init</B> <I>(uivarsearch_t *<VAR>vs</VAR>, uivarlist_t *<VAR>vl</VAR>)</I><P>
+<A NAME="IDX198"></A>
+Initialize <VAR>vs</VAR> for searching variable descriptions in <VAR>vl</VAR>.
+
+</P>
+<P>
+<U>Function:</U> void <B>uivarsearch_Destroy</B> <I>(uivarsearch_t *<VAR>vs</VAR>)</I><P>
+<A NAME="IDX199"></A>
+Destroy <VAR>vs</VAR>.
+
+</P>
+<P>
+<U>Function:</U> zmBool <B>uivarsearch_Search</B> <I>(uivarsearch_t *<VAR>vs</VAR>, const char *<VAR>str</VAR>, int <VAR>offset</VAR>, int <VAR>vno</VAR>)</I><P>
+<A NAME="IDX200"></A>
+Start a search for <VAR>str</VAR>, or continue the search.  <VAR>vno</VAR> is the
+currently selected variable, and <VAR>offset</VAR> is the start of the
+current selection.  Returns <CODE>True</CODE> if the search is successful.
+
+</P>
+<P>
+<U>Variable:</U> <B>uivarsearch_ENTER_STR</B><P>
+<A NAME="IDX201"></A>
+A string to display when no search string is specified; currently
+<CODE>"Please enter a search string."</CODE>
+
+</P>
+<P>
+<U>Macro:</U> int <B>uivarsearch_GetOffset</B> <I>(uivarsearch_t *<VAR>vstr</VAR>)</I><P>
+<A NAME="IDX202"></A>
+Returns the offset of the beginning of the matched string.
+
+</P>
+<P>
+<U>Macro:</U> int <B>uivarsearch_GetEndOffset</B> <I>(uivarsearch_t *<VAR>vstr</VAR>)</I><P>
+<A NAME="IDX203"></A>
+Returns the offset of the end of the matched string.
+
+</P>
+<P>
+<U>Macro:</U> int <B>uivarsearch_GetVarNum</B> <I>(uivarsearch_t *<VAR>vstr</VAR>)</I><P>
+<A NAME="IDX204"></A>
+Returns the index of the variable where the matched string was found.
+
+</P>
+<P>
+<U>Function:</U> void <B>uivarsearch_SetXref</B> <I>(uivarsearch_t *)</I><P>
+<A NAME="IDX205"></A>
+Sets the xref flag.  This is a convenience feature; if the search button
+has two functions (variable searching and cross-referencing), you may
+call this function to set the xref flag.  This ends the current search,
+if any.  The xref flag is cleared the next time
+<CODE>uivarsearch_Search()</CODE> is called.
+
+</P>
+<P>
+When the user clicks on a cross-reference string, you may call this
+function to set the xref flag.  Then, when the search button is clicked,
+you can call <CODE>uivarsearch_IsXref()</CODE> to see whether you should
+search for a string or follow a cross-reference.
+
+</P>
+<P>
+<U>Macro:</U> zmBool <B>uivarsearch_IsXref</B> <I>(uivarsearch_t *<VAR>vs</VAR>)</I><P>
+<A NAME="IDX206"></A>
+Returns <CODE>True</CODE> if the xref flag is on.
+
+</P>
+<P>
+<U>Function:</U> void <B>uivarsearch_EndSearch</B> <I>(uivarsearch_t *<VAR>vs</VAR>)</I><P>
+<A NAME="IDX207"></A>
+End the search currently in process, if any.
+
+</P>
+<P>
+<U>Function:</U> void <B>uivarsearch_ReportNoMatch</B> <I>(uivarsearch_t *<VAR>vs</VAR>)</I><P>
+<A NAME="IDX208"></A>
+Complain that no matches were found, and then end the current search.
+Call this if <CODE>uivarsearch_Search()</CODE> fails.
+
+</P>
+<P>
+<U>Function:</U> int <B>uivarsearch_AdjustOffset</B> <I>(uivarsearch_t *<VAR>vs</VAR>, int <VAR>off</VAR>)</I><P>
+<A NAME="IDX209"></A>
+Under MS-DOS only, adjust <VAR>off</VAR> to take into account CRLF line
+terminators.  <VAR>off</VAR> must be an offset into the description string for
+the last variable which contained a match.  For every newline in the
+first <VAR>off</VAR> characters of the description string, the return value
+will be one greater than <VAR>off</VAR>.  That is, the return value will
+be the correct offset into the description string if the description string
+were converted from LF-terminated to CRLF-terminated.
+
+</P>
+
+
+<H1><A NAME="SEC20" HREF="uisupp_toc.html#SEC20">xface</A></H1>
+<P>
+<A NAME="IDX210"></A>
+<A NAME="IDX211"></A>
+<A NAME="IDX212"></A>
+<A NAME="IDX213"></A>
+
+</P>
+<P>
+<U>Function:</U> int <B>uncompface</B> <I>(char *<VAR>buf</VAR>)</I><P>
+<A NAME="IDX214"></A>
+Decodes the face information pointed to by <VAR>buf</VAR>, and returns it in
+<VAR>buf</VAR>.  <VAR>buf</VAR> should be at least 512 bytes long, apparently.
+Returns a nonnegative value if successful.  The encoded face information
+is usually the value of an <CODE>X-Face:</CODE>
+header.  The decoded face information
+is a bitmap of width <CODE>XF_WIDTH</CODE> and height <CODE>XF_HEIGHT</CODE>, with
+the leftmost
+pixels in the bitmap corresponding to the most significant bits in the
+data.  The data is of size <CODE>XF_WIDTH*XF_HEIGHT/8</CODE>.
+
+</P>
+
+
+<H1><A NAME="SEC21" HREF="uisupp_toc.html#SEC21">Index</A></H1>
+
+<P>
+<H2>a</H2>
+<DIR>
+<LI><A HREF="uisupp.html#IDX123">application state</A>
+<LI><A HREF="uisupp.html#IDX39">ask</A>
+</DIR>
+<H2>c</H2>
+<DIR>
+<LI><A HREF="uisupp.html#IDX9">cmd_line</A>
+<LI><A HREF="uisupp.html#IDX52">core actions</A>
+<LI><A HREF="uisupp.html#IDX1">core reorganization</A>
+</DIR>
+<H2>d</H2>
+<DIR>
+<LI><A HREF="uisupp.html#IDX38">dyn_choose_one</A>
+</DIR>
+<H2>e</H2>
+<DIR>
+<LI><A HREF="uisupp.html#IDX10">exceptions</A>
+</DIR>
+<H2>f</H2>
+<DIR>
+<LI><A HREF="uisupp.html#IDX210">face</A>
+<LI><A HREF="uisupp.html#IDX50">filters</A>
+<LI><A HREF="uisupp.html#IDX69">folders</A>
+<LI><A HREF="uisupp.html#IDX90">functions</A>
+</DIR>
+<H2>g</H2>
+<DIR>
+<LI><A HREF="uisupp.html#IDX8">gui_cmd_line</A>
+<LI><A HREF="uisupp.html#IDX154">gui_handle_intrpt</A>
+<LI><A HREF="uisupp.html#IDX156">gui_taskm_get_event</A>
+<LI><A HREF="uisupp.html#IDX155">gui_taskm_update</A>
+</DIR>
+<H2>n</H2>
+<DIR>
+<LI><A HREF="uisupp.html#IDX4">naming conventions</A>
+</DIR>
+<H2>o</H2>
+<DIR>
+<LI><A HREF="uisupp.html#IDX3">objects</A>
+<LI><A HREF="uisupp.html#IDX70">open folder dialog</A>
+</DIR>
+<H2>p</H2>
+<DIR>
+<LI><A HREF="uisupp.html#IDX121">preferences</A>
+<LI><A HREF="uisupp.html#IDX127">printing</A>
+</DIR>
+<H2>s</H2>
+<DIR>
+<LI><A HREF="uisupp.html#IDX124">saveopts</A>
+<LI><A HREF="uisupp.html#IDX195">searching</A>
+<LI><A HREF="uisupp.html#IDX141">sorting</A>
+</DIR>
+<H2>t</H2>
+<DIR>
+<LI><A HREF="uisupp.html#IDX151">task meter</A>
+<LI><A HREF="uisupp.html#IDX157">templates</A>
+</DIR>
+<H2>u</H2>
+<DIR>
+<LI><A HREF="uisupp.html#IDX16">uiact_ArgType</A>
+<LI><A HREF="uisupp.html#IDX19">uiact_Destroy</A>
+<LI><A HREF="uisupp.html#IDX22">uiact_GetArg</A>
+<LI><A HREF="uisupp.html#IDX26">uiact_GetArgType</A>
+<LI><A HREF="uisupp.html#IDX28">uiact_GetScript</A>
+<LI><A HREF="uisupp.html#IDX20">uiact_GetType</A>
+<LI><A HREF="uisupp.html#IDX30">uiact_GetTypeDesc</A>
+<LI><A HREF="uisupp.html#IDX18">uiact_Init</A>
+<LI><A HREF="uisupp.html#IDX31">uiact_InitFrom</A>
+<LI><A HREF="uisupp.html#IDX24">uiact_NeedsArg</A>
+<LI><A HREF="uisupp.html#IDX29">uiact_Perform</A>
+<LI><A HREF="uisupp.html#IDX23">uiact_SetArg</A>
+<LI><A HREF="uisupp.html#IDX21">uiact_SetType</A>
+<LI><A HREF="uisupp.html#IDX27">uiact_SupplyArg</A>
+<LI><A HREF="uisupp.html#IDX53">uiact_t</A>
+<LI><A HREF="uisupp.html#IDX15">uiact_Type</A>
+<LI><A HREF="uisupp.html#IDX25">uiacttype_GetArgType</A>
+<LI><A HREF="uisupp.html#IDX32">uiacttype_GetDefaultArg</A>
+<LI><A HREF="uisupp.html#IDX34">uiacttype_GetMissingStr</A>
+<LI><A HREF="uisupp.html#IDX33">uiacttype_GetPromptStr</A>
+<LI><A HREF="uisupp.html#IDX35">uiacttypelist_GetDescList</A>
+<LI><A HREF="uisupp.html#IDX37">uiacttypelist_GetIndex</A>
+<LI><A HREF="uisupp.html#IDX36">uiacttypelist_GetType</A>
+<LI><A HREF="uisupp.html#IDX17">uiacttypelist_t</A>
+<LI><A HREF="uisupp.html#IDX43">uichoose_Ask</A>
+<LI><A HREF="uisupp.html#IDX42">uichoose_Destroy</A>
+<LI><A HREF="uisupp.html#IDX49">uichoose_GetDefault</A>
+<LI><A HREF="uisupp.html#IDX47">uichoose_GetQuery</A>
+<LI><A HREF="uisupp.html#IDX45">uichoose_GetResult</A>
+<LI><A HREF="uisupp.html#IDX41">uichoose_Init</A>
+<LI><A HREF="uisupp.html#IDX48">uichoose_SetDefault</A>
+<LI><A HREF="uisupp.html#IDX46">uichoose_SetQuery</A>
+<LI><A HREF="uisupp.html#IDX44">uichoose_SetResult</A>
+<LI><A HREF="uisupp.html#IDX40">uichoose_t</A>
+<LI><A HREF="uisupp.html#IDX56">uifilter_Create</A>
+<LI><A HREF="uisupp.html#IDX57">uifilter_Delete</A>
+<LI><A HREF="uisupp.html#IDX64">uifilter_Get</A>
+<LI><A HREF="uisupp.html#IDX63">uifilter_GetAction</A>
+<LI><A HREF="uisupp.html#IDX61">uifilter_GetFlags</A>
+<LI><A HREF="uisupp.html#IDX59">uifilter_GetName</A>
+<LI><A HREF="uisupp.html#IDX62">uifilter_GetPick</A>
+<LI><A HREF="uisupp.html#IDX65">uifilter_Install</A>
+<LI><A HREF="uisupp.html#IDX66">uifilter_List</A>
+<LI><A HREF="uisupp.html#IDX68">uifilter_Remove</A>
+<LI><A HREF="uisupp.html#IDX60">uifilter_SetFlags</A>
+<LI><A HREF="uisupp.html#IDX58">uifilter_SetName</A>
+<LI><A HREF="uisupp.html#IDX67">uifilter_SupplyName</A>
+<LI><A HREF="uisupp.html#IDX55">uifilter_t</A>
+<LI><A HREF="uisupp.html#IDX79">uifolder_ChangeTo</A>
+<LI><A HREF="uisupp.html#IDX76">uifolder_GetFolder</A>
+<LI><A HREF="uisupp.html#IDX80">uifolder_GetFolderFilename</A>
+<LI><A HREF="uisupp.html#IDX77">uifolder_GetFolderNo</A>
+<LI><A HREF="uisupp.html#IDX75">uifolder_GetLongName</A>
+<LI><A HREF="uisupp.html#IDX74">uifolder_GetShortName</A>
+<LI><A HREF="uisupp.html#IDX78">uifolder_IsSpool</A>
+<LI><A HREF="uisupp.html#IDX71">uifolder_t</A>
+<LI><A HREF="uisupp.html#IDX87">uifolderlist_Add</A>
+<LI><A HREF="uisupp.html#IDX88">uifolderlist_FOREACH</A>
+<LI><A HREF="uisupp.html#IDX83">uifolderlist_Get</A>
+<LI><A HREF="uisupp.html#IDX84">uifolderlist_GetAt</A>
+<LI><A HREF="uisupp.html#IDX85">uifolderlist_GetIndex</A>
+<LI><A HREF="uisupp.html#IDX82">uifolderlist_Init</A>
+<LI><A HREF="uisupp.html#IDX86">uifolderlist_Remove</A>
+<LI><A HREF="uisupp.html#IDX81">uifolderlist_Sort</A>
+<LI><A HREF="uisupp.html#IDX72">uifolderlist_t</A>
+<LI><A HREF="uisupp.html#IDX93">uifunctions_Add</A>
+<LI><A HREF="uisupp.html#IDX92">uifunctions_Delete</A>
+<LI><A HREF="uisupp.html#IDX91">uifunctions_GetText</A>
+<LI><A HREF="uisupp.html#IDX95">uifunctions_HelpScript</A>
+<LI><A HREF="uisupp.html#IDX94">uifunctions_List</A>
+<LI><A HREF="uisupp.html#IDX117">uipick_AddPattern</A>
+<LI><A HREF="uisupp.html#IDX115">uipick_Destroy</A>
+<LI><A HREF="uisupp.html#IDX113">uipick_FOREACH</A>
+<LI><A HREF="uisupp.html#IDX101">uipick_GetFirstNCount</A>
+<LI><A HREF="uisupp.html#IDX99">uipick_GetFlags</A>
+<LI><A HREF="uisupp.html#IDX102">uipick_GetLastNCount</A>
+<LI><A HREF="uisupp.html#IDX114">uipick_Init</A>
+<LI><A HREF="uisupp.html#IDX118">uipick_MakeCmd</A>
+<LI><A HREF="uisupp.html#IDX116">uipick_Parse</A>
+<LI><A HREF="uisupp.html#IDX100">uipick_SetFirstNCount</A>
+<LI><A HREF="uisupp.html#IDX103">uipick_SetLastNCount</A>
+<LI><A HREF="uisupp.html#IDX98">uipick_t</A>
+<LI><A HREF="uisupp.html#IDX109">uipickpat_ClearFlags</A>
+<LI><A HREF="uisupp.html#IDX112">uipickpat_GetDate</A>
+<LI><A HREF="uisupp.html#IDX120">uipickpat_GetDateInfo</A>
+<LI><A HREF="uisupp.html#IDX119">uipickpat_GetDateUnitDescs</A>
+<LI><A HREF="uisupp.html#IDX110">uipickpat_GetFlags</A>
+<LI><A HREF="uisupp.html#IDX106">uipickpat_GetHeader</A>
+<LI><A HREF="uisupp.html#IDX107">uipickpat_GetPattern</A>
+<LI><A HREF="uisupp.html#IDX111">uipickpat_SetDate</A>
+<LI><A HREF="uisupp.html#IDX108">uipickpat_SetFlags</A>
+<LI><A HREF="uisupp.html#IDX105">uipickpat_SetHeader</A>
+<LI><A HREF="uisupp.html#IDX104">uipickpat_SetPattern</A>
+<LI><A HREF="uisupp.html#IDX97">uipickpat_t</A>
+<LI><A HREF="uisupp.html#IDX126">uiprefs_Load</A>
+<LI><A HREF="uisupp.html#IDX125">uiprefs_Save</A>
+<LI><A HREF="uisupp.html#IDX136">uiprint_Destroy</A>
+<LI><A HREF="uisupp.html#IDX139">uiprint_GetDefaultHdrType</A>
+<LI><A HREF="uisupp.html#IDX133">uiprint_GetHdrType</A>
+<LI><A HREF="uisupp.html#IDX138">uiprint_GetPrintCmdInfo</A>
+<LI><A HREF="uisupp.html#IDX129">uiprint_HdrType</A>
+<LI><A HREF="uisupp.html#IDX135">uiprint_Init</A>
+<LI><A HREF="uisupp.html#IDX137">uiprint_ListPrinters</A>
+<LI><A HREF="uisupp.html#IDX134">uiprint_Print</A>
+<LI><A HREF="uisupp.html#IDX132">uiprint_SetHdrType</A>
+<LI><A HREF="uisupp.html#IDX131">uiprint_SetPrintCmd</A>
+<LI><A HREF="uisupp.html#IDX130">uiprint_SetPrinterName</A>
+<LI><A HREF="uisupp.html#IDX128">uiprint_t</A>
+<LI><A HREF="uisupp.html#IDX7">uiscript_Exec</A>
+<LI><A HREF="uisupp.html#IDX143">uisort_AddIndex</A>
+<LI><A HREF="uisupp.html#IDX146">uisort_DescribeSort</A>
+<LI><A HREF="uisupp.html#IDX150">uisort_Destroy</A>
+<LI><A HREF="uisupp.html#IDX147">uisort_DoSort</A>
+<LI><A HREF="uisupp.html#IDX142">uisort_HasIndex</A>
+<LI><A HREF="uisupp.html#IDX149">uisort_Init</A>
+<LI><A HREF="uisupp.html#IDX144">uisort_RemoveIndex</A>
+<LI><A HREF="uisupp.html#IDX145">uisort_ReverseIndex</A>
+<LI><A HREF="uisupp.html#IDX140">uisort_t</A>
+<LI><A HREF="uisupp.html#IDX148">uisort_UseOptions</A>
+<LI><A HREF="uisupp.html#IDX153">uitaskm_Event_t</A>
+<LI><A HREF="uisupp.html#IDX152">uitaskm_Update_t</A>
+<LI><A HREF="uisupp.html#IDX160">uitemplate_Edit</A>
+<LI><A HREF="uisupp.html#IDX158">uitemplate_List</A>
+<LI><A HREF="uisupp.html#IDX161">uitemplate_Mail</A>
+<LI><A HREF="uisupp.html#IDX159">uitemplate_New</A>
+<LI><A HREF="uisupp.html#IDX187">uivar_GetLongDescription</A>
+<LI><A HREF="uisupp.html#IDX177">uivar_GetName</A>
+<LI><A HREF="uisupp.html#IDX179">uivar_GetNumMax</A>
+<LI><A HREF="uisupp.html#IDX178">uivar_GetPrompt</A>
+<LI><A HREF="uisupp.html#IDX180">uivar_GetSubValCount</A>
+<LI><A HREF="uisupp.html#IDX181">uivar_GetSubValLabel</A>
+<LI><A HREF="uisupp.html#IDX182">uivar_GetValue</A>
+<LI><A HREF="uisupp.html#IDX175">uivar_HasSubVals</A>
+<LI><A HREF="uisupp.html#IDX171">uivar_IsBoolean</A>
+<LI><A HREF="uisupp.html#IDX174">uivar_IsMultival</A>
+<LI><A HREF="uisupp.html#IDX176">uivar_IsNumeric</A>
+<LI><A HREF="uisupp.html#IDX170">uivar_IsReadonly</A>
+<LI><A HREF="uisupp.html#IDX173">uivar_IsSingleval</A>
+<LI><A HREF="uisupp.html#IDX172">uivar_IsString</A>
+<LI><A HREF="uisupp.html#IDX189">uivar_SetBool</A>
+<LI><A HREF="uisupp.html#IDX191">uivar_SetLong</A>
+<LI><A HREF="uisupp.html#IDX190">uivar_SetStr</A>
+<LI><A HREF="uisupp.html#IDX188">uivar_SetSubVal</A>
+<LI><A HREF="uisupp.html#IDX194">uivar_SetValue</A>
+<LI><A HREF="uisupp.html#IDX164">uivar_t</A>
+<LI><A HREF="uisupp.html#IDX166">uivarlist_Destroy</A>
+<LI><A HREF="uisupp.html#IDX168">uivarlist_FOREACH</A>
+<LI><A HREF="uisupp.html#IDX169">uivarlist_GetCount</A>
+<LI><A HREF="uisupp.html#IDX167">uivarlist_GetVar</A>
+<LI><A HREF="uisupp.html#IDX165">uivarlist_Init</A>
+<LI><A HREF="uisupp.html#IDX163">uivarlist_t</A>
+<LI><A HREF="uisupp.html#IDX209">uivarsearch_AdjustOffset</A>
+<LI><A HREF="uisupp.html#IDX199">uivarsearch_Destroy</A>
+<LI><A HREF="uisupp.html#IDX207">uivarsearch_EndSearch</A>
+<LI><A HREF="uisupp.html#IDX203">uivarsearch_GetEndOffset</A>
+<LI><A HREF="uisupp.html#IDX202">uivarsearch_GetOffset</A>
+<LI><A HREF="uisupp.html#IDX204">uivarsearch_GetVarNum</A>
+<LI><A HREF="uisupp.html#IDX198">uivarsearch_Init</A>
+<LI><A HREF="uisupp.html#IDX206">uivarsearch_IsXref</A>
+<LI><A HREF="uisupp.html#IDX208">uivarsearch_ReportNoMatch</A>
+<LI><A HREF="uisupp.html#IDX200">uivarsearch_Search</A>
+<LI><A HREF="uisupp.html#IDX205">uivarsearch_SetXref</A>
+<LI><A HREF="uisupp.html#IDX197">uivarsearch_t</A>
+<LI><A HREF="uisupp.html#IDX183">uivarvalue_Copy</A>
+<LI><A HREF="uisupp.html#IDX184">uivarvalue_Destroy</A>
+<LI><A HREF="uisupp.html#IDX186">uivarvalue_GetBool</A>
+<LI><A HREF="uisupp.html#IDX192">uivarvalue_GetLong</A>
+<LI><A HREF="uisupp.html#IDX193">uivarvalue_GetStr</A>
+<LI><A HREF="uisupp.html#IDX185">uivarvalue_GetSubValBool</A>
+<LI><A HREF="uisupp.html#IDX214">uncompface</A>
+</DIR>
+<H2>v</H2>
+<DIR>
+<LI><A HREF="uisupp.html#IDX196">variables</A>
+</DIR>
+<H2>x</H2>
+<DIR>
+<LI><A HREF="uisupp.html#IDX211">X-Face</A>
+</DIR>
+<H2>z</H2>
+<DIR>
+<LI><A HREF="uisupp.html#IDX2">z-script</A>
+<LI><A HREF="uisupp.html#IDX6">zmBool</A>
+<LI><A HREF="uisupp.html#IDX5">zmFlags</A>
+<LI><A HREF="uisupp.html#IDX122">zync</A>
+</DIR>
+
+</P>
+
+</BODY>
+</HTML>

@@ -1,0 +1,83 @@
+#! /bin/sh
+
+# sh script to generate a list of dependencies of .o files on .h files
+#  included in the .c sources
+# Usage:  depend [-a] [-s] [sources]
+#  or:    depend [-Dx=y] [-Idirectory] [-Ux=y] [sources]
+# Option -a (for ALL) will also list dependencies of .h files on other .h files
+#  If sources are listed on the command line, they will be checked (and the -a
+#  option will be ignored); by default, all .c files in the current directory
+#  are checked.  If any of the sources listed is a directory, all source files
+#  in that directory will be checked.
+# Option -s (for SYSTEM) will cause system .h files (surrounded by < >) to be
+#  listed; by default, only user .h files (surrounded by " ") are listed.
+# Options -a and -s affect only those source directories which follow them on
+#  the command line; e.g.,
+#	depend -s /usr/src/local -a /usr/include
+#  will list system dependencies of .c files in /usr/src/local and of .c and .h
+#  files in /usr/include.
+# If invoked with -[DIU] (C compiler/preprocessor options), /lib/cpp will be
+#  used to generate the dependencies.  This is more complete but much slower
+#  and may produce error output if some header files cannot be found.
+trap '/bin/rm -f /tmp/depend.$$ /tmp/empty.$$; exit 1' 2
+
+cppopt='' files='' suffix=c
+pattern='^#[^i]*incl[^"]*"[^"]*"'
+
+while test $# -ne 0
+do
+  case $1 in
+  -[as]*)
+        case $1 in -*a*) suffix='[ch]' ;; esac
+        case $1 in -*s*) pattern='^#[^i]*incl[^"<]*["<][^">]*[">]' ;; esac
+        ;;
+  -[DIU]*)
+	cppopt="$cppopt $1"
+        ;;
+  -*)   echo 'depend: unrecognized option:' $1 >&2
+	exit 1
+        ;;
+  *)    if test ! -f $1; then
+	    echo $1': Not found' >&2
+	elif test -d $1; then
+	    files="$files `echo $1/*.$suffix 2>/dev/null`"
+	else
+	    files="$files $1"
+	fi
+        ;;
+  esac
+  shift
+done
+
+case "$files" in '') files=`echo *.$suffix 2>/dev/null`;; esac
+
+set -f	# All globbing should be done by now
+
+if test "x$cppopt" != x
+then
+    # Must use loop because cpp uses its second non-flag argument
+    #  as an output file name (which would be disastrous)
+    # cpp generates a (possibly invalid) .o file name if given a .h
+    #  file name as an argument, so restrict the search to .c files
+    for f in $files
+    do
+        case $f in *.c) /lib/cpp -M $cppopt $f 2>/dev/null >> /tmp/depend.$$ ;;
+        esac
+    done
+else
+    egrep $pattern $files /dev/null |
+    sed -e 's/#[^i]*include[^"<]*\([<"][^">]*\).*$/ \1/g' > /tmp/depend.$$
+fi
+
+sort -ud /tmp/depend.$$ |
+awk '
+BEGIN		{ first = 1; current = ""; collect = "" }
+length(collect) > 100 { print collect; collect = $0; }
+$1 == current	{ collect = (collect " " $2) }
+$1 != current	{ if (! first) { print collect }; 
+		  first = 0; current = $1; collect = $0 }
+END		{ print collect }' | 
+sed -e 's/"//g' -e 's=<\([^>]*\)>=/usr/include/\1=g' \
+    -e 's/\.c:/.o:/' -e 's/\([^ ]\):[ 	]*/\1 :	/'
+
+/bin/rm -f /tmp/depend.$$ /tmp/empty.$$

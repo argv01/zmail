@@ -1,0 +1,192 @@
+:
+# Shell-script front-end to run Z-Mail in the correct mode regardless of
+# parallel installations of Motif/OL/Lite/etc.
+#
+# Copyright 1993 Z-Code Software Corp.  All rights reserved.
+
+if test "$ZMAIL_PID" = $$
+then
+    echo "zmail (startup): zmail: command not found" 1>&2
+    exit 1
+fi
+ZMAIL_PID=$$
+export ZMAIL_PID
+
+#####
+#
+# This script should be created by another script with all the local
+# configuration information (ZMLIB, XAPPLRESDIR, etc.) set up here ...
+#
+#####
+
+# This is major overkill, but search the PATH for
+# anything that looks like a zmail binary.
+#
+for d in $ZMBIN `echo $PATH | sed 's/:/ /g'`
+do
+    if test -z "$ZMAIL" -a -f $d/zmail
+    then
+	ZMAIL=$d/zmail
+    fi
+    if test -z "$ZMAIL_MOTIF" -a -f $d/zmail.motif
+    then
+	ZMAIL_MOTIF=$d/zmail.motif
+    fi
+    if test -z "$ZMAIL_OL" -a -f $d/zmail.ol
+    then
+	ZMAIL_OL=$d/zmail.ol
+    fi
+    if test -z "$ZMAIL_LITE" -a -f $d/zmail.lite
+    then
+	ZMAIL_LITE=$d/zmail.lite
+    fi
+    if test -z "$ZMAIL_GUI" -a -f $d/zmail.gui
+    then
+	ZMAIL_GUI=$d/zmail.gui
+    fi
+    if test -f $ZMBIN/zmail.small
+    then
+	ZMAIL_SMALL=$ZMBIN/zmail.small
+    fi
+    if test -n "$ZMAIL" -a -n "$ZMAIL_MOTIF" -a -n "$ZMAIL_OL" \
+	-a -n "$ZMAIL_LITE" -a -n "$ZMAIL_GUI" -a -n "$ZMAIL_SMALL"
+    then
+	break
+    fi
+done
+
+# Now figure out which binaries we can run,
+# or generate an error if we found none of them.
+#
+if test -z "$ZMAIL_GUI"
+then
+    if test -n "$ZMAIL_MOTIF"
+    then
+	ZMAIL_GUI=$ZMAIL_MOTIF
+    elif test -n "$ZMAIL_OL"
+    then
+	ZMAIL_GUI=$ZMAIL_OL
+    elif test -n "$ZMAIL_LITE"
+    then
+	ZMAIL_GUI=$ZMAIL_LITE
+    elif test -n "$ZMAIL"
+    then
+	ZMAIL_GUI=$ZMAIL
+    fi
+fi
+if test -z "$ZMAIL" -a -n "$ZMAIL_GUI"
+then
+    ZMAIL=$ZMAIL_GUI
+fi
+if test -z "$ZMAIL_SMALL" -a -n "$ZMAIL_LITE"
+then
+    ZMAIL_SMALL=$ZMAIL_LITE
+fi
+if test -z "$ZMAIL"
+then
+    if test -n "$ZMAIL_SMALL"
+    then
+	ZMAIL=$ZMAIL_SMALL
+    else
+	echo "zmail (startup): zmail: command not found" 1>&2
+	exit 1
+    fi
+fi
+if test -n "$ZMAIL" -a -z "$ZMAIL_SMALL"
+then
+    ZMAIL_SMALL=$ZMAIL
+fi
+
+SKIPNEXT=false
+for opt in "$@"
+do
+    if $SKIPNEXT
+    then
+	SKIPNEXT=false
+	continue
+    fi
+    case $opt in
+    -folder|-file|-f|-mailbox|-m|-user|-u)
+	SKIPNEXT=true
+	continue
+	;;
+    -attach|-A|-subject|-s|-cc|-carbon|-copy|-c|-bcc|-blind*|-b)
+	SKIPNEXT=true
+	continue
+	;;
+    -command|-exec*|-eval*|-e|-init*|-I|-source|-F|-time*|-T)
+	SKIPNEXT=true
+	continue
+	;;
+    -headerfile|-draft|-message|-h|-*plate|-p)
+	SKIPNEXT=true
+	continue
+	;;
+    -zmlib|-lib*|-L|-*serv*|-Z|-key|-k)
+	SKIPNEXT=true
+	continue
+	;;
+    -register|-R) break;;
+    -*) ;;
+    *) continue;;
+    esac
+    case $opt in
+    -receive) ZMAIL=$ZMAIL_SMALL;;
+    -gui|-t) ZMAIL=$ZMAIL_GUI; GUI=-gui;;
+    -motif)
+	ZMAIL=$ZMAIL_MOTIF
+	if $OLIT
+	then
+	    echo "zmail: $GUI -motif: not both at once ..." 1>&2
+	    exit 1
+	fi
+	MOTIF=true
+	GUI=-motif
+	;;
+    -olit)
+	ZMAIL=$ZMAIL_OLIT;;
+	if test -n "$OLIT" -o -n "$LITE"
+	then
+	    echo "zmail: $GUI -olit: not both at once ..." 1>&2
+	    exit 1
+	fi
+	OLIT=true
+	GUI=-olit
+	;;
+    -lite)
+	ZMAIL=$ZMAIL_LITE;;
+	if test -n "$OLIT" -o -n "$MOTIF"
+	then
+	    echo "zmail: $GUI -lite: not both at once ..." 1>&2
+	    exit 1
+	fi
+	OLIT=true
+	GUI=-olit
+	;;
+    esac
+done
+
+if test -z "$ZMAIL"
+then
+    echo "zmail (startup): no installed Z-Mail supports $GUI mode" 1>&2
+    exit 1
+fi
+
+shift
+if test $# -gt 0
+then
+    case $GUI in
+    -gui)
+	if test "$ZMAIL" != "$ZMAIL_LITE"
+	then
+	    exec $ZMAIL "$GUI" -name zmail "$@";;
+	else
+	    exec $ZMAIL "$@";;
+	fi
+	;;
+    -motif|-olit) exec $ZMAIL "$GUI" -name zmail "$@";;
+    *) exec $ZMAIL "$@";;
+    esac
+else
+    exec $ZMAIL
+fi

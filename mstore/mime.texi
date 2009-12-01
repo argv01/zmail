@@ -1,0 +1,605 @@
+\input texinfo @c -*- texinfo -*-
+@comment %**start of header (This is for running Texinfo on a region.)
+@setfilename mime.info
+@settitle MIME Parser API
+@c @finalout
+@c @smallbook
+@c @setchapternewpage odd
+@footnotestyle end
+@comment %**end of header (This is for running Texinfo on a region.)
+
+@syncodeindex vr fn
+@syncodeindex tp fn
+@synindex cp fn
+
+@ifinfo
+This document describes the Z-Mail MIME Parser API.  It is a
+PROPRIETARY and CONFIDENTIAL DRAFT.
+
+Software and documentation Copyright @copyright{} 1995 Z-Code Software
+Corp., a usurpation of NCD.
+@end ifinfo
+
+@titlepage
+@title MIME Parser API
+@subtitle Manual version $Revision: 1.7 $
+@subtitle $Date: 1995/03/16 01:55:41 $
+@author Bob Glickstein
+@page
+@vskip 0pt plus 1filll
+This document describes the Z-Mail MIME Parser API.  It is a
+PROPRIETARY and CONFIDENTIAL DRAFT.
+
+Software and documentation Copyright @copyright{} 1995 Z-Code Software
+Corp., a usurpation of NCD.
+@end titlepage
+
+@node Top, Functions, (dir), (dir)
+@unnumbered Introduction
+
+This is a PROPRIETARY and CONFIDENTIAL DRAFT.  Comments and critique are
+urgently requested.
+
+This API is not actually a parser at all.  Instead, it is a family of
+functions with which any of several kinds of MIME parser can be built.
+Some of the job of parsing MIME messages is left to the caller of these
+functions.
+
+A full-fledged parser is not sufficiently general-purpose.  The caller
+may need to exert control over the parsing process at many different
+points; for instance, to skip a multipart subpart without parsing it, or
+to record the source stream's seek position when a particular subpart is
+found.  Without a bewildering maze of callbacks and special data types,
+the best way to achieve this is with a flattened, piecewise approach to
+parsing.  Each function is meant to perform all of the processing up to
+a decision point; for instance, reaching the end of a block of headers,
+where the caller may then decide to parse the following body, or to skip
+it.  There is no recursive parsing of nested bodyparts.  Nesting of
+subparts is not reflected by recursion in the parse routines, but in an
+external data structure which tracks the nesting structure.
+
+@menu
+* Functions::                   
+* Usage::                       
+* Index::                       
+@end menu
+
+@node Functions, Usage, Top, Top
+@chapter Functions
+
+@vindex mime_CR
+@vindex mime_LF
+@vindex mime_CRLF
+@deftypefn Function {const char *} mime_Readline (@w{struct dpipe *@var{dp}}, @w{struct dynstr *@var{d}})
+Read bytes from @var{dp}, appending them to @var{d}, until end-of-file
+or until a newline is encountered.  The newline is not appended to
+@var{d}.  A @code{NUL}-terminated version of the newline sequence
+recognized is returned.  For convenience, the three possible newline
+sequences are available in global string variables: @w{@code{mime_CR}},
+@w{@code{mime_CRLF}}, and @w{@code{mime_LF}}.  If end-of-file is
+encountered before a newline, the return value is 0.  If @var{d} is 0,
+the line is read and discarded.
+
+@cindex newline
+For purposes of the functions in this document, the definition of
+@dfn{newline} is any of the three major line-terminating conventions:
+the canonical line terminator, @w{@code{CR}-@code{LF}}, is accepted as a
+single newline, as are @code{CR} and @code{LF} by themselves.
+@end deftypefn
+
+@deftypefn Function {void} mime_Header (@w{struct dpipe *@var{dp}}, @w{struct dynstr *@var{name}}, @w{struct dynstr *@var{value}}, @w{const char *@var{newline}})
+Given a readable stream @var{dp} which is presumed to be positioned at
+the beginning of an RFC822 header, append the name of the header to
+@var{name} and the content of the header to @var{value}.  Each of
+@var{name} and @var{value} may be 0 to indicate that the corresponding
+data should be discarded after being read.
+
+@cindex continuation line
+If the header spans multiple lines (using RFC822's newline-whitespace
+continuation syntax), all lines are appended to @var{value} complete
+with their terminating newline sequences.  If @var{newline} is non-zero,
+then it points to a @code{NUL}-terminated string to which all newline
+sequences encountered will be converted.  Typically, @var{newline} will
+contain one of the values @w{@code{mime_CR}}, @w{@code{mime_LF}}, or
+@w{@code{mime_CRLF}}, for canonicalization.
+
+@vindex mime_err_Header
+If end-of-file or an illegal character is found in the header name, this
+function raises the exception @w{@code{mime_err_Header}}.
+@end deftypefn
+
+@tindex mime_pair
+@deftypefn Function int mime_Headers (@w{struct dpipe *@var{dp}}, @w{struct glist *@var{hlist}}, @w{const char *@var{newline}})
+Given a readable stream @var{dp} which is presumed to be positioned at
+the beginning of a (possible empty) block of RFC822 headers, parse each
+header using @w{@code{mime_Header}}, appending the name/value pairs
+to @var{hlist}.  The data type of the records in @var{hlist} is
+@w{@code{struct mime_pair}}, which is defined as follows:
+
+@example
+@group
+struct mime_pair @{
+    struct dynstr name, value;
+@};
+@end group
+@end example
+
+Returns the number of headers read.  The stream is left positioned after
+the terminating newline of the last header, meaning that if the header
+block is terminated as usual, by newline-newline, the first newline will
+have been read and the second newline will be waiting to be read.
+However, parsing of headers will stop at any line that does not look
+like a header; for instance, one beginning with a ``special'' character
+like @samp{@@}.
+
+Each header is read with @w{@code{mime_Header}}, and the parameter
+@var{newline} is as in that function.
+@end deftypefn
+
+@deftypefn Function {void} mime_ContinueHeader (@w{struct dpipe *@var{dp}}, @w{struct dynstr *@var{value}}, @w{const char *@var{newline}})
+Read zero or more header continuation lines from @var{dp}, appending
+them to @var{value}, transforming embedded newlines according to
+@var{newline}, which is as in @w{@code{mime_Header}}.
+
+This function is useful if one has already read a line, e.g. with
+@w{@code{mime_Readline}}, discovered it to be the first line of a
+message header, and wishes to slurp up any remaining lines.  Lines that
+begin with whitespace are appended to @var{value}, up until the first
+line that does not begin with whitespace, which is where @var{dp} is
+left positioned after this call.
+@end deftypefn
+
+@cindex unfold
+@deftypefn Function {void} mime_Unfold (@w{struct dynstr *@var{value}}, @w{int @var{collapse}})
+Given a header value @var{value}, rewrite it in place to perform RFC822
+@dfn{unfolding}.  Unfolding is the process of removing embedded newlines
+in multi-line header values.  If @var{collapse} is non-zero, also
+collapse all whitespace characters following each newline into a single
+space.
+@end deftypefn
+
+@cindex token
+@deftypefn Function {char *} mime_NextToken (@w{char *@var{str}}, @w{char **@var{end}}, @w{int @var{tspecial}})
+Given a string @var{str}, presumably the content of a mail header,
+return the next @dfn{token}, and place in @w{@code{*@var{end}}} the
+position in @var{str} of the first byte following the token.  The
+tokenizing rules are selected by @var{tspecial}; if 0, RFC822
+``special'' characters are delimiters; otherwise, MIME ``tspecial''
+characters are delimiters.  MIME ``tspecials'' are for tokenizing the
+MIME Content-Type header.
+
+The return value is stored in an internal buffer which is overwritten
+with each call.  The token is either an RFC822 ``atom,'' a ``special''
+or ``tspecial'' character as appropriate, or a ``quoted-string.''
+
+If the token is a quoted string, the delimiting quotation marks are
+removed and backslash-escapes in the quoted-string are decoded.
+Tokenizing skips whitespace and comments.
+
+@vindex mime_SpecialToken
+If the token is a ``special'' or ``tspecial,'' the global @code{int}
+variable @w{@code{mime_SpecialToken}} is set to its value; if not,
+that variable is set to 0.  This allows one to distinguish between a
+``special'' character in the header, and a quoted string containing a
+special character.  For example, if the tokenizer encounters @samp{:} in
+the input, then the return value will be the string @code{":"} and
+@w{@code{mime_SpecialToken}} will be set to 58; but if the tokenizer
+encounters @samp{":"} in the input, then the return value will still be
+the string @code{":"} but @w{@code{mime_SpecialToken}} will be 0.
+
+The RFC822 ``special'' characters are:
+
+@display
+@samp{(}, @samp{)}, @samp{<}, @samp{>}, @samp{@@}, @samp{,}, @samp{;},
+@samp{:}, @samp{\}, @samp{"}, @samp{.}, @samp{[}, @samp{]}.@refill
+@end display
+
+The MIME ``tspecial'' characters are:
+
+@display
+@samp{(}, @samp{)}, @samp{<}, @samp{>}, @samp{@@}, @samp{,}, @samp{;},
+@samp{:}, @samp{\}, @samp{"}, @samp{/}, @samp{[}, @samp{]}, @samp{?},
+@samp{=}.@refill
+@end display
+
+Return value is 0 when no token follows in @var{str}.
+
+@vindex mime_err_String
+@vindex mime_err_Comment
+If a quoted-string is unterminated or contains an illegal character,
+this function raises the exception @w{@code{mime_err_String}}.  If a
+comment is unterminated or contains an illegal character, this function
+raises the exception @w{@code{mime_err_Comment}}.
+@end deftypefn
+
+@deftypefn Function {void} mime_MultipartStart (@w{struct glist *@var{stack}}, @w{const char *@var{boundary}}, @w{void (*@var{cleanup})(void *)}, @w{void *@var{cleanup_data}})
+This function must be called in order to parse the subparts of a
+multipart.  The caller presumably has read a block of headers using
+@w{@code{mime_Headers}} and has discovered (possibly using
+@w{@code{mime_ParseContentType}} or
+@w{@code{mime_AnalyzeHeaders}}) a Content-Type header indicating a
+multipart type and a boundary string.
+No recursive call is made to parse the subparts of a multipart, instead,
+@var{stack} is used to keep track of multipart nesting.
+
+@tindex mime_stackelt
+The elements of @var{stack} are of type @w{@code{struct
+mime_stackelt}}.  A new element is placed on @var{stack} indicating
+the pending boundary string, @var{boundary}, which is the value of the
+@code{boundary} parameter in the @w{@code{Content-Type}} header.  The
+function @var{cleanup} will be called when the new stack frame is
+unwound (usually by encountering the end of this multipart, but see
+@w{@code{mime_NextBoundary}}).  When @var{cleanup} is called, it is
+passed @w{@var{cleanup_data}} as an argument.
+@end deftypefn
+
+@deftypefn Function {int} mime_NextBoundary (@w{struct dpipe *@var{dp}}, @w{struct dpipe *@var{dest}}, @w{struct glist *@var{stack}}, @w{const char *@var{newline}})
+Given a readable stream @var{dp} which is presumed to be positioned at
+the beginning of a line, skip to the next occurrence of any multipart
+boundary appearing in @var{stack}.  If @var{dest} is non-zero, text up
+to but not including the boundary is written to it.  If @var{stack} is 0
+or empty, text up to end-of-file is read.  If end-of-file is encountered
+while a boundary is expected, the entire stack is unwound.
+
+The text is read line by line from @var{dp} using
+@w{@code{mime_ReadLine}}, which recognizes three different character
+sequences as a valid newline (@i{vide supra}).  When copying lines to
+@var{dest}, the parameter @var{newline} controls how newlines are to be
+depicted.  If @var{newline} is 0, newline sequences read from @var{dp}
+are copied as-is to @var{dest}.  If @var{newline} is a string, that
+string is used as the newline sequence.  (Typically, @var{newline} will
+be one of the convenience variables @w{@code{mime_CR}},
+@w{@code{mime_CRLF}}, or @w{@code{mime_LF}}.)  When an unterminated line
+is read from @var{dp} (because end-of-file was encountered), no newline
+is written to @var{dest}.
+
+In a properly-formatted MIME stream, only the innermost multipart
+boundary is expected to be found; but we expect that nesting errors will
+be common in received MIME mail.  Hence any multipart boundary placed on
+the stack with @w{@code{mime_MultipartStart}} is accepted when found.
+If the found boundary does not correspond to the top element of the
+stack, the stack is unwound with @w{@code{mime_Unwind}} until it is
+the top element.  If the found boundary is a multipart terminator rather
+than merely a separator (that is, @w{@code{--boundary--}} instead of
+@w{@code{--boundary}}), then that stack frame is unwound also.  In the
+normal case---a non-terminating boundary corresponding to the top of the
+stack---no stack frames are unwound.
+
+Return value is the number of stack frames unwound.  The stream is
+left positioned at the start of the line following the found boundary.
+@end deftypefn
+
+@deftypefn Function {void} mime_Unwind (@w{struct glist *@var{stack}}, @w{int @var{n}})
+Unwind @var{n} stack frames from @var{stack}.  As each frame is unwound,
+its @var{cleanup} function (as provided in
+@w{@code{mime_MultipartStart}}), if any, is invoked with the
+corresponding @var{cleanup_data} as an argument.
+@end deftypefn
+
+@deftypefn Function {char *} mime_ParseContentType (@w{char *@var{str}}, @w{char **@var{subtype}}, @w{struct glist *@var{plist}})
+Given @var{str}, which is presumed to be the value of a Content-Type
+header, parse the MIME type/subtype pair and any ``name=value''
+parameters.  If parsing was successful, the MIME type string is returned
+and @code{*@var{subtype}} is set to the subtype string.  Parameters are added
+to @var{plist}, which is a Glist of @w{@code{struct mime_pair}s}.  If
+parsing fails, the return value is 0.  Each of @var{subtype} and
+@var{plist} may be 0 to indicate that the corresponding data is not
+needed.
+
+The string that is returned and the string to which @code{*@var{subtype}}
+points are stored in private static buffers which are overwritten with
+each call.
+@end deftypefn
+
+@deftypefn Function {void} mime_AnalyzeHeaders (@w{struct glist *@var{hlist}}, @w{struct glist **@var{plistp}}, @w{char **@var{type}}, @w{char **@var{subtype}}, @w{char **@var{boundary}}, @w{char **@var{encoding}})
+Given a list of headers @var{hlist} such as that yielded by
+@w{@code{mime_Headers}}, look for and extract MIME information.
+
+If a Content-Transfer-Encoding header is found, @code{*@var{encoding}}
+is set to its value (which is extracted using
+@w{@code{mime_NextToken}}).
+
+If a Content-Type header is found, then
+@w{@code{mime_ParseContentType}} is called as follows:
+
+@example
+@group
+*@var{type} = mime_ParseContentType(@r{header},
+                              *@var{subtype},
+                              *@var{plistp});
+@end group
+@end example
+
+The parameter @var{plistp} may be 0 to indicate that the parameter list
+is not needed.  On the other hand, if @var{plist} is not 0 but
+@code{*@var{plistp}} is 0, then @code{*@var{plistp}} is first set to
+point to a static, internally-allocated, empty Glist which is
+overwritten with each call.
+
+After the call to @w{@code{mime_ParseContentType}}, if
+@w{@code{*@var{type}}} is @w{@code{"multipart"}}, then a @code{boundary}
+parameter is sought in @w{@code{*@var{plistp}}}.  (If @var{plistp} was
+passed as 0, an internal parameter list is computed for this purpose
+anyway.)  If found, @w{@code{*@var{boundary}}} is set to the value of
+the parameter.
+
+Each of @w{@code{*@var{type}}}, @w{@code{*@var{subtype}}},
+@w{@code{*@var{boundary}}}, and @w{@code{*@var{encoding}}} is set to 0
+if an appropriate value is not found.  The values of
+@w{@code{*@var{type}}} and @w{@code{*@var{subtype}}}, if set, will be
+static buffers in @w{@code{mime_ParseContentType}}.  The value of
+@w{@code{*@var{encoding}}}, if set, is a static buffer in
+@w{@code{mime_AnalyzeHeaders}}, overwritten with each call.  The
+value of @w{@code{*@var{boundary}}}, if set, is the same copy of the
+boundary string as stored in the corresponding entry of
+@w{@code{*@var{plistp}}}.
+
+Any of @var{subtype}, @var{boundary}, and @var{encoding} may be passed
+as 0 to indicate that the corresponding data is not needed.  If both
+@var{boundary} and @var{plistp} are 0, no internal parameter list is
+created in the case that @w{@code{"multipart"}} is encountered.
+@end deftypefn
+
+@deftypefn Function {void} mime_pair_init (@w{struct mime_pair *@var{p}})
+Initializes the pair pointed to by @var{p} (by calling
+@w{@code{dynstr_Init}} on its two fields).
+@end deftypefn
+
+@deftypefn Function {void} mime_pair_destroy (@w{struct mime_pair *@var{p}})
+Finalizes the pair pointed to by @var{p} (by calling
+@w{@code{dynstr_Destroy}} on its two fields).
+@end deftypefn
+
+@deftypefn Function {void} mime_GenMultipart (@w{struct dpipe *@var{dp}}, @w{const char *@var{subtype}}, @w{struct glist *@var{parts}})
+Write to @var{dp} the MIME syntax for a
+@w{@code{multipart/@var{subtype}}} bodypart whose subparts are in
+@var{parts}.  See RFC1521 for legal values of @var{subtype}.
+
+Each element of @var{parts} is a pointer to a Dpipe.  Each Dpipe must be
+a readable stream containing a complete, MIME-conformant stream for one
+subpart.  This includes any relevant headers and a properly-encoded
+body.  Note that the output of this function (in @var{dp}) may be used
+as input to a future invocation of this function, to create nested
+multiparts.
+
+The stream generated by this function looks something like this:
+
+@example
+@group
+Content-Type: multipart/@var{subtype}; boundary=@var{boundary-string}
+
+
+--@var{boundary-string}
+@i{contents of first subpart}
+
+--@var{boundary-string}
+@i{contents of second subpart}
+@r{@dots{}}
+
+--@var{boundary-string}
+@i{contents of last subpart}
+
+--@var{boundary-string}--
+@end group
+@end example
+
+@noindent
+where @var{boundary-string} is an automatically-generated unique string.
+@end deftypefn
+
+@node Usage, Index, Functions, Top
+@chapter Usage
+
+This chapter outlines how MIME parsing using this library should
+proceed.  In the examples below, the variable @var{dp} refers to a
+readable Dpipe which is the source of a MIME-conformant stream.  For
+clarity, exception-handling constructs which ought to be present have
+been omitted.
+
+The following example illustrates parsing a MIME stream with possible
+deeply-nested multiparts.  Each leaf part is written to a destination
+Dpipe named @code{dest}.  The caller should naturally initialize
+@code{dest} on each iteration to point to an appropriate destination for
+the data given its MIME type and subtype, and its depth in the multipart
+hierarchy.  The nesting depth of the leaf part being read at any point
+is given (in this example) by @w{@code{glist_Length(&stack)}}.
+
+Note that the call to @w{@code{mime_NextBoundary}} which sends a leaf
+part to @code{dest} does not perform any base64 or quoted-printable
+decoding.  The caller may want to initialize @code{dest} to be one end
+of a Dpipeline which performs the appropriate decoding and then sends
+the output to its final destination (e.g., a file).
+
+@example
+@group
+struct glist hlist, stack, *plist;
+char *type, *subtype, *boundary, *encoding;
+int loop;
+
+glist_Init(&stack, sizeof (struct mime_stackelt), 4);
+@end group
+
+@group
+do @{
+    loop = 0;
+    glist_Init(&hlist, sizeof (struct mime_pair), 8);
+    mime_Headers(dp, &hlist, 0);
+    mime_Readline(dp, 0); /* @i{discard the separator line} */
+    mime_AnalyzeHeaders(&hlist, &plist,
+                        &type, &subtype,
+                        &boundary, &encoding);
+    if (type && !strcasecmp(type, "multipart")) @{
+        /* @i{It's a multipart; push the boundary string on}
+         * @i{the stack and scan for the first boundary}
+         */
+        mime_MultipartStart(&stack, boundary, 0, 0);
+@end group
+@end example
+
+At this point, the boundary string for the pending multipart has been
+placed on @code{stack}.  Next we search forward for the first occurrence
+of the boundary using @w{@code{mime_NextBoundary}}.  For robustness,
+however, we don't just call mime_NextBoundary once; we call it as many
+times as it returns non-zero.  Naturally we expect it to return zero,
+but if the message syntax is garbled, we might encounter a different
+boundary line first, in which case we want to keep slurping up
+possibly-terminating boundaries until we're again positioned at the
+start of a new bodypart (which condition is indicated by a zero return
+from @w{@code{mime_NextBoundary}}).
+
+@example
+@group
+        while (mime_NextBoundary(dp, 0, &stack, 0))
+            ;
+    @} else if (type && !strcasecmp(type, "message")) @{
+        /* @i{It's a message/something.  Loop again to}
+         * @i{read its (embedded) headers and body}
+         */
+        loop = 1;
+    @} else @{
+        /* @i{It's a leaf part} */
+        struct dpipe dest;
+        int unwound;
+
+        dpipe_Init(&dest, @i{@dots{}whatever is appropriate@dots{}} */);
+        unwound = mime_NextBoundary(dp, &dest, &stack, mime_LF);
+@end group
+@end example
+
+Of course, the use of @w{@code{mime_LF}} here is just an example.
+
+@example
+@group
+        dpipe_Close(&dest);
+        dpipe_Destroy(&dest);
+@end group
+@end example
+
+Again, call @w{@code{mime_NextBoundary}} repeatedly until we're at the
+beginning of a new bodypart somewhere.
+
+@example
+@group
+        if (unwound)
+            while (mime_NextBoundary(dp, 0, &stack, 0))
+                ;
+    @}
+    glist_CleanDestroy(&hlist, mime_pair_finalize);
+@} while (loop || !glist_EmptyP(&stack));
+
+glist_Destroy(&stack);
+@end group
+@end example
+
+The next example builds on the first one but treats
+@w{@code{multipart/alternative}} in the way intended by RFC1521: that
+is, upon entering a @w{@code{multipart/alternative}}, each subpart is
+stashed somewhere; and upon exiting the
+@w{@code{multipart/alternative}}, a single suitable subpart is selected
+for presentation.  While scanning the subparts of a
+@w{@code{multipart/alternative}}, parsing does not descend into
+subsubparts.  The type @w{@code{struct part_data}} is a hypothetical
+structure for holding information about each subpart while a
+@w{@code{multipart/alternative}} is being scanned.
+
+@example
+@group
+struct glist hlist, stack, *plist;
+char *type, *subtype, *boundary, *encoding;
+int loop;
+
+glist_Init(&stack, sizeof (struct mime_stackelt), 4);
+
+do @{
+    loop = 0;
+    glist_Init(&hlist, sizeof (struct mime_pair), 8);
+    mime_Headers(dp, &hlist, 0);
+    mime_Readline(dp, 0); /* @i{discard separator line} */
+@end group
+@group
+    mime_AnalyzeHeaders(&hlist, &plist,
+                        &type, &subtype,
+                        &boundary, &encoding);
+    if (type && !strcasecmp(type, "multipart")) @{
+        if (subtype && !strcasecmp(type, "alternative")) @{
+            /* @i{it's a multipart/alternative} */
+            struct glist subparts;
+            int unwound;
+
+            glist_Init(&subparts, sizeof (struct part_data), 4);
+            mime_MultipartStart(&stack, boundary,
+                                alternative_finish,
+                                &subparts);
+@end group
+@group
+            if (unwound = mime_NextBoundary(dp, 0, &stack, 0)) @{
+                while (mime_NextBoundary(dp, 0, &stack, 0))
+                    ;
+            @} else @{
+                /* @i{doing multipart/alternative subparts} */
+                struct glist hlist2;
+                char *type, *subtype;
+                struct dpipe dest;
+
+                glist_Init(&hlist2, sizeof (struct mime_pair), 4);
+                do @{
+                    mime_Headers(dp, &hlist2, 0);
+                    mime_Readline(dp, 0);
+@end group
+@group
+                    mime_AnalyzeHeaders(&hlist2, 0,
+                                        &type, &subtype,
+                                        0, 0);
+                    dpipe_Init(&dest, @i{@dots{}whatever@dots{}});
+                    unwound = mime_NextBoundary(dp, &dest,
+                                                &stack, mime_LF);
+@end group
+@group
+                    dpipe_Close(&dest);
+                    dpipe_Destroy(&dest);
+                    /* @i{Add an entry to @code{subparts}} */
+                @} while (!unwound);
+                while (mime_NextBoundary(dp, 0, &stack, 0))
+                    ;
+            @}
+        @} else @{
+            /* @i{multipart/something-else} */
+            mime_MultipartStart(&stack, boundary, 0, 0);
+            while (mime_NextBoundary(dp, 0, &stack, 0))
+                ;
+        @}
+    @} else if (type && !strcasecmp(type, "message")) @{
+        /* @i{It's a message/something.  Loop again to}
+         * @i{read its (embedded) headers and body}
+         */
+        loop = 1;
+    @} else @{
+        /* @i{It's a leaf part} */
+        struct dpipe dest;
+        int unwound;
+
+        dpipe_Init(&dest, @i{@dots{}whatever@dots{}});
+        unwound = mime_NextBoundary(dp, &dest, &stack, mime_LF);
+        dpipe_Close(&dest);
+        dpipe_Destroy(&dest);
+@end group
+@group
+        if (unwound)
+            while (mime_NextBoundary(dp, 0, &stack, 0))
+                ;
+    @}
+    glist_CleanDestroy(&hlist, mime_pair_finalize);
+@} while (loop || !glist_EmptyP(&stack));
+
+glist_Destroy(&stack);
+@end group
+@end example
+
+@node Index,  , Usage, Top
+@unnumbered Index
+
+@printindex fn
+
+@contents
+
+@bye

@@ -1,0 +1,397 @@
+# -%- File-Id:trashcan.zsc; Client-Rev:4.0.0; Seq-Num:1 -%-
+#
+# DESCRIPTION:
+#	Use a "trash can" paradigm for deleting messages.
+#
+#	When a message is deleted, it is automatically moved to the 
+#	trashcan folder. (But if a message is deleted from the 
+#	trashcan folder or the outgoing mail queue, it is gone 
+#	forever.)
+#
+#	To undelete a message, the user opens the trashcan folder and 
+#	saves/moves the message elsewhere. Messages deleted from the
+#	outgoing mail queue cannot be undeleted because they are not
+#	moved to the trash can.
+#
+#	By default, the trash is emptied when Z-Mail exits. Set the
+#	$empty_trash_on_exit to false (0) if users must empty the
+#	trash explicitly.
+#
+# PLATFORMS SUPPORTED:
+#	Windows	Tested 4.0
+#	Mac		Tested 3.3
+#	Motif		Tested 3.2
+#	Lite		Not tested
+#
+# INSTALLATION:
+#	This file should be "sourced" from 
+#		$ZMLIB/custom.zmailrc                     on Unix
+#	or
+#		c:\zmail\lib\custom.rc                    on Windows
+#	or
+#		Disk:System Folder:Z-Mail Folder:custom.zmailrc	on Mac
+#		(Add 'source "${ZMLIB}:custom.zmailrc"' to end 
+#		of system.zmailrc to ensure site-specific 
+#		customizations aren't removed when upgrading.)
+#
+#	It should not be sourced from the individual users' .zmailrc or
+#	zmail.rc file, since it gets over-written when the user saves
+#	the application settings (over-writes the "source" commands).
+#
+# EXTERNAL (PUBLIC) FUNCTIONS:
+#	none
+#
+# INTERNAL (PRIVATE) FUNCTIONS:
+#	__custom_delete         Replace default delete command
+#	__empty_trash           Empty the trash can
+#
+# USER VARIABLES: (can be set in user/system configuration file)
+#
+#	empty_trash_on_exit	If true (default) automatically 
+#					empty the trash (remove the trashcan
+#					folder) when Z-Mail quits.
+#	empty_trash_prompt	If true (default), ask user 
+#					before permanantly removing trash.
+#	trashcan			Name of folder to temporarily store
+#					deleted messages in.
+#
+# TEMPORARY VARIABLES: (should be unset immediately after use)
+#	__msgs                  A list of messages to delete
+#	__trash_is_open_now     Part of a logical "OR" construct
+#	__n_undeleted           How many msgs are left in trash?
+#	__cur_fldr              Remember current folder
+#	__remove_trash_fldr     Should we remove the trashcan?
+#
+# SIDE EFFECTS:
+#	Removed the "Undelete" icon from the main child toolbar
+#	Remove deleted messages from view:
+#		show_deleted      Unset
+#		hidden            Add "deleted" to list of hidden messages
+#
+#	This script and my "Read Receipt Notification" script (readrcpt.zsc)
+#	are incompatible since they both redefine the "delete" command. 
+#
+#	If using this script on Macintosh Z-Mail 3.3.x a folder "update" can be
+#	performed each time a message is deleted. This is s l o w. If you're willing
+#	to tolerate these slow updates, uncomment the appropriate update commands below.
+#
+# COMMAND REDEFINITIONS:
+#	delete --> __tc_custom_delete
+#
+# TO DO:
+#	Make "Empty Trash..." in file menu sensitive so that it is
+#	greyed out when the trash folder is empty or doesn't exist.
+#
+#	Control the value of the "empty trash on exit" variable
+#	by using a checkbox menu item (perhaps in main options menu).
+#
+#	Find some way to automatically select the "next" message after
+#	one is deleted. 
+#
+# HISTORY:
+#    25Oct95 Paul Kincaid-Smith Original
+#    05Nov95 Paul Kincaid-Smith Fixed Mac filename quoting problems
+#    20Mar96 Paul Kincaid-Smith Minor comment clean-up.
+#    10Apr96 Paul Kincaid-Smith Delete messages in mail.que forever
+#                               without prompting.
+#    25Apr96 Paul Kincaid-Smith Use $input (if set) to select msgs.
+#                               Ensure $output is set after deleting.
+#
+
+echo "sourced trashcan.zsc"
+
+# Don't display deleted messages in the summary list
+# ("hidden" is not available on the Mac yet)
+unset show_deleted
+set hidden += deleted
+
+# Older versions of Unix Z-Mail don't know about "is_mac" or
+# "is_mswin" so fake it
+if ! $?is_mac
+    set is_mac = 0
+endif
+
+if ! $?is_mswin
+    set is_mswin = 0
+endif
+
+# Are we running on a Unix host?
+if ! $?is_unix
+    set is_unix = 0
+    if ! $is_mac
+        if ! $is_mswin
+            set is_unix = 1
+        endif
+    endif
+endif
+
+if ! $?trashcan
+    if $is_mac
+        set trashcan = "${FOLDER}:trash"
+    else
+        if $is_mswin
+            set trashcan = "$folder\trash"
+        else
+            if $is_unix
+                set trashcan = "$folder/trash"
+            else
+                error "This trashcan script was not designed for this platform"
+                return -1
+            endif
+        endif
+    endif
+endif
+	
+if ! $?empty_trash_prompt
+    set empty_trash_prompt = 1
+endif
+
+if ! $?empty_trash_on_exit
+    set empty_trash_on_exit = 1
+endif
+
+if $empty_trash_on_exit
+    interpose -before quit __empty_trash
+endif
+
+# Delete function will now actually move to trash
+cmd delete __tc_custom_delete
+
+function __tc_custom_delete() {
+
+    set __trash_is_open_now = 0
+
+    # Stash the piped input, the parameters (assumed to be a message list),
+    # or the selection if neither of those is provided, in $__list
+    if $?input
+        set __msgs = $input
+    else
+        msg_list $* | set __msgs
+    endif
+
+    # If the trash folder is open and active, do a "real" delete,
+    # otherwise move to trash folder
+
+    ### Beware of surrouding folder name in double quotes because on Motif
+    ### Z-Mail 3.2, echo "$trashcan" evaluates to "~/Mail/trash" which
+    ### is different from "$thisfolder", since echo "$thisfolder" evaluates
+    ### to "/usr/home/paulks/Mail/trash" (in my case) when the +trash folder
+    ### is open.
+    if $is_unix
+        if $thisfolder == $trashcan
+            set __trash_is_open_now = 1
+        endif
+    else
+        if "$thisfolder" == "$trashcan"
+            set __trash_is_open_now = 1
+        endif
+    endif
+
+    if $__trash_is_open_now == 1
+        if $empty_trash_prompt
+            # Check for the case where multiple messages are 
+            # selected and use proper english grammar.
+
+            if $__msgs =~ "*,*"
+                ask "Would you like to permanently remove these messages?"
+            else
+                ask "Would you like to permanently remove this message?"
+            endif
+            if $status != 0
+               msg_list $__msgs | unset __msgs
+               return -1
+            endif 
+        endif
+
+        builtin delete $__msgs
+
+        # Compensate for "hidden" not working on the Mac... but these 
+        # "updates" have a price... they're slow
+        #if $is_mac
+        #    update
+        #endif
+    else
+        # mail_queue is only defined on Windows and Mac platforms
+        set __mail_queue_is_open_now = 0
+        if $?mail_queue
+            if "$thisfolder" == "$mail_queue"
+                set __mail_queue_is_open_now = 1
+            endif
+        endif
+
+        if ! $__mail_queue_is_open_now
+            # Move to trashcan folder
+            save $__msgs "$trashcan"
+        endif
+        builtin delete $__msgs
+
+        # Compensate for "hidden" not working on the Mac
+        #if $is_mac
+        #    update
+        #endif
+
+        unset __mail_queue_is_open_now
+    endif
+
+    unset __trash_is_open_now
+    msg_list $__msgs | unset __msgs
+}
+
+
+# The following is either interposed before the "quit" command (for
+# automatic trashcan emptying) or invoked by a menu selection.
+function __empty_trash() {
+
+    # First things first.  If the trash is empty, or nonexistant,
+    # all this is moot, so exit this function.
+    if ! -e "$trashcan"
+        return 0
+    endif
+    if -z "$trashcan"
+        return 0
+    endif
+
+    # Should we remove the trashcan folder or not? Default to YES
+    set __remove_trash = 1
+
+    if $empty_trash_prompt
+        # Open or switch to the trash.  This in itself will be painful 
+        # to the user if the trash folder gets too large. The only reason we
+        # open the trashcan folder is to check the number of messages 
+        # in it.
+        set __cur_fldr = "$thisfolder"
+        open "$trashcan"
+        arith __n_undeleted = $(%t) - $(%d)
+        if $__n_undeleted != 0
+            if $__n_undeleted == 1
+                ask "The Trash contains 1 message. \
+Would you like to permanently remove it?"
+            else
+                ask "The Trash contains $__n_undeleted messages. \
+Would you like to permanently remove them?"
+            endif
+            if $status != 0
+                # Do not remove trashcan folder
+                set __remove_trash = 0
+            endif
+        endif
+
+        # Beware of double-quoting these variables on Unix. See warning above.
+        if $is_unix
+            if $__cur_fldr == $trashcan
+                if $__remove_trash == 1
+                    # switch to Mailbox before removing trashcan folder
+                    open %
+                endif
+            else
+                open "$__cur_fldr"
+            endif
+        else
+            if "$__cur_fldr" == "$trashcan"
+                if $__remove_trash == 1
+                    # switch to Mailbox before removing trashcan folder
+                    open %
+                endif
+            else
+                open "$__cur_fldr"
+            endif
+        endif
+
+        unset __cur_fldr
+        unset __n_undeleted
+
+    endif
+
+    if $__remove_trash == 1
+        # Completely empty the trashcan by removing the trashcan folder...
+        remove -f "$trashcan"
+    endif
+
+    unset __remove_trash
+}
+
+# Remove the "undelete" buttons from the main window's button panel
+# and toolbar.
+# Remove the "undelete" menu items from the main file/folder menu and
+# the message window's message menu, popups, etc.
+
+if $is_mswin
+
+    unbutton -buttonlist MainChildToolbar Undelete
+    button -W main
+
+    unmenu -menulist MainMessageMenu -name "mfm_undelete"
+
+    unmenu -menulist ComposeMessageMenu -name "mfm_undelete"
+
+    unmenu -menulist MessageMessageMenu -name "mmm_undelete"
+
+    ### The following causes a GPF:
+    ###    unmenu -popup main-summaries -name "msp_undelete"
+    ### so work-around with:
+    menu -popup-context main-summaries
+    unmenu "msp_undelete"
+
+    menu -W main
+else
+    if $is_mac
+        button -W main
+        unbutton Undelete
+
+        button -B OutgoingButtons
+        unbutton Undelete
+
+        button -W main
+
+        # Mac Z-Mail menu items need to be removed with ResEdit
+        # There is no unmenu command on the Mac
+
+    else
+        if $is_unix
+            # may need to refine unix into gui v.s. lite, but assume
+            # gui only for now
+
+            # WARNING: Motif Z-Mail uses a function zmenu_load_main_toolbar
+            # to assemble the toolbar. If this function is used to load the
+            # toolbar AFTER this statement is reached, the following "unbutton"
+            # command will have no effect. To ensure that the Undelete icon
+            # doesn't show up in the MainToobar, edit zmenu_load_main_toolbar
+            # in $ZMLIB/zmail.menus.
+            unbutton -buttonlist MainToolbar -name Undelete
+
+            button -W main
+            unbutton Undelete
+
+            menu -B MainMessageMenu
+            unmenu mm_undelete
+
+            menu -B MessageMessageMenu
+            unmenu mmm_undelete
+
+            menu -popup-context main-summaries
+            unmenu msp_undelete
+
+            menu -W main
+        endif
+    endif
+endif
+
+# Add "Empty Trash" to main file/folder menu
+if $is_mswin
+    menu -menulist MainFileMenu -n -name mfm_empty_trash \
+         -position 15 -mnemonic T \
+         -label 'Empty Trash' __empty_trash
+else
+    if $is_mac
+        # Can't add menus dynamically to Mac -- use ResEdit.
+        # Perhaps add an empty-the-trash button.
+        button -no-msgs -window main "Empty Trash" __empty_trash
+    else
+        if $is_unix
+            menu -menulist MainFolderMenu -n -name mfm_empty_trash \
+                 -position 7 -mnemonic T \
+                 -label 'Empty Trash' __empty_trash
+        endif
+    endif
+endif
+

@@ -1,0 +1,45 @@
+# Sample Z-Script functions: find_references, find_subjects
+#	 	     button: Next-Reference
+
+function find_references() {
+#%
+# This is a function that follows message threads.
+# It finds all messages that have the Message-Id of the "current"
+# message (or, the one specified) in their References: headers.
+#
+# If used in command-line mode, you must supply a message number.
+#%
+    # set the current message to one selected (or specified on cmd-line)
+    msg_list - $*
+    # find all the messages that have the message-id in their References: hdr.
+    # "eval -h" expands the %i into the message-id of the selected message.
+    # "msg_list ." includes the selected message in the output list.
+    eval -h pick -n -h references %i | msg_list .
+}
+
+function find_subjects() {
+#%
+# This function follows message threads by searching for similar subjects
+# rather than Reference: headers.  This is a crude way to follow threads,
+# but is useful for people who receive messages that do not contain the
+# References: header.  Z-Mail supplies References: when replying.
+#
+# If used in command-line mode, you must supply a message number.
+#%
+    msg_list - $*
+    eval -h pick -n -s %s | msg_list .
+}
+
+function thread_next() {
+#%
+# Find the next message in the thread beginning with the current message.
+# It assumes that the messages have already been sorted by date sent.
+#%
+    if ! $?1
+      set _list = .
+    else
+      set _list = $*
+    endif
+    msg_list `find_references $_list` {^-.} | pick +1 | next
+}
+button Next-Reference thread_next

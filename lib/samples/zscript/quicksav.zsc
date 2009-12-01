@@ -1,0 +1,80 @@
+#
+# Quick Save
+#
+# Author: Bob Glickstein
+#
+
+# When dealing with a very large volume of mail as I do, it's helpful to
+# file messages into appropriate folders based on their subject matter.
+# However, it's inconvenient to use the normal Z-Mail "Save" dialog, for
+# a couple of reasons:
+# 
+#     1.  It takes a few seconds to come up, because it has to scan the
+#     directory and populate the filefinder list;
+# 
+#     2.  The most-often used folders are hidden among possibly many
+#     other folders, and each time you invoke the dialog you have to
+#     hunt anew for the right folder.
+# 
+# My idea was to replace that dialog with a simple, non-filefinder one
+# that shows you a list of folders in most-recently-used order.  Each
+# time you save a message (using this dialog), the folder you saved to
+# moves to the top of the list.  The contents and ordering of this list
+# are preserved between sessions.
+# 
+# Folder names are interpreted relative to your $folder directory.  This
+# means that you can't invoke the full-blown filefinder from this dialog,
+# because the result will be a full pathname, which won't make sense when
+# appended to $folder/.  (Perhaps the "ask -f" should be changed to an
+# "ask -i"?)
+# 
+# BUG:  File names containing spaces or quotes cause problems.
+
+# Note that _qsfilename and _qschoices have *one* leading underscore,
+# not two, so they *are* recorded in $ZMAILRC upon saving options.
+
+if $?mbox$?_qschoices == 10
+    match '.*[+/]\(.*\)' "$mbox"
+    if $?__matches
+	set _qschoices = "$__match_1"
+    endif
+    if X"$_qschoices" == X
+	set _qschoices = mbox
+    endif
+endif
+
+function quicksave() {
+    ask -f _qsfilename "Save to:" $_qschoices
+    if $status == 0
+        save $* +$_qsfilename | delete
+	match "\(.*\) $_qsfilename \(.*\)" " $_qschoices "
+	if $?__matches
+	    set _qschoices = "$__match_1 $__match_2"
+	endif
+	set _qschoices = "$_qsfilename $_qschoices"
+    endif
+}
+
+function qs_startup_hook() {
+    if -e ~/.quicksave.folders
+        source ~/.quicksave.folders
+    endif
+}
+
+function qs_exit_hook() {
+    if $?_qschoices
+	remove -f ~/.quicksave.folders
+	echo -file ~/.quicksave.folders "set _qschoices = '$_qschoices'"
+    endif
+}
+
+source $ZMLIB/samples/zscript/addhook.zsc
+add_hook startup_hook qs_startup_hook
+add_hook exit_hook qs_exit_hook
+
+if is_lite
+    bindkey -c Main \<f9> zscript quicksave
+    bindkey -c Message \<f9> zscript quicksave
+    bindkey -c Main \e9 zscript quicksave
+    bindkey -c Message \e9 zscript quicksave
+endif

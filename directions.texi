@@ -1,0 +1,1957 @@
+\input texinfo @c -*- texinfo -*-
+@comment %**start of header (This is for running Texinfo on a region.)
+@setfilename directions.info
+@settitle Message Store API Requirements
+@c @finalout
+@c @smallbook
+@c @setchapternewpage odd
+@footnotestyle end
+@comment %**end of header (This is for running Texinfo on a region.)
+
+@ifinfo
+This document discusses future development of the Z-Mail product line.
+It is a PROPRIETARY and CONFIDENTIAL DRAFT.
+
+Software and documentation Copyright @copyright{} 1995 Z-Code Software
+Corp., a usurpation of NCD.
+@end ifinfo
+
+@titlepage
+@title Z-Mail for the Future
+@subtitle Manual version $Revision: 1.5 $
+@subtitle $Date: 1995/12/07 22:28:49 $
+@author Bart Schaefer
+@page
+@vskip 0pt plus 1filll
+This document discusses future development of the Z-Mail product line.
+It is a PROPRIETARY and CONFIDENTIAL DRAFT.
+
+Software and documentation Copyright @copyright{} 1995 Network Computing
+Devices Inc., Z-Code Software Division.
+@end titlepage
+
+@node Top, Goals, (dir), (dir)
+@unnumbered Abstract
+
+As Z-Mail enters its next major phase of development, a number of important
+issues arise.  Careful decisions must be made to ensure that, as we address
+these issues, we proceed with the proper balance of short-term productivity
+and long-term stability and extensibility.  This document presents those
+issues along with the context of our known marketing requirements and of
+some of our long-standing desires for improvement of Z-Mail; this context
+is valuable for identifying the correct resolutions to the issues.  The
+goal of this document is not (at this writing) to present conclusions;
+rather, it provides background for the decision and design processes.
+
+This is a PROPRIETARY and CONFIDENTIAL DRAFT.
+@iftex
+Have we said that often enough now?
+@end iftex
+This document is a work in progress; in particular, it's probably not at
+this time fit for consumption outside Z-Code Division, as it frequently
+fails to maintain the serious and pedantic tone so pompously established
+in the preceding paragraph and so gleefully abandoned in this one.
+
+Comments and critique are requested.
+
+@menu
+* Goals::                       
+* Requirements::                
+* User Experience::             
+* Cool Stuff::                  
+* Platform-Specific Issues::    
+* Z-Script Considerations::     
+* Other Unresolved Issues::     
+* Additional Features::         
+* Remarks::                     
+* Index::                       
+
+ --- The Detailed Node Listing ---
+
+Requirements
+
+* Baseline Assumptions::        
+* IMAP::                        
+* Disconnected-mode Address Lookup::  
+* MIME Enhancements::           
+* License Server::              
+* Security::                    
+* Windows95::                   
+* Improved Z-Script::           
+* NCD Software Integration::    
+
+User Experience
+
+* SMTP / POP / IMAP::           
+* Native Z-Script::             
+* Desktop Integration::         
+* Object-Oriented User Interface::  
+* Rich Text / Embedded Images::  
+* Address Lookup::              
+
+Cool Stuff
+
+* Mail Management::             
+* IMSP::                        
+* Forms Support / Workflow Automation::  
+* Enabled Mail::                
+* Multithreading::              
+* Dynamic Feature Loading::     
+
+Mail Management
+
+* Database Aspects::            
+* Mail Interactions::           
+
+Platform-Specific Issues
+
+* Code Sharing::                
+* Windows::                     
+* Macintosh::                   
+* UNIX::                        
+
+Windows
+
+* Extended MAPI::               
+* OLE2 vs OpenDoc::     
+* OLE2 Integration::            
+* OLE2 Component Architecture::  
+
+UNIX
+
+* Lite (character terminals)::  
+* X11/Motif::                   
+* Command-Line Interface::      
+
+Z-Script Considerations
+
+* Z-Script and the User Interface::  
+* Z-Script and Mail Management::  
+* Z-Script Language Wish-List::  
+
+Other Unresolved Issues
+
+* Programming Languages::       
+* Message Store Object Model::  
+@end menu
+
+@node Goals, Requirements, Top, Top
+@chapter Goals
+
+This document is intended to provide a basis for discussion of future
+Z-Mail development.  It covers market requirements and other desired
+directions from the viewpoint of the user experience that we wish to
+present, with an eye to comparable (not necessarily identical)
+functionality across the several platforms we support.  An attempt is
+made to summarize any known, open questions and issues regarding
+development on each platform and how those relate to development across
+all platforms.
+
+I have also attempted to summarize herein many ideas for improvements
+to Z-Mail that have been gathering electronic dust, sometimes for
+years.  I have not, as of this draft, reconciled these ideas with the
+@cite{GNATS} change-request database, nor have I yet included ideas that
+appear only in that database.
+
+@strong{Note:}
+With the exception of required features (@ref{Requirements}),
+this document does @emph{not}, at this time, define any specific course
+of action with respect to development.
+
+@node Requirements, User Experience, Goals, Top
+@chapter Requirements
+
+The following required features have been identified by NCD/Z-Code's
+engineering or marketing staffs (staves?).  Most are described in more
+detail in the document @cite{Z-Mail 1995 Key Features --- Basic Market
+Requirements}, last updated November 14, 1994.
+
+@menu
+* Baseline Assumptions::        
+* IMAP::                        
+* Disconnected-mode Address Lookup::  
+* MIME Enhancements::           
+* License Server::              
+* Security::                    
+* Windows95::                   
+* Improved Z-Script::           
+* NCD Software Integration::    
+@end menu
+
+@node Baseline Assumptions, IMAP, Requirements, Requirements
+@section Baseline Assumptions
+@cindex Baseline Assumptions
+
+There is a presumption in the following sections that Z-Mail already
+conforms, or will after current projects are completed, to the following
+baseline functionality:
+
+@itemize @bullet
+
+@item
+@cindex Z-Script
+Z-Script in its old, crufty state (see @ref{Improved Z-Script}), including
+configurable user interface elements such as buttons, menus, and simple
+window layout.
+
+@item
+@cindex MIME
+Basic support for MIME, including encoding non-ASCII text in message
+headers, in all versions.
+
+@item
+@cindex uuencode
+@cindex binhex
+Support for @dfn{uuencode} in all versions, and for @dfn{binhex} in at
+least ZM-Mac.
+
+@item
+@cindex Localization
+Localizability of user interface and other user-visible strings in
+all versions.
+
+@item
+@cindex Character Set Translation
+International character set translation for sending/receiving mail
+in all versions.
+
+@item
+@cindex Serial Dialup
+@cindex Asynch Support
+Serial dialup (aka @dfn{asynch}) capability in ZM-Win and ZM-Mac.
+
+@item
+@cindex POP3
+POP3@footnote{@dfn{Post Office Protocol}, RFC1725} support for access to
+remote mail delivery in all versions.
+
+@item
+@cindex Z-POP
+Z-POP mailbox synchronization in at least ZM-Win and ZM-Mac.
+
+@item
+@cindex Spelling Checker
+Interactive spelling checker in at least ZM-Win and ZM-Mac.
+
+@end itemize
+
+@node IMAP, Disconnected-mode Address Lookup, Baseline Assumptions, Requirements
+@section IMAP
+@cindex IMAP
+
+The new @dfn{Internet Message Access Protocol}, or IMAP4,
+specifications@footnote{RFC1730, RFC1731, RFC1732.}
+provide a number of services desired by our customer base
+(particularly universities, but lately an increasing number of our
+corporate customers), including:
+
+@itemize @bullet
+
+@item
+@cindex X.400
+@cindex OpenMail
+Centralized control of the message store --- previously available only
+with X.400 servers or proprietary systems like HP's OpenMail;
+
+@item
+@cindex MIME
+Low-bandwidth access to messages --- in particular, selective retrieval of
+MIME message parts;
+
+@item
+Storage of multiple mailboxes on the server, and access to all of them
+from multiple client machines without having to copy the mail to each
+client;
+
+@item
+Rudimentary synchronization of server mailboxes with client copies, for
+disconnected use (presently supported in ZM-Win 4.0 via Z-POP, but only
+for the primary delivery mailbox, not for multiple mailboxes).
+
+@end itemize
+
+@cindex Z-POP
+@cindex IMAP
+The marketing requirements document notes that Z-POP extensions for
+more robust mailbox synchronization should be added to IMAP.  This
+would require us to port, build, and maintain our own IMAP server;
+there is some doubt that this would be cost-effective.
+
+There also remains some question of whether the requirement is really
+@cindex IMAP4
+for IMAP, or merely for the set of features IMAP4 provides.  It has
+even been suggested that we develop
+@cindex HTTP
+our own HTTP-based mail server, on the assumption that IMAP4 is not
+going to become widely available or commercially supported any time
+soon.  There are, however, at least two noncommercial IMAP4 servers
+presently in beta, and Sun will reportedly be supporting IMAP4 as part
+of @cite{ROAM}, their remote-mail initiative.
+
+@node Disconnected-mode Address Lookup, MIME Enhancements, IMAP, Requirements
+@section Disconnected-mode Address Lookup
+@cindex Address Lookup
+
+@cindex Local Directory
+This is called ``Local Directory'' in @cite{Z-Mail 1995 Key Features}.
+This refers to the ability to have a subset of address directory
+services (@ref{Address Lookup}) available even when Z-Mail is not
+connected to a network.  A small database, perhaps even a simple flat
+file, must be retrieved from the mail server in a configurable way, and
+later referenced by Z-Mail to verify and/or browse known addresses.
+
+@cindex Zync
+@cindex Z-POP
+``Zync'' configuration downloading (now a feature of Z-POP) or possibly
+@cindex IMSP
+even IMSP@footnote{Internet Message Support Protocol; see @ref{Cool Stuff}.}
+option retrieval could be used to retrieve the database.
+
+Open issues include designing the user interface components to control
+what directory services are accessed (e.g., local or network).
+
+@node MIME Enhancements, License Server, Disconnected-mode Address Lookup, Requirements
+@section MIME Enhancements
+@cindex MIME
+
+This is called ``Improved MIME Compliance'' in
+@cite{Z-Mail 1995 Key Features}.  This covers both bringing Z-Mail
+into full @dfn{MIME Conformance} as defined by the latest
+specifications@footnote{draft-ietf-822ext-mime-conf-00.txt} and also
+extending Z-Mail's support of the more esoteric features of MIME.
+
+We presently handle the required types @dfn{multipart/alternative} and
+@dfn{multipart/digest} only via external processing@footnote{Specifically,
+we call @dfn{metamail}.} and only on the UNIX platform; so ZM-Win
+and ZM-Mac are not fully conformant.  We would also like to extend our
+support of MacMIME@footnote{RFC1740, RFC1741.} on all platforms.
+@cindex MacMIME
+
+We are presently intentionally nonconformant in some specific cases
+with respect to the requirement to ``avoid showing users raw data ...
+other than text.'' For example, we inline @dfn{message/rfc822} parts.
+Executive decisions were made to the effect that users expected to
+see certain types of data even though the MIME spec defines it as
+non-text.
+
+Also important is expanding our support of the many new optional MIME
+types for special applications like enabled mail, security, etc.
+@xref{Enabled Mail}.
+
+@node License Server, Security, MIME Enhancements, Requirements
+@section License Server (for ZM-Win/ZM-Mac)
+@cindex License Server
+
+This item stems from ongoing confusion over what it means to license a
+microcomputer-based mail client in a networked environment.  We at one
+time announced that ZM-Win and ZM-Mac would be able to share ZCNLSD
+license server capacity with UNIX Z-Mail installations.  We later decided
+that, because the micro Z-Mails could operate offline or otherwise be
+installed on individual machines that lack networking, network licensing
+was not appropriate.
+
+This dismayed some of our distributors, who saw network licensing as an
+enforcement strategy, and some of our larger MIS customers, who saw it
+as a way to monitor usage.
+
+The current suggested resolution is to ignore the sniveling distributors
+and to put some sort of user accounting into the ZPOP server to give the
+customers their peace of mind.
+
+@cindex FlexLM
+@cindex PCX
+@cindex NCD Software
+There is also the issue that PCX has adopted @cite{FlexLM} --- if we do
+decide to provide network licensing of ZM-Win, there will be pressure to
+do so in the same manner as other NCD Software products.
+@xref{NCD Software Integration}.
+
+@node Security, Windows95, License Server, Requirements
+@section Security
+@cindex Security
+
+Point-to-point mail encryption/authentication and local security
+such as encrypted mail storage are included in this category.
+
+We would like to support open standards such as MIME+PEM (aka
+MOSS@footnote{draft-ietf-pem-mime-08.txt}@w{ }
+@footnote{draft-ietf-pem-mime-alternative-00.txt}@w{ }
+@footnote{draft-borenstein-pgp-mime-00.txt}),
+as well as some proprietary security
+mechanisms:@footnote{Talk to JMPayne for details.}
+
+@itemize @bullet
+
+@item
+AT&T's @dfn{Secret Agent};
+
+@item
+@dfn{PKCS #7}@footnote{@cite{PKCS Security Services for MIME},
+preliminary draft, RSA Data Security, Inc.};
+
+@item
+A system developed by Motorola;
+
+@item
+Others?
+
+@end itemize
+
+@noindent
+However, these do not address encrypted mail storage except in so far
+as that documents sent encrypted could be stored that way and decrypted
+only upon display.
+
+Outstanding issues with this include export restrictions, and supporting
+proprietary systems without compromising our commitment to open standards.
+
+Also related to security are issues of supporting a variety of user
+authentication methods when contacting mail servers.  Examples include
+@cindex IMAP4
+@cindex POP3
+the IMAP4 `AUTHENTICATE' command@footnote{RFC1731.} and its POP3
+counterpart@footnote{RFC1734.}.
+
+@node Windows95, Improved Z-Script, Security, Requirements
+@section Windows95 
+@cindex Windows95 
+
+In addition to the market demands, we now have (or soon will) a contractual
+obligation to support the Windows95 desktop within 30 days of its release.
+This obligation is only to @emph{run} under Windows95, not to be fully
+certified or otherwise integrated.  However, we will eventually want to
+be a fully Windows95-native application; see @ref{Desktop Integration}.
+
+@node Improved Z-Script, NCD Software Integration, Windows95, Requirements
+@section Improved Z-Script
+@cindex Z-Script
+
+See the marketing requirements document, and
+especially @ref{Z-Script Considerations}, and @ref{Native Z-Script}.
+
+@node NCD Software Integration,  , Improved Z-Script, Requirements
+@section NCD Software Integration
+@cindex NCD Software
+
+Although this is not discussed in the marketing requirements, NCD is
+undertaking an effort to unify its software development strategy and
+@cindex PCX
+impose some overall architectural goals for PCX, ``Internet Products''
+(Mariner), and Z-Code.
+
+This affects Z-Mail development in several ways:
+
+@itemize @bullet
+
+@item
+@cindex Mariner
+@cindex Marathon
+Mariner and Marathon include either Z-Mail or a ``simplified'' mail package
+for which our division is nominally responsible; an upgrade path to full
+Z-Mail is required.
+
+@item
+@cindex Look and Feel
+An NCD ``Look and Feel'' will eventually be defined; we need to be
+sure to have input into the design, especially for Mac and UNIX
+platforms (on the assumption that Microsoft will largely dictate the
+Windows95 look), and be prepared to adapt to the eventual decisions.
+
+@item
+@cindex Interoperability
+All NCD apps should interoperate to the greatest extent possible.  At
+the moment, exactly what that means is too vague to expand upon here.
+There is the possibility that it will come to mean that the Windows
+and Macintosh versions of Z-Mail actually @strong{become} Mariner, if
+we can't do a good enough job of making an upgrade path to a more
+powerful Z-Mail.
+
+@item
+@cindex E-Mail Technology
+Z-Code is going to be increasingly looked on as a technology provider
+for E-Mail capability that is included in other products.  This is the
+other side of the ``upgrade path'' coin and relates to interoperability
+as well.  We will need to identify components of Z-Mail that can be
+built and used independently; and further, we will have to identify
+which of those components can (and should) use platform-independent
+code and which should be re-implemented on each platform.
+@xref{Code Sharing}.
+
+@end itemize
+
+@noindent
+All of this underscores our need and previously stated desire to do
+significant work in modularizing Z-Mail.
+@ifinfo
+
+@xref{Dynamic Feature Loading}.
+
+@xref{OLE2 Component Architecture}.
+
+@xref{Goals, , , mstore/mstore.info, Message Store API Requirements}.
+@end ifinfo
+@iftex
+@xref{Dynamic Feature Loading},
+@ref{OLE2 Component Architecture}, and
+@ref{Goals, , , mstore/mstore.info, Message Store API Requirements}.
+@end iftex
+
+@node User Experience, Cool Stuff, Requirements, Top
+@chapter User Experience
+
+@menu
+* SMTP / POP / IMAP::           
+* Native Z-Script::             
+* Desktop Integration::         
+* Object-Oriented User Interface::  
+* Rich Text / Embedded Images::  
+* Address Lookup::              
+@end menu
+
+@node SMTP / POP / IMAP, Native Z-Script, User Experience, User Experience
+@section SMTP / POP / IMAP
+@cindex SMTP
+@cindex POP
+@cindex IMAP
+
+We remain dedicated to providing open-standards-based mail delivery through
+established Internet protocols.  @xref{IMAP}.
+
+@node Native Z-Script, Desktop Integration, SMTP / POP / IMAP, User Experience
+@section Native Z-Script
+@cindex Scripting
+@cindex Z-Script
+
+Although the configurability and programmability of Z-Mail through Z-Script 
+has been one of our major selling points, it has several drawbacks, most
+related to its intentional similarity to a UNIX shell program.
+@cindex UNIX
+
+@enumerate
+
+@item
+The syntax is unfamiliar to non-UNIX users.  Even for UNIX users, some of
+the syntax is painful.
+
+@item
+Variables are restricted to strings, numerics, or predefined lists
+(@dfn{multivalues}) only.  Lack of ability to process external data
+contained in files (except in the context of compositions and
+attachments) also imposes many limitations.
+
+@item
+Although Z-Script is reasonably well-suited to manipulating mail
+messages, other languages have become the defined or de facto standard
+for interprocess communication (IPC) and for user-interface
+programmability on the desktops we support.
+
+@end enumerate
+
+To address these problems, especially the last, we would like to be
+able to program Z-Mail using the most natural ``native'' language on
+each desktop:
+
+@table @emph
+
+@item Windows
+@cindex Visual Basic
+Visual Basic (VB) should be supported.
+
+@item Macintosh
+@cindex AppleScript
+@cindex Macintosh
+AppleScript should be supported; possibly VB as well.
+
+@item UNIX
+@cindex UNIX
+@cindex TCL
+TCL@footnote{Ousterhout, @cite{TCL and the Tk Toolkit}.} may soon be the
+language of choice; we may wish to support VB if a working cross-platform
+interpreter can be obtained.
+
+@item Legacy installations
+Old Z-Script should continue working if at all possible.
+
+@end table
+
+@noindent
+@xref{Z-Script Considerations}, and @ref{Desktop Integration}.
+
+@node Desktop Integration, Object-Oriented User Interface, Native Z-Script, User Experience
+@section Desktop Integration
+@cindex Desktop Integration
+
+Although we wish to provide a certain level of familiarity and comparable
+functionality across all our supported platforms, we also wish to function
+as a well-integrated application on the desktop in each environment.  The
+following is an incomplete@footnote{To be expanded.} summary of areas that
+present issues we must address for such integration.
+
+@table @emph
+
+@item Windows
+
+@itemize @bullet
+
+@item OLE2
+@cindex OLE2
+
+@item Extended MAPI
+@cindex Extended MAPI
+
+@item Drag'n'drop
+@cindex Drag and Drop
+
+@end itemize
+
+@item Macintosh
+@cindex Macintosh
+
+@itemize @bullet
+
+@item OpenDoc
+@cindex OpenDoc
+
+@item Drag'n'drop
+@cindex Drag and Drop
+
+@item Apple Guide (online help system)
+@cindex Apple Guide
+
+@end itemize
+
+@item X11/Motif
+@cindex X11
+@cindex Motif
+
+@itemize @bullet
+
+@item Common Desktop Environment (CDE)
+@cindex Common Desktop Environment
+@cindex CDE
+
+@itemize ---
+
+@item
+Make Z-Mail understand session managers and how to register a restart
+request with them.  This goes along with saving state of folders and
+so on for later restart in case of a failure (machine crash etc.).
+
+@end itemize
+
+@item Drag'n'drop
+@cindex Drag and Drop
+
+@end itemize
+
+@end table
+
+@noindent
+Related topics are discussed in @ref{Platform-Specific Issues}.
+
+@node Object-Oriented User Interface, Rich Text / Embedded Images, Desktop Integration, User Experience
+@section Object-Oriented User Interface
+@cindex Object-Oriented User Interface
+
+This refers to the ability to manipulate messages and message-related data
+as objects, both through user actions like drag'n'drop and through Z-Script.
+@xref{Z-Script Language Wish-List}.
+In integrated desktop environments such as
+@cindex OLE2
+OLE2, this also means being able
+to expose some set of those objects and interfaces to other applications.
+@xref{NCD Software Integration}.
+
+@node Rich Text / Embedded Images, Address Lookup, Object-Oriented User Interface, User Experience
+@section Rich Text / Embedded Images
+@cindex Rich Text
+@cindex Embedded Images
+
+The new Ishmail product from HAL, and TCL/Tk enhancements to freeware
+such as XMH, have moved the expectations for enhanced text and image
+viewing in X11 mail systems beyond what Z-Mail provides.  NCD's own
+Mariner product employs an HTML-based view window to display inline
+images and fancy text, which ZM-Win (which is supposedly an upgrade
+from Mariner's mail) does not.
+
+It may be possible for us to incorporate HTML into Z-Mail on all platforms
+to support this; see also @ref{Cool Stuff}.
+
+@node Address Lookup,  , Rich Text / Embedded Images, User Experience
+@section Address Lookup
+@cindex Address Lookup
+
+@cindex Directory Services
+@cindex Address Books
+This is also known as ``Directory Services'' or ``Address Books''. 
+
+Z-Mail already provides a very basic interface to directory services.
+However, there is increasing pressure to expand the interface and to
+provide other directory mechanisms; see @ref{Requirements}.  One
+potential solution is to provide a sufficiently general interprocess
+mechanism so that an outside agent could be written to access specific
+services.
+
+@table @emph
+
+@item Legacy Installations
+@cindex UNIX
+Z-Mail has an established, extremely simple, protocol for accessing
+directory services via an external program on UNIX and via a TCP/IP
+connection to a specific port for ZM-Win and ZM-Mac.  We need to
+consider whether to continue supporting these services, and whether
+to extend the TCP-based service to the UNIX platform (as has been
+requested by some customers).
+
+@item IMSP
+@cindex IMSP
+Among other services, IMSP specifies a standard mechanism for accessing
+and manipulating address books.  @xref{IMSP}.
+
+@item X.500
+@cindex X.500
+X.400/X.500 may be losing steam, but it would still be advantageous
+to access these services, whether directly through an
+LDAP@footnote{Lightweight Directory Access Protocol} API, or
+indirectly via IPC.
+
+@item Proprietary Services
+We've had quite a bit of customer interest in connecting Z-Mail to
+various proprietary directory service mechanisms.  These include:
+
+@itemize @bullet
+
+@item Microsoft Exchange (aka MSX)
+@cindex Microsoft Exchange
+@cindex MSX
+
+@item Post (from AT&T)
+@cindex Post
+
+@item OpenMail (from HP)
+@cindex OpenMail
+
+@item Others?
+
+@end itemize
+
+@end table
+
+Furthermore, we've been asked to make the
+directory searches a bit more user-friendly.  Specifically, folks
+have asked for us to support more intuitive searching, like hitting @key{t}
+and getting all users whose name (first? last?) start with @samp{t}.  Mail
+systems that have tightly coupled directories are setting the standard
+here, and our loosely coupled directory makes this type of interactive
+thing hard or costly.
+
+@node Cool Stuff, Platform-Specific Issues, User Experience, Top
+@chapter Cool Stuff
+
+This chapter is a compendium of things that it would be exciting to see
+incorporated into Z-Mail.  Some of this is new technology; other parts
+are enhancement we've wanted to make to existing capabilities.  In the
+latter case, new technology may completely leapfrog the enhancements,
+but I've mentioned them anyway for completeness.
+
+@menu
+* Mail Management::             
+* IMSP::                        
+* Forms Support / Workflow Automation::  
+* Enabled Mail::                
+* Multithreading::              
+* Dynamic Feature Loading::     
+@end menu
+
+@node Mail Management, IMSP, Cool Stuff, Cool Stuff
+@section Mail Management
+@cindex Mail Management
+
+@menu
+* Database Aspects::            
+* Mail Interactions::           
+@end menu
+
+@node Database Aspects, Mail Interactions, Mail Management, Mail Management
+@subsection Database Aspects
+@cindex Database Aspects
+
+A mail program is, along with everything else it does, a database manager.
+The typical mail program does not yet make use of the full power of a
+database (and those that do are such awful mail programs that the database
+@cindex Oracle Mail
+features can't save them; consider @cite{Oracle Mail}).  Nevertheless, the
+possibility of coupling Z-Mail to a database engine exists.
+@xref{Extended MAPI}, for related considerations.
+
+The following are some additional mail database management capabilities
+that have been suggested for inclusion in Z-Mail.
+@xref{Z-Script and Mail Management}, for commentary on how mail should
+be accessed and manipulated from the scripting language.
+
+@itemize @bullet
+
+@item
+Save messages in multiple folders without duplicating content.  A
+closely related issue is that storage requirements of SMTP-based
+systems (i.e., message copied to each user) are a great concern to users,
+and a consistent issue raised by the vendors of proprietary systems.
+Anything we can do in the user agent (i.e., detached body parts or
+something like it) would be extremely helpful, even if just applicable
+to local users.
+
+@item
+Provide keyword search, cross referencing, etc. without actually having to
+open every folder that is to be searched.
+
+@item
+Cache a list of everything that's in the user's standard folder area
+(@code{$folder}) and update the list as folders are added and removed.
+
+@quotation
+UI items that should be notified are cascade (pullright) menus
+for folder access and the folder dialogs, or anything else that
+might display folder names.
+@end quotation
+
+@item
+Make indexing more configurable with respect to file name, whether it
+is in the folder by default or elsewhere, etc.
+
+@item
+Support more (and even perhaps customizable) mailbox formats (get
+@cindex MH
+@cindex Rmail
+MH fully working, support Rmail (?), compressed folders, etc.)
+
+@item
+Expand the way @code{dot_lock} works in conjunction with kernel locks.
+
+@item
+Provide special locking for group-accessed mailboxes (see
+@ref{Z-Script Language Wish-List}, the suggested
+@code{lock} and @code{unlock} commands).
+
+@item
+For flat-file folders, use a faster string-search (e.g. Boyer-Moore) to
+find the beginning of each message in a folder, to construct a partial
+index from which we can then load quickly.  Probably a win only on big
+folders lacking a preconstructed Z-Mail index, and we may be switching
+to better folder formats entirely.
+
+@item
+Provide some kind of ongoing save of state, at least of folders but ideally
+of the entire Z-Mail session, for recovery after system crash etc.  For
+example, periodically update external folder indices.
+
+@item
+Trace threads and insert extra info (headers?) so that the thread
+can be followed either forward or backward even if things
+are deleted from the middle or beginning of the thread.
+
+@item
+File descriptor limits prevent users from keeping many folders open at
+once.  This should be addressed by any new message management scheme.
+
+@end itemize
+
+@node Mail Interactions,  , Database Aspects, Mail Management
+@subsection Mail Interactions
+@cindex Mail Interactions
+
+The following are all ways in which we should improve Z-Mail's capabilities
+for sending and receiving messages.
+
+@itemize @bullet
+
+@item
+Perfect parsing of bizarre addressing syntax.
+
+@item
+Do X.500-style address input (prompt for address fields).
+
+@item
+Specify a different file name when attaching a file than its
+actual name (to avoid conflicts for the recipient when attaching
+files having the same name from different directories).
+
+@item
+Save compositions-in-progress upon exit from zmail and restore them on
+restart.
+
+@item
+Be able to do attachments (and possibly also addressing, if
+edit_hdrs is NOT set) while running an external editor, at least
+in GUI.
+
+@item
+Allow attaching directories (tarmail?).
+
+@item
+It should be possible to specify case-@emph{in}sensitive alias expansion.
+
+@item
+Permit wildcard matches when listing alias names.
+E.g., @w{@code{alias *sgi*}}.
+
+@item
+When @emph{displaying} an attachment, and its file exists, and the user is
+asked to yes/no/cancel an overwrite, and he says no, try to do the display
+anyway by writing to an invented filename.  This implies some sort of
+test that errs on the side of caution to determine whether the existing
+file is a correct copy previously detached, before going through another
+decoding pass.
+
+@item
+Prompt for a program to run when attempting to display a type for which
+no program has been supplied.
+
+@item
+Do more checking before send in edit_hdrs mode to try to get the user
+to make a sensible RFC822 header including the blank line between
+headers and body before letting him leave the editor.
+
+@item
+User-definable addressing formats for addresses generated by @code{reply}
+or inserted into From: lines.
+
+@item
+Provide @dfn{group bcc} wherein the @code{gbcc}'d group can see
+themselves in the headers, but others can't see them.  Painful.
+
+@item
+Permit personal headers (@dfn{Envelope}) to be kept in a file.
+
+@item
+Have some way (in the contents of the message headers/body?) for the
+external editor to tell Z-Mail to send/cancel/etc. the composition it
+was editing.
+
+@item
+Ignore (hide) ignored headers even when composing with edit_hdrs
+
+@item
+Ignored and retained headers should use case-insensitive matching even
+when doing a wildcard (glob) match.
+
+@item
+Attachment types need to be mode-specific, e.g. a way to specify
+different display programs for Motif than for Lite/CLI/etc.
+
+@item
+@cindex MTA description language
+@cindex Mail Transport Agent
+Provide an @dfn{Mail Transport Agent description language} to define the
+interface from Z-Mail to some arbitrary MTA, so we don't require shell
+processes.
+
+@item
+Supply the equivalent of @code{filter} for outgoing compositions.
+
+@item
+Have an option to run filters at update time instead of at newmail arrival.
+(How do you know what messages NOT to filter?  Are there any such?)
+
+@item
+Match arriving messages against @code{logfile} or @code{record} to see
+if an urgent reply has been received.  Store additional headers in
+those messages to show when the reply was received, etc.
+
+@item
+Disable alias lookup when doing a @code{reply}.  (How?)
+
+@item
+The @code{-send} option shouldn't require a file if there's an attachment.
+
+@item
+When the user changes a variable to automatically add the original
+message to a reply, there should be a menu option (and key command) to
+bring up a reply window @emph{without} the original message.
+In other words, the menu items @w{@samp{Sender (Include Message)}} and
+@w{@samp{All (Include Message)}}
+should toggle to @w{@samp{Sender (Don't Include Message)}} and
+@w{@samp{All (Don't Include Message)}} when the user has set
+the default (via @code{autoinclude}) to @w{@samp{Include}}.
+
+@item
+Spot uuencoded or otherwise ``wrapped''
+blocks of machine-readable data in the body of RFC822 messages
+and treat them as ``attachments'' -- some gateways (e.g. @cite{QuickMail})
+just dump uuencoded or binhexed blobs into the body and their UA looks for
+the @code{begin} line to treat them as attachments.  (ZM-Mac does this
+to some degree already.)
+
+@item
+Optionally suck in new mail in ``background'' folders like we do with
+the spool folder.
+
+@item
+Make generation of a message-id settable via @code{picky_mta}.
+
+@item
+The @code{mail -draft} command should recognize when the draft file
+contains attachments and then reattach them.  It works properly if you
+use @code{-send -draft} (that is, don't re-edit the headers).  (This
+is now supported by @code{mail -q}, but should work with @code{-draft}
+or some similar option from the UNIX shell command line.)
+
+@item
+@code{compcmd get-header} should take the name of a variable into which
+to place the requested header, rather than always using @code{header_value}
+(which is also used by the dynamic-headers interface, which is why it
+is the thing @code{get-header} affects).
+
+@end itemize
+
+@node IMSP, Forms Support / Workflow Automation, Mail Management, Cool Stuff
+@section IMSP
+@cindex IMSP
+
+The
+@dfn{Internet Message Support Protocol}@footnote{draft-myers-imap-imsp-01.txt}
+is a companion to the
+@cindex IMAP4
+IMAP4 protocol; it extends some of the IMAP4 services, and provides
+others that are considered beyond the scope of mail access.  This
+includes directory services, configuration management, and access
+control lists (granting or restricting access to shared mailboxes).
+
+An IMSP/IMAP4 client would typically connect to @emph{both} IMSP and
+IMAP4 servers, using the IMSP server for mailbox management and other
+services, and using the IMAP4 server for actual message retrieval.
+
+@node Forms Support / Workflow Automation, Enabled Mail, IMSP, Cool Stuff
+@section Forms Support / Workflow Automation
+@cindex Forms
+@cindex Workflow Automation
+
+We've long had requests to provide, either through a companion application
+or Z-Script, the ability to define custom forms with editable fields that
+can be mailed from person to person or to automated mail servers.
+
+There have been discussions with third parties such as Delrina, but as
+yet nothing has solidified.
+
+Another solution that has recently been put forth is to incorporate
+@cindex HTML+
+HTML+@footnote{<http://www.w3.org/hypertext/WWW/MarkUp/HTMLPlus/htmlplus_1.html>}
+into Z-Mail, possibly by leveraging the Mariner team's expertise in
+this area.  HTML+ provides a @dfn{mailto} submission protocol for forms,
+@cindex HTTP
+in addition to HTTP-based
+submissions.@footnote{<http://www.w3.org/hypertext/WWW/MarkUp/HTMLPlus/htmlplus_41.html>}
+There remains some question of whether this mechanism is powerful
+enough to handle all the applications we would desire; a submission
+mechanism that returned control of the form to Z-Mail for further
+manipulation (as an attachment to a composition) would be preferable
+in many cases.
+
+Several users have asked for ``query-by-example'' types of forms for 
+searching or filtering.  In other words, to define a filter you would
+bring up a message window and fill in the parts you want to match.
+
+@node Enabled Mail, Multithreading, Forms Support / Workflow Automation, Cool Stuff
+@section Enabled Mail
+@cindex Enabled Mail
+
+Also known as ``Active Messaging'', 
+this takes forms and workflow to the next level, permitting mail messages
+to contain actual programs that perform some service for the recipient.
+The current proposal@footnote{@cite{MIME Extensions For Mail-Enabled
+Applications: application/Safe-Tcl and multipart/enabled-mail}; draft
+proposed by Nathaniel Borenstein and Marshall Rose, and cited in spite
+of their admonition not to cite it.} for enabled mail is to use
+@cindex Safe-TCL
+Safe-TCL as the standard language in a MIME type
+@dfn{application/Safe-Tcl} within a container called
+@dfn{multipart/enabled-mail}.
+
+We really should add support for this, if only because First Virtual uses
+it for transaction notifications.
+
+@node Multithreading, Dynamic Feature Loading, Enabled Mail, Cool Stuff
+@section Multithreading
+@cindex Multithreading
+
+Besides being a good word to be able to buzz, it's cool.
+
+Multithreaded applications can handle expensive tasks more effectively;
+in particular, they can be much more responsive to user interaction
+during time-consuming operations.  For tasks that are actually
+@cindex IMAP4
+performed remotely (e.g., IMAP4 searches), a multithreaded application
+can continue with other processing while still monitoring the remote
+connection for a response.
+
+Further, designing and programming for multithreaded operation fits well
+with plans to break up Z-Mail's technology into reusable components.
+@xref{OLE2 Component Architecture}.
+
+@node Dynamic Feature Loading,  , Multithreading, Cool Stuff
+@section Dynamic Feature Loading
+@cindex Dynamic Features
+@cindex Dynamic Loading
+
+In order to make a smaller, faster Z-Mail, and possibly to market selected
+features separately from the main product, we would like to make individual
+features dynamically loadable.  We do this in a rudimentary way today with
+the toolbars of the Motif version, by defining Z-Script functions that wait
+to create the buttons and load the icons until the user actually requests
+that the toolbar be displayed.
+
+@ifinfo
+(More here)
+@end ifinfo
+
+Note that dynamically loadable features does @emph{not necessarily} mean
+dynamically loaded libraries (DLLs).  Some features might be run-time
+loaded Z-Script, if the language can be made powerful enough to support
+that more completely and efficiently.  @xref{Native Z-Script}.
+
+See also @ref{OLE2 Component Architecture}.
+
+@node Platform-Specific Issues, Z-Script Considerations, Cool Stuff, Top
+@chapter Platform-Specific Issues
+
+This section is designed to be filled out as design discussions progress;
+items may shift from this section to others as solutions are identified.
+
+@menu
+* Code Sharing::                
+* Windows::                     
+* Macintosh::                   
+* UNIX::                        
+@end menu
+
+@node Code Sharing, Windows, Platform-Specific Issues, Platform-Specific Issues
+@section Code Sharing
+@cindex Code Sharing
+
+One general question that may have a different answer for each platform
+is the issue of what code is shared and what code is reimplemented for
+each platform.  This is of particular concern for platforms such as
+Windows and potentially Macintosh, where we will depend on being able
+to plug in to an externally-defined object model for both integration
+with the desktop and interoperability with other applications (including
+drop-in technology components for other NCD Software apps).
+@cindex NCD Software
+
+@cindex MFC
+As an especially relevant example, Microsoft's @cite{MFC} class library
+provides drop-in interfaces to nearly all OLE2 embeddable objects (and
+soon will include both Simple and Extended MAPI interfaces as well).
+If we choose to use OLE2 storage objects for filesystem access on
+Windows (as suggested by the sample hierarchy in @ref{OLE2 Component
+Architecture}) then any code that manipulates file-like objects will
+have to be able to access OLE2 storage, and probably should do so
+through MFC.
+
+If such file access code is to be shared across platforms, we must
+carefully define the file access calls that it is permitted to make so
+as to map onto either MFC or (say) @cite{stdio} as appropriate to the
+platform.  The issue in such cases is, is it more work to provide those
+mappings, or to reimplement the code on each platform rather than
+sharing it?
+
+@node Windows, Macintosh, Code Sharing, Platform-Specific Issues
+@section Windows
+@cindex Windows
+
+@menu
+* Extended MAPI::               
+* OLE2 vs OpenDoc::     
+* OLE2 Integration::            
+* OLE2 Component Architecture::  
+@end menu
+
+@node Extended MAPI, OLE2 vs OpenDoc, Windows, Windows
+@subsection Extended MAPI
+@cindex Extended MAPI
+
+@itemize ---
+
+@item
+How does the EMAPI client module work?
+
+@item
+How do we replace the default service provider with our service module?
+
+@item
+Does the server module require a Microsoft Exchange (MSX) message store,
+or can other providers be plugged in?
+
+@end itemize
+
+@node OLE2 vs OpenDoc, OLE2 Integration, Extended MAPI, Windows
+@subsection OLE2 @emph{vs.} OpenDoc
+@cindex OpenDoc
+@cindex OLE2
+Is there really a choice here?
+
+@node OLE2 Integration, OLE2 Component Architecture, OLE2 vs OpenDoc, Windows
+@subsection OLE2 Integration
+@cindex OLE2 Integration
+
+@itemize ---
+
+@item
+Do we make a fully OLE2 app?
+
+@item
+To what degree do we use a common code base to support common functionality
+across platforms?
+
+@item
+How do we ``route'' functionality that is supported across platforms
+by a common code layer, in and out of the OLE2 components?
+
+@item
+How ``deeply'' does any common code (the ``core'') have to understand OLE2?
+(This is particularly important in the case of using OLE structured storage
+for file management.)
+
+@item
+What OLE2 objects do we expose to other OLE2 apps?
+
+@end itemize
+
+@node OLE2 Component Architecture,  , OLE2 Integration, Windows
+@subsection OLE2 Component Architecture
+@cindex OLE2 Component Architecture
+
+Support for OLE2 will be extremely important for integrating Z-Mail both
+with other applications and ultimately with new versions of the Windows
+operating system itself.@footnote{Assuming Microsoft eventually gets it
+together.}
+@cindex NCD Software
+Even within NCD Software, it will be advantageous for us to
+push for adoption of a scheme that permits us to supply drop-in mail
+@cindex Mariner
+components for other apps like Mariner (@ref{NCD Software Integration});
+OLE2 is the most likely candidate.
+
+John DeBriere writes in
+@cite{Making Z-Mail OLE 2.0x Compliant}@footnote{Draft as of April 11, 1995.}:
+
+@quotation
+OLE 2.0x is a specification designed [to provide for] applications to
+interoperate seamlessly with one another.  [Although] OLE is largely
+designed around compound documents, it offers much more than document
+centric support.  OLE exposes system features and services through
+Microsoft's component object model (COM).  OLE 2.0x is a means to
+provide programmable objects through automation, persistent custom
+controls, a uniform means of transferring data between applications,
+and the coming object oriented operating system, Cairo.
+@end quotation
+
+A sample component hierarchy@footnote{Derived from a draft of
+@cite{Z-Mail Components}, a presentation by John DeBriere.} might
+look like this:
+
+@itemize @bullet
+
+@item User Agent (container)
+
+@itemize @bullet
+
+@item
+Message Reader (container)
+
+@itemize @bullet
+
+@item
+Summary Viewer (control)
+
+@item
+Attachment Viewer (control)
+
+@item
+Text Viewer (control)
+
+@end itemize
+
+@item
+Message Composer (container)
+
+@itemize @bullet
+
+@item
+Address Book (control)
+
+@item
+Attachment Editor (control)
+
+@item
+Text Editor (control)
+
+@end itemize
+
+@end itemize
+
+@item
+Outbound Mail Service
+@quotation
+(Connected to UA via @dfn{advise} and @dfn{storage} interfaces.)
+@end quotation
+
+@itemize @bullet
+
+@item
+Assembly Agent (MIME, uuencode, etc.)
+
+@item
+SMTP Client
+
+@item
+Socket Layer
+
+@end itemize
+
+@item
+Inbound Mail Service
+@quotation
+(Connected to UA via @dfn{advise} and @dfn{storage} interfaces.)
+@end quotation
+
+@itemize @bullet
+
+@item
+Socket Layer
+
+@item
+POP or IMAP Client
+
+@item
+Disassembly Agent
+
+@end itemize
+
+@end itemize
+
+Obviously, other hierarchies are possible; for example, it may not be
+desirable to perform message assembly and disassembly in the outbound
+and inbound service modules if the UA wants to treat messages as
+RFC822 entities or if a remote server already performs some
+disassembly (as with IMAP4).
+
+The important thing to note is that, if the components are created
+properly, rearranging them, replacing them, or even duplicating
+capability in different parts of the hierarchy can easily be accomplished.
+
+@node Macintosh, UNIX, Windows, Platform-Specific Issues
+@section Macintosh
+@cindex Macintosh
+
+@itemize ---
+
+@item
+@cindex OpenDoc
+Do we support OpenDoc, or OLE2?
+
+@item
+@cindex X/Open
+@cindex XTI
+@cindex OpenTransport
+How and when do we take advantage of X/Open's @cite{XTI} networking
+interface (named @cite{OpenTransport} on the Macintosh)?
+
+@item
+@cindex Apple Object Model
+To what extent do we conform to the Apple Object Model, thereby exposing
+the UI elements and features of our application to others?
+
+@end itemize
+
+(I'm sure the Mac team has other issues, along with sharing a number of
+the platform-related issues discussed elsewhere in this document.  This
+section will be expanded as necessary.)
+
+@node UNIX,  , Macintosh, Platform-Specific Issues
+@section UNIX
+@cindex UNIX
+
+@menu
+* Lite (character terminals)::  
+* X11/Motif::                   
+* Command-Line Interface::      
+@end menu
+
+@node Lite (character terminals), X11/Motif, UNIX, UNIX
+@subsection Lite (character terminals)
+@cindex Lite
+
+The Lite menus need some concentrated review.  Using the menus can be 
+exremely frustrating, as one cannot just ``walk through'' the menus using
+unique keys.  For example, there are two menus invoked with @key{F} on the
+main menu.  One should be able to walk the menus with unique keys, as with
+@cite{Lotus 1-2-3}, all Windows applications, and so on.
+
+Otherwise, Lite seems to be nearly perfect, except for a few bugs.
+Relatively minor changes to keep its UI elements up to date with
+respect to changes in the other UIs and in underlying functionality
+would probably be adequate, once all the features in
+@ref{Baseline Assumptions}, are satisfied.
+
+However, it might be worthwhile to look into converting Lite's
+object-oriented internals from our
+@cite{SPOOR}@footnote{@xref{Overview, , , spoor/spoor.info, SPOOR: Simple Poor-man's Object-Oriented Run-time}.}
+toolkit into real C++.
+
+@node X11/Motif, Command-Line Interface, Lite (character terminals), UNIX
+@subsection X11/Motif
+@cindex X11
+@cindex Motif
+
+The following are all wish-list or other suggested items for improving
+the Motif user interface.  Other interfaces may also be able to pick up
+some hints here.
+
+@itemize @bullet
+
+@item
+Dynamically select different-sized icons based on screen size.
+
+@item
+Better context-sensitivity in on-line help system.
+
+@item
+Click on the main window's iconify button and all the windows iconify.
+Main window WM-initiated iconify button should iconify all frames that
+are children of the main window.  (Hmmm..... not sure about this.)
+
+@item
+Check for new mail on de-iconify or other visibility changes.  This
+is partly workable today through Xt translations, if you're willing
+to put up with some harmless warnings at startup.
+
+@item
+Add the ability to ``cache'' one or more xterm windows for use by external
+editors, etc., so a new process need not always be started.  Better
+yet, add a terminal-emulator widget.
+
+@item
+Duplicate a copy of the Output Area contents in a separate dialog that
+can stay up somewhere all the time.
+
+@item
+Message display window ``attached'' to main window (like MailTool).
+
+@item
+Save X configurations other than fonts/colors (geometry, etc.).  Some
+of this is now available, particularly in MediaMail.
+
+@item
+Show current colors of selected objects in colors dialog; reset it
+somehow (make the toggles into radio buttons?) to avoid accidents.
+
+@item
+Support for full-color icons; another place where Ishmail has passed us.
+
+@item
+Use mixed icons and text in lists, especially the main message summaries.
+Ishmail again.
+
+@item
+Make window dumps or other graphical images and expand the help system
+to be able to recognize and display them.
+
+@item
+The sliders in the Variables dialog should be linked to a numeric
+textfield, so you can type in specific values instead of tweaking the
+slider to get them.
+
+@item
+The Z-Mail main window should remain 80 columns wide even if the Command:
+field is not present.
+
+@item
+Display the current input line/column in the compose window.
+
+@item
+The message headers for the message reading window should be more
+structured for easier reading, possibly using a mixture of normal,
+bold and italic.
+
+@item
+Allow two-way cross-referencing in the help system without going into an
+infinite loop.  Allow any entry to cross-reference more than one other entry.
+
+@item
+Do a ``quick quit'' by forking at some point during the quit procedure
+and having the child finish up.
+
+@item
+The Attachments dialog should have a @dfn{dirty} state, when the type
+or encoding has been changed but nothing has been done about it.  When
+in this state, Done should be handled like the Compose dialog with Done
+vs. Cancel: pop up a confirm box.  (Do the Motif-2.0-compliant Close
+and Cancel buttons cover this adequately?)
+
+@item
+See message summaries of all open folders simultaneously;
+multiple message summary panes
+
+@item
+Timestamp @code{X Error} and @code{Xt Error} messages.
+
+@item
+Double-clicking in any list where there are multiple possible actions
+should perform the action most likely to @emph{display} the clicked item.
+(This rule is used in some places but we should review whether it is
+properly applied everywhere.)
+
+@item
+The list of actions in the Pattern and Date search dialogs could be
+sensitive at all times, but have no selection when
+@w{@samp{Perform Function}} is
+toggled off.  If a selection is made, toggle
+@w{@samp{Perform Function}} back on
+automatically.  (This request needs review before we commit to it.)
+
+@item
+Regarding having the search wrap around from the top, I'd prefer
+it to come up with a dialog that says ``no more matches to bottom
+of file, search again from the top?'' with OK and Cancel (or is it
+Done?) buttons.  (Ruth 12/01/93)
+
+@item
+Full headers toggle should work for pinups.
+
+@item
+@samp{Edit Functions} from @samp{Buttons} dialog should come up with the
+function that goes with the currently selected button already
+selected.
+
+@item
+When you set a new alias, the selection should be placed on the alias
+which was updated/created, and it should be scrolled to the top of the
+list.
+
+@item
+It would be nice to have the @key{Page up} and @key{Page down} keys working
+on the main window as well (perhaps under the @samp{View} pulldown) so that
+you don't have to have focus on the message summary list.
+
+@item
+When the main message summaries window is stretched, the message
+subject clauses do not fit-to-screen. i.e. the text does not enlarge.
+
+@item
+It should be easy to preview your X-face.  Perhaps compose window
+should show user's X-face.  This may conflict with a drag-n-drop
+design where you can drop other people's faces on a compose window to
+mail to them.
+
+@end itemize
+
+@node Command-Line Interface,  , X11/Motif, UNIX
+@subsection Command-Line Interface
+@cindex Command-Line Interface
+
+The CLI is mostly defined by Z-Script, as it is essentially an interactive
+Z-Script interpreter.  @xref{Z-Script Considerations}, for an extensive
+list of changes that might be reflected in the CLI.
+
+Other wishlist items:
+
+@itemize @bullet
+
+@item
+At one time we sought to provide command and variable-setting compatibility
+with all standard UNIX CLI mail programs, such as @cite{mailx}.  At present,
+even our Z-Script emulations (provided as samples with the distributions)
+are woefully out of date.  Bring them up to speed.
+
+@item
+Expand word completion to history, variables, etc. as appropriate.
+
+@item
+Allow @code{~:source} in line mode while composing messages.
+
+@item
+The @code{~l!} tilde-command should probably turn off @code{record_users}.
+
+@end itemize
+
+@node Z-Script Considerations, Other Unresolved Issues, Platform-Specific Issues, Top
+@chapter Z-Script Considerations
+@cindex Z-Script
+
+This section lists a number of desired enhancements to Z-Script and to its
+interactions with the rest of Z-Mail.  Any new language solutions we come
+up with (@ref{Native Z-Script}) should include some consideration of these
+features.
+
+@menu
+* Z-Script and the User Interface::  
+* Z-Script and Mail Management::  
+* Z-Script Language Wish-List::  
+@end menu
+
+@node Z-Script and the User Interface, Z-Script and Mail Management, Z-Script Considerations, Z-Script Considerations
+@section Z-Script and the User Interface
+@cindex Z-Script
+@cindex User Interface
+
+The following are some longstanding wish-list items for Z-Script's
+interaction with the user interface.
+
+@itemize @bullet
+
+@item
+@dfn{Preferences} menus and/or dialogs for quick/simple access to
+logical sets of configuration variable settings.
+
+@item
+Indicate when the state of functions or variables needs saving.
+
+@item
+Specify the height of the list displayed in the @code{ask} dialog.
+
+@item
+Add variables to permit enumeration of ``uninteresting'' attachment types
+(for which the icons and/or icon bar should not be shown).
+
+@item
+Make @w{@code{folder -N}} in GUI mean, ``Open this folder, but do not make
+it the folder displayed in the main window.''  Either we need a way to
+open a ``background'' folder, or we need to allow the current folder
+to be one other than that displayed in the main window.
+
+@item
+Permit multiple copies of each dialog, and graphically connect them
+(@dfn{GUI pipelines}, e.g., full functionality of original Toolbox design)
+Provide a way to save the pipeline somehow (script file or function).
+
+@item
+Support command history in the GUI (@dfn{Lite} does this already).
+
+@item
+@dfn{Hide} threads of messages, e.g. only display summary of only the
+earliest message in the thread plus some indication of the
+number of messages in the thread (``folding'' of threads).
+
+@item
+Add a @code{umask} command (UNIX only).  If so, the system.zmailrc should
+probably have @w{@code{umask 077}} added to it.
+
+@item
+If a new message comes in to an empty folder, select it in the GUI
+automatically.
+
+@item
+Provide an interactive dialog to define attachment types, and/or text
+fields on the attachments dialog to show the associated programs.
+
+@end itemize
+
+@node Z-Script and Mail Management, Z-Script Language Wish-List, Z-Script and the User Interface, Z-Script Considerations
+@section Z-Script and Mail Management
+@cindex Z-Script
+@cindex Mail Management
+
+@itemize @bullet
+
+@item
+Apply an arbitrary external index to an arbitrary folder for purposes
+of sorting, restoring state, etc.
+
+@item
+Allow some way from Z-Script to add/modify headers of existing messages,
+without resorting to @code{edit} of the entire message.  This is not
+@cindex IMAP
+possible with message stores like IMAP and is arguably improper in any
+circumstance, but has been suggested as something users want to do.
+
+@item
+Arbitrary annotations of messages stored in folders.  This is preferable
+to altering the headers.
+
+@item
+Save ``replied'' information for each message (to track how often
+and the details about each time a message was replied to).  It
+would also be desirable to save this information about ``forwarded,''
+``printed,'' etc...
+
+@item
+Provide user-definable sort operations (to allow sort on message body
+contents, arbitrary headers, etc.).
+
+@item
+Convert open folder from read-only to writable (without reparsing)
+
+@item
+Make @code{record_user} a multivalue or something so you can specify that it
+forcibly create the files instead of requiring that they exist.
+
+@item
+Attach a time string to the @w{@code{New mail in @emph{folder}}} message.
+
+@item
+Make more commands know about the @code{#} abbreviation for
+@dfn{previous folder}.
+
+@item
+There needs to be a better way than @code{$%?status?} to test the state of
+a message for deleted-ness, etc.
+
+@item
+It would be extremely useful to have variables that are local to a given 
+composition or read window.  This would be used, for example, to
+implement menu toggles that are then read during a send.
+
+@item
+The presentation of folders is absolutely critical.  This is described
+in several ways in the document, but I@footnote{Reinhardt Quelle} want
+to highlight it again.  Many, many applications (including Mariner) are
+using the hierarchical tree representation; this has rapidly becoming a
+real requirement.  We get bashed daily on this one. Even a graphical
+representation of the existing V7 mail folders would be a great improvement.
+
+@end itemize
+
+@node Z-Script Language Wish-List,  , Z-Script and Mail Management, Z-Script Considerations
+@section Z-Script Language Wish-List
+@cindex Z-Script
+@cindex Wish-List
+
+These are all items that have been on our Z-Script wish-list for some time.
+
+@itemize @bullet
+
+@item
+Truly support ``sticky'' or read-only Z-Script variables, functions,
+buttons, etc. so that the sysadmin can create things or make settings
+that the user cannot remove or change.
+
+@item
+Provide text piping and capture.
+
+@item
+Add text-manipulation capabilities (get a regex library somewhere, or
+perhaps even link with @dfn{Perl} or the like).  This is partly present
+with the new @code{match} command, but still incomplete for large
+bodies of text and text in external files.
+
+@item
+Make folders, messages, etc. into real hierarchical objects.
+
+@item
+Permit the user to define his own objects.
+
+@item
+Provide more features of modern programming languages (better
+looping constructs, local variables, etc.)
+
+@item
+Permit filtering operations that rearrange messages or folders, e.g.
+@code{sort} and @code{update}.  Either restrict to happening after all
+other filters have finished, or perhaps the new message group design
+will handle.
+
+@item
+More commands need ``query'' modes, e.g. a way to test whether an alias
+or an ignored header are already set.  (Those two particular examples
+are now possible.)
+
+@item
+Add Z-Script commands @code{lock}/@code{unlock} to apply dot-lock (and/or
+kernel locking?) to arbitrary files.
+
+@item
+New syntax for the @code{msg_list} command to step through a list
+of messages (@w{@code{msg_list -next}} etc.)
+
+@item
+Have the @code{set} command show all `builtin' variables all the time, with
+the value of those booleans that are not set shown as ``false.''  Make
+@example
+set foo = false    set foo = off    set foo = no    unset foo
+@end example
+all be equivalent.  (This one may not be a good idea, but it was
+suggested, so here it is.)
+
+@item
+Put back the @code{-execute} option to the @code{filter} command.
+
+@item
+Read ELM-style @dfn{system aliases} and allow users to view/select from them.
+
+@item
+The @code{sound} command has been compiled out, and it should be
+fixed (for all platforms, or just all UNIX?) and restored.
+
+@item
+The @code{menu} command should report labels for system-defined menus.
+
+@item
+If a user tries to write modular functions (ie, their .zmailrc sources
+other files), upon a save it all dumps into the single file.  This makes
+maintenance tough.  This is especially true for system-defined functions,
+like when startup_hook is used at a system level.  Perhaps if Z-Script
+``knew'' where a function was defined it could avoid saving it later.
+
+@end itemize
+
+@node Other Unresolved Issues, Additional Features, Z-Script Considerations, Top
+@chapter Other Unresolved Issues
+
+Everything here is related in some way to @ref{Code Sharing}.
+
+@menu
+* Programming Languages::       
+* Message Store Object Model::  
+@end menu
+
+@node Programming Languages, Message Store Object Model, Other Unresolved Issues, Other Unresolved Issues
+@section Programming Languages
+
+Much of the existing Z-Mail code base is written in @dfn{C}, and in
+the older dialect typically known as @dfn{K&R} to boot.  This has been
+necessary for portability of the code to a wide range of platforms.
+@cindex C++
+An increasing amount, however, is written in @dfn{C++}, especially on
+the Windows and Macintosh platforms where extensive C++ development
+libraries are available.  Further, most of the potential development
+discussed in this document is either new work or requires extensive
+changes to existing code.  The opportunity to convert more of our
+development to C++ thus presents itself.
+
+Unfortunately, this picture is not as rosy as it may at first seem.
+C++ is not supported on all the UNIX platforms to which we presently
+port, so we might have to drop some (which is, admittedly, not
+necessarily a bad thing).  Even on those platforms where it @emph{is}
+supported, the level of support for various C++ language features is
+inconsistent at best; this is true even for Windows and Macintosh,
+not just for various flavors of UNIX.
+
+@node Message Store Object Model,  , Programming Languages, Other Unresolved Issues
+@section Message Store Object Model
+@cindex Message Store Object Model
+
+The documents @cite{Message Store API Requirements}@footnote{
+@xref{Goals, , , mstore/mstore.info, Message Store API Requirements}.}
+@cindex Message Store API
+and @cite{Message Store API}@footnote{
+@xref{Overview, , , mstore/mstore-api.info, Message Store API}.}
+outline an access model for electronic mail databases.  There is some
+@cindex MIME
+bias towards support of MIME structure in the API, but an effort was
+made to make the model extensible to other formats and to avoid any
+reliance on a any particular form of persistent storage or access to
+that storage.
+
+It was the intent of the message store design that any shared code that
+needed structured access to the message store (mail database) could use
+the API, thus acting independently of the ultimate representation of
+the database and whatever direct access methods it provides.  However,
+this means that (by definition) the message store model and API have many
+parallels to other systems designed to provide similar functionality; in
+particular, Extended MAPI overlaps extensively with our design.
+@cindex Extended MAPI
+
+This raises the same issue already stated in more general terms in
+@ref{Code Sharing}.  To wit, do we use shared code and implement the
+message store API in terms of MAPI or other similar interfaces; or
+do we re-implement any module that needs access to the database for
+each such interface?
+
+It is important to note that choosing to re-implement any module for a
+specific interface (such as MAPI) does not necessarily mean that we
+re-implement it for every possible message store access method.  In
+many cases it will be an obvious win to map low-level protocols onto
+a higher-level message store API.  However, a further question has
+been raised:  If we decide to re-implement it even once, such as for
+MAPI, does that mean that we should choose not to use our own API at
+all, but instead adopt the MAPI model and implement @emph{that} on
+those platforms that don't already have a suitable high-level API?
+
+An important consideration in answering the latter question is that
+our API is considerably less complex than full Extended MAPI, and is
+better tailored to the Internet-standard messaging model that we have
+chosen as our primary means of connectivity.  Investigation is needed
+to determine if a subset of MAPI would provide the appropriate level
+of detail and functionality.
+
+@node Additional Features, Remarks, Other Unresolved Issues, Top
+@chapter Additional Features
+
+These are wish-list items and other ideas or requests that don't fit into
+any specific categories.
+
+@itemize @bullet
+
+@item
+Do some kind of recovery of orphaned temp files, and attempt to provide
+a user interface for it.
+
+@item
+The name of the spool folder should be available from a variable, maybe
+$mail (reflected from env. MAIL if that is set at startup).
+
+@item
+Randomize the time between newmail checks in an idle GUI-mode Z-Mail to
+avoid problems wherein multiple users hit the mail spool area or the
+license server at the same time.
+
+@item
+Point the current message at a prioritized message if there are no new
+or unread ones on startup.
+
+@item
+Explain what version of the variables file was found when it doesn't match
+the version you expected.
+
+@item
+Make the GUI in all version able to recognize stop-button presses on
+the task meter or other dialog while the core is running waited-for
+external commands, so the GUI can kill the external job and interrupt
+the core.  E.g. a @samp{Cancel} button on the directory-service lookup
+dialog might do this.  @xref{Multithreading}.
+
+@item
+The text window sizes (32K) on Windows and Mac are a real problem.
+
+@item
+Printing capabilities on the Windows and Mac platforms are truly
+abysmal when compared to word processors with sophisticated print
+controls.  We need a built-in @cite{mailp}@footnote{Our UNIX mail
+pretty-printer.} type of capability.
+
+@item
+Management issues like password changes, vacation scripts, host-side
+alias or mail list management, and other support functions need to be
+addressed for Z-Mail users, especially the Windows or Mac-based ones.
+@cindex IMSP
+IMSP supports remote password and address book management, and its
+attribute-value pair remote options mechanism could be employed to
+support other functions.  @xref{IMSP}.
+
+@item
+Application management will be a an issue over time.  How does one
+upgrade the software automatically?  Could Z-Mail, for instance, copy
+itself from a server and update the main program or files that are not
+in @code{$ZMLIB}?
+
+@end itemize
+
+@node Remarks, Index, Additional Features, Top
+@chapter Remarks
+
+@ifinfo
+
+@heading Special Discussion of MAPI
+@cindex MAPI
+
+@heading Miscellaneous
+
+@end ifinfo
+
+@node Index,  , Remarks, Top
+@unnumbered Index
+
+@printindex cp
+
+@contents
+
+@bye

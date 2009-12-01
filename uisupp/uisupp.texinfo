@@ -1,0 +1,1586 @@
+\input texinfo @c -*- texinfo -*-
+@c %**start of header
+@setfilename uisupp.info
+@settitle UI Support Library
+@c @finalout
+@c @smallbook
+@c @setchapternewpage odd
+@footnotestyle separate
+@syncodeindex cp fn
+@syncodeindex tp fn
+@c %**end of header
+
+@ifinfo
+This file describes the UI support library, a library of routines
+for use by zmail UI writers.
+
+Software and documentation Copyright 1994 Z-Code Software Corp.,
+Novato, CA 94945.
+@end ifinfo
+
+@titlepage
+@title UI Support Library
+@subtitle Manual version $Revision: 1.2 $
+@subtitle $Date: 1994/06/13 20:11:43 $
+@author Paul Falstad
+@page
+@vskip 0pt plus 1filll
+This manual describes the UI support library, a library of routines
+for use by zmail UI writers.
+
+Software and documentation Copyright @copyright{} 1994 Z-Code Software Corp.,
+Novato, CA  94945
+@end titlepage
+
+@node Top, Introduction, (dir), (dir)
+@unnumbered About uisupp
+
+This manual describes uisupp, a support library for zmail UI writers.
+
+@ifinfo
+Manual version:  $Revision: 1.2 $ $Date: 1994/06/13 20:11:43 $
+@end ifinfo
+
+@menu
+* Introduction::   An introduction to uisupp.
+
+* uiact::          Actions to perform.
+* uichoose::       Choosing alternatives from a list.
+* uifilter::       Mail filters.
+* uifldr::         Folder lists.
+* uifunc::         Functions.
+* uipick::         Message searches.
+* uiprefs::        User preferences.
+* uiprint::        Printing.
+* uisort::         Sorting.
+* uitaskm::        Task meter.
+* uitempl::        Templates.
+* uivars::         Variables.
+* uivsrch::        Variable searches.
+* xface::          X-Faces.
+
+* Index::         Index of functions, types, and concepts.
+@end menu
+
+@node Introduction, Why have uisupp?, Top, Top
+
+@menu
+* Why have uisupp?::        What's the point?
+* Conventions::             Naming conventions, etc. to watch for.
+* Symbols::                 Symbols used by uisupp.
+* Notes::                   Things to watch out for.
+* Sample::                  Sample implementation of a uisupp object.
+@end menu
+
+@node Why have uisupp?, Conventions, Introduction, Introduction
+@chapter Why have uisupp?
+
+The UI support library was created for the following reasons:
+
+@enumerate
+@item
+to promote code sharing among UIs, and to make it easier to provide a
+consistent interface across all UIs.
+@item
+to decrease the amount of work a UI writer has to do to implement
+something which is already in another UI.
+@item
+to modularize things.
+@item
+@cindex core reorganization
+@cindex z-script
+to insulate the UI from the core and reduce its dependence on z-script
+syntax.  This will make it easier for the UI code to adapt to the
+reorganized
+core.  In the new core, there's probably (I hope) going to be a lot of
+API routines to manipulate core objects.  The core itself will not
+generate and run bits z-script code to do things, like it does now;
+and the z-script implementation will do nothing but call the core API
+routines.
+@end enumerate
+
+uisupp is something which we were planning to add in the reorg, but it
+turned out to be useful to have it around even before that.  uisupp
+will probably survive after the reorg, although perhaps in a different
+form, since a lot of things which are provided in uisupp now may be in
+the core later (e.g.  API routines to manipulate core objects).
+Still, uisupp should be more than just a core API; core API routines
+should probably not do things like print stuff to the output window
+and generate error messages, whereas the uisupp code @emph{should}
+do that
+(so that the error messages are the same on all platforms).
+
+@node Conventions, Symbols, Why have uisupp?, Introduction
+@chapter Conventions
+@cindex objects
+@cindex naming conventions
+
+uisupp is intended to be object-oriented; for the most part, each
+module implements an object and has the same name as that object.
+Since uisupp is a library, and since a given UI may only use part of
+it, the modules in uisupp should be made small, to minimize the amount
+of unused code that gets linked in with the main zmail binary.
+
+Why do all the filenames start with ui?  Well, if we called
+@file{uitaskm.c} (for
+example) @file{taskm.c}, then we'd probably have to call the
+include file @file{taskm.h};
+this would be bad, because we already have a @file{taskm.h}
+in the windows UI code.
+Even if we didn't have one there, we later want to have one in the core's
+@file{include/}
+directory.  We can't say @code{#include "uisupp/taskm.h"}, because that doesn't
+work on the Mac.  So, to avoid naming conflicts, and to identify each
+file and object as belonging to the uisupp library, it was decided to
+prefix everything with @file{ui}.
+(Why doesn't @file{xface} start with @file{ui}?  Who
+knows...)
+
+Naming conventions in uisupp attempt to follow naming conventions in the
+Dynadt library.
+
+@node Symbols, Notes, Conventions, Introduction
+@chapter Symbols
+@tindex zmFlags
+@tindex zmBool
+@findex uiscript_Exec
+@findex gui_cmd_line
+@findex cmd_line
+
+Every uisupp include file includes @file{uisupp.h},
+which defines these symbols:
+
+@table @code
+@item zmFlags
+I use this for any flag variable or argument.  It's a @code{typedef}
+for @code{unsigned long}.
+@item zmBool
+I use this for any boolean variable or argument.  It's an
+alternative to @code{BOOL} or @code{Bool} or whatever.
+@end table
+
+@file{uisupp.h} also declares @code{uiscript_Exec()};
+any UI which calls a uisupp routine
+must provide this function.  In the Motif version, it just calls
+@code{gui_cmd_line()}.
+uisupp can't just call @code{cmd_line()} itself, because routines
+like @code{gui_cmd_line()} do a lot of extra stuff like updating the summaries
+for the messages which were changed, and setting the current folder and
+composition.
+
+@node Notes, Sample, Symbols, Introduction
+@chapter Notes
+@cindex exceptions
+
+uisupp routines don't throw exceptions.  If they did, the Windows UI
+code wouldn't be
+able to use them, because the MFC exception package
+conflicts with @file{except.h}.  This should be fixed in the reorg.
+
+Some uisupp objects can only be dynamically created.  In that case,
+they provide @code{uiobject_Create}/@code{Delete} routines
+rather than providing
+Init/Destroy.
+
+Some include files in the @file{uisupp} directory contain
+@code{#define}s for
+messages and error strings you might use in your dialog.  This is
+just so that the strings can be contained in one place, so that we
+don't have @var{n} copies in all our various UI implementations.
+
+@node Sample, , Notes, Introduction
+@chapter Sample
+
+Here is a sample implementation of a uisupp modules.  uisort, the module
+used to help implement the sort dialog, provides the following in its
+include file:
+
+@example
+/*
+ * sort indices.  The sort dialog code depends on them being
+ * in this order.
+ */
+typedef enum uisort_index_enum @{
+    uisort_IndexDate = 0,
+    uisort_IndexSubject,
+    uisort_IndexAuthor,
+    uisort_IndexLength,
+    uisort_IndexPriority,
+    uisort_IndexStatus,
+    uisort_IndexMax
+@} uisort_index_t ;
+
+/*
+ * this is the main sort object.  Every sort dialog keeps one of these
+ * around to keep track of the sort description.
+ */
+struct _uisort @{
+    /* none of your business */
+@};
+typedef struct _uisort uisort_t;
+
+/* check to see if a uisort object is sorting on a given index (i.e.
+ * if the user has clicked the toggle for that index
+ */
+#define uisort_HasIndex(X, Y) ...
+
+/* add an index when a user toggles it on */
+extern void uisort_AddIndex P ((uisort_t *, uisort_index_t));
+
+/* remove an index when a user toggles it off */
+extern void uisort_RemoveIndex P ((uisort_t *, uisort_index_t));
+
+/* reverse sorting on an index when a user clicks one of the "Reverse"
+ * toggles
+ */
+extern void uisort_ReverseIndex P ((uisort_t *, uisort_index_t,
+                                    zmBool on_or_off));
+
+/* generate an string vector which describes the sort.  This is
+ * displayed in the sort dialog's "Sorting Order:" window.
+ */
+extern char **uisort_DescribeSort P ((uisort_t *));
+
+/* perform a sort. */
+extern zmBool uisort_DoSort P ((uisort_t *));
+
+/*
+ * set some options on the sort.  This should probably be
+ * called SetFlags.  The flags are guaranteed to be bit flags
+ * in the order shown below, since they're in that order in the
+ * sort options toggle in the dialog (and we want them to be in
+ * that order for all UI's, I would think).
+ */
+extern void uisort_UseOptions P ((uisort_t *, zmFlags));
+#define uisort_FlagIgnoreCase   ULBIT(0)
+#define uisort_FlagUseRe        ULBIT(1)
+#define uisort_FlagDateReceived ULBIT(2)
+
+/* constructor and destructor */
+extern void uisort_Init P ((uisort_t *));
+extern void uisort_Destroy P ((uisort_t *));
+@end example
+
+@node uiact, uichoose, , Top
+@chapter uiact
+@cindex filters
+@cindex core actions
+@cindex searching
+
+A uiact is the UI's representation of an action to be performed by the
+core, usually on a series of messages.  This action may be performed
+by a filter, or on the results of a search, or when the user clicks a button
+or selects a menu item.
+
+The kind of action to perform (i.e. save, delete, mark) is represented 
+by the action type.  Each action type may take an argument, which must a
+string.  This argument must be of a specific argument type, which is
+determined by the action type.  For example, the @samp{save} action takes an
+argument type of @samp{file}, and the @samp{forward} action takes an
+argument type
+of @samp{address}.
+
+Once you have created an action and defined its type and argument, you
+may perform the action using @code{uiact_Perform}, or you may generate
+a z-script command to perform the action using @code{uiact_GetScript}.
+
+Here are some datatypes relevant to uiacts:
+@tindex uiact_t
+@tindex uiact_Type
+@tindex uiact_ArgType
+@tindex uiacttypelist_t
+
+@table @code
+@item uiact_t
+A UI action, with a type and an optional argument.
+@item uiact_Type
+This represents an action type, e.g. @code{uiact_Mark}, @code{uiact_Delete},
+and @code{uiact_Copy}.
+@item uiact_ArgType
+This represents an argument type, e.g. @code{uiact_Arg_File}.  An action
+which doesn't need an argument would require an argument type of
+@code{uiact_Arg_None}.
+@item uiacttypelist_t
+A list of ui action types.
+@end table
+
+Here are the functions and macros relevant to uiacts:
+
+@deftypefn Function void uiact_Init (@w{uiact_t *@var{a}})
+Initializes @var{a}, giving it a default type.
+@end deftypefn
+
+@deftypefn Function void uiact_Destroy (@w{uiact_t *@var{a}})
+Deinitializes @var{a}.
+@end deftypefn
+
+@deftypefn Macro uiact_ArgType uiact_GetType (@w{uiact_t *@var{a}})
+Returns @var{a}'s action type.
+@end deftypefn
+
+@deftypefn Macro void uiact_SetType (@w{uiact_t *@var{a}, uiact_Type @var{t}})
+Sets @var{a}'s action type to @var{t}.
+@end deftypefn
+
+@deftypefn Macro {char *} uiact_GetArg (@w{uiact_t *@var{a}})
+Returns @var{a}'s argument, or returns @code{NULL} if one has not been
+specified.
+@end deftypefn
+
+@deftypefn Macro void uiact_SetArg (@w{uiact_t *@var{a}, const char *@var{arg}})
+Sets @var{a}'s argument to @var{arg}.
+@end deftypefn
+
+@deftypefn Macro zmBool uiact_NeedsArg (@w{uiact_t *@var{a}})
+Returns @code{True} if @var{a} requires an argument.
+@end deftypefn
+
+@deftypefn Function uiact_ArgType uiacttype_GetArgType (@w{uiact_Type @var{at}})
+Gets the argument type associated with @var{at}.
+@end deftypefn
+
+@deftypefn Function uiact_ArgType uiact_GetArgType (@w{uiact_t *@var{a}})
+Gets the argument type associated with @var{a}'s action type.
+@end deftypefn
+
+@deftypefn Function zmBool uiact_SupplyArg (@w{uiact_t *@var{a}})
+Fills in the argument required by @var{a} (if needed) by ask the user
+with an appropriate query string.  If no argument is required, or if it
+has already been filled in, do nothing.  Returns @code{True} if an argument
+was successfully supplied, or if there was no need to supply an argument.
+@end deftypefn
+
+@deftypefn Function zmBool uiact_GetScript (@w{struct dynstr *@var{ds}, uiact_t *@var{a}})
+Generates a Z-Script command to perform action @var{a}.  Puts the
+resulting command in @var{ds}.  Returns @code{True} if successful.
+@var{ds} been initialized first with @code{dynstr_Init()}.
+@end deftypefn
+
+@deftypefn Function zmBool uiact_Perform (@w{uiact_t *@var{a}})
+Performs the action @var{a}.  Returns @code{True} if successful.
+@end deftypefn
+
+@deftypefn Function {const char *} uiact_GetTypeDesc (@w{uiact_t *@var{a}})
+Returns the type description associated with @var{a}'s action type.
+For example, @samp{Save by Author} and @samp{Mark} are type descriptions.
+@end deftypefn
+
+@deftypefn Function void uiact_InitFrom (@w{uiact_t *@var{a}, char *@var{scr}})
+Initializes @var{a} with an action that matches the Z-Script commands
+in @var{scr}.  For example, if @var{scr} contains a Z-Script command
+to saves messages in the file @file{foo}, then @var{a} will be initialized
+with action type @code{uiact_Save}, and argument @file{foo}.  This function
+attempts to find the most specific action type possible; it will only
+use an action type of @code{uiact_Script} if nothing more specific
+is found.
+@end deftypefn
+
+@deftypefn Function {char *} uiacttype_GetDefaultArg (@w{uiact_Type @var{at}})
+Returns the default argument associated with @var{at}, or @code{NULL} if
+there isn't one.
+@end deftypefn
+
+@deftypefn Function {const char *} uiacttype_GetPromptStr (@w{uiact_Type @var{at}})
+Returns a short prompt string requesting the user to fill in an argument
+suitable for @var{at}.  For example, @samp{Filename:} and
+@samp{Address:} are
+possible prompt strings.
+@end deftypefn
+
+@deftypefn Function {const char *} uiacttype_GetMissingStr (@w{uiact_Type @var{at}})
+Returns an error message to print when an action of type @var{at} has its
+argument missing.  For example, @samp{You must provide a directory name.}
+@end deftypefn
+
+@deftypefn Function {char **} uiacttypelist_GetDescList (@w{uiacttypelist_t *@var{atl}})
+Returns a list of action type descriptions corresponding to the action
+types in @var{atl}.  The string vector returned must be freed with
+@code{xfree()}.
+@end deftypefn
+
+@deftypefn Macro uiact_Type uiacttypelist_GetType (@w{uiacttypelist_t *@var{atl}, int @var{n}})
+Returns the @var{n}th entry in @var{atl}.
+@end deftypefn
+
+@deftypefn Function int uiacttypelist_GetIndex (@w{uiacttypelist_t *@var{atl}, uiact_Type @var{at}})
+Returns the index of @var{at} in @var{atl}, or -1 if it is not contained
+in @var{atl}.
+@end deftypefn
+
+@node uichoose, uifilter, uiact, Top
+@chapter uichoose
+@findex dyn_choose_one
+@findex ask
+@tindex uichoose_t
+
+A uichoose is used to ask the user for input.  At present, it is a front
+end to @code{dyn_choose_one()} (not @code{ask()}).  To use,
+you first create
+and initialize the @code{uichoose_t} structure,
+set the query, set the default (if any),
+and then call @code{uichoose_Ask()}.  Then you get the result from it,
+and destroy the structure.  Example:
+
+@example
+@group
+    uichoose_t ch;
+    char *result = NULL;
+    
+    uichoose_Init(&ch);
+    uichoose_SetQuery(&ch, "Username?");
+    if (uichoose_Ask(&ch))
+        result = uichoose_GetResult(&ch);
+    uichoose_Destroy(&ch);
+@end group
+@end example
+
+@deftypefn Function void uichoose_Init (@w{uichoose_t *@var{c}})
+Initializes @var{c}.
+@end deftypefn
+
+@deftypefn Function void uichoose_Destroy (@w{uichoose_t *@var{c}})
+Deinitializes @var{c}.
+@end deftypefn
+
+@deftypefn Function zmBool uichoose_Ask (@w{uichoose_t *@var{c}})
+Performs the ask operation described by @var{c}.  If successful,
+returns @code{True} and sets the result to the string entered by the user.
+@end deftypefn
+
+@deftypefn Macro void uichoose_SetResult (@w{uichoose_t *@var{c}, const char *@var{str}})
+Sets @var{c}'s result to @var{str}.
+@end deftypefn
+
+@deftypefn Macro {char *} uichoose_GetResult (@w{uichoose_t *@var{c}})
+Returns @var{c}'s result.  Copy this if you want it to persist.
+@end deftypefn
+
+@deftypefn Macro void uichoose_SetQuery (@w{uichoose_t *@var{c}, const char *@var{q}})
+Sets @var{c}'s query to @var{q}.  The caller must guarantee that
+@var{q} persists until @var{c} is destroyed.
+@end deftypefn
+
+@deftypefn Macro {char *} uichoose_GetQuery (@w{uichoose_t *@var{c}})
+Returns @var{c} query string.  Copy this if you want it to persist.
+@end deftypefn
+
+@deftypefn Macro void uichoose_SetDefault (@w{uichoose_t *@var{c}, const char *@var{str}})
+Sets @var{c}'s default result string to @var{str}.  The caller
+must guarantee that @var{str} persists until @var{c} is destroyed.
+@end deftypefn
+
+@deftypefn Macro {char *} uichoose_GetDefault (@w{uichoose_t *@var{c}})
+Returns @var{c}'s default result string.  Copy this if you want it to
+persist.
+@end deftypefn
+
+@node uifilter, uifldr, uichoose, Top
+@chapter uifilter
+@cindex filters
+@cindex searching
+@cindex core actions
+@tindex uiact_t
+@tindex uipick_t
+@tindex uifilter_t
+
+A filter is a search followed by a core action; that is, it is a
+@code{uiact_t} attached to a @code{uipick_t}.  @code{uifilter_t} is
+a front end to the core notion of filters; since the core maintains
+the list of filters, special routines are required to convert a core
+filter into a @code{uifilter_t}.
+
+To create a new filter, create one with @code{uifilter_Create()}, set
+its attributes and install it with @code{uifilter_Install()}.  Then
+delete it with @code{uifilter_Delete()}.  (When you delete a
+@code{uifilter_t}, you do not delete or remove the associated core
+filter structure.)
+
+To examine an installed filter, get a copy of it with @code{uifilter_Get()},
+look at it, and then delete it with @code{uifilter_Delete()}.
+
+To change an installed filter, get a copy of it with
+@code{uifilter_Get()}, change it if desired, and then
+install it with @code{uifilter_Install()}.
+Then delete it with @code{uifilter_Delete()}.
+
+@deftypefn Function {uifilter_t *} uifilter_Create ()
+Dynamically allocates space for a new @code{uifilter_t} and initializes it,
+returning a pointer to it.
+@end deftypefn
+
+@deftypefn Function void uifilter_Delete (@w{uifilter_t *@var{f}})
+Deinitializes @var{f} and frees its associated storage.
+@end deftypefn
+
+@deftypefn Macro void uifilter_SetName (@w{uifilter_t *@var{f}, const char *@var{str}})
+Sets @var{f}'s filter name to a copy of @var{str}.  A filter name is required
+before installing a filter.
+@end deftypefn
+
+@deftypefn Macro {char *} uifilter_GetName (@w{uifilter_t *@var{f}})
+Gets @var{f}'s filter name.  Copy this if you want it to persist.
+@end deftypefn
+
+@deftypefn Macro void uifilter_SetFlags (@w{uifilter_t *@var{f}, zmFlags @var{fl}})
+Sets the flags @var{fl} for @var{f}.  Currently, the only flag
+is @code{uifilter_NewMail}, which signifies that this filter is
+only run on new mail.
+@end deftypefn
+
+@deftypefn Macro zmFlags uifilter_GetFlags (@w{uifilter_t *@var{f}, zmFlags @var{fl}})
+Gets the state of the flags @var{fl} for @var{f}.
+@end deftypefn
+
+@deftypefn Macro {uipick_t *} uifilter_GetPick (@w{uifilter *@var{f}})
+Returns a pointer to @var{f}'s @code{uipick_t} structure
+for inspection
+or modification.
+@end deftypefn
+
+@deftypefn Macro {uiact_t *} uifilter_GetAction (@w{uifilter *@var{f}})
+Returns a pointer to @var{f}'s @code{uiact_t} structure
+for inspection
+or modification.
+@end deftypefn
+
+@deftypefn Function {uifilter_t *} uifilter_Get (@w{int @var{n}})
+Returns a copy of an installed core filter.  Returns the @var{n}th
+filter in the list.  You must delete this structure later with
+@code{uifilter_Delete()}.
+@end deftypefn
+
+@deftypefn Function zmBool uifilter_Install (@w{uifilter_t *@var{f}})
+Installs @var{f} as a core filter.  Returns @code{True} if successfull.
+You must still delete @var{f}
+with @code{uifilter_Delete()} after installing it.
+@end deftypefn
+
+@deftypefn Function {char **} uifilter_List ()
+Returns a list of installed filters.  This list is suitable for display
+in a filters dialog.  Don't assume anything about the contents of this
+list; in the future, we may want to provide more info than just the
+names of each filter.  Free this list with @code{free_vec()}.
+@end deftypefn
+
+@deftypefn Function zmBool uifilter_SupplyName (@w{uifilter_t *@var{f}})
+Supply a name for the filter, if needed.  If @var{f}'s name has not
+been set, this function asks the user for one, supplying an appropriate
+default name.  Returns @code{True} if a filter name was supplied, or if
+a name was already assigned.
+@end deftypefn
+
+@deftypefn Function zmBool uifilter_Remove (@w{int @var{n}})
+Removes the @var{n}th installed filter from the filter list.
+Returns @code{True} if successful.
+@end deftypefn
+
+@node uifldr, uifunc, uifilter, Top
+@chapter uifldr
+@cindex folders
+@cindex open folder dialog
+@tindex uifolder_t
+@tindex uifolderlist_t
+The uifldr module is used to maintain a list of open folders.  Later,
+it may be used to maintain a list of recently closed folders, to display
+in an open folder dialog.
+
+This module keeps folder information in a @code{uifolder_t} structure.
+The @code{uifolder_t} structures are kept in a folder list
+(@code{uifolderlist_t}).
+
+A @code{uifolder_t} has the following attributes:
+
+@table @samp
+@item filename
+This is the file where the folder is stored.
+
+@item basename
+This is the base portion (without the directory) of the filename.
+
+@item long name
+This is a long representation of the folder's name.  This looks like
+the base portion of the folder's filename, unless that would create
+an ambiguity, or unless the folder is temporary.  To disambiguate
+folder names, uifldr specifies the directory name of a folder in
+parentheses after the basename.  For example, if the folders
+@code{/users/pf/test} and @code{/tmp/test} were open, their long
+names would be @code{test (/users/pf)} and @code{test (/tmp)}.
+The long name is suitable for display in a scrolling list.
+
+@item short name
+@vindex MAX_SHORT_NAME_LENGTH
+This is the same as the long name, except shortened if it is
+longer than @code{MAX_SHORT_NAME_LENGTH} (which is currently 40 characters).
+This is suitable for display in a folder popup.
+
+@item number
+This is the core folder number.  The spool folder is number 0,
+and the rest of the open folders start at 1 and go up from there.
+@end table
+
+Here are the functions and macros relevant to uifolders:
+
+@deftypefn Macro {char *} uifolder_GetShortName (@w{uifolder_t *@var{f}})
+Returns the short name of @var{f}.  Copy this if you want it to persist.
+@end deftypefn
+
+@deftypefn Macro {char *} uifolder_GetLongName (@w{uifolder_t *@var{f}})
+Returns the long name of @var{f}.  Copy this if you want it to persist.
+@end deftypefn
+
+@deftypefn Macro {msg_folder *} uifolder_GetFolder (@w{uifolder_t *@var{f}})
+Returns the core folder structure associated with @var{f}.
+@end deftypefn
+
+@deftypefn Macro int uifolder_GetFolderNo (@w{uifolder_t *@var{f}})
+Returns the folder number associated with @var{f}.
+@end deftypefn
+
+@deftypefn Macro zmBool uifolder_IsSpool (@w{uifolder_t *@var{f}})
+Returns @code{True} if @var{f} is the spool folder.
+@end deftypefn
+
+@deftypefn Function zmBool uifolder_ChangeTo (@w{uifolder_t *@var{f}})
+Makes @var{f} the current folder.  Returns @code{True} if successful.
+@end deftypefn
+
+@deftypefn Function {char *} uifolder_GetFolderFilename (@w{uifolder_t *@var{f}})
+Returns the filename associated with @var{f}.  Copy this if you want
+it to persist.
+@end deftypefn
+
+@deftypefn Function int uifolderlist_Sort (@w{uifolderlist_t *@var{fl}})
+Sorts @var{fl}, and returns a sequence number.  If @var{fl} had not
+changed since the last time @code{uifolderlist_Sort()} was called,
+the sequence number will be the same as it was the last time
+@code{uifolderlist_Sort()} was called.  Otherwise, it will be different.
+This should be called after making any changes to the folder list,
+and before refreshing it.
+@end deftypefn
+
+@deftypefn Function void uifolderlist_Init (@w{uifolderlist_t *@var{fl}})
+Initializes @var{fl}, and adds all the open core folders to it.
+@end deftypefn
+
+@deftypefn Function {uifolder_t *} uifolderlist_Get (@w{uifolderlist_t *@var{fl}, msg_folder *@var{mf}})
+Returns a pointer to the @code{uifolder_t} structure associated with
+the core folder @var{mf}.
+@end deftypefn
+
+@deftypefn Function {uifolder_t *} uifolderlist_GetAt (@w{uifolderlist_t *@var{fl}, int @var{n}})
+Returns a pointer to the @var{n}th folder in @var{fl}.  The number
+@var{n} has nothing to do with the folder number; it is an index into
+the (presumably sorted) list of folders maintained by @var{fl}.
+@end deftypefn
+
+@deftypefn Function int uifolderlist_GetIndex (@w{uifolderlist_t *@var{fl}, msg_folder *@var{mf}})
+Returns the index into the @code{uifolder_t} structure associated with
+the core folder @var{mf}.  This index is the one used by
+@code{uifolderlist_GetAt()}.
+@end deftypefn
+
+@deftypefn Function void uifolderlist_Remove (@w{uifolderlist_t *@var{fl}, msg_folder *@var{mf}})
+Remove @var{mf} from the folder list, if it's there.  This should be called
+when a core folder is closed.
+@end deftypefn
+
+@deftypefn Function void uifolderlist_Add (@w{uifolderlist_t *@var{fl}, msg_folder *@var{mf}})
+Add @var{mf} to the folder list, if it's not there.  This should be called
+when a core folder is opened.
+@end deftypefn
+
+@deftypefn Macro void uifolderlist_FOREACH (@w{uifolderlist_t *@var{fl}, uifolder_t *@var{f}, int @var{i}})
+Step through each entry in @var{fl}.  For each folder in the list,
+@var{f} is set to point to the associated @code{uifolder_t} structure,
+and @var{i} is set to @var{f}'s index.  Example:
+
+@example
+@group
+uifolderlist_FOREACH(fl, f, i) @{
+    printf("the %dth folder is %s\n", i, uifolder_GetLongName(f));
+@}
+@end group
+@end example
+
+@end deftypefn
+
+@defvar uifolderlist_NO_FOLDER_STR
+This is the string to display if there is no folder in the folder
+list.  This was @code{[No folder]} last time I checked.
+@end defvar
+
+@node uifunc, uipick, uifldr, Top
+@chapter uipick
+@cindex functions
+
+This module is used to maintain the core list of functions.
+
+@deftypefn Function zmBool uifunctions_GetText (@w{const char *@var{name}, const char *@var{sep}, struct dynstr *@var{dstr}})
+Get the text of function @var{name} and put it in @var{dstr}, separating
+each line with the separator @var{sep}.  Returns @code{True} if successful.
+@var{dstr} is initialized in the course of this function,
+if it succeeds (which is probably not a good thing).
+@end deftypefn
+
+@deftypefn Function zmBool uifunctions_Delete (@w{const char *@var{name}})
+Deletes function @var{name} from the list of installed functions.
+Returns @code{True} if successful.
+@end deftypefn
+
+@deftypefn Function zmBool uifunctions_Add (@w{const char *@var{name}, const char *@var{text},} @w{GuiItem @var{fname_item}, GuiItem @var{script_item}})
+Installs the function @var{name} with the body @var{text}.
+If @var{name} is @code{NULL}, empty, or invalid, this function sets
+@code{ask_item}
+to @var{fname_item} (if it's non-@code{NULL}), complains to the
+user, and returns @code{False}.
+If @var{text} is @code{NULL} or empty, this function sets @code{ask_item}
+to @var{script_item} (if it's non-@code{NULL}), complains to the
+user, and returns @code{False}.
+Otherwise, this function attempts to install the function; it returns
+@code{True} if successful.
+@end deftypefn
+
+@deftypefn Function zmBool uifunctions_List (@w{char ***@var{list}, zmBool @var{sort}})
+This function makes a list of installed function names, and puts it in
+@code{*list}.  This list is then sorted if @var{sort} is set.
+The vector returned in @code{*list} must be freed with @code{xfree()}.
+@end deftypefn
+
+@deftypefn Function void uifunctions_HelpScript (@w{const char *@var{str}})
+This function provides help on the z-script command string @var{str}.
+@var{str} can contain a z-script command name or function name followed by
+a series of arguments; this function provides help on the command or function
+by calling @code{help()}.
+@end deftypefn
+
+@node uipick, uiprefs, uifunc, Top
+@chapter uipick
+@cindex searching
+@tindex uipickpat_t
+@tindex uipick_t
+
+The uipick object is used for searches.  At the moment, it can only
+be used for describing filters, but it eventually should be used for
+searching by date or pattern.
+
+A @code{uipick_t} contains a list of @code{uipickpat_t} structures.
+Each @code{uipickpat_t} describes
+a specific search pattern.  A @code{uipick_t} successfully matches
+a message only
+if all its @code{uipickpat_t}s successfully match.  A
+@code{uipickpat_t} contains a series
+of flags, an optional pattern, an optional header string, and a series of
+optional date values.  The pattern, header string, and date values are
+only looked at if the appropriate flags are set.
+
+A @code{uipick_t} may have one or more of the following flags set:
+
+@table @code
+@item uipick_FirstN
+Only match the first @var{N} messages which match the specified
+patterns.  The value of @var{N} is set using
+@code{uipick_SetFirstNCount()}.
+
+@item uipick_LastN
+Only match the last @var{N} messages which match the specified
+patterns.  The value of @var{N} is set using
+@code{uipick_SetLastNCount()}.
+@end table
+
+A @code{uipickpat_t} may have one or more of the following flags set:
+
+@table @code
+@item uipickpat_Invert
+Invert the sense of the search.  Match all messages which would
+otherwise @emph{not} match.
+@item uipickpat_IgnoreCase
+Ignore case differences when matching the pattern string.
+@item uipickpat_ExpFixed
+Don't interpret any special regular expression characters except
+for leading @code{^} and trailing @code{$}.
+@item uipickpat_ExpExtended
+Interpret a larger set of regular expression characters than normal.
+See @code{pick -X}.
+@item uipickpat_DateAbsolute
+Search by date.
+One of 
+@code{uipickpat_DateOn},
+@code{uipickpat_DateAfter}, or
+@code{uipickpat_DateBefore} must be set as well.
+@item uipickpat_DateRelative
+Search by date, relative to today's date.
+One of 
+@code{uipickpat_DateOn},
+@code{uipickpat_DateAfter}, or
+@code{uipickpat_DateBefore} must be set as well.
+@item uipickpat_DateBefore
+Search for messages which were sent before a certain date.
+@item uipickpat_DateAfter
+Search for messages which were sent after a certain date.
+@item uipickpat_DateOn
+Search for messages which were sent on a certain date.
+@item uipickpat_SearchFrom
+Search the @code{From:} header for the pattern string.
+@item uipickpat_SearchSubject
+Search the @code{Subject:} header for the pattern string.
+@item uipickpat_SearchTo
+Search the recipient headers for the pattern string.
+@item uipickpat_SearchHdr
+Search a specified header for the pattern string.
+The header is specified using @code{uipickpat_SetHeader()}.
+@item uipickpat_SearchBody
+Search the body of the message for the pattern string.
+@item uipickpat_SearchEntire
+Search the entire message for the pattern string.
+@end table
+
+The date is expressed as four values, one for each date unit (years, months,
+weeks, and days).  The date values are multiplied by the units and added
+together to get the total date, which may be an absolete date or
+a relative measure of time.  For example, if you set the @samp{weeks} unit
+of a @code{uipickpat_t} to 5, set the @samp{days} unit to 3, and set the flags
+@code{uipickpat_DateBefore|uipickpat_DateRelative}, you'll be searching
+for messages which are dated before 5 weeks and 3 days ago.
+
+@deftypefn Macro zmFlags uipick_GetFlags (@w{uipick_t *@var{up}, zmFlags @var{f}})
+Returns the state of flags @var{f} in the structure @var{up}.
+@end deftypefn
+
+@deftypefn Macro int uipick_SetFirstNCount (@w{uipick_t *@var{up}, int @var{n}})
+Specifies that @var{up} should return only the first @var{n}
+messages which match
+a given pattern.  This only works if the @code{uipick_FirstN} flag
+is set for @var{up}.
+@end deftypefn
+
+@deftypefn Macro int uipick_GetFirstNCount (@w{uipick_t *@var{up}})
+If @var{up} is set up to return only the first @var{n} messages which match
+a given pattern, returns @var{n}.
+@end deftypefn
+
+@deftypefn Macro int uipick_GetLastNCount (@w{uipick_t *@var{up}})
+If @var{up} is set up to return only the last @var{n} messages which match
+a given pattern, returns @var{n}.
+@end deftypefn
+
+@deftypefn Macro int uipick_SetLastNCount (@w{uipick_t *@var{up}})
+Specifies that @var{up} should return only the last @var{n}
+messages which match
+a given pattern.  This only works if the @code{uipick_LastN} flag
+is set for @var{up}.
+@end deftypefn
+
+@deftypefn Macro void uipickpat_SetPattern (@w{uipickpat_t *@var{upp}, char *@var{str}})
+Sets the pattern string associated with @var{upp} to a copy of @var{str}.
+@end deftypefn
+
+@deftypefn Macro void uipickpat_SetHeader (@w{uipickpat_t *@var{upp}, char *@var{str}})
+Sets the header string associated with @var{upp} to a copy of @var{str}.
+@end deftypefn
+
+@deftypefn Macro {char *} uipickpat_GetHeader (@w{uipickpat_t *@var{upp}})
+Returns the header string associated with @var{upp}.
+@end deftypefn
+
+@deftypefn Macro {char *} uipickpat_GetPattern (@w{uipickpat_t *@var{upp}})
+Returns the pattern string associated with @var{upp}.
+@end deftypefn
+
+@deftypefn Macro void uipickpat_SetFlags (@w{uipickpat_t *@var{upp}, zmFlags @var{fl}})
+Sets the flags @var{fl} in @var{upp}.
+@end deftypefn
+
+@deftypefn Macro void uipickpat_ClearFlags (@w{uipickpat_t *@var{upp}, zmFlags @var{fl}})
+Clears the flags @var{fl} in @var{upp}.
+@end deftypefn
+
+@deftypefn Macro zmFlags uipickpat_GetFlags (@w{uipickpat_t *@var{upp}, zmFlags @var{fl}})
+Returns the state of the flags @var{fl} in @var{upp}.
+@end deftypefn
+
+@deftypefn Macro void uipickpat_SetDate (@w{uipickpat_t *@var{upp}, uipickpat_date_units_t @var{units}, int @var{num}})
+Sets the date value associated with @var{upp} and @var{units} to @var{num}.
+@end deftypefn
+
+@deftypefn Macro int uipickpat_GetDate (@w{uipickpat_t *@var{upp}, uipickpat_date_units_t @var{units}})
+Gets the date value associated with @var{upp} and @var{units}.
+@end deftypefn
+
+@deftypefn Macro void uipick_FOREACH (@w{uipick_t *@var{up}, uipickpat_t *@var{upp}, int @var{i}})
+Step through each pattern in @var{up}.  For each pattern associated with
+@var{up},
+@var{upp} is set to point to the associated @code{uipickpat_t} structure,
+and @var{i} is set to @var{upp}'s index.
+
+@end deftypefn
+
+@deftypefn Function void uipick_Init (@w{uipick_t *@var{up}})
+Initialize @var{up}.
+@end deftypefn
+
+@deftypefn Function void uipick_Destroy (@w{uipick_t *@var{up}})
+Destroy @var{up}.
+@end deftypefn
+
+@deftypefn Function zmBool uipick_Parse (@w{uipick_t *@var{up}, char **@var{argv}})
+Parse the @code{pick} arguments contained in @var{argv}, and modify @var{up}
+so that it specifies a search operation which is identical to the one
+specified by @var{argv}.  @var{up} must already be initialized.
+Returns @code{True} if successful.
+@end deftypefn
+
+@deftypefn Function {uipickpat_t *} uipick_AddPattern (@w{uipick_t *@var{up}})
+Create a new @code{uipickpat_t} associated with @var{up}, and return
+a pointer to it.
+@end deftypefn
+
+@deftypefn Function {char **} uipick_MakeCmd (@w{uipick_t *@var{up}, zmBool @var{single}})
+Convert the search operation specified by @var{up} into a @code{pick}
+command which performs that search operation.  Returns a string vector
+if successful, otherwise @code{NULL}.  This vector's first element
+will be @code{"pick"}, and may contain pipes (@code{"|"}) if @var{single}
+is @code{True}.  The vector must be freed with @code{free_vec()}.
+If @var{single} is set, the return
+value is guaranteed to be a single @code{pick} command, rather than
+a pipeline.  If this is not possible, this routine will return
+@code{NULL}.
+@end deftypefn
+
+@deftypefn Function {char **} uipickpat_GetDateUnitDescs ()
+Returns a vector of date unit descriptions (for example,
+"years" and "months"), suitable for display.
+This vector must be freed with @code{free_vec()}.
+@end deftypefn
+
+@deftypefn Function void uipickpat_GetDateInfo (@w{uipickpat_t *@var{upp}, int *@var{ago_time},} @w{uipickpat_date_units_t *@var{ago_units}})
+This is a convenience routine to take the date information specified
+by @var{upp} and convert it into a simpler form.  @var{ago_time} must be
+a pointer to an array of @code{int}s, and @var{ago_units} must point to
+an array of @code{uipickpat_date_units_t}s.  Both arrays must be of
+size @code{uipickpat_Date_Count}.
+If @var{upp} specifies a search by date, then the appropriate elements
+of @var{ago_time} and @var{ago_units} will be filled in with the
+date value and unit of the search.  (The appropriate elements are
+the ones index by either @code{uipickpat_Date_Older} or
+@code{uipickpat_Date_Newer}.)  If @var{upp} does not specify a search
+by date, @var{ago_time} and @var{ago_units} are unchanged.  Example:
+
+@example
+@group
+int ago_time[uipickpat_Date_Count], i;
+uipick_t *pick;
+uipickpat_t *pat;
+uipickpat_date_units_t date_units[uipickpat_Date_Count];
+
+for (i = 0; i != uipickpat_Date_Count; i++) ago_time[i] = 0;
+uipick_FOREACH(pick, pat, i) @{
+    uipickpat_GetDateInfo(pat, ago_time, date_units);
+@}
+if (ago_time[uipickpat_Date_Older])
+    printf("older than %d\n", ago_time[uipickpat_Date_Older]);
+if (ago_time[uipickpat_Date_Newer])
+    printf("newer than %d\n", ago_time[uipickpat_Date_Newer]);
+@end group
+@end example
+
+This example extracts date information out of @var{pick}.
+Notice that this code is not fully general; for example, if @var{pick}
+specifies a search for messages older than 4 weeks and 6 days,
+this code will work, since @code{ago_time[uipickpat_Date_Older]} cannot
+be both 4 and 6.  Only one unit may be used at a time.  The function
+@code{uipickpat_GetDateInfo()} can be used to simplify the parsing of
+a subset of possible pattern specifications.
+
+@end deftypefn
+
+@node uiprefs, uiprint, uipick, Top
+@chapter uiprefs
+@cindex preferences
+@cindex zync
+@cindex application state
+@cindex saveopts
+
+These two functions save and load the options, possibly using the zync
+server.  This functionality should be moved to the core.
+
+@deftypefn Function zmBool uiprefs_Save ()
+Ask the user for a location to save the application state, defaulting
+to @code{~/.zmailrc} or the equivalent; then save the options to that
+location.  If @code{$zync_options:(prefs)} is set, first ask the user
+whether to save the options on the zync server instead.
+Returns @code{True} if successful.
+@end deftypefn
+
+@deftypefn Function zmBool uiprefs_Load ()
+Ask the user for a location to load the application state from, defaulting
+to @code{~/.zmailrc} or the equivalent; then load the options from that
+location.  If @code{$zync_options:(prefs)} is set, first ask the user
+whether to load the options from the zync server instead.
+Returns @code{True} if successful.
+@end deftypefn
+
+@node uiprint, uisort, uiprefs, Top
+@chapter uiprint
+@cindex printing
+@tindex uiprint_t
+@tindex uiprint_HdrType
+
+A @code{uiprint_t} describes a printing operation.  To print a series
+of messages, create an initialize a @code{uiprint_t} object, set its
+atttributes, and call @code{uiprint_Print()}.  Then destroy it.
+
+@deftypefn Macro void uiprint_SetPrinterName (@w{uiprint_t *@var{uip}, char *@var{str}})
+Sets @var{uip}'s printer name to a copy of @var{str}.  If this is not
+called, the default printer is used.
+@end deftypefn
+
+@deftypefn Macro void uiprint_SetPrintCmd (@w{uiprint_t *@var{uip}, char *@var{str}})
+Sets @var{uip}'s print command to a copy of @var{str}.
+@end deftypefn
+
+@deftypefn Macro void uiprint_SetHdrType (@w{uiprint_t *@var{uip}, uiprint_HdrType_t @var{ht}})
+Sets the header type of @var{uip} to @var{ht}.  The @samp{header type} is the
+class of headers which get printed.
+The possible header types are:
+
+@table @code
+@item uiprint_HdrAll
+Print all headers.
+@item uiprint_HdrStd
+Print the standard headers, depending on the value of
+@code{$display_headers} and the headers specified in
+@code{retain} and @code{ignore} commands.
+@item uiprint_HdrNone
+Don't print any headers.
+@end table
+
+@end deftypefn
+
+@deftypefn Macro uiprint_HdrType_t uiprint_GetHdrType (@w{uiprint_t *@var{uip}})
+Gets the header type of @var{uip}.
+@end deftypefn
+
+@deftypefn Function zmBool uiprint_Print (@w{uiprint_t *@var{uip}})
+Prints the current messages using the attributes defined by @var{uip}.
+Returns @code{True} if successful.
+The return value of @code{gui_msg_context()} is assumed to accurately
+reflect what the @samp{current messages} are.
+@end deftypefn
+
+@deftypefn Function void uiprint_Init (@w{uiprint_t *@var{uip}})
+Initializes @var{uip}.
+@end deftypefn
+
+@deftypefn Function void uiprint_Destroy (@w{uiprint_t *@var{uip}})
+Destroys @var{uip}.
+@end deftypefn
+
+@deftypefn Function int uiprint_ListPrinters (@w{char ***@var{vecp}, int *@var{dflt}})
+Generates a sorted list of printer names.  If successful, this function will
+set @code{*vecp} to point to a vector of printer names; the return value
+will be the number of printers in the list.  Also, @code{*dflt} will be
+the index of the default printer in @code{*vecp}.  If unsuccessful, this
+function will return -1.  The vector returned in @code{*vecp} must be
+freed with @code{free_vec()}.
+@end deftypefn
+
+@deftypefn Function {char *} uiprint_GetPrintCmdInfo (@w{char **@var{strp}})
+Returns the current print command (depending on the
+value of @code{$print_cmd}), or @code{NULL} if there isn't one.
+If @code{strp} is non-@code{NULL}, then @code{*strp} is set to the
+string @code{"Print Command:"} if there is a current print command, or
+@code{"Printer Name:"} if there is not.  Neither
+the return value nor @code{*strp}
+have to be freed.
+@end deftypefn
+
+@deftypefn Function uiprint_HdrType_t uiprint_GetDefaultHdrType ()
+Returns an appropriate default header type, depending on the value
+of @code{$alwaysignore}.
+@end deftypefn
+
+@node uisort, uitaskm, uiprint, Top
+@chapter uisort
+@tindex uisort_t
+@cindex sorting
+
+A @code{uisort_t} is an object used to sort the messages in the current
+folder.
+To sort the messages, first create an initialize a @code{uisort_t} object.
+Then, add the sort indices in the order you want them used; if you want
+to sort in descending order by one of the indices, then reverse that index.
+Then call @code{uisort_DoSort()}, and then destroy the sort object.
+
+For example, to sort by subject (in alphabetical order) and then by
+date (from newest to oldest):
+
+@example
+@group
+    uisort_t sort;
+    uisort_Init(&sort);
+    uisort_AddIndex(&sort, uisort_IndexSubject);
+    uisort_AddIndex(&sort, uisort_IndexDate);
+    uisort_ReverseIndex(&sort, uisort_IndexDate, True);
+    uisort_DoSort(&sort);
+    uisort_Destroy(&sort);
+@end group
+@end example
+
+@deftypefn Macro zmBool uisort_HasIndex (@w{uisort_t *@var{s}, uisort_index_t @var{i}})
+Returns @code{True} if the index @var{i} has been added to @var{s}.
+@end deftypefn
+
+@deftypefn Function void uisort_AddIndex (@w{uisort_t *@var{s}, uisort_index_t @var{i}})
+Adds the index @var{i} to the sort operation described by @var{s}.
+@end deftypefn
+
+@deftypefn Function void uisort_RemoveIndex (@w{uisort_t *@var{s}, uisort_index_t @var{i}})
+Removes the index @var{i} from the sort operation described by @var{s},
+if it has been added.
+@end deftypefn
+
+@deftypefn Function void uisort_ReverseIndex (@w{uisort_t *@var{s}, uisort_index_t @var{i}, zmBool @var{rev}})
+Reverses (if @var{rev} is @code{True}) or unreverses (if @var{rev} is @code{False})
+index @var{i} in the sort described by @var{s}.  For example, if you add
+@code{uisort_IndexLength} to @var{s} and then reverse it, @var{s} will sort
+in descending order of length.
+@end deftypefn
+
+@deftypefn Function {char **} uisort_DescribeSort (@w{uisort_t *@var{s}})
+Returns a vector of strings which describe the sorting operation specified by
+@var{s}.  This vector is suitable for display, and must be freed
+with @code{xfree()}.  This routine never returns NULL unless it runs
+out of memory.
+@end deftypefn
+
+@deftypefn Function zmBool uisort_DoSort (@w{uisort_t *@var{s}})
+Performs the sort specified by @var{s}.  Returns @code{True} if successful.
+@end deftypefn
+
+@deftypefn Function void uisort_UseOptions (@w{uisort_t *@var{s}, zmFlags @var{f}})
+Sets the sort options to @var{f} in the sort specified by @var{s}.
+Options included in @var{f} will be turned on, and options not included
+in @var{f} will be turned off.
+@end deftypefn
+
+@deftypefn Function void uisort_Init (@w{uisort_t *@var{s}})
+Initializes the sort structure @var{s}.
+@end deftypefn
+
+@deftypefn Function void uisort_Destroy (@w{uisort_t *})
+Deinitializes the sort structure @var{s}.
+@end deftypefn
+
+@node uitaskm, uitempl, uisort, Top
+@chapter uitaskm
+@cindex task meter
+@tindex uitaskm_Update_t
+@tindex uitaskm_Event_t
+
+The uitaskm module is a simplified way for UI writers to implement
+the task meter.  This module provides an implementation of the
+@code{gui_handle_intrpt()} function to the core, and makes calls
+to @code{gui_taskm_update()} and @code{gui_taskm_get_event()}.
+These two functions are much simpler to implement than
+@code{gui_handle_intrpt()}.
+
+@deftypefn Function int gui_handle_intrpt (@w{u_long @var{flags}, int @var{nest}, char *@var{str}, long @var{percentage}})
+You really don't want to know.  The core calls this routine when it
+needs to display task meter information.
+@end deftypefn
+
+@deftypefn Function zmBool gui_taskm_update (@w{uitaskm_Update_t *@var{upd}})
+This routine, which must be provided by the UI implementor, must
+update the task meter to conform to the state specified in @var{upd}.
+@code{uitaskm_Update_t} contains the following fields:
+
+@table @code
+@item main_msg
+The main message to display in the task meter.  This does not change
+as long as an operation is in progress.  An example of a main message
+is @code{"Loading /users/pf/mail/mail.log (160883 bytes)"}.
+If this
+field is @code{NULL}, then there is no main message, or it has not
+changed since last time @code{gui_taskm_update()} was called.
+@item sub_msg
+Another message to display in the task meter.  This message typically
+changes while an operation is in progress.  An example of a sub-message
+is @code{"Loading message 58"}.
+If this
+field is @code{NULL}, then there is no sub-message, or it has not
+changed since last time @code{gui_taskm_update()} was called.
+@item percent
+A percentage value from 0 to 100 which shows how much of the task has
+been completed.
+
+@item state
+A series of bitflags describing what the task meter should look like.
+@end table
+
+The following flags may be set in the @code{state} field:
+
+@table @code
+@item uitaskm_StateVisible
+The task meter should be visible.  If this is unset, the task meter
+should be hidden.
+@item uitaskm_StateMessage
+The main message should be displayed.  If @code{main_msg} is @code{NULL},
+display the previous main message.
+@item uitaskm_StateSubMessage
+The sub-message should be displayed.  If @code{sub_msg} is @code{NULL},
+display the previous sub-message.
+@item uitaskm_StatePercent
+The task completion percentage should be displayed.
+@item uitaskm_StateStop
+The user should be allowed to press the stop button.
+@item uitaskm_StateContinue
+The user should be allowed to press the continue button.
+@item uitaskm_StateLong
+This is a @samp{long} operation.  Once set, this flag is guaranteed not to
+be cleared as long as the task meter is visible.  For example,
+in the Windows UI,
+we only display task meter information in a separate window if this
+flag is set; otherwise, we display the information in a status bar.
+So, the windows code uses this flag to decide where to display the
+information.  This flag may be set while the task meter is visible, but
+will not be cleared until the task meter is made invisible again.
+@end table
+
+@end deftypefn
+
+@deftypefn Function uitaskm_Event_t gui_taskm_get_event (@w{zmFlags @var{type}})
+Return a task meter event.  If an event has occurred since the last time
+this function was called, return that event.  If not, and if
+@code{uitaskm_EventFlags_Wait} is set in @var{type},
+wait for an event to occur.  Otherwise, return
+@code{uitaskm_EventNone}.
+Possible return values are:
+
+@table @code
+
+@item uitaskm_EventNone
+Nothing has happened. If @code{uitaskm_EventFlags_Wait} is
+set, you must not return this.
+
+@item uitaskm_EventStop
+The user has pressed the @samp{stop} button.
+
+@item uitaskm_EventContinue
+The user has pressed the @samp{continue} button.
+@end table
+@end deftypefn
+
+@node uitempl, uivars, uitaskm, Top
+@chapter uitempl
+@cindex templates
+
+@deftypefn Function zmBool uitemplate_List (@w{char ***@var{vptr}})
+List the available templates.  Creates a vector of template names
+and puts a pointer to it in @code{*vptr}, and returns @code{True} if successful.
+This list must be freed with @code{free_vec()}.
+@end deftypefn
+
+@deftypefn Function zmBool uitemplate_New ()
+Creates a new template.  Asks the user for the name of the new template,
+then creates it and allows the user to edit it.
+Returns @code{True} if successful.
+@end deftypefn
+
+@deftypefn Function zmBool uitemplate_Edit (@w{const char *@var{name}})
+Starts an editing session to edit the existing template @var{name}.
+Returns @code{True} if successful.
+@end deftypefn
+
+@deftypefn Function zmBool uitemplate_Mail (@w{const char *@var{name}})
+Starts a new composition using the template @var{name}.  Returns
+@code{True} if successful.
+@end deftypefn
+
+@node uivars, uivsrch, uitempl, Top
+@chapter uivars
+@cindex variables
+@tindex uivarlist_t
+@tindex uivar_t
+
+The uivars module is a front-end to the core variables functionality.
+To use it, you must first create an initialize a @code{uivarlist_t}.
+You can then @code{uivarlist_GetVar()} to get information on
+a specific variable.
+
+@deftypefn Function zmBool uivarlist_Init (@w{uivarlist_t *@var{vl}, unsigned long @var{flags}})
+Initializes @var{vl}, filling it with all available variables that
+match the criteria specified by @var{flags}.  I'm not sure that it
+does this correctly; probably not.
+@end deftypefn
+
+@deftypefn Function void uivarlist_Destroy (@w{uivarlist_t *@var{vl}})
+Destroys the variable list @var{vl}.
+@end deftypefn
+
+@deftypefn Function uivar_t uivarlist_GetVar (@w{uivarlist_t *@var{vl}, int @var{n}})
+Returns a pointer to the @var{n}th variable in @var{vl}.
+@end deftypefn
+
+@deftypefn Macro void uivarlist_FOREACH (@w{uivarlist_t *@var{vl}, uivar_t @var{v}, int @var{i}})
+Step through all the variables in @var{vl}, setting @var{v} to each
+one in turn.  In each case, @var{i} is set to the index of each
+variable.  Example:
+
+@example
+@group
+uivarlist_FOREACH(vl, v, i) @{
+    printf("the %dth variable is %s\n", i, uivar_GetName(v));
+@}
+@end group
+@end example
+
+@end deftypefn
+
+@deftypefn Macro int uivarlist_GetCount (@w{uivarlist_t *@var{vl}})
+Returns the number of variables in @var{vl}.
+@end deftypefn
+
+@deftypefn Macro zmBool uivar_IsReadonly (@w{uivar_t @var{v}})
+Returns @code{True} if @var{v} is readonly.
+@end deftypefn
+
+@deftypefn Macro zmBool uivar_IsBoolean (@w{uivar_t @var{v}})
+Returns @code{True} if @var{v} is a boolean variable.
+@end deftypefn
+
+@deftypefn Macro zmBool uivar_IsString (@w{uivar_t @var{v}})
+Returns @code{True} if @var{v} is a string variable.
+@end deftypefn
+
+@deftypefn Macro zmBool uivar_IsSingleval (@w{uivar_t @var{v}})
+Returns @code{True} if @var{v} is a singlevalue variable.
+@end deftypefn
+
+@deftypefn Macro zmBool uivar_IsMultival (@w{uivar_t @var{v}})
+Returns @code{True} if @var{v} is a multivalue variable.
+@end deftypefn
+
+@deftypefn Macro zmBool uivar_HasSubVals (@w{uivar_t @var{v}})
+Returns @code{True} if @var{v} is singlevalue or multivalue.
+@end deftypefn
+
+@deftypefn Macro zmBool uivar_IsNumeric (@w{uivar_t @var{v}})
+Returns @code{True} if @var{v} is a numeric variable.
+@end deftypefn
+
+@deftypefn Macro {char *} uivar_GetName (@w{uivar_t @var{v}})
+Returns the name of @var{v}.
+@end deftypefn
+
+@deftypefn Macro {char *} uivar_GetPrompt (@w{uivar_t @var{v}})
+Returns the prompt label for @var{v}; for example, @samp{Address:}.
+@end deftypefn
+
+@deftypefn Macro int uivar_GetNumMax (@w{uivar_t @var{v}})
+Returns the maximum numeric value that @var{v} if the user sets
+it using the variables dialog.  Note that @var{v}'s value may still
+be larger than @var{v} if the user sets it some other way.
+@end deftypefn
+
+@deftypefn Macro int uivar_GetSubValCount (@w{uivar_t @var{v}})
+Returns the number of sub-values in @var{v}.
+@end deftypefn
+
+@deftypefn Macro {char *} uivar_GetSubValLabel (@w{uivar_t @var{v}, int @var{i}})
+Returns the name of subvalue @var{i} of @var{v}.
+@end deftypefn
+
+@deftypefn Function void uivar_GetValue (@w{uivar_t @var{v}, uivarvalue_t *@var{val}})
+Gets the value of @var{v} and puts it in @var{val}.  @var{val} does
+not have to be initialized or destroyed, but its contents are subject
+to go away without warning if you change variable values.  You should
+copy the value with @code{uivarvalue_Copy()} if you want @var{val} to
+persist.
+@end deftypefn
+
+@deftypefn Function zmBool uivarvalue_Copy (@w{uivarvalue_t *@var{vd}, uivarvalue_t *@var{vs}})
+Copies the value @var{vs}, putting the copy in @var{vd}.  To free the
+storage used by @var{vd}, call @code{uivarvalue_Destroy()}.
+@end deftypefn
+
+@deftypefn Function void uivarvalue_Destroy (@w{uivarvalue_t *@var{val}})
+Destroys the storage used by @var{val}.
+@end deftypefn
+
+@deftypefn Macro zmBool uivarvalue_GetSubValBool (@w{uivar_t @var{val}, int @var{n}})
+Returns @code{True} if @var{val} has subvalue @var{i} set to boolean @code{True}.
+@end deftypefn
+
+@deftypefn Macro zmBool uivarvalue_GetBool (@w{uivar_t @var{val}})
+Returns @code{True} if @var{val} has the value of boolean @code{True}.
+@end deftypefn
+
+@deftypefn Function {char *} uivar_GetLongDescription (@w{uivar_t @var{v}})
+Returns the long description of @var{v} in a static buffer which does
+not have to be freed.
+@end deftypefn
+
+@deftypefn Function zmBool uivar_SetSubVal (@w{uivar_t @var{v}, int @var{n}, zmBool @var{on}})
+Sets the value of subvalue @var{n} of @var{v} to the boolean value @var{on}.
+@end deftypefn
+
+@deftypefn Function zmBool uivar_SetBool (@w{uivar_t @var{v}, zmBool @var{on}})
+Sets the value of @var{v} to the boolean value @var{on}.
+@end deftypefn
+
+@deftypefn Function zmBool uivar_SetStr (@w{uivar_t @var{v}, const char *@var{str}})
+Sets the value of @var{v} to the string value @var{str}.
+@end deftypefn
+
+@deftypefn Function zmBool uivar_SetLong (@w{uivar_t @var{v}, long @var{val}})
+Sets the value of @var{v} to the integer value @var{val}.
+@end deftypefn
+
+@deftypefn Function zmBool uivarvalue_GetLong (@w{uivarvalue_t *@var{v}, long *@var{val}})
+Puts the integer value of @var{v} into the longword pointed to by @var{val},
+and returns @code{True} if successful.  If @var{v} is not an integer variable,
+then this call will not be successful.
+@end deftypefn
+
+@deftypefn Function zmBool uivarvalue_GetStr (@w{uivarvalue_t *@var{v}, char **@var{val}})
+Puts the string value of @var{v} into the string pointed to by @var{val},
+and returns @code{True} if successful.  If @var{v} is not a string variable,
+then this call will not be successful.  The string pointed to by @var{val}
+must be copied if the caller wants to keep it around for a long time.
+@end deftypefn
+
+@deftypefn Function zmBool uivar_SetValue (@w{uivar_t @var{v}, uivarvalue_t *@var{vl}})
+Sets the value of @var{v} to a copy of @var{vl}.
+@end deftypefn
+
+@node uivsrch, xface, uivars, Top
+@chapter uivsrch
+@cindex searching
+@cindex variables
+@tindex uivarsearch_t
+
+The uivsrch module is used to search variable descriptions.
+To use it, create a @code{uivarsearch_t} and initialize it.
+This structure should persist as long as a search can be in progress.
+(For a variables dialog, this should last as long as the dialog is up.)
+
+A typical search UI works like this: the user enters a search string and
+clicks @samp{Search}.  If the currently displayed variable description contains
+that search string, the match is highlighted; otherwise, the first variable
+in the list which contains that search string is brought up, and the
+matching text is highlighted.  If the user clicks @samp{Search} again without
+changing the search string or the currently displayed variable, then the
+search continues; the next match is highlighted, in the current variable
+description if possible; otherwise, the next variable with matching text
+is brought up.  If there are no matches, an error is reported, and the
+search stops.  If the user clicks @samp{Search} after that, a new search is
+initiated.
+
+To begin a search, call @code{uivarsearch_Search()}, passing it the
+search string and the current selection.  If it returns @code{False}, the
+search was unsuccessful; you should call @code{uivarsearch_ReportNoMatch()}.
+If it returns @code{True}, then get the variable
+number from it using @code{uivarsearch_GetVarNum()}, and get the
+offset using @code{uivarsearch_GetOffset()}.
+
+To continue a search, just call @code{uivarsearch_Search()} again.
+If the search string is the same, this function will just continue
+the previous search; otherwise, it will start a new one.
+
+If the user selects another variable, you should terminate any
+search that may be in process by calling @code{uivarsearch_EndSearch()}.
+
+@deftypefn Function void uivarsearch_Init (@w{uivarsearch_t *@var{vs}, uivarlist_t *@var{vl}})
+Initialize @var{vs} for searching variable descriptions in @var{vl}.
+@end deftypefn
+
+@deftypefn Function void uivarsearch_Destroy (@w{uivarsearch_t *@var{vs}})
+Destroy @var{vs}.
+@end deftypefn
+
+@deftypefn Function zmBool uivarsearch_Search (@w{uivarsearch_t *@var{vs}, const char *@var{str}, int @var{offset}, int @var{vno}})
+Start a search for @var{str}, or continue the search.  @var{vno} is the
+currently selected variable, and @var{offset} is the start of the
+current selection.  Returns @code{True} if the search is successful.
+@end deftypefn
+
+@defvar uivarsearch_ENTER_STR
+A string to display when no search string is specified; currently
+@code{"Please enter a search string."}
+@end defvar
+
+@deftypefn Macro int uivarsearch_GetOffset (@w{uivarsearch_t *@var{vstr}})
+Returns the offset of the beginning of the matched string.
+@end deftypefn
+
+@deftypefn Macro int uivarsearch_GetEndOffset (@w{uivarsearch_t *@var{vstr}})
+Returns the offset of the end of the matched string.
+@end deftypefn
+
+@deftypefn Macro int uivarsearch_GetVarNum (@w{uivarsearch_t *@var{vstr}})
+Returns the index of the variable where the matched string was found.
+@end deftypefn
+
+@deftypefn Function void uivarsearch_SetXref (@w{uivarsearch_t *})
+Sets the xref flag.  This is a convenience feature; if the search button
+has two functions (variable searching and cross-referencing), you may
+call this function to set the xref flag.  This ends the current search,
+if any.  The xref flag is cleared the next time
+@code{uivarsearch_Search()} is called.
+
+When the user clicks on a cross-reference string, you may call this
+function to set the xref flag.  Then, when the search button is clicked,
+you can call @code{uivarsearch_IsXref()} to see whether you should
+search for a string or follow a cross-reference.
+@end deftypefn
+
+@deftypefn Macro zmBool uivarsearch_IsXref (@w{uivarsearch_t *@var{vs}})
+Returns @code{True} if the xref flag is on.
+@end deftypefn
+
+@deftypefn Function void uivarsearch_EndSearch (@w{uivarsearch_t *@var{vs}})
+End the search currently in process, if any.
+@end deftypefn
+
+@deftypefn Function void uivarsearch_ReportNoMatch (@w{uivarsearch_t *@var{vs}})
+Complain that no matches were found, and then end the current search.
+Call this if @code{uivarsearch_Search()} fails.
+@end deftypefn
+
+@deftypefn Function int uivarsearch_AdjustOffset (@w{uivarsearch_t *@var{vs}, int @var{off}})
+Under MS-DOS only, adjust @var{off} to take into account CRLF line
+terminators.  @var{off} must be an offset into the description string for
+the last variable which contained a match.  For every newline in the
+first @var{off} characters of the description string, the return value
+will be one greater than @var{off}.  That is, the return value will
+be the correct offset into the description string if the description string
+were converted from LF-terminated to CRLF-terminated.
+@end deftypefn
+
+@node xface, , uivsrch, Top
+@chapter xface
+@cindex face
+@cindex X-Face
+@vindex XF_WIDTH
+@vindex XF_HEIGHT
+
+@deftypefn Function int uncompface (@w{char *@var{buf}})
+Decodes the face information pointed to by @var{buf}, and returns it in
+@var{buf}.  @var{buf} should be at least 512 bytes long, apparently.
+Returns a nonnegative value if successful.  The encoded face information
+is usually the value of an @code{X-Face:}
+header.  The decoded face information
+is a bitmap of width @code{XF_WIDTH} and height @code{XF_HEIGHT}, with
+the leftmost
+pixels in the bitmap corresponding to the most significant bits in the
+data.  The data is of size @code{XF_WIDTH*XF_HEIGHT/8}.
+@end deftypefn
+
+@node Index, , ,Top
+@unnumbered Index
+
+@printindex fn
+
+@contents
+
+@bye

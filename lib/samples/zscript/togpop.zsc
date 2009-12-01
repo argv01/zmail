@@ -1,0 +1,49 @@
+#
+# =============================================================================
+# Functions below delay starting pop when starting zmail 
+# and allow you to start and stop connecting to pop at will. 
+# Put a call to delay_start_pop in startup_hook. DO NOT start
+# zmail with use_pop set to true then using this script.
+# =============================================================================
+function delay_start_pop() {
+# Ask if you want to delay starting pop
+    ask "Delay Pop Logon?"
+# If yes you want to start pop later
+    if $status == 0
+# Put a button on the main screen to start pop later
+      button -n "Pop Logon" do_pop_logon
+# Otherwise you want to start pop now
+    else
+# Start pop now
+      set use_pop
+# Put a button on the main screen to stop pop later
+      button -n "Pop Logoff" do_pop_logoff
+      await
+    endif
+}
+#
+# Function to start pop 
+#
+function do_pop_logon() {
+# Take the button to start pop off of the main screen
+      unbutton "Pop Logon"
+# Start pop now
+      set use_pop
+# Put a button on the main screen to stop pop later
+      button -n "Pop Logoff" do_pop_logoff
+# Speed up the pop pasword dialog by forcing the check for new mail
+      await
+}
+#
+# Function to stop pop
+#
+function do_pop_logoff() {
+# Take the button to stop pop off of the main screen
+      unbutton "Pop Logoff"
+# Stop pop now
+      unset use_pop
+# Put a button on the main screen to start pop later
+      button -n "Pop Logon" do_pop_logon
+}
+
+# =============================================================================

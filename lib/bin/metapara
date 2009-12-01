@@ -1,0 +1,29 @@
+:
+# metapara
+#    makes metamail multipart/parallel work more or less as advertised
+# NOTE: *extremely* labor intensive!!!
+#
+# You also need a line something like this in mailcap:
+#
+#    multipart/parallel; metapara %{boundary} %s
+#
+# Bill Carpenter, Jun 94,  bill@attmail.com
+#
+BOUNDARY="$1"
+INFILE="$2"
+cd /usr/tmp  # more space where I live (metamail uses /tmp)
+STUB=wjc.$$.
+
+# get rid of leading delimiter line before splitting
+cat $INFILE | (read leader   &&   csplit -f $STUB - "/^--$BOUNDARY\$/")
+
+# too bad csplit can't somehow write parts to stdout or exec something
+# on them
+for subpart in $STUB??
+do
+	# -B means no prompting; run in background to get parallelism
+	# NOTE: probably still sync problems for most stuff anyhow
+	( metamail -B $subpart; rm $subpart ) &
+done
+
+# metamail takes care of nuking $INFILE itself

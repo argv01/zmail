@@ -1,0 +1,479 @@
+<HTML>
+<HEAD>
+<TITLE>Z-Mail UNIX Source Code Management</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<P>
+<H1>Z-Mail UNIX Source Code Management</H1>
+<UL>
+<LI><A HREF="#procedures">Source Code Management Procedures</A>
+<UL>
+<LI><A HREF="#checkout">Check Out All Z-Mail Source Files</A>
+<LI><A HREF="#cvsupdate">Get Changes Made By Other Developers</A>
+<LI><A HREF="#newsource">Add New Source Files</A>
+<LI><A HREF="#newplatform">Add A New Platform</A>
+<LI><A HREF="#newdoc">Add New Documentation</A>
+<LI><A HREF="#updatedoc">Update Documentation for a New Release</A>
+</UL>
+<LI><A HREF="#releases">Release or Special Project Management</A>
+<UL>
+<LI><A HREF="#tag">Tag a Tree or a File</A>
+<LI><A HREF="#branch">Create a Branch</A>
+<LI><A HREF="#merge">Merge Branch Changes With the Trunk</A>
+</UL>
+<LI><A HREF="#repository">Maintenance of the CVS Repository</A>
+<UL>
+<LI><A HREF="#lockfiles">Removing Stale Lock Files</A>
+<LI><A HREF="#renaming">Renaming Vault Files</A>
+<LI><A HREF="#recovery">Recovering from Catastrophic Failures</A>
+</UL>
+<LI><A HREF="#cvsroot">Maintenance of CVS Itself</A>
+</UL>
+<P>
+<H3><A NAME="unixscm">Source and Documentation Repositories</A></H3>
+<P>
+All Z-Mail UNIX and Macintosh source code is managed with CVS (the Concurrent
+Versions System). 
+You should read the Z-Mail <A HREF="cvs-primer.html">CVS Primer</A> before
+proceeding with builds or other source code manipulation.  A more extensive
+<A HREF="http://www.ius.cs.cmu.edu/help/Archiving/cvs.html">CVS tutorial</A>
+is available from Carnegie-Mellon University.
+<P>
+The Z-Mail source code currently resides
+in a <A HREF="cvs-primer.html">CVS repository</A> on the machine
+<blockquote><tt>zyrcon.diego.netmanage.com</tt></blockquote>
+in the directory
+<blockquote><tt>/usr1/build/SrcRep</tt></blockquote>
+<P>
+End-user documentation is not managed with CVS because the <I>FrameMaker</I>
+file format does not lend itself well to <tt>diff</tt>-based delta revisioning.
+However, documentation also resides on <tt>zyrcon</tt> in
+<blockquote><tt>/usr1/build/DocRep</tt></blockquote>
+<P>
+A shell script called <tt>doc.sh</tt>, stored in the SrcRep, is used
+to retrieve documentation from <A HREF="docrep.html">the DocRep</A>.
+<H2><A NAME=procedures>Source Code Management Procedures</A></H2>
+<P>
+<UL>
+<LI><A NAME="checkout">To Check Out All Z-Mail Source Files</A>
+<P>
+<blockquote><tt>cvs co <strong>-r branch-tag</strong> zmail</tt></blockquote>
+<P>
+You may check out a subset of the full <tt>zmail</tt> module instead:
+<P>
+<UL>
+<LI><tt>cvs co <STRONG>-r branch-tag</STRONG> zmail-shell</tt><br>
+if you don't need any GUI.
+<LI><tt>cvs co <STRONG>-r branch-tag</STRONG> zmail-motif</tt><br>
+if you don't need Lite, Windows, or Mac.
+<LI><tt>cvs co <STRONG>-r branch-tag</STRONG> zmail-lite</tt><br>
+if you don't need Motif, Windows, or Mac.
+<LI><tt>cvs co <STRONG>-r branch-tag</STRONG> zmail-mac</tt><br>
+if you don't need Lite, Windows, or Motif.
+</UL>
+<P>
+The <strong><tt>-r branch-tag</tt></strong> may be omitted if you are working with the
+latest development source.  Values for <STRONG><TT>branch-tag</TT></STRONG> include:
+<P>
+<UL>
+<LI><tt>motif-4-0-branch</tt><br>
+<I>Includes Z-Mail Lite 4.0, but <STRONG>not</STRONG> a stable ZM-Mac version.</I>
+<LI><tt>zmac-331-release</tt><br>
+<I>Currently-shipping ZM-Mac release; has <STRONG>not</STRONG> been merged into the
+latest development source; does <STRONG>not</STRONG> include stable UNIX versions.</I>
+<LI><tt>zmac-33-release</tt><br>
+<I>Does <STRONG>not</STRONG> include stable UNIX versions.</I>
+<LI><tt>motif-3-2-branch</tt><br>
+<I>Currently-shipping ZM-Motif release; does <STRONG>not</STRONG> include stable
+versions of ZM-Lite or ZM-Mac.</I>
+<LI><tt>lite-release-27may94</tt><br>
+<I>Currently-shipping Z-Mail Lite release; does <STRONG>not</STRONG> include stable
+versions of ZM-Motif or ZM-Mac.</I>
+</UL>
+<P>
+You may also replace <tt><STRONG>branch-tag</STRONG></tt> with a tag for a specific
+revision.  See
+<blockquote><tt>cvs log shell/version.c</tt></blockquote>
+for a complete list of revision tags.
+<P>
+<STRONG>NOTE:</STRONG>  If you check out a specific revision, you will <I>NOT</I> be
+able to commit changes!  CVS permits changes to be committed only on branches.
+<P>
+<LI><A NAME="cvsupdate">To Get Changes Made by Other Developers</A>
+<P>
+You don't need to check out a complete new tree every time another developer changes something.
+From within the <tt>zmail</tt>, <TT>mp</TT>, or <TT>metamail</TT> directories, run:
+<blockquote><tt>cvs update</tt></blockquote>
+<P>
+This fetches the most recent sources from the same branch you specified when checking out,
+and merges them with any changes you have made in your working copy.
+<P>
+<I>To change the branch of your working copy:</I>
+<blockquote><tt>cvs update <STRONG>-r branch-tag</STRONG></tt></blockquote>
+<P>
+This fetches the most recent sources from the branch specified by <TT><STRONG>branch-tag</STRONG></TT>,
+and merges them with any changes you have made in your copy.  All subsequent updates and commits
+use the new <TT><STRONG>branch-tag</STRONG></TT>.
+<P>
+<I>To change your working copy to the trunk:</I>
+<blockquote><tt>cvs update <STRONG>-A</STRONG></tt></blockquote>
+<P>
+This fetches the most recent sources from the <I>trunk</I>,
+and merges them with any changes you have made in your copy.  All subsequent updates and commits
+occur on the trunk.
+<P>
+<LI><A NAME="newsource">To Add New Source Files</A>
+<P>
+<OL>
+<LI>Add the file names to the appropriate place in <tt>zmail_files</tt> and
+<tt>Files</tt>.<br>
+<I><STRONG>Note:</STRONG></I> <tt>zmail_files</tt> <I>was at one time used by ZM-Mac
+and ZM-Win build procedures.  It may no longer be necessary to keep it up
+to date.  Only</I> <TT>Files</TT> <I>is used by the UNIX build procedure.</I>
+<LI>Re-run <tt>sh mkmakes <STRONG>ostype-name ui-name</STRONG> zpop</tt><br>
+<I>Do <STRONG>not</STRONG> edit any of the Makefiles directly if you want your changes
+to be permanent.</I>
+<LI>Run <tt>make</tt> and test your <tt>zmail</tt> build.
+<LI><tt>cvs add</tt> the file names.
+<LI><tt>cvs commit</tt> when you are confident your changes compile and run.
+</OL>
+<P>
+<LI><A NAME="newplatform">To Add A New Platform</A>
+<P>
+<OL>
+<LI>Add the <tt><STRONG>ostype-name</STRONG></tt> of the new platform to <tt>config/ostype_list</tt>.
+<LI><tt>configure -f <STRONG>ostype-name</STRONG></tt> <I>(note the</I> <TT>-f</TT> <I>option!)</I><BR>
+<I>It may save time to identify a similar existing platform and copy the</I> <TT>config/os-*</TT>
+<I>files for that similar platform to the new</I> <tt>config/os-<STRONG>ostype-name</STRONG>.h</tt> <I>and</I>
+<TT>config/os-<STRONG>ostype-name</STRONG>.mk</TT> <I>before running</I> <tt>configure</tt>.
+<LI>Examine and possibly edit <tt>config/os-<STRONG>ostype-name</STRONG>.h</tt> and <TT>config/os-<STRONG>ostype-name</STRONG>.mk</TT>
+to add any special compiler flags or build targets for the platform.<BR>
+<I>Pay particular attention to shared and static linkage rules in</I>
+the <TT>.mk</TT> <I>file and to the corrections section of the</I> <TT>.h</TT>
+<I>file.</I>
+<LI>Edit <TT>config/distrib.dir</TT> and create a mapping from <TT><STRONG>ostype-name</STRONG></TT> to the
+platform <TT><STRONG>extension</STRONG></TT> that should be used to create distribution directories.  (There
+are historical reasons why these are not the same.)
+<LI>Edit <TT>install/nlsinstall.sh</TT>, <TT>install/work/scripts/fixarch.sh</TT>, and
+<TT>install/work/scripts/zmarch.sh</TT> to be certain that the <CODE>case</CODE> statements have
+an entry that:
+<OL TYPE="a">
+<LI>matches the <TT><STRONG>extension</STRONG></TT> you added to <TT>distrib.dir</TT> and
+<LI>correctly initializes the operating system in question.
+</OL>
+<LI><tt>sh mkmakes <STRONG>ostype-name</STRONG> ...</tt> as usual.
+<LI>Add <TT>config/os-<STRONG>ostype-name</STRONG>.h</TT> and
+<TT>config/os-<STRONG>ostype-name</STRONG>.mk</TT> as new source files.
+</OL>
+<P>
+<LI><A NAME="newdoc">To Add New Documentation</A>
+<P>
+New on-line help files are added in the same way as other source files.
+Normally, however, you should not add new help files; instead, for on-line
+help and related run-time documentation, edit one of the following files:
+<P>
+<UL>
+<LI><tt>lib/bindkey.hlp</tt>
+<LI><tt>lib/command.hlp.src</tt><br>
+<I>Superceded for ZM-Mac by</I> <tt>mac/lib/command.hlp</tt>.
+<LI><tt>lib/keymap.hlp</tt>
+<LI><tt>lib/lite.hlp</tt>
+<LI><tt>lib/mac.hlp.src</tt><br>
+<I>Probably superceded by</I> <tt>mac/lib/mac.hlp</tt>.
+<LI><tt>lib/motif.hlp.src</tt>
+<LI><tt>lib/variables.src</tt><br>
+<I>Superceded for ZM-Mac by</I> <tt>mac/lib/variables</tt>.
+<LI><tt>mac/lib/command.hlp</tt>
+<LI><tt>mac/lib/mac.hlp</tt>
+<LI><tt>mac/lib/variables</tt>
+</UL>
+<P>
+<STRONG>Note:</STRONG> <tt>mac/lib/README.mac-lib</tt> <I>asserts that some files in</I>
+<tt>mac/lib</tt> <I>are generated from files in</I> <tt>lib</tt>.  <I>I believe
+that to be <STRONG>incorrect</STRONG> at this time, but I'm not certain.</I>
+<P>
+New printed manuals and other standalone end-user documentation are
+added to the appropriate directory in the DocRep.
+Then edit <tt>doc.sh</tt> to add <tt>make</tt> rules for retrieving them.
+<P>
+<LI><A NAME="updatedoc">To Update Documentation for a New Release</A>
+<P>
+Create a new directory in the DocRep corresponding
+to the new version number.  Change the <tt>motif version</tt> or <tt>lite
+version</tt> comments in <tt>shell/version.c</tt> to match.
+</UL>
+<P>
+<H2><A NAME=releases>Release or Special Project Management</A></H2>
+<P>
+It was standard practice at Z-Code to create a CVS <I>branch</I> whenever a
+product release was going into beta (<I>e.g.,</I> the
+<TT>motif-4-0-branch</TT> for the beta that is current as of this writing,
+or the <TT>zmac-33-release</TT> branch) or whenever work was being
+done on a special project (<I>e.g.,</I> the <TT>MediaMail-Irix-5-3-beta-2</TT>
+or <TT>Msg-pointer-experiment</TT> branches).  This permits ongoing development
+to procede without interfering with the stability of a beta, and prevents
+special development from interfering with the mainline.
+<P>
+Branches are created by adding <EM>tags</EM> to files in the repository.
+There are two kinds of tags; an ordinary tag always refers to the same
+specific revision of a file, whereas a <STRONG>branch tag</STRONG> refers
+to the most recent revision of the file on the branch with that name.
+<P>
+Tag names are restricted to alphanumerics, underscores, and hyphens; in
+particular, "dot" (<I>i.e.,</I> period (<TT>.</TT>)) characters are not
+permitted in tag names.
+<P>
+Once the code has branched, and occasionally along the main trunk as well,
+ordinary (non-branch) tags should be applied to mark various milestones
+such as a specific beta release date (<I>e.g.,</I> <TT>motif-40b-14may96</TT>
+for the first beta release of 4.0).  This allows you to recover that specific
+revision if you have to verify a customer bug report or build for a new
+platform.
+<P>
+It is also a good idea to apply at least an ordinary tag, and
+possibly even a branch tag, before doing major revisions.  This makes it
+easy to recover the original state if there is a serious problem with the
+revised files.  It is reasonable to tag individual files (rather than the
+entire tree) if the changes apply only to one or a few files.  However,
+you should <EM>almost never</EM> branch an individual file.  (For an
+example where branching an individual file was justified, examine the
+<TT>caldera-branch</TT> of the <TT>lib/forms/bugs</TT> file.)
+<P>
+<UL>
+<LI><A NAME="tag">To Tag a Tree or a File</A>
+<P>
+<OL>
+<LI>Check out or update a working tree of the desired module.<br>
+<I>You do not need to check out the entire source tree, but any files not
+checked out at the time you tag may not be referred to with that tag.</I>
+<LI><TT>cvs tag <STRONG>tag-name</STRONG> <STRONG>file-name</STRONG></TT><br>
+<I>If</I> <TT><STRONG>file-name</STRONG></TT> <I>is omitted, all checked-out
+files are tagged; if</I> <TT><STRONG>file-name</STRONG></TT> <I>is a directory,
+files in that directory are tagged.  Additional file names may be given on
+the same command line to tag multiple files.</I>
+</OL>
+<P>
+<LI><A NAME="branch">To Create a Branch</A>
+<P>
+<OL>
+<LI>Check out or update a working tree of the desired module.<br>
+<I>You do not need to check out the entire source tree, but any files not
+checked out at the time you branch are not checked out by subsequent
+references to that branch name.</I>
+<LI><TT>cvs tag <STRONG>branch-tag</STRONG>-bp</TT><br>
+<I>The use of the trailing</I> <TT>-bp</TT> <I>is a Z-Code convention;
+it means "branch point" and allows you to diff the current state of any
+branch against its original branch revision; see below.</I>
+<LI><TT>cvs tag -b <STRONG>branch-tag</STRONG></TT><br>
+<I>This creates the branch by placing a branch tag in the repository
+vault file of each file in your working tree; no commit is necessary.</I>
+<LI><TT>cvs update -r <STRONG>branch-tag</STRONG></TT><br>
+<I>This moves your working tree onto the newly created branch.</I>
+</OL>
+<P>
+<LI><A NAME="merge">To Merge Branch Changes With the Trunk</A> (or with other branches)
+<P>
+CVS provides a <I>join</I> operation for combining branches.  However, this
+operation has two drawbacks:
+<UL>
+<LI>Any files removed from the trunk that still exist on the branch will be
+resurrected again on the trunk.  This is usually not what was intended.
+<LI>Due to the inclusion of RCS versioning information in many of the Z-Mail
+source files, a large number of spurious conflicts are created.
+</UL>
+<P>
+For these reasons, I recommend using <TT>cvs update -j</TT> on individual
+files only.  For merging entire branches, more human intervention is needed.
+<P>
+One possible technique is:
+<P>
+<OL>
+<LI>Check out a working tree on the trunk (or whatever branch is the destination of the merge)
+<LI><TT>cvs diff -u -r <STRONG>branch-tag</STRONG>-bp -r <STRONG>branch-tag</STRONG> | patch</TT><br>
+<I>This will produce "rejections" (</I><TT>.rej</TT> <I>files) for cases
+in which a CVS join would have produced conflicts.  However, it may produce
+rejections in other cases where a CVS join would have succeeded.</I>
+<LI>Examine the <TT>.rej</TT> files, discard spurious diffs, and manually
+apply any diffs that really were required.  (It's easier to discard spurious
+rejections than to edit spurious conflicts out of the actual sources.)
+</OL>
+<P>
+An alternate technique is:
+<P>
+<OL>
+<LI>Check out one working tree on the trunk (destination branch).
+<LI>Check out a second working tree on the <TT>branch-tag</TT> branch.
+<LI><TT>diff -u -r <STRONG>trunk-tree</STRONG> <STRONG>branch-tag-tree</STRONG> &gt; <STRONG>diff-file</STRONG></TT><br>
+<I>This assumes you have GNU diff, which you must have somewhere because CVS
+uses it.  It's </I> <TT>/usr/local/bin/diff</TT> <I>on most of the former
+Z-Code machines.</I>
+<LI>Edit <TT><STRONG>diff-file</STRONG></TT> and remove unwanted diff hunks.<br>
+<I>This requires some understanding of</I> <TT>diff</TT> <I>file format, to
+avoid removing data that is required by</I> <TT>patch</TT> <I>to apply the
+diffs to the destination files.</I>
+<LI><TT>cd <STRONG>trunk-tree</STRONG> ; patch &lt; ../<STRONG>diff-file</STRONG></TT>
+</OL>
+<P>
+Finally, if the number of files with changes is small (as will be the case
+if you fairly regularly merge bugfixes and other changes onto the trunk),
+you can use a visual differencing tool such as Emacs' <TT>ediff</TT> or
+the X11R6 <TT>xdiff</TT> (I think that's the name) to selectively apply
+changes from one working tree to another.
+<P>
+At Z-Code, we typically used a combination of all three techniques:  The
+first one to resolve large numbers of changes, the second one to help with
+manual application of rejections, and the third to cover finer-grained or
+overlapping changes for which <TT>patch</TT> was inadequate.
+<P>
+</UL>
+<P>
+<H2><A NAME=repository>Maintenance of the CVS Repository</A></H2>
+<P>
+Except for the<TT> CVSROOT </TT>directory (explained below), all directories
+in the repository should contain only RCS vault files, with names ending
+in<TT> ,v </TT>(comma vee).
+Under normal circumstances, you should leave these files alone and let
+CVS make all necessary modifications for you.  Occasionally, however, you
+may need to perform a function that CVS doesn't handle automatically.
+<P> 
+<DL>
+<DT><A NAME=lockfiles><I>Removing stale lock files</I></A> <P>
+<DD>When a<TT> cvs commit </TT>or<TT> cvs update </TT>is performed, CVS
+places lock files in the repository to prevent conflicts.  You may see a
+message of the form:<BLOCKQUOTE>
+<TT>cvs: [<STRONG>hh:mm:ss</STRONG>] waiting for<STRONG> username</STRONG>'s lock in<STRONG> directory</STRONG></TT>
+</BLOCKQUOTE>
+If this state persists for more than a few minutes, a program or system crash
+may have caused a stale lock file to be left behind.
+<P> 
+Lock file names have the form:<BLOCKQUOTE>
+<TT>#cvs.<STRONG>type</STRONG>.<STRONG>hostname</STRONG>.<STRONG>processID</STRONG></TT>
+</BLOCKQUOTE>
+Where<TT> type </TT>is<TT> rfl </TT>for read locks (<TT>cvs update</TT>)
+and<TT> wfl </TT>for write locks (<TT>cvs commit</TT>).
+For example,<BLOCKQUOTE>
+<TT>#cvs.rfl.zen.12165</TT>
+</BLOCKQUOTE>
+is a<TT> cvs update </TT>lock from process<TT> 12165 </TT>on host<TT> zen</TT>.
+To check whether this lock is stale, see whether the<TT> cvs </TT>process
+numbered<TT> 12165 </TT>is still active on<TT> zen</TT>.
+<P> 
+If the indicated process is inactive, simply remove from the repository all
+lock files that refer to that host and process.
+<P>  
+<DT><A NAME=renaming><I>Renaming a vault (<TT>*,v</TT>) file</I></A> <P>
+<DD>The usual procedure for renaming a file in CVS is to move your working
+copy of the file to the new name,<TT> cvs add </TT>the new file, and
+then<TT> cvs remove </TT>the old name.  However, this does not preserve the
+revision history of the old file under the new name.  To preserve history
+in this situation, you need to modify the repository.
+<P> 
+<OL>
+<LI><STRONG>Make sure all changes,<I> by all developers, </I>to the
+file to be renamed have been committed,</STRONG> and that your own working
+copy has been updated and conflicts resolved and committed.
+<P> 
+<LI>In the repository,<STRONG> copy </STRONG>the vault file to the new name;
+<I>e.g.:</I><BLOCKQUOTE>
+<TT>cd /usr1/build/SrcRep/zmail/config<br>
+cp features.h,v zfeature.h,v</TT>
+</BLOCKQUOTE>
+<P> 
+<LI>In your working tree,<TT> cvs remove </TT>the old file,
+then<TT> cvs commit </TT>the removal with a log message describing the
+new file name.
+<P> 
+<LI>All developers may now<TT> cvs update </TT>their working trees to mirror
+the renaming.
+</OL>
+ <P>
+<STRONG>Warning:</STRONG>
+A side-effect of this procedure is that the new file will appear to always
+have existed, even in older revisions and branches, as far back as the
+addition of the original file.  That means that you <STRONG>must not</STRONG>
+use a name that has ever been used before.  If there is any doubt, check
+the<TT> Attic </TT>directory in the repository for a vault file matching
+the proposed new name.  For the example above:<BLOCKQUOTE>
+<TT>ls -l /usr1/build/SrcRep/zmail/config/Attic/zfeature.h,v</TT>
+</BLOCKQUOTE>
+Only if there is <I>no such file</I> in the attic is it safe to use the
+new name.
+<P>
+<DT><A NAME=recovery><I>Recovering from a catastrophic system failure</I></A> <P>
+<DD>In rare circumstances, vault files in the CVS repository may become
+corrupted as the result of an NFS error or other catastrophic failure.
+The best solution in these cases is to recover the repository from tape
+backups.  However, if the corruption occurred during a commit of very
+recent changes (which is actually the most likely time for it to happen),
+and those recent changes are also lost from the working tree, it may be
+possible to recover at least in part by editing the vault files.
+ <P>
+Your best bet in this case is to find documentation on the RCS file format.
+It is essentially broken into sections delimited by <TT>@@</TT> (two "at"
+characters).  Most of the sections are <I>deltas</I> (diffs), and it's
+pretty easy to see which sections refer to which delta.  The deltas build
+cumulatively upon one another as they get older (e.g. they're all deltas
+<I>backwards</I> in time from the most recent revision).
+Even if the vault file is damaged such that RCS can't reconstruct a revision,
+you may be able to identify the relevant changes by looking at the surviving
+deltas.
+ <P>
+<OL>
+<LI>Preserve a copy of the damaged vault file.
+<LI>Recover an undamaged copy from backup.
+<LI>Check out a working copy of the file from the undamaged backup.
+<LI>Manually apply changes from the damaged file to the working copy.
+<LI>Re-commit the changes, if possible copying the log messages from the
+deltas in the damaged vault file.
+</OL>
+<P>
+</DL>
+<P>
+<H2><A NAME=cvsroot>Maintenance of CVS Itself</A></H2>
+<P>
+Within the<TT> /usr1/build/SrcRep </TT>directory on<TT> zyrcon </TT>there
+is a subdirectory named<TT> CVSROOT</TT>.  This is the standard location
+for files that control the CVS process itself.  The most important files
+for Z-Mail source code management are:
+<P>
+<DL>
+<DT><TT>ckconflict.sh</TT>
+<DD>(shell script) identifies files with conflicts and refuses to let
+them be committed until the conflicts have been resolved.
+<P>
+<DT><TT>commitinfo</TT>
+<DD>directs CVS to run<TT> ckconflict.sh </TT>before committing.
+<P>
+<DT><TT>log.pl</TT>
+<DD>(<I>Perl </I>program) constructs the<I> commitlog </I>email messages
+and sends them to the interested parties; also appends the messages to the
+<TT>commitlog </TT>file.
+<P>
+<DT><TT>loginfo</TT>
+<DD>directs CVS to run<TT> log.pl </TT>after committing.
+<P>
+<DT><TT>modules</TT>
+<DD>divides the source heirarchy into components and controls<I> checkout</I>.
+</DL>
+<P>
+Please refer to the CVS tutorials and documentation for more details about
+the format and usage of
+the<TT> commitinfo</TT>,<TT> loginfo</TT>, and<TT> modules </TT>files.
+<P>
+If the mailing addresses (typically aliases) for various groups of zmail
+developers change, it is necessary to edit the<TT> log.pl </TT>program
+and modify the message headers of the commitlog message and the destination
+addresses passed to the<TT> mail </TT>command.
+<OL>
+<LI><TT>cvs co CVSROOT ; cd CVSROOT</TT>
+<LI>Edit the<TT> log.pl </TT>file (and any other files) as necessary.
+<LI><TT>cp log.pl $CVSROOT/CVSROOT/log.pl</TT>
+<LI>Make a test checkout/edit/commit of some other file to check your changes.
+Repeat until you get it right.
+<I>Note that CVS automatically rebuilds the modules databases
+whenever you</I><TT> cvs commit modules </TT><I>(or commit the whole
+tree and</I><TT> modules </TT><I>has changed).</I>
+<LI><TT>cvs commit</TT>
+</OL>
+</BODY>
+</HTML>

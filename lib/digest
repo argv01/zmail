@@ -1,0 +1,182 @@
+#! /usr/local/bin/zmail -F!
+#
+# Z-Mail digestifier.  Makes a folder or a list of messages into a digest.
+#
+# A "digest" is a collection of E-mail messages bundled together into a
+# single message for ease of redistribution.  The individual messages
+# in the digest are called "articles".  Each article has a small set of
+# essential headers (usually From:, Date:, and Subject:) and is divided
+# from the preceding and following articles by an "article separator"
+# string (usually eight hyphens, "--------").  The Z-Mail built-in command
+# "undigest" unpacks most digests, including those made by this script.
+#
+# Usage:
+#  From your shell (see below):		digestify -f mailbox
+#  From within zmail:	
+#	First:		source digestify
+#	Then:		digest [msg-list]
+#	Or:		message-selection-command | digest
+#
+
+#
+# Set the version number of this script.
+#
+set d_version = 'digest 1.3'
+
+#
+# Functions to save and restore variable state
+#
+function d_saveset() {
+    eval set _SET_ = '"$?'$1'"'
+    if $_SET_
+	eval set old$1 = '"$'$1'"'
+    else
+	eval unset old$1
+    endif
+    if $# > 1
+	set _SET_ = $1
+	shift
+	set $_SET_ = "$*"
+    else
+	unset $1
+    endif
+    unset _SET_
+    return 0
+}
+
+function d_reset() {
+    eval set _SET_ = '"$?old'$1'"'
+    if $_SET_
+	eval set $1 = '"$old'$1'"'
+	unset old$1
+    endif
+    unset _SET_
+    return 0
+}
+
+function digest() {
+#%
+# Z-Mail digestifier.  Makes a folder or a list of messages into a digest.
+#
+# A "digest" is a collection of E-mail messages bundled together into a
+# single message for ease of redistribution.  The individual messages
+# in the digest are called "articles".  Each article has a small set of
+# essential headers (usually From:, Date:, and Subject:) and is divided
+# from the preceding and following articles by an "article separator"
+# string (usually eight hyphens, "--------").  The Z-Mail built-in command
+# "undigest" unpacks most digests, including those made by this script.
+#
+# Usage:	digest [msg-list] [recipients]
+# Or:		command | digest
+#
+#  where the "command" is something that selects messages, e.g. "pick".
+#%
+    #
+    # Suppress any "that isn't set" messages from "unset"
+    #
+    d_saveset warning
+
+    #
+    # Set up defaults
+    #
+    if $?input
+	msg_list $input | set digest
+    else
+	set input	# Magic
+	unset digest
+    endif
+    shift -m
+    if X$output != X
+	msg_list $input $output | set digest
+    endif
+    unset input		# Magic
+    if ! $?digest
+	d_reset warning
+	error Please specify messages to include in digest.
+	return -1
+    endif
+
+    #
+    # Save everything in case the user wants it back.
+    #
+    foreach v ( \
+		pre_indent_str \
+		post_indent_str \
+		indent_str \
+		alwaysignore \
+		quiet \
+		no_expand \
+		edit_hdrs \
+		askcc \
+				) 'd_saveset $v'
+    if "$version" =~ *2.0*
+	#
+	# This is a real hack ....
+	#
+	echo -n "Temporarily "
+	saveopts /tmp/opts$$
+	sh "grep '^retain' /tmp/opts$$ > /tmp/rtn$$; rm /tmp/opts$$"
+    else
+	saveopts -Afqo retain /tmp/rtn$$
+    endif
+    unretain *
+
+    #
+    # Prepare to form the digest.
+    #
+    set indent_str no_expand alwaysignore=include quiet=newmail
+    set pre_indent_str="--------"	# Insert your digest separator here
+    retain from date subject		# Add any other headers you want
+    my_hdr X-Digest-Generated-By: "$version, $d_version"
+    #
+    # Send the digest where?
+    #
+    if $#
+	alias DIGEST $*
+    else
+	alias DIGEST $thisfolder
+	d_saveset no_expand
+	set d_await
+    endif
+
+    #
+    # Now do it.  All that work for a three-line operation ....
+    # NOTE: If you change DIGEST above, remove the "await" command here!
+    # Using "builtin" prevent any cmd expansion from confusing us.
+    #
+    builtin mail -UH /dev/null -I $digest -s "Digest of $thisfolder" DIGEST
+    if $?d_await
+	builtin delete $digest
+	builtin await -T 1
+	unset d_await
+    endif
+
+    #
+    # Be neat and put everything back the way it was.
+    #
+    un_hdr X-Digest-Generated-By:
+    unalias DIGEST
+    unset indent_str no_expand alwaysignore quiet
+    foreach v ( \
+		pre_indent_str \
+		post_indent_str \
+		indent_str \
+		alwaysignore \
+		quiet \
+		no_expand \
+		edit_hdrs \
+		askcc \
+		warning \
+				) 'd_reset $v'
+    unretain *
+    source /tmp/rtn$$
+    sh rm /tmp/rtn$$
+}
+
+#
+# Uncomment this part to use this file as a shell program
+#
+#if $?thisfolder
+#    digest
+#    quit
+#endif

@@ -1,0 +1,28 @@
+# locale.zmailrc -- locale-specific init file information for Z-Mail
+# Copyright 1993-94 Z-Code Software, a Division of NCD.  All rights reserved.
+
+# Set the prompt to show current time, name of the current folder,
+# current message number, and count of total messages.
+
+set prompt="(%T) %f: #%m of %t> "
+
+
+# When you use the -i option to reply, or use the ~i tilde escape in a letter
+# when in compose mode, the current message will be included in your text.
+# Put a nice wrapper around those included messages.  Here, show the author's
+# name and the subject of his letter, label the end, and add a trailing blank
+# to separate each inclusion and make finding the end easier.
+
+set pre_indent_str='On %M %N, %T, %.50n wrote:\n> Subject: %.65s'
+set indent_str='> '	# actual message text is preceded by a ">"
+set post_indent_str='>-- End of excerpt from %.50n\n'
+
+
+# Set formats for status bars
+if ! is_lite
+    set main_status_bar_fmt = 'w6,s;w4,c,f%t total, %n new, %u unread, %d deleted'
+    set comp_status_bar_fmt = 'w475,s;w125,c,f%f%.;w400,c,f%t total, %n new, %u unread, %d deleted'
+    set msg_status_bar_fmt  = 'w475,s;w125,c,f%f%.;w400,c,f%t total, %n new, %u unread, %d deleted'
+endif
+
+

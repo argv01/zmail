@@ -1,0 +1,103 @@
+#!/usr/local/bin/expect --
+#
+# E-Mail address directory lookup script to emulate remote directory
+# services as used by Mac & Windows Z-Mail.
+#
+
+# To use, just set the $address_book Z-Mail variable to this script.
+# Each site should change the two "set" commands below to reflect the
+# host and port where directory services are to be found.  Note that
+# the port can also be a named service from /etc/services.
+
+set lookup_host lookups.widgetech.com
+set lookup_port zmailds
+
+# If the environment variable ADDRESS_BOOK is set, it can override the
+# site default host and port.  Set it to a "host", a "host:port", or
+# even just a ":port".  As before, the port may be numeric or a named
+# service.
+
+if [info exists env(ADDRESS_BOOK)] {
+    scan $env(ADDRESS_BOOK) {%[^:]:%s} lookup_host lookup_port
+}
+
+# These regular expression patterns might require tuning for unusual
+# or localized telnet implementations.
+
+set connectionReady  "^Escape character is '.*'\.\r\n"
+set connectionClosed "^Connection closed by foreign host\.\r\n"
+
+
+# Now the fun begins.
+
+# Random initializations.
+
+log_user 0
+set status -1
+set chatter {}
+set wholeLine ^(\[^\r\]|\r\[^\n\])*\r\n
+
+# It is unfortunate that we have to resort to spawning off telnet to
+# establish the TCP connection.  A much more efficient and reliable
+# approach would be to use language extensions that let the
+# interpreter itself manage TCP connections directly.  For example,
+# the "dp_connect" primitive supplied by Tcl-DP would be well-suited
+# for this purpose.
+#
+# However, it may be a reach for our customers to come up with
+# "expect" interpreters at all.  Requiring another add-on like Tcl-DP
+# just makes things harder.  So for now, we go with the least common
+# denominator.
+
+spawn -noecho telnet $lookup_host $lookup_port
+
+
+# Wait for the line that tells us the connection has been established.
+# As we wait, any other leading output is stashed away.  If the
+# connection fails completely, we can assume that the leading output
+# probably contains useful error messages from telnet itself.
+
+expect {
+
+    -re $connectionReady {
+	# Connection established.
+	# Send our request and ignore it when it echos back.
+	send -- $argv\n
+	expect -ex $argv\r\n
+
+	# First line of reply is to be used as our numeric exit code.	
+	expect -re ^(\[0-9\]+)\r\n {set status $expect_out(1,string)}
+
+	# Subsequent lines are lookup matches.
+	expect {
+	    -re $connectionClosed {
+		# Slightly special case: catch the message printed
+		# by telnet telling us the connection has shut down.
+		exit $status
+	    }
+	    -re $wholeLine {
+		# Everything else is a match.
+		send_user -- $expect_out(buffer)
+		exp_continue
+	    }
+	    eof {
+		# When the connection goes away, we're done.
+		exit $status
+	    }
+	}
+    }
+
+    -re $wholeLine {
+	# Connection not yet established.
+	# Remember chatter in case is contains error messages.
+	set chatter $chatter$expect_out(buffer)
+	exp_continue
+    }
+
+    eof {
+	# Connection failed.
+	# Pass along opening chatter as error messages.
+	send_user -- $chatter
+	exit 1
+    }
+}

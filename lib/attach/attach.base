@@ -1,0 +1,115 @@
+#
+# The format of the attachment types description file is as follows:
+#
+# PATH    directory1:directory2:...
+#
+# TYPE type_key	"viewer program"	"editor program"	"comment"
+# CODE code_key	"encoding program"	"decoding program"	"comment"
+# ENCODE	type_key	code_key
+# BITMAP	type_key	pathname
+# ALIAS		alias_name	type_key
+@@ifdef MAC_OS
+# MACTYPE	"type creator"	type_key
+@@endif
+#
+# Entries may be continued on more than one line by using a backslash.
+# Comments are placed at the end of a line or on a line with a "#" in
+# column one.
+#
+# The PATH entry is exported into the environment before running any
+# of the programs specified for TYPE or CODE entries.  If more than
+# one PATH entry appears, the directories in later entries are appended
+# to those already given.  If no PATH entry appears, the user's PATH
+# environment is used, with /usr/lib/Zmail/bin prepended.
+# 
+# Type keys and code keys which are to be used for creation of attachments
+# must conform to the MIME standard.  Otherwise, they are only
+# used only for interpretation of incoming attachments.  
+# At the time of this writing, the MIME specification is an Internet draft.  
+# To summarize the MIME naming conventions, keys are strings, and their 
+# interpretation is not case-sensitive.  Keys should not 
+# include spaces, tabs, controls, or any of the following characters:   
+#		()<>@,;:\"[]?=
+# Other non-alphabetic characters are OK. The type name
+# is of the form "type/subtype".  Types and subtypes should not contain 
+# the character: '/'.  In general, the top-level type is used
+# to declare the general type of data, while the subtype specifies a
+# specific format for the data.  A new type or subtype must be prefixed
+# with the string: "x-".  Generally, it is better to define a new subtype 
+# of a pre-defined top-level type rather than create a new top-level type
+# This increases the likelihood of another MIME
+# mailer treating the data appropriately. In contrast to type keys,
+# creation of extended code keys is strongly discouraged, as it seems
+# likely to hinder interoperability with little potential benefit.
+#
+# Programs are UNIX /bin/sh commands or (for TYPE only) Z-Mail internal 
+# commands.  They should therefore be enclosed in quotes to protect spaces, 
+# pipe symbols, etc.
+#
+# Note that encoding programs MUST produce 7-bit ASCII as output, or the
+# Mail Transport Agent will not properly process the message.
+#
+# If a TYPE viewer or editor begins with a ":" character, it is treated
+# as a Z-Mail command and is executed in the current Z-Mail session.
+# Otherwise, all programs are executed in external /bin/sh processes.
+# If a program string begins with a "|" character, then it will be fed
+# its data on the standard input.  If it ends with a "|" character,
+# then it produces data on standard output.  If it contains one %s
+# (printf string-format) anywhere, then a file name is inserted at that
+# point for processing of that file.  If a program string includes a
+# %t character, then the content-type is inserted at that point.  If it
+# contains an expression of the form %{name}, than the value of the
+# content parameter of that name is inserted at that point.  Any such
+# expressions should be surrounded by single quotes to prevent expansion by 
+# the UNIX shell.  CODE programs must have either both a leading and a 
+# trailing "|", or a %s and one "|", or only a "%s" (in which case it is 
+# assumed the file is modified in place); they may not have all three.
+#
+# TYPE editors and viewers should never have a trailing "|", and those
+# that have neither a leading "|" nor a "%s" will simply be executed,
+# and can find their input files themselves.  Editors and viewers may
+# have a trailing "&" character to indicate that Z-Mail should not wait
+# for the program to execute, but should instead run it in the background.
+# This is useful only for GUI-oriented programs, or those that do not
+# actually produce any screen output (postprocessors).  The variable
+# "attach_types" can be used to supply different attachment type files
+# depending on the mode in which the program is started.
+#
+# The ENCODE pairs are used for sending only, and specify that files of
+# the given type_key should automatically be encoded using the code_key.
+#
+# The type_key is placed (or found) in the "Content-Type:" header.
+# The code_key is placed (or found) in the "Content-Transfer-Encoding:" header.
+# The type_key from an older version of Z-Mail is found in the 
+#	"X-Zm-Data-Type:" header.
+# The code_key from an older version of Z-Mail is found in the 
+#	"X-Zm-Encoding-Algorithm:" header.
+
+# BITMAP directives specify a file containing bitmap data for the icon
+# to be displayed when an attachment of the corresponding type is found.
+# If a relative path is specified, it is taken to be relative to the
+# /usr/lib/Zmail directory, NOT relative to the current directory.
+# BITMAP directives are used only in GUI mode.
+#
+# ALIAS directives specify that messages labeled as type
+# alias_name should be treated as type type_key.  This is useful for
+# understanding messages from older versions of Z-Mail and from other 
+# mail programs, where different names are used for the same types.
+# Alias names are strings, and their interpretation is not 
+# case-sensitive.  They should not include spaces or tabs, 
+# but other non-alphabetic characters are OK.
+@@ifdef MAC_OS
+#
+# MACTYPE directives specify that files with the specified type
+# and creator which are attached to outgoing messages should be labelled 
+# with the specified type key.
+@@endif
+#
+# If a PATH is specified here, it will override the user's PATH environment
+# and restrict attachment programs to the listed directories.  You should
+# do this only if you are concerned about security, because most users will
+# be confused if programs in their PATH become unavailable.
+#
+# PATH	/usr/lib/Zmail/bin:/bin:/usr/bin:/usr/ucb:/usr/bsd
+# PATH	/usr/local/bin:/usr/bin/X11
+

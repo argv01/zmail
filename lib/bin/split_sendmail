@@ -1,0 +1,14 @@
+:
+
+if [ $# -eq 1 ]; then
+  SPLITTER=${SPLITTER:-"$ZMLIB"/bin/splitmail}
+  if [ -f "$SPLITTER" ]; then
+    exec "$SPLITTER" -D "$1"
+  else
+    echo "$SPLITTER not found, sending message unsplit." 2>1
+    exec $1
+  fi
+else
+  echo "Usage: $0 <sendmail exec + args>" 2>1
+  exit 1
+fi

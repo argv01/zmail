@@ -1,0 +1,19 @@
+<HEAD>
+<TITLE>ZPOP (zync) Build Notes</TITLE>
+</HEAD>
+<BODY BGCOLOR=#ffffff>
+<H1>ZPOP (zync) Build Notes</H1>
+Syd Logan
+<P>
+These are the changes I needed to make to the generated makefile in order to get ZPOP to link on a few hosts:
+<BR>
+<BR>
+<PRE>
+<LI> irix53, irix62
+delete -crypt, -lnls, and -lsocket from the link line
+<LI> m88k4
+add -lsocket to the link line
+<LI> sun413
+currently this does not build - distribute the sun411 zpop for now
+</PRE>
+</BODY>

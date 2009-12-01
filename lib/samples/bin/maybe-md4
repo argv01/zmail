@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ ${USE_MD4+X} = X ]
+  exec hashmd4
+else
+  exec cat
+fi

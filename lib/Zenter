@@ -1,0 +1,831 @@
+! Install this file in /usr/lib/X11/app-defaults/Zmail
+!
+! This file contains reasonable default settings for various things
+! that are X window system specific.  This file not required to run
+! Z-Mail, but if /usr/lib/X11/app-defaults/Zmail exists, it must
+! include the MenuBar labelString resources specified below.
+!
+! This file may be edited.  Future versions will contain more settings.
+!
+! Version number of this file -- do NOT remove or alter this setting!
+Zmail.version: 2.1b.21
+!
+! Fallback resources were NOT used, i.e. all the resource specifications
+! are coming from this file.  If this file does not exist or cannot be
+! accessed by X, a default configuration will be in effect.  This is what
+! "fallback" resources are.  Thus, if you use this file, you override the
+! fallback resources.  Unless this file has been edited by your system
+! administrator, the resources here match Z-Mail's fallback resources.
+Zmail.usedFallbacks: False
+!
+! motif 1.1.4 memory leak workaround for Menus.
+*defaultFontList: fixed
+!
+!
+! Global Editing Translations and Misc.
+!
+*XmText.translations: #override \
+    Ctrl<Key>U: kill-to-start-of-line() \n\
+    <Key>osfDelete: delete-previous-character() \n\
+    Ctrl<Key>W: delete-previous-word()
+*XmSash.traversalOn: False
+!
+!
+! Font specifications
+! (change according to screen resolution/display)
+*XmList.fontList: -*-courier-medium-r-*--12-*
+*XmText.fontList: -*-courier-medium-r-*--12-*
+*XmScale.fontList: -*-new century schoolbook-bold-r-*--12-*
+*XmLabel.fontList: -*-new century schoolbook-bold-r-*--12-*
+*XmLabelGadget.fontList: -*-new century schoolbook-bold-r-*--12-*
+*XmCascadeButton.fontList: -*-new century schoolbook-bold-r-*--12-*
+*XmCascadeButtonGadget.fontList: -*-new century schoolbook-bold-r-*--12-*
+*XmPushButton.fontList: -*-new century schoolbook-bold-r-*--12-*
+*XmPushButtonGadget.fontList: -*-new century schoolbook-bold-r-*--12-*
+*XmToggleButton.fontList: -*-new century schoolbook-medium-r-*--12-*
+*XmToggleButtonGadget.fontList: -*-new century schoolbook-medium-r-*--12-*
+! Fixed-width fonts are required for these resources
+*message_header.fontList: -*-courier-medium-r-*--12-*
+*information_dialog*XmLabelGadget.fontList: -*-courier-bold-r-*--12-*
+!
+! Window colors
+! Most of the settings here are commented out as they are merely
+! suggestions and we don't want to make any presumptions.  Edit
+! to your tastes.
+!
+! The entire program...
+*background: Grey
+! The Z logo in the main window and the Z icons
+*zmail_logo.foreground: Red
+*zmail_icons.foreground: Red
+! The "action area" (buttons at the bottom of each dialog)
+!*action_area.Help.foreground:	Yellow
+! Make all pushbuttons similar..
+!*XmPushButton.foreground: Blue
+!
+! MenuBar:
+!    set all menus in menubar similarly...
+!    These colors don't work on black&white screens!
+!*menu_bar*background: skyblue3
+!*menu_bar*foreground: white
+! ...or, you can set each menu individually..
+!*menu_bar.background: skyblue3
+!*menu_bar.foreground: white
+!*XmCascadeButton.background: skyblue3
+!*XmCascadeButton.foreground: white
+!*menu_bar*XmMenuShell*background: white
+!*menu_bar*XmMenuShell*foreground: skyblue3
+!
+! Texts and Lists look best with highly contrasting background and foreground
+*XmText.background: White
+*XmTextField.background: White
+*XmList.background: White
+!
+*scrollBarDisplayPolicy: static
+
+! Misc dialogs
+!
+*file_finder*file_list.visibleItemCount: 5
+*file_finder*dots_toggle.labelString: Hidden Files
+*file_finder*file_label.labelString: File:
+
+! Default Sizes And Values
+!
+! Main window (*main_window):
+!
+! The format string used to title the main window (see "help prompt")
+*title: Z-Mail
+! The format string used to label the icon (see "help prompt")
+*iconName: %t Msgs
+! Height of folder status list
+*main_window*folder_list.visibleItemCount: 1
+! Height of header summary display
+!  reset these depending on screen resolution!
+*message_summaries.visibleItemCount: 15
+! Size of scrolled output area
+*main_output_text.columns: 80
+*main_output_text.rows: 3
+! The Command Area label
+*command_area*labelString: Command:
+*command_area.cmd_text.columns: 65
+!
+! Toolbox (*toolbox_window):
+!   Only colors and fonts are settable at this time.
+!
+! Message display window (*message_window, *pinup_window):
+!
+! Size of scrolled display
+*message_text.columns: 80
+*message_text.rows: 24
+! The pinup_window contains a message_window, so this is shared
+*message_window*attachments_label.labelString: List All
+!
+! Composition window (*compose_window):
+!
+! Address input area
+*compose_window*to_label.labelString: To:
+*compose_window*cc_label.labelString: Cc:
+*compose_window*bcc_label.labelString: Bcc:
+*compose_window*subject_label.labelString: Subject:
+*compose_window*address_label.labelString: Addresses:
+!*compose_window*address_list.visibleItemCount: 5
+*compose_window*delete_addrs.labelString: Remove
+*compose_window*edit_addrs.labelString: Edit
+! Size of editing area
+*compose_text.columns: 80
+*compose_text.rows: 15
+!
+! Compose Options dialog (popped up from options menu)
+!
+*comp_opts_dialog*logfile_label.labelString: Log File:
+*comp_opts_dialog*record_label.labelString: Record File:
+*comp_opts_dialog*autosign.labelString: Autosign
+*comp_opts_dialog*return-receipt.labelString: Return-Receipt
+*comp_opts_dialog*autoformat.labelString: AutoFormat
+*comp_opts_dialog*edit-hdrs.labelString: Edit Headers
+*comp_opts_dialog*autodismiss.labelString: AutoDismiss
+*comp_opts_dialog*autoiconify.labelString: AutoIconify
+*comp_opts_dialog*autoclear.labelString: AutoClear
+*comp_opts_dialog*verify.labelString: Verify
+*comp_opts_dialog*verbose.labelString: Verbose
+*comp_opts_dialog*synchronous.labelString: Synch Send
+*comp_opts_dialog*record-user.labelString: Record-User
+!
+! Aliases popup (*comp_alias_dialog)
+!
+*comp_alias_dialog*alias_list.visibleItemCount: 8
+!
+! Aliases dialog (*alias_dialog):
+!
+! Height of name and address lists
+*alias_dialog*alias_list.visibleItemCount: 8
+! The default place to save aliases
+*alias_dialog*prompt_dialog*textString: ~/.zmailrc
+*alias_dialog*directions.labelString: \
+    Type name of alias and address list and select [Set] or [Unset]
+!
+! Attachments dialog (*attachments_dialog):
+!
+! Height of attachments list
+*attachment_list.visibleItemCount: 3
+!
+! Buttons and Functions dialog (*buttons_dialog):
+!
+! Height of lists of buttons and functions (should be the same)
+*buttons_dialog*button_list.visibleItemCount: 3
+*buttons_dialog*function_list.visibleItemCount: 3
+*buttons_dialog*selected_msgs_toggle.labelString: Uses selected messages
+! trailing whitespace below to force spacing
+*buttons_dialog*function_text_label.labelString: Function Text:     
+*buttons_dialog*available_functions.labelString: Available Functions:
+*buttons_dialog*current_buttons.labelString: Current Buttons:
+! Size of editing area
+*function_text.columns: 60
+*function_text.rows: 7
+! The default place to save buttons
+*buttons_dialog*prompt_dialog*textString: ~/.zmailrc
+!
+! Date Search dialog (*dates_dialog):
+!
+! Search criteria
+*dates_dialog*constrain_to_messages.labelString: Constrain to "Messages:"
+*dates_dialog*use_date_received.labelString: Use Date Message Received
+*dates_dialog*find_non_matching.labelString: Find Non-Matches
+*dates_dialog*search_all_folders.labelString: Search All Open Folders
+*dates_dialog*perform_function.labelString: Perform Function on Result
+*dates_dialog*on_date_only.labelString: On Date Only
+*dates_dialog*on_or_before.labelString: On or Before Date
+*dates_dialog*on_or_after.labelString: On or After Date
+*dates_dialog*between_dates.labelString: Between Dates
+! Height of list of functions to perform
+*dates_dialog*search_functions.visibleItemCount: 2
+! Height of list of matched messages
+*dates_dialog*search_result.visibleItemCount: 5
+!
+! Pattern Search dialog (*search_dialog):
+!
+! Search criteria
+*search_dialog*entire_message.labelString: Entire Message
+*search_dialog*to_fields.labelString: To:
+*search_dialog*from_fields.labelString: From:
+*search_dialog*subject.labelString: Subject:
+*search_dialog*header.labelString: Use Header:
+*search_dialog*constrain_to_messages.labelString: Constrain to "Messages:"
+*search_dialog*ignore_case.labelString: Ignore Case in Pattern
+*search_dialog*find_non_matching.labelString: Find Non-Matches
+*search_dialog*search_all_folders.labelString: Search All Open Folders
+*search_dialog*perform_function.labelString: Perform Function on Result
+! Height of list of functions to perform
+*search_dialog*search_functions.visibleItemCount: 2
+! Height of list of matched messages
+*search_dialog*search_result.visibleItemCount: 5
+!
+! Search and Replace dialog (*editor_dialog):
+!
+*editor_dialog*find_next.labelString: Next Occurrence
+*editor_dialog*find_all.labelString: All Occurrences
+*editor_dialog*ignore_case.labelString: Ignore Case
+*editor_dialog*wrap_around.labelString: Wrap Around
+*editor_dialog*confirm_replace.labelString: Confirm Replace
+! trailing whitespace below to force list width
+*spell_label.labelString: Misspelled Words    
+!*spell_label.labelString: Mispelt Words       
+!
+! Envelope dialog (*envelope_dialog):
+!
+! Height of list of personal headers
+*envelope_list.visibleItemCount: 8
+! The default place to save personal headers
+*envelope_dialog*prompt_dialog*textString: ~/.zmailrc
+*envelope_dialog*directions*labelString: \
+    Type name of header and new value and select [Set] or [Unset]
+!
+! Folder Manager dialog (*folders_dialog):
+!
+! File Finder Information
+! Height of list of file names
+*folders_dialog*file_finder*file_list.visibleItemCount: 5
+*folders_dialog*file_finder*file_label.labelString: Folder:
+! Quick foldering buttons
+*folders_dialog*system_folder.labelString: System Folder
+*folders_dialog*main_mailbox.labelString: Main Mailbox
+! Action Area Options
+*open_options.labelString: Open Options:
+*open_options_toggles*read_only.labelString: Open Read Only
+*open_options_toggles*add_folder.labelString: Add Folder
+*open_options_toggles*use_index.labelString: Use Index
+*open_options_toggles*merge_folder.labelString: Merge
+*save_options.labelString: Save Options:
+*save_text_only.labelString: Save Text Only
+*overwrite_file.labelString: Overwrite File
+*file_options.labelString: File Options:
+!*file_options_toggles*Create.labelString: Create
+!*file_options_toggles*Remove.labelString: Remove
+!*file_options_toggles*Rename.labelString: Rename
+!*file_options_toggles*View.labelString: View
+!
+! Opened Folders dialog (*open_fldrs_dialog)
+!
+*open_folder_list.visibleItemCount: 5
+*index_options.labelString: Indexing Options:
+*index_options_toggles*update_index.labelString: Update If Present
+*index_options_toggles*create_index.labelString: Create If Needed
+*index_options_toggles*suppress_index.labelString: Suppress Index
+!
+! Headers dialog (*headers_dialog):
+!
+*headers_dialog*ignored.labelString: Ignored Headers
+*headers_dialog*retained.labelString: Show Only
+! Height of list of ignored/retained headers
+*headers_list.visibleItemCount: 8
+! The default place to save ignored headers
+*headers_dialog*prompt_dialog*textString: ~/.zmailrc
+! trailing whitespace below to line up labels with lists
+*headers_dialog*settings*labelString: Current Settings:             
+*headers_dialog*choices*labelString: Available Choices:
+!
+! Help index (*help_index_dialog)
+!
+! Height of scrolled display
+*help_description.columns: 60
+*help_description.rows: 10
+! Height of index list (normally automatic from *help_description.rows)
+!*help_list.visibleItemCount: 9
+! Help Topics toggle box label
+*help_topics.labelString: Help Category:
+*help_topics_toggles*graphical.labelString: Graphical Interface
+*help_topics_toggles*z-script.labelString: Z-Script Commands
+!
+! Secondary help dialog
+!
+*information_dialog*output_text.columns: 80
+*information_dialog*output_text.rows: 20
+!
+! Paging dialog (*paging_dialog)
+!
+*paging_dialog*output_text.columns: 80
+*paging_dialog*output_text.rows: 20
+!
+! Printer dialog (*printer_dialog):
+*print_message.labelString: Print Message:
+*print_message_toggles*standard.labelString: Standard Message Headers
+*print_message_toggles*all_headers.labelString: All Message Headers
+*print_message_toggles*body_only.labelString: Message Body Only
+!
+! Custom Sort dialog (*sort_dialog):
+*sort_by.labelString: Sort By:
+!*sort_by_toggles*Date.labelString: Date
+!*sort_by_toggles*Subject.labelString: Subject
+!*sort_by_toggles*Author.labelString: Author
+!*sort_by_toggles*Length.labelString: Length
+!*sort_by_toggles*Priority.labelString: Priority
+!*sort_by_toggles*Status.labelString: Status
+!*sort_dialog*Reverse.labelString: Reverse
+*sort_dialog*ignore_case.labelString: Ignore Case in Sort
+*sort_dialog*use_Re_in_subject.labelString: Use "Re:" in Subject
+*sort_dialog*use_date_received.labelString: Sort By Date Received
+!
+! Templates dialog (*templates_dialog):
+!
+! Height of list of template names
+*template_list.visibleItemCount: 8
+!
+! Variables dialog (*variables_dialog):
+!
+*variables_dialog*variable_description.columns: 60
+*variables_dialog*variable_description.rows: 8
+*variables_dialog*var_description.labelString: Variable Description:
+*expand_refs.labelString: Expand variable/file references:
+!*expand_refs_toggles*Yes.labelString: Yes
+!*expand_refs_toggles*No.labelString: No
+! Height of index list (normally automatic from *variable_description.rows)
+!*variable_list.visibleItemCount: 17
+! The default place to save options
+*saveopts_file_text.value: ~/.zmailrc
+!
+! Colors dialog (*color_dialog)
+!
+*color_dialog*samples.labelString: Samples:
+!*color_dialog*samples_toggles*Foreground.labelString: Foreground
+!*color_dialog*samples_toggles*Background.labelString: Background
+*color_dialog*sample_button.labelString: A Sample PushButton
+*color_dialog*objects.labelString: Objects:
+!*color_dialog*PushButtons.labelString: PushButtons
+!*color_dialog*Labels.labelString: Labels
+!*color_dialog*ToggleButtons.labelString: ToggleButtons
+!*color_dialog*Scrollbars.labelString: Scrollbars
+!*color_dialog*Managers.labelString: Managers
+!*color_dialog*Texts.labelString: Texts
+!*color_dialog*Lists.labelString: Lists
+!*color_dialog*Scales.labelString: Scales
+!*color_dialog*Menubars.labelString: Menubars
+!*color_dialog*Menus.labelString: Menus
+!*color_dialog*coloring_mode.labelString: Coloring Mode:
+!*color_dialog*interactive.labelString: Interactive
+!*color_dialog*object_type.labelString: Object Type
+*color_dialog*use_color.labelString: Use Color:
+*color_dialog*prompt_dialog*textString: ~/.zmcolors
+! This string defines the colors from which to choose
+*color_dialog*color_list.labelString: \
+    White, RosyBrown2, HotPink, VioletRed, Red, Brown, RosyBrown4, Tan, \
+    Wheat, GoldenRod, Orange, Gold, Yellow, Green, LimeGreen, \
+    MediumAquamarine, SeaGreen, OliveDrab, DarkOliveGreen, LightCyan4, \
+    CadetBlue, Aquamarine, Turquoise, Cyan, LightCyan2, LightSteelBlue1, \
+    LightSteelBlue2, LightSteelBlue4, SteelBlue, SkyBlue4, SkyBlue3, \
+    SkyBlue2, SkyBlue1, Blue, Navy, Purple, Magenta, Violet, Plum, \
+    grey90, grey83, grey75, grey65, grey50, grey40, grey35, grey25, Black
+!
+! Fonts dialog (*fonts_dialog)
+!
+*fonts_dialog*obj_label.labelString: Objects:
+*fonts_dialog*prompt_dialog*textString: ~/.zmfonts
+!*fonts_dialog*PushButtons.labelString: PushButtons
+!*fonts_dialog*Labels.labelString: Labels
+!*fonts_dialog*ToggleButtons.labelString: ToggleButtons
+!*fonts_dialog*Texts.labelString: Texts
+!*fonts_dialog*Lists.labelString: Lists
+!*fonts_dialog*Menus.labelString: Menus
+*fonts_dialog*set_mode.labelString: Set Mode:
+*fonts_dialog*interactive.labelString: Fonts: Interactive
+*fonts_dialog*object_type.labelString: Fonts: Object Type
+*fonts_dialog*label_only.labelString: Label Only
+*fonts_dialog*label_font.labelString: Label And Font
+!
+! MenuBar resources.
+! Everything (and we mean -everything-) for the menubars for all windows
+! (currently: main_window, compose_window, message_window) is specified here.
+! This includes, labels, mnemonics, accelerators and accelerator texts.
+! WARNING: You may alter the labelString values, but DO NOT remove them!
+! Accelerators and mnemonics may be safely added or removed, but be sure
+! that the acceleratorText changes with the accelerator.
+!
+! Menu bar labels sometimes have trailing whitespace to force more visually
+! pleasing layout of the menu bar itself.
+!
+! Main window:
+!
+! File menu
+!
+*menu_bar.file.labelString: File 
+*menu_bar.file.mnemonic: F
+! file menu (fm) items
+! Some shared by Message Window
+*menu_bar*fm_folders.labelString: Folder Manager ...
+*menu_bar*fm_folders.mnemonic: F
+*menu_bar*fm_folders.accelerator: Ctrl<Key>F
+*menu_bar*fm_folders.acceleratorText: Ctrl+F
+*menu_bar*fm_add_folder.labelString: Add Folder ...
+*menu_bar*fm_add_folder.mnemonic: A
+*menu_bar*fm_add_folder.accelerator: Ctrl<Key>A
+*menu_bar*fm_add_folder.acceleratorText: Ctrl+A
+*menu_bar*fm_update.labelString: Update Folder
+*menu_bar*fm_update.mnemonic: U
+*menu_bar*fm_close_fldr.labelString: Close Folder
+*menu_bar*fm_close_fldr.mnemonic: C
+*menu_bar*fm_active.labelString: Opened Folders ...
+*menu_bar*fm_active.mnemonic: O
+*menu_bar*fm_save_message.labelString: Save Messages ...
+*menu_bar*fm_save_message.mnemonic: S
+*menu_bar*fm_save_message.accelerator: Ctrl<Key>S
+*menu_bar*fm_save_message.acceleratorText: Ctrl+S
+*menu_bar*fm_print.labelString: Print Messages ...
+*menu_bar*fm_print.mnemonic: P
+*menu_bar*fm_save_state.labelString: Save Configuration ...
+*menu_bar*fm_save_state.mnemonic: v
+*menu_bar*fm_save_state*prompt_dialog*textString: ~/.zmailrc
+*menu_bar*fm_quit.labelString: Quit
+*menu_bar*fm_quit.mnemonic: Q
+*menu_bar*fm_quit.accelerator: Ctrl<Key>C
+*menu_bar*fm_quit.acceleratorText: Ctrl+C
+! File menu for the message reading window.
+*menu_bar*fm_iconify.labelString: Iconify
+*menu_bar*fm_iconify.mnemonic: I
+*menu_bar*fm_iconify.accelerator: Ctrl<Key>I
+*menu_bar*fm_iconify.acceleratorText: Ctrl+I
+*menu_bar*fm_close.labelString: Close
+*menu_bar*fm_close.mnemonic: C
+*menu_bar*fm_close.accelerator: Ctrl<Key>C
+*menu_bar*fm_close.acceleratorText: Ctrl+C
+!
+! Edit menu
+!
+*menu_bar.edit.labelString: Edit 
+*menu_bar.edit.mnemonic: E
+! edit menu (em) items
+*menu_bar*em_delete.labelString: Delete
+*menu_bar*em_delete.mnemonic: D
+*menu_bar*em_undelete.labelString: Undelete
+*menu_bar*em_undelete.mnemonic: U
+*menu_bar*em_preserve.labelString: Preserve
+*menu_bar*em_preserve.mnemonic: P
+*menu_bar*em_unpreserve.labelString: Unpreserve
+*menu_bar*em_mark.labelString: Mark
+*menu_bar*em_mark.mnemonic: M
+*menu_bar*em_unmark.labelString: Unmark
+*menu_bar*em_priority.labelString: Prioritize
+! The priority pullright is shared with the Compose window
+! and with the message-summaries right-button popup
+*emp_a.labelString: A
+*emp_a.mnemonic: A
+*emp_b.labelString: B
+*emp_b.mnemonic: B
+*emp_c.labelString: C
+*emp_c.mnemonic: C
+*emp_d.labelString: D
+*emp_d.mnemonic: D
+*emp_e.labelString: E
+*emp_e.mnemonic: E
+*emp_clear.labelString: None
+*emp_clear.mnemonic: N
+!
+! View menu
+!
+*menu_bar.view.labelString: View 
+*menu_bar.view.mnemonic: V
+! view menu (vm) items
+*menu_bar*vm_show.labelString: Read Message
+*menu_bar*vm_show.mnemonic: R
+*menu_bar*vm_pinup.labelString: Pin-Up Message
+*menu_bar*vm_pinup.mnemonic: P
+*menu_bar*vm_pattern.labelString: Pattern Search ...
+*menu_bar*vm_date.labelString: Date Search ...
+! message window...
+*menu_bar*vm_next.labelString: Read Next
+*menu_bar*vm_next.mnemonic: N
+*menu_bar*vm_next_reference.labelString: Next Reference
+*menu_bar*vm_next_reference.mnemonic: R
+! reference pullright menu
+*menu_bar*nm_same_subject.labelString: By Subject
+*menu_bar*nm_same_subject.mnemonic: S
+*menu_bar*nm_same_author.labelString: By Author
+*menu_bar*nm_same_author.mnemonic: A
+*menu_bar*nm_same_msgid.labelString: By Message ID
+*menu_bar*nm_same_msgid.mnemonic: M
+! continue with message window view menu
+*menu_bar*vm_next.accelerator: Ctrl<Key>N
+*menu_bar*vm_next.acceleratorText: Ctrl+N
+*menu_bar*vm_prev.labelString: Read Previous
+*menu_bar*vm_prev.acceleratorText: P
+*menu_bar*vm_prev.accelerator: Ctrl<Key>P
+*menu_bar*vm_prev.acceleratorText: Ctrl+P
+*menu_bar*vm_search.labelString: Search ...
+*menu_bar*vm_search.mnemonic: S
+!*menu_bar*vm_search.accelerator: Ctrl Shift<Key>S
+!*menu_bar*vm_search.acceleratorText: Shift+Ctrl+S
+!
+! Options menu
+!
+*menu_bar.options.labelString: Options 
+*menu_bar.options.mnemonic: O
+! option menu (om) items
+*menu_bar*om_variables.labelString: Variables ...
+*menu_bar*om_variables.mnemonic: V
+*menu_bar*om_variables.accelerator: Ctrl<Key>V
+*menu_bar*om_variables.acceleratorText: Ctrl+V
+*menu_bar*om_headers.labelString: Headers ...
+*menu_bar*om_headers.mnemonic: H
+*menu_bar*om_envelope.labelString: Envelope ...
+*menu_bar*om_envelope.mnemonic: E
+*menu_bar*om_aliases.labelString: Aliases ...
+*menu_bar*om_aliases.mnemonic: A
+*menu_bar*om_buttons.labelString: Buttons ...
+*menu_bar*om_buttons.mnemonic: B
+*menu_bar*om_buttons.accelerator: Ctrl<Key>B
+*menu_bar*om_buttons.acceleratorText: Ctrl+B
+*menu_bar*om_colors.labelString: Colors ...
+*menu_bar*om_colors.mnemonic: C
+*menu_bar*om_fonts.labelString: Fonts ...
+*menu_bar*om_fonts.mnemonic: F
+*menu_bar*om_toolbox.labelString: Toolbox ...
+*menu_bar*om_toolbox.mnemonic: T
+*menu_bar*om_toolbox.accelerator: Ctrl<Key>T
+*menu_bar*om_toolbox.acceleratorText: Ctrl+T
+!
+! Compose Menu
+!   Note: This handles the main window and the compose window.
+!         If you want these two to differ, you must copy relevant
+!         resources for *compose_window.menubar.....
+!
+*menu_bar.compose.labelString: Compose 
+*menu_bar.compose.mnemonic: C
+! compose menu (cm) items
+*menu_bar*cm_compose.labelString: New
+*menu_bar*cm_compose.mnemonic: N
+*menu_bar*cm_compose.accelerator: Ctrl<Key>N
+*menu_bar*cm_compose.acceleratorText: Ctrl+N
+*menu_bar*cm_reply.labelString: Reply 
+*menu_bar*cm_reply.mnemonic: R
+! reply menu (rm) items (this menu is also shared by the message window)
+*menu_bar.reply.labelString: Reply
+*menu_bar.reply.mnemonic: R
+*menu_bar*rm_replysender.labelString: Sender Only
+*menu_bar*rm_replyall.labelString: All Recipients
+*menu_bar*rm_sender_inc.labelString: Sender (Include Msg.)
+*menu_bar*rm_all_inc.labelString: All (Include Msg.)
+! reply menu specifics for the message window
+*message_window*menu_bar*rm_replysender.accelerator: Ctrl<Key>R
+*message_window*menu_bar*rm_replysender.acceleratorText: Ctrl+R
+*message_window*menu_bar*rm_replyall.accelerator: Ctrl Shift<Key>R
+*message_window*menu_bar*rm_replyall.acceleratorText: Shift+Ctrl+R
+!*message_window*menu_bar*rm_sender_inc.accelerator: Meta Ctrl<Key>R
+!*message_window*menu_bar*rm_sender_inc.acceleratorText: Meta+Ctrl+R
+!*message_window*menu_bar*rm_all_inc.accelerator: Meta Ctrl Shift<Key>R
+!*message_window*menu_bar*rm_all_inc.acceleratorText: Meta+Shift+Ctrl+R
+*menu_bar*cm_forward.labelString: Forward
+*menu_bar*cm_forward.mnemonic: F
+*menu_bar*cm_templates.labelString: Templates ...
+*menu_bar*cm_templates.mnemonic: T
+! forward menu (fwm) items for the message window
+*menu_bar.forward.labelString: Forward
+*menu_bar.forward.mnemonic: F
+*menu_bar*fwm_resend.labelString: Resend ...
+*menu_bar*fwm_resend.mnemonic: R
+*menu_bar*fwm_add_cmnts.labelString: with Comments ...
+*menu_bar*fwm_add_cmnts.mnemonic: C
+*menu_bar*fwm_edit.labelString: Edited ...
+*menu_bar*fwm_edit.mnemonic: E
+!
+! Sort menu
+!
+*menu_bar.sort.labelString: Sort 
+*menu_bar.sort.mnemonic: S
+! sort menu (sm) items
+*menu_bar*sm_date.labelString: By Date
+*menu_bar*sm_date.mnemonic: D
+*menu_bar*sm_subject.labelString: By Subject
+*menu_bar*sm_subject.mnemonic: S
+*menu_bar*sm_author.labelString: By Author
+*menu_bar*sm_author.mnemonic: A
+*menu_bar*sm_length.labelString: By Message Length
+*menu_bar*sm_length.mnemonic: L
+*menu_bar*sm_priority.labelString: By Priority
+*menu_bar*sm_priority.mnemonic: P
+*menu_bar*sm_status.labelString: By Status
+*menu_bar*sm_status.mnemonic: t
+*menu_bar*sm_custom.labelString: Custom Sort ...
+!
+! Windows menu
+!
+*main_window.menu_bar.windows.labelString: Panes
+*main_window.menu_bar.windows.mnemonic: P
+! window menu (win) items
+*main_window.menu_bar*win_title.labelString: Folder Status
+*main_window.menu_bar*win_title.mnemonic: S
+*main_window.menu_bar*win_control.labelString: Folder Panel
+*main_window.menu_bar*win_control.mnemonic: F
+*main_window.menu_bar*win_list.labelString: Message Summaries
+*main_window.menu_bar*win_list.mnemonic: M
+*main_window.menu_bar*win_panel.labelString: Button Panel
+*main_window.menu_bar*win_panel.mnemonic: B
+*main_window.menu_bar*win_output.labelString: Output Window
+*main_window.menu_bar*win_output.mnemonic: O
+*main_window.menu_bar*win_command.labelString: Command Line
+*main_window.menu_bar*win_command.mnemonic: L
+!
+! Help menu
+!
+*menu_bar.help.labelString: Help
+*menu_bar.help.mnemonic: H
+! help menu (hm) items
+*menu_bar*hm_general.labelString: General ...
+*menu_bar*hm_general.mnemonic: G
+*menu_bar*hm_context.labelString: On Context
+*menu_bar*hm_context.mnemonic: C
+*menu_bar*hm_main_window.labelString: Main Window ...
+*menu_bar*hm_main_window.mnemonic: W
+*menu_bar*hm_folder_field.labelString: Folder: Field ...
+*menu_bar*hm_folder_field.mnemonic: F
+*menu_bar*hm_messages_field.labelString: Messages: Field ...
+*menu_bar*hm_messages_field.mnemonic: M
+*menu_bar*hm_summaries.labelString: Message Summaries ...
+*menu_bar*hm_summaries.mnemonic: S
+*menu_bar*hm_buttons.labelString: Button Panel ...
+*menu_bar*hm_buttons.mnemonic: B
+*menu_bar*hm_output_win.labelString: Output Window ...
+*menu_bar*hm_output_win.mnemonic: O
+*menu_bar*hm_command_area.labelString: Command: Line ...
+*menu_bar*hm_command_area.mnemonic: L
+!*menu_bar*hm_lists.labelString: Message Lists ...
+!*menu_bar*hm_lists.mnemonic: M
+!*menu_bar*hm_hdr_format.labelString: Header Format ...
+!*menu_bar*hm_hdr_format.mnemonic: H
+*menu_bar*hm_about.labelString: About ...
+*menu_bar*hm_about.mnemonic: A
+*menu_bar*hm_index.labelString: Index ...
+*menu_bar*hm_index.mnemonic: I
+!
+! Message window:
+!
+! (see shared menus above)
+*menu_bar*hm_message_win.labelString: Message Window ...
+*menu_bar*hm_message_win.mnemonic: M
+*menu_bar*hm_message_win.accelerator: <Key>F1
+*menu_bar*hm_message_win.acceleratorText: F1
+!
+! Compose window:
+!
+! File menu
+!
+*compose_window.menu_bar.file.labelString: File 
+*compose_window.menu_bar.file.mnemonic: F
+! file menu (fm) items
+*compose_window.menu_bar*fm_open.labelString: Open
+*compose_window.menu_bar*fm_open.mnemonic: O
+*compose_window.menu_bar*fm_open*om_insert.labelString: Insert Text ...
+*compose_window.menu_bar*fm_open*om_insert.mnemonic: I
+*compose_window.menu_bar*fm_open*om_replace.labelString: Replace Text ...
+*compose_window.menu_bar*fm_open*om_replace.mnemonic: R
+*compose_window.menu_bar*fm_save.labelString: Save ...
+*compose_window.menu_bar*fm_save.mnemonic: S
+*compose_window.menu_bar*fm_save.accelerator: Ctrl<Key>S
+*compose_window.menu_bar*fm_save.acceleratorText: Ctrl+S
+*compose_window.menu_bar*fm_templates.labelString: Templates ...
+*compose_window.menu_bar*fm_templates.mnemonic: T
+*compose_window.menu_bar*fm_done.labelString: Done
+*compose_window.menu_bar*fm_done.mnemonic: D
+!
+! Edit menu
+!
+*compose_window.menu_bar.edit.labelString: Edit 
+*compose_window.menu_bar.edit.mnemonic: E
+! edit menu (em) items
+*compose_window.menu_bar*em_cut.labelString: Cut
+*compose_window.menu_bar*em_cut.mnemonic: C
+*compose_window.menu_bar*em_cut.accelerator: Shift Meta<Key>X
+*compose_window.menu_bar*em_cut.acceleratorText: Shift+Meta+X
+*compose_window.menu_bar*em_copy.labelString: Copy
+*compose_window.menu_bar*em_copy.mnemonic: o
+*compose_window.menu_bar*em_copy.accelerator: Shift Meta<Key>C
+*compose_window.menu_bar*em_copy.acceleratorText: Shift+Meta+C
+*compose_window.menu_bar*em_paste.labelString: Paste
+*compose_window.menu_bar*em_paste.mnemonic: P
+*compose_window.menu_bar*em_paste.accelerator: Shift Meta<Key>V
+*compose_window.menu_bar*em_paste.acceleratorText: Shift+Meta+V
+! Select All is shared with main window Edit menu
+*menu_bar*em_select_all.labelString: Select All
+*menu_bar*em_select_all.mnemonic: A
+*menu_bar*em_select_all.accelerator: Shift Meta<Key>A
+*menu_bar*em_select_all.acceleratorText: Shift+Meta+A
+*compose_window.menu_bar*em_clear.labelString: Clear
+*compose_window.menu_bar*em_clear.mnemonic: l
+*compose_window.menu_bar*em_format.labelString: Format
+*compose_window.menu_bar*em_format.mnemonic: F
+*compose_window.menu_bar*em_search.labelString: Search/Spell ...
+*compose_window.menu_bar*em_search.mnemonic: S
+*compose_window.menu_bar*em_editor.labelString: Editor
+*compose_window.menu_bar*em_editor.mnemonic: E
+!
+! Options menu -- currently unused!
+!
+! The items in the options menu are the 4 toggle buttons in the
+! compose window.  Note that mnemonics are only used if items are
+! in a menu--otherwise they have no functional effect (so we don't
+! display them).
+*compose_window.menu_bar.options.labelString: Options 
+*compose_window.menu_bar.options.mnemonic: O
+! options menu items -- "menubar" isn't specified so resources apply
+! whether the item is in a menu or just in the window.
+*compose_window*om_autosign.labelString: Autosign
+*compose_window.menu_bar*autosign.mnemonic: A
+*compose_window*om_autoformat.labelString: Autoformat
+*compose_window.menu_bar*autoformat.mnemonic: f
+*compose_window*om_return-receipt.labelString: Return-Receipt
+*compose_window.menu_bar*return-receipt.mnemonic: R
+*compose_window*om_edit-headers.labelString: Edit Headers
+*compose_window.menu_bar*edit-headers.mnemonic: E
+*compose_window*om_record-msg.labelString: Record Message
+*compose_window.menu_bar*record-msg.mnemonic: M
+*compose_window*om_options.labelString: Options ...
+!
+! Include menu
+!
+*compose_window.menu_bar.include.labelString: Include 
+*compose_window.menu_bar.include.mnemonic: I
+! include menu (im) items
+*compose_window.menu_bar*im_selected.labelString: Indented Message(s)
+*compose_window.menu_bar*im_selected.mnemonic: I
+*compose_window.menu_bar*im_forward.labelString: Unmodified Message(s)
+*compose_window.menu_bar*im_forward.mnemonic: U
+!
+! Compose menu already handled above.
+! ...
+!
+! Deliver menu
+!
+*compose_window.menu_bar.deliver.labelString: Deliver 
+*compose_window.menu_bar.deliver.mnemonic: D
+! deliver menu (dm) items
+*compose_window.menu_bar*dm_send.labelString: Send
+*compose_window.menu_bar*dm_send.mnemonic: S
+*compose_window.menu_bar*dm_send.accelerator: Ctrl Shift<Key>S
+*compose_window.menu_bar*dm_send.acceleratorText: Shift+Ctrl+S
+*compose_window.menu_bar*dm_send_n_close.labelString: Send, Close window
+*compose_window.menu_bar*dm_send_n_close.accelerator: Ctrl Shift<Key>D
+*compose_window.menu_bar*dm_send_n_close.acceleratorText: Shift+Ctrl+D
+!*compose_window.menu_bar*dm_send_n_reuse.labelString: Send, Leave intact
+!*compose_window.menu_bar*dm_send_n_reuse.accelerator: Ctrl Shift<Key>X
+!*compose_window.menu_bar*dm_send_n_reuse.acceleratorText: Shift+Ctrl+X
+!*compose_window.menu_bar*dm_send_n_clear.labelString: Send, Erase window
+!*compose_window.menu_bar*dm_send_n_clear.accelerator: Ctrl Shift<Key>E
+!*compose_window.menu_bar*dm_send_n_clear.acceleratorText: Shift+Ctrl+E
+*compose_window.menu_bar*dm_cancel.labelString: Cancel
+*compose_window.menu_bar*dm_cancel.mnemonic: C
+*compose_window.menu_bar*dm_cancel.accelerator: Ctrl<Key>C
+*compose_window.menu_bar*dm_cancel.acceleratorText: Ctrl+C
+!
+! Headers menu
+!
+*compose_window.menu_bar.headers.labelString: Headers 
+*compose_window.menu_bar.headers.mnemonic: a
+! headers menu (hdrs) items
+*compose_window.menu_bar*hdrs_all.labelString: All
+*compose_window.menu_bar*hdrs_all.mnemonic: A
+*compose_window.menu_bar*hdrs_to.labelString: To
+*compose_window.menu_bar*hdrs_to.mnemonic: T
+*compose_window.menu_bar*hdrs_subject.labelString: Subject
+*compose_window.menu_bar*hdrs_subject.mnemonic: S
+*compose_window.menu_bar*hdrs_cc.labelString: Cc
+*compose_window.menu_bar*hdrs_cc.mnemonic: C
+*compose_window.menu_bar*hdrs_bcc.labelString: Bcc
+*compose_window.menu_bar*hdrs_bcc.mnemonic: B
+*compose_window.menu_bar*hdrs_priority.labelString: Prioritize
+*compose_window.menu_bar*hdrs_priority.mnemonic: P
+*compose_window.menu_bar*emp_none.labelString: Normal
+*compose_window.menu_bar*hdrs_custom.labelString: Custom ...
+*compose_window.menu_bar*hdrs_custom.mnemonic: u
+*compose_window.menu_bar*hdrs_aliases.labelString: Aliases ...
+*compose_window.menu_bar*hdrs_aliases.mnemonic: A
+!
+! Help menu
+!
+*compose_window.menu_bar.help.labelString: Help
+*compose_window.menu_bar.help.mnemonic: H
+! help menu (hm) items
+*compose_window.menu_bar*hm_compose_win.labelString: Compose Window ...
+*compose_window.menu_bar*hm_compose_win.mnemonic: C
+*compose_window.menu_bar*hm_compose_win.accelerator: <Key>F1
+*compose_window.menu_bar*hm_compose_win.acceleratorText: F1
+*compose_window.menu_bar*hm_addressing.labelString: Addressing ...
+*compose_window.menu_bar*hm_addressing.mnemonic: A
+!
+! License dialog
+!
+*license_dialog*progname_label.labelString: Program:
+*license_dialog*version_label.labelString: Version:
+*license_dialog*hostname_label.labelString: Hostname:
+*license_dialog*hostid_label.labelString: Hostid:
+*license_dialog*expiration_label.labelString: Expires:
+*license_dialog*max_users_label.labelString: Max Users:
+*license_dialog*entry_list.visibleItemCount: 5
+
+
+!
+! Zenter- specific stuff
+!
+*main_output_text.columns: 60
+*main_output_text.rows: 10
+*zmail_icons.foreground: Black
+*title: Z-Enter
+*iconName: Z-Enter
+*maxServers: 5
+*progNames: Z-Mail, Z-Mail_Lite, Z-Fax, ZCNLSD

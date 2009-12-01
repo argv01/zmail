@@ -1,0 +1,163 @@
+<HTML>
+<HEAD>
+<!-- This HTML file has been created by texi2html 1.35
+     from ../mstore/mstore.texi on 9 August 1996 -->
+
+<TITLE>Message Store API Requirements - Footnotes</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>Message Store API Requirements</H1>
+<H3><A NAME="FOOT1" HREF="mstore.html#FOOT1">(1)</A></H3>
+<P>It isn't sufficient
+to restrict these to mailboxes.  OLE and other compound-object systems
+will in fact permit an actual message store to appear as a message part.
+Even for flat-file "folders," we wish to treat the encapsulated file,
+after extraction from the message, as a message store; see
+section <A HREF="mstore.html#SEC35">Remarks</A>.
+<H3><A NAME="FOOT2" HREF="mstore.html#FOOT2">(2)</A></H3>
+<P>"Physical" here means "possessing object permanence,"
+thus, existing on a filesystem or similar storage in a relatively
+persistent form.
+<H3><A NAME="FOOT3" HREF="mstore.html#FOOT3">(3)</A></H3>
+<P>See previous footnote.
+<H3><A NAME="FOOT4" HREF="mstore.html#FOOT4">(4)</A></H3>
+<P>If the message store is not
+organized into mailboxes, then it is just a collection of messages; for
+our purposes we map any organization done by the message store onto the
+mailbox abstraction.
+<H3><A NAME="FOOT5" HREF="mstore.html#FOOT5">(5)</A></H3>
+<P>Bart.
+<H3><A NAME="FOOT6" HREF="mstore.html#FOOT6">(6)</A></H3>
+<P>Given this rule, how do we represent message
+files that are hard-linked into more than one directory?  (For example,
+MH or MHS message stores.)
+<H3><A NAME="FOOT7" HREF="mstore.html#FOOT7">(7)</A></H3>
+<P>When a message contains a message, what mailbox is
+considered to contain the nested message?  What if the message contains
+an entire message store (e.g. text/x-zm-folder)?  This is likely to be
+dependent on both the implementation of the mstore containing the
+message and the type of encapsulation used to place the nested object
+within the message.
+<H3><A NAME="FOOT8" HREF="mstore.html#FOOT8">(8)</A></H3>
+<P>This model anticipates implementing the Z-Script
+<CODE>write</CODE> command by fetching the message body and then writing it to
+a file.  Some message stores may require an explicit "export"
+operation.  Do we need a method for this?
+<H3><A NAME="FOOT9" HREF="mstore.html#FOOT9">(9)</A></H3>
+<P>Required for messages used by the
+mail transport object.
+<H3><A NAME="FOOT10" HREF="mstore.html#FOOT10">(10)</A></H3>
+<P>This may require calling on the mailbox or mstore
+object to produce a list of summaries, and then extract one from that list.
+<H3><A NAME="FOOT11" HREF="mstore.html#FOOT11">(11)</A></H3>
+<P>This operation is permitted to fail when the owner
+mailbox and its mstore are not also in an update state.
+<H3><A NAME="FOOT12" HREF="mstore.html#FOOT12">(12)</A></H3>
+<P>Note that the
+mailbox object is not necessarily the only object that represents a
+group of messages.  Whether a mailbox is implemented as a subclass of
+some more general message grouping object in Z-Mail is not addressed by
+this proposal.
+<H3><A NAME="FOOT13" HREF="mstore.html#FOOT13">(13)</A></H3>
+<P>This should support both moving around individual
+messages and sorting by attributes.  Are two primitives needed?
+<H3><A NAME="FOOT14" HREF="mstore.html#FOOT14">(14)</A></H3>
+<P>Filtering is implemented by a combination of
+polling followed by search/select and then some other action.
+<H3><A NAME="FOOT15" HREF="mstore.html#FOOT15">(15)</A></H3>
+<P>This may require asking each
+message to generate its summary, and then compiling a list.
+<H3><A NAME="FOOT16" HREF="mstore.html#FOOT16">(16)</A></H3>
+<P>This operation is permitted to fail when the mstore is
+not also in an update state.
+<H3><A NAME="FOOT17" HREF="mstore.html#FOOT17">(17)</A></H3>
+<P>Every message store has the right to representation by
+a mail transport.  If it cannot afford a mail transport, one will be
+provided for it.
+<H3><A NAME="FOOT18" HREF="mstore.html#FOOT18">(18)</A></H3>
+<P>Everything it says can and will be used against it.
+<H3><A NAME="FOOT19" HREF="mstore.html#FOOT19">(19)</A></H3>
+<P>Possibly grouped by attribute, e.g. subscribed.
+<H3><A NAME="FOOT20" HREF="mstore.html#FOOT20">(20)</A></H3>
+<P>Filtering is implemented by search/select
+message and then some other action, at time of "open."
+<H3><A NAME="FOOT21" HREF="mstore.html#FOOT21">(21)</A></H3>
+<P>E.g. subscribe/unsubscribe to mailbox.
+<H3><A NAME="FOOT22" HREF="mstore.html#FOOT22">(22)</A></H3>
+<P>Required for messages used by the
+mail transport object.
+<H3><A NAME="FOOT23" HREF="mstore.html#FOOT23">(23)</A></H3>
+<P>Reflect new ordering on store; this may
+involve multiple calls to move-a-message primitives!
+<H3><A NAME="FOOT24" HREF="mstore.html#FOOT24">(24)</A></H3>
+<P>Filtering is implemented by a combination
+of polling followed by search/select and then some other action.
+<H3><A NAME="FOOT25" HREF="mstore.html#FOOT25">(25)</A></H3>
+<P>Required for messages used by the
+mail transport object.
+<H3><A NAME="FOOT26" HREF="mstore.html#FOOT26">(26)</A></H3>
+<P>It may not be reasonable in the general case to
+update individual messages, but some stores may support it.
+<H3><A NAME="FOOT27" HREF="mstore.html#FOOT27">(27)</A></H3>
+<P>I.e. write to persistent store any cached changes to
+all mailboxes and messages.
+<H3><A NAME="FOOT28" HREF="mstore.html#FOOT28">(28)</A></H3>
+<P>For query by UI.
+<H3><A NAME="FOOT29" HREF="mstore.html#FOOT29">(29)</A></H3>
+<P>A mixed mailbox is not necessarily a subclass of the
+mailbox object; it is merely a mailbox object that is treated specially
+because the mstore on which it resides is the meta-store.
+<H3><A NAME="FOOT30" HREF="mstore.html#FOOT30">(30)</A></H3>
+<P>"Filesystem" here may
+include an object-oriented system like OLE.
+<H3><A NAME="FOOT31" HREF="mstore.html#FOOT31">(31)</A></H3>
+<P>Including local filesystem objects.
+<H3><A NAME="FOOT32" HREF="mstore.html#FOOT32">(32)</A></H3>
+<P>Includes establishing a connection
+when the store is remote, e.g. log in to IMAP server, etc.
+<H3><A NAME="FOOT33" HREF="mstore.html#FOOT33">(33)</A></H3>
+<P>E.g. shut down connection, etc.; see previous
+footnote.
+<H3><A NAME="FOOT34" HREF="mstore.html#FOOT34">(34)</A></H3>
+<P>E.g. delete a local file that is an mstore
+without first opening it as an mstore object.
+<H3><A NAME="FOOT35" HREF="mstore.html#FOOT35">(35)</A></H3>
+<P>I [Ben] think that Bart uses way too many footnotes.
+<H3><A NAME="FOOT36" HREF="mstore.html#FOOT36">(36)</A></H3>
+<P>Not
+necessarily the same mstore that created the mail transport!
+<H3><A NAME="FOOT37" HREF="mstore.html#FOOT37">(37)</A></H3>
+<P>Some implementations may require a separate mailbox for
+each unfinished draft.  Others may use a temporary mailbox for compositions
+and require an explicit step to save as a draft.  What model do we impose?
+<H3><A NAME="FOOT38" HREF="mstore.html#FOOT38">(38)</A></H3>
+<P>Tony suggests
+that sending may need to be a message object method, rather than an MTA
+object method.  However, Bart doesn't think it should be defined on generic
+messages; what would it mean, in the majority of cases?
+<H3><A NAME="FOOT39" HREF="mstore.html#FOOT39">(39)</A></H3>
+<P>Per
+previous footnote, Tony also thinks that resend may be a message object
+method.  This actually might make sense.
+<H3><A NAME="FOOT40" HREF="mstore.html#FOOT40">(40)</A></H3>
+<P>For most message stores, this is simply a fetch
+of the message to be included, to copy its text (with possible formatting)
+into the "body" of the new message.  However, some mstores may implement
+the include message operation directly, so we specify it as a primitive.
+<H3><A NAME="FOOT41" HREF="mstore.html#FOOT41">(41)</A></H3>
+<P>Is this sufficient, or do we need special primitives
+for "Attach Message", "Attach File", etc.?
+<H3><A NAME="FOOT42" HREF="mstore.html#FOOT42">(42)</A></H3>
+<P>Specifically, the Z-Mail `core'.
+<H3><A NAME="FOOT43" HREF="mstore.html#FOOT43">(43)</A></H3>
+<P>As a data
+point, CE Software, makers of QuickMail, are in the process of building
+a "middle layer" for their product that is in many ways similar in
+purpose (though not design) to our proposal.  CE's layer will support
+a CMC API and is planned to interface to MAPI, VIM, and Oracle databases
+as message stores (based on my informal conversation with their director
+of product development).
+<H3><A NAME="FOOT44" HREF="mstore.html#FOOT44">(44)</A></H3>
+<P>Dani
+</BODY>
+</HTML>

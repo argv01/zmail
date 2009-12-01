@@ -1,0 +1,1558 @@
+\input texinfo @c -*- texinfo -*-
+@comment %**start of header (This is for running Texinfo on a region.)
+@setfilename mstore.info
+@settitle Message Store API Requirements
+@c @finalout
+@c @smallbook
+@c @setchapternewpage odd
+@footnotestyle separate
+@comment %**end of header (This is for running Texinfo on a region.)
+
+@ifinfo
+This document describes the requirements for the Z-Mail Message Store
+API.  It is a PROPRIETARY and CONFIDENTIAL DRAFT.
+
+Software and documentation Copyright @copyright{} 1994 Z-Code Software
+Corp., a usurpation of NCD.
+@end ifinfo
+
+@titlepage
+@title Message Store API Requirements
+@subtitle Chapter IV:  A New Beginning
+@subtitle Manual version $Revision: 1.18 $
+@subtitle $Date: 1994/11/22 00:36:08 $
+@author Bart Schaefer
+@author Bob Glickstein
+@author and the Z-Code Engineers
+@page
+@vskip 0pt plus 1filll
+This document describes the requirements for the Z-Mail Message Store
+API.  It is a PROPRIETARY and CONFIDENTIAL DRAFT.
+
+Software and documentation Copyright @copyright{} 1994 Z-Code Software
+Corp., a usurpation of NCD.
+@end titlepage
+
+@node Top, Goals, (dir), (dir)
+@unnumbered Abstract
+
+Message Store Management is the first stage of the Z-Mail modularization
+project (M12N).  This document describes the design of a new set of
+objects and interfaces to create a generalized interface to a variety of
+message store types, independent of the protocols used to access those
+stores; and a standard model for management of messages, folders, and
+message stores themselves, relatively independent of the underlying
+implementations.
+
+This is a PROPRIETARY and CONFIDENTIAL DRAFT.  Comments and critique are
+requested.
+
+@menu
+* Goals::                       
+* Definitions::                 
+* Requirements::                
+* Message Store Implementations Considered::  
+* Message Store Object Model::  
+* Remarks::                     
+* User-Interface Considerations::  
+* Z-Script Considerations::     
+* Additional Recommendations::  
+* Unresolved Issues::           
+
+ --- The Detailed Node Listing ---
+
+Message Store Object Model
+
+* Message Object::              
+* Mailbox (Folder) Object::     
+* Message Store (MStore) Object::  
+* Meta-Store Object::           
+* Address Object::              
+* Mail Transport Object::       
+* Directory Service Object::    
+
+Message Object
+
+* Message Characteristics::     
+* Message Methods::             
+
+Mailbox (Folder) Object
+
+* Mailbox Characteristics::     
+* Mailbox Methods::             
+
+Message Store (MStore) Object
+
+* Message Store Characteristics::  
+* MStore Methods::              
+
+Meta-Store Object
+
+* Meta-Store Characteristics::  
+* Meta-Store Methods::          
+
+Address Object
+
+* Address Characteristics::     
+* Address Methods::             
+
+Address Characteristics
+
+* Address Subclasses::          
+* Addressing Heterogeneity::    
+* Addresses and Transport Protocols::  
+* Addresses and Directory Services::  
+* Address Qualifications::      
+
+Mail Transport Object
+
+* Mail Transport Characteristics::  
+* Mail Transport Methods::      
+@end menu
+
+@node Goals, Definitions, Top, Top
+@chapter Goals
+
+This proposal is intended to provide an architectural foundation for the
+management of a variety of message stores in Z-Mail.  This architecture
+should define an abstract interface for accessing message stores from
+the Z-Mail ``core,'' based on existing message store APIs and protocols
+including Z-Mail's own implicit message store model.  Of particular
+interest are remote message store protocols, especially those usable in
+a disconnected (i.e., sometimes-connected) manner; specifically, the
+architecture should support ``synchronization'' of a local copy of the
+message store with the actual store held on the remote server.
+
+Although the interface is expressed in terms of an object model, it is
+the operations defined on that model that are important.  The object
+model is intended to provide a framework for organizing those operations
+and a common means of viewing messaging data that may be stored in any
+of a variety of ``database'' formats, from true databases through simple
+collections of text objects in a file.  The operations, however, are
+intended to form an interface layer to a set of pre-existing message store
+implementations, some of which incorporate an object model and some of
+which do not.
+
+@node Definitions, Requirements, Goals, Top
+@chapter Definitions
+
+@table @asis
+@item Message
+An object composed of two or more parts; those parts are the
+@dfn{header} (addressing information and attributes) and one or more
+@dfn{body} parts.  Body parts may themselves be compound objects,
+including messages or even message stores. @footnote{It isn't sufficient
+to restrict these to mailboxes.  OLE and other compound-object systems
+will in fact permit an actual message store to appear as a message part.
+Even for flat-file ``folders,'' we wish to treat the encapsulated file,
+after extraction from the message, as a message store; see
+@ref{Remarks}.}  The specific structure of a message is defined by the
+type of message store that contains it.
+
+@item Mailbox (aka Folder)
+A logical collection of entities, where each entity may be a message or
+another (nested) mailbox.  A mailbox may or may not have a
+physical @footnote{``Physical'' here means ``possessing object permanence,''
+thus, existing on a filesystem or similar storage in a relatively
+persistent form.} representation.
+
+@item Message Store
+A physical @footnote{See previous footnote.} collection of messages,
+possibly organized into mailboxes, @footnote{If the message store is not
+organized into mailboxes, then it is just a collection of messages; for
+our purposes we map any organization done by the message store onto the
+mailbox abstraction.} and accessed via a well-defined (though possibly
+implicitly defined) set of operations.
+@end table
+
+@node Requirements, Message Store Implementations Considered, Definitions, Top
+@chapter Requirements
+
+The message store model adopted for Z-Mail should:
+
+@enumerate
+@item
+Support existing Z-Mail functionality as much as possible with each
+message store type (completely, for native store formats).  Includes:
+
+@enumerate a
+@item
+Extract header information
+@item
+Update status and priority (attributes)
+@item
+Retrieve or process entire messages as single objects
+
+@itemize @bullet
+@item
+Resending RFC822 messages
+@item
+Attach or otherwise include in outgoing mail
+@item
+Store and process locally
+@end itemize
+
+@item
+Retrieve or process message parts
+
+@itemize @bullet
+@item
+Extract attribute information from parts
+@item
+Recursively process message parts as messages
+@item
+Store and process message parts locally
+@end itemize
+
+@item
+Reorder messages within logical groupings
+@item
+Search and select
+@item
+Filter on header and/or body content
+@item
+Delete entire messages or individual body parts
+@item
+Edit messages or body parts
+@end enumerate
+
+@item
+Facilitate introduction of new Z-Mail functionality.  Includes, but is
+not limited to:
+
+@itemize @bullet
+@item
+Annotate (comments, replied-to or sent-to info, etc.)
+@item
+Filter outgoing messages on header/body content
+@item
+Encryption and digital signatures
+@item
+Store by reference rather than multiple copies (?)
+@item
+Optimizations
+@end itemize
+
+@item
+Support both ``local'' and ``remote'' message stores.  This includes:
+
+@itemize @bullet
+@item
+Hide the message store implementation behind a data abstraction.
+@item
+Facilitate POP and IMAP interaction with the Z-Mail core.
+@item
+Facilitate ``folder synchronization'' for disconnected Z-Mail sessions.
+@end itemize
+
+@item
+Facilitate incorporation of additional (new) message store back-ends
+into Z-Mail.
+@end enumerate
+
+In addition, the message store object must support the following operations:
+
+@itemize @bullet
+@item
+List mailboxes in the store
+@item
+List messages in each mailbox
+@end itemize
+
+The following operations are desirable, and should be considered in the
+object model, but are not required for all message stores:
+
+@itemize @bullet
+@item
+Create and delete mailboxes
+@item
+Move and copy messages among mailboxes
+@item
+Add messages to the message store (not just outgoing messages)
+@end itemize
+
+@node Message Store Implementations Considered, Message Store Object Model, Requirements, Top
+@chapter Message Store Implementations Considered
+
+The following message stores and their interface protocols and/or APIs
+were considered in developing this design:
+
+@itemize @bullet
+@item
+CMC
+@item
+HP OpenMail
+@item
+IMAP 4
+@item
+Simple MAPI
+@item
+Extended MAPI
+@item
+POP 3
+@end itemize
+
+In some cases, the characteristics of these message stores have been
+extrapolated from the API or protocol calls available to manipulate
+them.
+
+In addition, existing Z-Mail usage of ``V7'' and MMDF format flat-file
+mailboxes (folders) was considered.  MH and MHS mail hierarchies were
+considered from the standpoint of storage formats; detailed analysis of
+the MH command set was not (as of this writing) performed.  MHS is a
+storage-format-based mail exchange only, and has no explicit API.
+
+Note that of these stores, CMC, OpenMail, and MAPI all subsume the
+outgoing message transport agent function and directory services
+functions as well.  This is addressed by the message store model.
+
+@heading CMC operations
+
+CMC is an API designed for use by mail-enabled applications, not mail
+user agents.  See ``Simple MAPI operations'' below for more discussion.
+
+@enumerate
+@item
+logon/logoff
+@item
+send message/send documents
+@item
+list summaries
+@item
+read message
+@item
+look up addresses (address book)
+@item
+delete message
+@item
+execute ``extended'' command (server-defined command set)
+@end enumerate
+
+@heading OpenMail operations
+
+@enumerate
+@item
+initialize API/connect/logon
+@item
+logout/disconnect/terminate API
+@item
+send/receive files
+@item
+list contents of ``container'' objects
+@item
+read (convert to text) message objects
+@item
+check addresses against directory (address book)
+@item
+compose new/reply/forward
+
+@itemize @bullet
+@item
+include file
+@item
+send (with possible deferral)
+@item
+request ack
+@item
+attach item
+@end itemize
+
+@item
+cancel deferred mail
+@item
+copy/move/delete item (message, part of composition, etc.)
+@item
+reorder item within container
+@item
+export file (UNIX only?)
+@item
+directory (address book) manipulation
+
+@itemize @bullet
+@item
+list address books
+@item
+create/open/modify/delete attributes
+@item
+add/delete/modify entries
+@item
+search entries for an address
+@item
+list/add/delete/modify ``access control list'' (HP filesystem thing)
+@end itemize
+
+@end enumerate
+
+@heading IMAP 4 operations
+
+@enumerate
+@item
+query server capabilities
+@item
+login/authenticate/logout
+@item
+list mailboxes (optionally restrict to ``subscribed'' subset)
+@item
+create/rename/delete mailbox
+@item
+append new message to mailbox
+@item
+checkpoint mailboxes
+@item
+poll for new messages in mailbox
+@item
+open (select or examine) mailbox
+@item
+update (expunge) mailbox
+@item
+close (and expunge) mailbox
+@item
+search (many criteria)
+@item
+fetch messages/fetch partially
+@item
+fetch message parts (by message structure)
+@item
+update attributes (store)
+@item
+copy message to another mailbox
+@end enumerate
+
+@heading Simple MAPI operations
+
+Simple MAPI was initially considered as a possible message store access
+method for us to support.  Further investigation reveals that Simple MAPI
+is only intended as a set of calls to invoke a messaging user agent from
+another mail-enabled application.  It is of interest only as an example
+of the types of operations a UA must either be able to request from its
+message store provider or be able to implement independently.
+
+Note that Simple MAPI doesn't provide any operations designed for
+managing existing mail; you can't even list messages except by ``find
+next''.
+
+@enumerate
+@item
+logon/logoff
+@item
+input address
+@item
+delete message
+@item
+``find next'' message (i.e. sequential ala DOS ``find next'' file)
+@item
+read message
+@item
+save message
+@item
+send message/send document
+@item
+show directory (address book) entry
+@item
+check address against address book
+@end enumerate
+
+@heading Extended MAPI operations
+
+MAPI provides an entire messaging architecture similar to the one described
+in this document.  An issue has been raised as to whether we are therefore
+"reinventing the wheel" by even considering implementing this structure.
+See @ref{Remarks}, ``Special Discussion of MAPI''.
+
+A simplified description of the MAPI architecture would divide it into
+three major sections:  The client interface, the service provider interface,
+and the drivers.  Drivers are further subdivided into address books (our
+directory service), transports (our mail transport), and message stores
+(corresponding to the major object model described in this document).  The
+service provider interface is embedded in the Windows operating system and
+accessed by the clients through the client interface.  The service provider
+interface launches the actual service provider application/UI (e.g. MSMail)
+and connects it to the drivers, which manipulate the persistent data.
+
+Note that Extended MAPI operates almost entirely by modifying
+``properties'' of ``MAPI objects.''  These properties form an almost
+inclusive superset of OpenMail and IMAP 4 operations, and (obviously) a
+superset of Simple MAPI.  For Z-Mail to be a MAPI service provider, it
+must provide a MAPI-defined set of methods so that it can be launched
+and accessed when a MAPI client makes requests; and it MUST manipulate
+the message store through the Extended MAPI drivers, because the client
+may also be expecting to directly manipulate MAPI objects.
+
+This means that our primary considerations in developing for MAPI must be
+to easily support use of Extended MAPI from our user agent (UA) side, and
+to be able to build driver modules from the point of view of transport and
+store.  Investigation of what is required for each of these is continuing.
+It is currently my @footnote{Bart.} belief that implementing the structure
+defined here will support the effort to supply drivers, possibly at the
+cost of some duplicated effort in the UA.
+
+@heading POP 3 operations
+
+@enumerate
+@item
+logon/logoff
+@item
+mailbox status (number of messages, size, last seen)
+@item
+list messages (numbers and sizes)
+@item
+retrieve message (read)
+@item
+delete message
+@end enumerate
+
+@node Message Store Object Model, Remarks, Message Store Implementations Considered, Top
+@chapter Message Store Object Model
+
+The object model proposed here uses four basic object types:  Message,
+mailbox, message store (mstore), and a special message store termed the
+@dfn{meta-store}.  The meta-store shares many characteristics with
+mstore objects, and may be implementable as a subclass of message
+stores; it is presented as a separate object for clarity.  Each of these
+objects, except the meta-store, may be considered to act as a cache for
+persistent objects residing in a persistent message store.  Whether they
+act as ``write-through'' caches will be implementation dependent.
+
+In addition, a mail transport object and a directory service object are
+assumed as part of the complete set of possible capabilities of message
+store implementations.  However, the specific characteristics of these
+objects are not discussed in this proposal.
+
+@menu
+* Message Object::              
+* Mailbox (Folder) Object::     
+* Message Store (MStore) Object::  
+* Meta-Store Object::           
+* Address Object::              
+* Mail Transport Object::       
+* Directory Service Object::    
+@end menu
+
+@node Message Object, Mailbox (Folder) Object, Message Store Object Model, Message Store Object Model
+@section Message Object
+
+@menu
+* Message Characteristics::     
+* Message Methods::             
+@end menu
+
+@node Message Characteristics, Message Methods, Message Object, Message Object
+@subsection Message Characteristics
+
+@itemize @bullet
+@item
+A message object must reside in at least one mailbox, and has a reference
+to each mailbox in which it resides.  One of these mailboxes must be the
+@dfn{owner} mailbox for the message, which is used to reference the message
+store in which the message resides.  The message knows which mailbox is
+its owner.
+
+@item
+A single message object may simultaneously reside in more than one
+mailbox only when all mailboxes containing the message reside either on
+the same message store, or on the meta-store and exactly one other
+message store. @footnote{Given this rule, how do we represent message
+files that are hard-linked into more than one directory?  (For example,
+MH or MHS message stores.)}
+
+@item
+Operations on message objects are ultimately implemented by the message
+store on which they reside.  Per the cache model, however, some
+operations may be recorded by the message object and later flushed
+(updated) to the message store.
+
+@item
+Message objects are compound objects (see def'n of a
+message). @footnote{When a message contains a message, what mailbox is
+considered to contain the nested message?  What if the message contains
+an entire message store (e.g. text/x-zm-folder)?  This is likely to be
+dependent on both the implementation of the mstore containing the
+message and the type of encapsulation used to place the nested object
+within the message.}
+
+@end itemize
+
+@node Message Methods,  , Message Characteristics, Message Object
+@subsection Message Methods
+
+Most of these methods may be implemented in terms of corresponding mstore
+methods.
+
+@itemize @bullet
+@item
+Fetch Self@footnote{This model anticipates implementing the Z-Script
+@code{write} command by fetching the message body and then writing it to
+a file.  Some message stores may require an explicit ``export''
+operation.  Do we need a method for this?}
+@item
+Fetch Attribute (e.g. header text)
+@item
+Add Attribute
+@item
+Modify Attribute
+@item
+Fetch Sub-part
+@item
+Fetch Sub-part Attribute (e.g. content-type)
+@item
+(Create Sub-part @footnote{Required for messages used by the
+mail transport object.})
+@item
+Modify Sub-part
+@item
+Delete Sub-part
+@item
+Generate Summary @footnote{This may require calling on the mailbox or mstore
+object to produce a list of summaries, and then extract one from that list.}
+@item
+Update Self @footnote{This operation is permitted to fail when the owner
+mailbox and its mstore are not also in an update state.}
+@end itemize
+
+@node Mailbox (Folder) Object, Message Store (MStore) Object, Message Object, Message Store Object Model
+@section Mailbox (Folder) Object
+
+@menu
+* Mailbox Characteristics::     
+* Mailbox Methods::             
+@end menu
+
+@node Mailbox Characteristics, Mailbox Methods, Mailbox (Folder) Object, Mailbox (Folder) Object
+@subsection Mailbox Characteristics
+
+@itemize @bullet
+@item
+A mailbox is a logical collection of messages; @footnote{Note that the
+mailbox object is not necessarily the only object that represents a
+group of messages.  Whether a mailbox is implemented as a subclass of
+some more general message grouping object in Z-Mail is not addressed by
+this proposal.} whether it also is a physical collection is dependent
+on the implementation of the message store on which it resides.
+
+@item
+A mailbox object must reside in either a message store or the
+meta-store, to which it has a reference.  It may not simultaneously
+reside in two message stores (not even when one of them is the
+meta-store).  A mailbox that resides on the meta-store may not be
+updated (see Meta-Store Object) and may not ``own'' messages (see
+Message Object).
+
+@item
+A mailbox object has references to all the messages it contains, and
+imposes a sequential ordering on those messages.
+
+@item
+Operations on mailbox objects are ultimately implemented by the message
+store on which they reside.  Some operations may be recorded by the
+mailbox object and later updated to the message store.
+
+@item
+Mailbox objects may also contain other mailbox objects, hierarchically,
+depending on the storage format of the message store on which they
+reside.
+
+@end itemize
+
+@node Mailbox Methods,  , Mailbox Characteristics, Mailbox (Folder) Object
+@subsection Mailbox Methods
+
+Most of these methods are implemented in terms of corresponding mstore methods.
+
+@itemize @bullet
+@item
+Fetch reference to Message
+@item
+Reorder Messages @footnote{This should support both moving around individual
+messages and sorting by attributes.  Are two primitives needed?}
+@item
+Search/Select messages by Attributes
+@item
+Search/Select messages by Contents
+@item
+Delete Message
+@item
+Poll for new mail @footnote{Filtering is implemented by a combination of
+polling followed by search/select and then some other action.}
+@item
+List Summaries of a set of messages @footnote{This may require asking each
+message to generate its summary, and then compiling a list.}
+@item
+(Fetch mailbox Attributes)
+@item
+(Modify mailbox Attributes)
+@item
+Update Self @footnote{This operation is permitted to fail when the mstore is
+not also in an update state.}
+@end itemize
+
+@node Message Store (MStore) Object, Meta-Store Object, Mailbox (Folder) Object, Message Store Object Model
+@section Message Store (MStore) Object
+
+@menu
+* Message Store Characteristics::  
+* MStore Methods::              
+@end menu
+
+@node Message Store Characteristics, MStore Methods, Message Store (MStore) Object, Message Store (MStore) Object
+@subsection Message Store Characteristics
+
+@itemize @bullet
+@item
+MStore objects act as the abstract interfaces between the user agent
+(Z-Mail) and a set of different concrete message store implementations.
+Each concrete implementation is a subclass of the general mstore object.
+
+@item
+For simplicity, every mstore must contain at least one mailbox object,
+even if it is only a logical mailbox representing the entire store.
+
+@item
+The mstore object implements all operations on messages and mailboxes.
+These operations may be cached and later updated to the actual store.
+
+@item
+Each mstore object must implement creation of a corresponding mail
+transport object, to send mail in that mstore's native
+format. @footnote{Every message store has the right to representation by
+a mail transport.  If it cannot afford a mail transport, one will be
+provided for it.}
+
+@item
+Each mstore object must implement creation of a directory service
+object, to look up and verify addresses in that mstore's native
+format. @footnote{Everything it says can and will be used against it.}
+
+@end itemize
+
+@node MStore Methods,  , Message Store Characteristics, Message Store (MStore) Object
+@subsection MStore Methods
+
+@itemize @bullet
+@item
+Operations on mstores:
+
+@itemize @bullet
+@item
+List Mailboxes @footnote{Possibly grouped by attribute, e.g. subscribed.}
+@item
+Select/``Open'' Mailbox@footnote{Filtering is implemented by search/select
+message and then some other action, at time of ``open.''}
+@item
+Create Mailbox
+@item
+Rename Mailbox
+@item
+Delete Mailbox
+@item
+(Modify Mailbox Attributes @footnote{E.g. subscribe/unsubscribe to mailbox.})
+@item
+(Create new Message in Mailbox @footnote{Required for messages used by the
+mail transport object.})
+@item
+Add Message to mailbox
+@item
+Reorder Messages in mailbox @footnote{Reflect new ordering on store; this may
+involve multiple calls to move-a-message primitives!}
+@item
+Search/Select messages by Attributes
+@item
+Search/Select messages by Contents
+@item
+Delete Message from mailbox
+@item
+Poll Mailbox for new mail @footnote{Filtering is implemented by a combination
+of polling followed by search/select and then some other action.}
+@item
+List Summaries of a set of messages in a mailbox
+@item
+Update Mailbox
+@end itemize
+
+@item
+Operations on messages:
+
+@itemize @bullet
+@item
+Fetch Message
+@item
+Fetch Message Attribute
+@item
+Add Message Attribute
+@item
+Modify Message Attribute
+@item
+Fetch Sub-part of message
+@item
+Fetch Sub-part Attribute
+@item
+(Create Sub-part @footnote{Required for messages used by the
+mail transport object.})
+@item
+Modify Sub-part
+@item
+Delete Sub-part
+@item
+(Add Message to Mailbox)
+@item
+(Update Message @footnote{It may not be reasonable in the general case to
+update individual messages, but some stores may support it.})
+@end itemize
+
+@item
+Other operations:
+
+@itemize @bullet
+@item
+Update Self @footnote{I.e. write to persistent store any cached changes to
+all mailboxes and messages.}
+@item
+Create Mail Transport Object
+@item
+Create Directory Service Object
+@item
+Report Supported Operations @footnote{For query by UI.}
+@end itemize
+@end itemize
+
+@node Meta-Store Object, Address Object, Message Store (MStore) Object, Message Store Object Model
+@section Meta-Store Object
+
+@menu
+* Meta-Store Characteristics::  
+* Meta-Store Methods::          
+@end menu
+
+@node Meta-Store Characteristics, Meta-Store Methods, Meta-Store Object, Meta-Store Object
+@subsection Meta-Store Characteristics
+
+@itemize @bullet
+@item
+The meta-store represents a collection of mstores and of ``mixed mailbox''
+objects. @footnote{A mixed mailbox is not necessarily a subclass of the
+mailbox object; it is merely a mailbox object that is treated specially
+because the mstore on which it resides is the meta-store.}  These mixed
+mailboxes may contain messages that reside in two or more mstores, and
+are the only mailboxes that permit this.
+
+@item
+There is normally only one meta-store, which is responsible for creating
+and keeping references to ALL mstore objects.  The meta-store is also
+responsible for creating ``mixed mailbox'' objects.
+
+@item
+The meta-store must implement, for mixed mailboxes and the messages they
+contain, all operations of a message store object.  For most message (as
+opposed to mailbox) operations, this means nothing more than invoking the
+same operation via the ``owner'' mailbox of the message.
+
+@item
+The meta-store implementation of @code{List mailboxes} must embody
+knowledge of the local filesystem. @footnote{``Filesystem'' here may
+include an object-oriented system like OLE.}  When a list of available
+mailboxes needs to be generated, the meta-store compiles the list by
+querying the filesystem and/or one or more mstores.  (This permits the
+@code{List mailboxes} operation to be hidden within the message store
+model, yet still permits individual files or directories on the local
+filesystem to be treated as both mstores and as mailboxes, without
+having to first ``open'' each as an mstore.)
+
+@item
+The meta-store provides the ``default'' behavior for any operation not
+supported by a particular subclass of mstore.  For example, any mstore
+that does not support a directory service or a mail transport can ask
+the meta-store to create those objects for it.
+
+@item
+As a specific case of the above, any operation that affects two or more
+message stores may be handled by the meta-store; the meta-store embodies
+the knowledge of how to convert among mstore formats, extract messages
+from one store and insert them into another, etc.  If the meta-store
+doesn't know how to do this for a given subclass of mstore, then that
+subclass cannot participate in inter-mstore operations.
+
+@item
+As another case of the above, the meta-store is permitted (but not
+required) to be able to move a mailbox from one store to another, which
+includes moving mixed mailboxes on to a specific mstore by homogenizing
+them.  (This step is required in order to ``update'' a mixed mailbox.)
+
+@end itemize
+
+@node Meta-Store Methods,  , Meta-Store Characteristics, Meta-Store Object
+@subsection Meta-Store Methods
+
+@itemize @bullet
+@item
+List MStores @footnote{Including local filesystem objects.}
+@item
+Create MStore Objects
+@item
+Open/Initialize MStore Object @footnote{Includes establishing a connection
+when the store is remote, e.g. log in to IMAP server, etc.}
+@item
+Dispose MStore @footnote{E.g. shut down connection, etc.; see previous
+footnote.}
+@item
+Delete (local) MStore @footnote{E.g. delete a local file that is an mstore
+without first opening it as an mstore object.}
+@item
+Update all MStores
+@item
+Create default Mail Transport Object
+@item
+Create default Directory Service Object
+@item
+Create ``Mixed'' (Virtual) Mailbox
+@item
+Delete ``Mixed'' (Virtual) Mailbox
+@item
+MStore operations on ``mixed'' mailboxes and the message in them; see
+@ref{Message Store (MStore) Object}, operations on mailboxes and messages.
+@end itemize
+
+@node Address Object, Mail Transport Object, Meta-Store Object, Message Store Object Model
+@section Address Object
+
+@menu
+* Address Characteristics::     
+* Address Methods::             
+@end menu
+
+@node Address Characteristics, Address Methods, Address Object, Address Object
+@subsection Address Characteristics
+
+An address represents a single conceptual destination for a message.
+Each instance of an address contains enough information to uniquely
+identify a destination to some eventual transport agent.
+
+For the most part, addresses are passive creatures.  Their primary
+purpose is simply to remember their destination, and provide other
+objects with high-level access to the various semantic components of
+this destination.  Addresses will most commonly be used as a medium of
+communication between directory services and MTA's.
+
+@menu
+* Address Subclasses::          
+* Addressing Heterogeneity::    
+* Addresses and Transport Protocols::  
+* Addresses and Directory Services::  
+* Address Qualifications::      
+@end menu
+
+@node Address Subclasses, Addressing Heterogeneity, Address Characteristics, Address Characteristics
+@subsubsection Address Subclasses
+
+The address class itself is abstract; concrete subclasses of address
+implement the required interface and may augment it with additional
+functionality.
+
+A major area for subclasses to flesh out concerns access to semantically
+meaningful subcomponents within an address.  For example, a subclass for
+X.400 addresses would allow manipulation of ADMD, PRMD, and other
+fields.  Conversely, a subclass for RFC-822 addresses would provide
+accessors for components like the route-addr, group name, or leading
+phrase.  Certain semantic components, (a user-presentable ``real''
+name?), may appear across many different mail systems.  In these cases,
+it may be appropriate to mandate support for such the address class
+level.
+
+An important open question is how various MTA and directory services
+modules can cooperate to insure that the addresses in an outbound
+message are always usable.  A message that is headed for SMTP transport
+should not, for example, receive X.400 addresses from a directory
+service.  It may be necessary to devise a mechanism whereby MTA's
+declare what address subclasses they can handle, and directory services
+declare what address subclasses they can produce.
+
+@node Addressing Heterogeneity, Addresses and Transport Protocols, Address Subclasses, Address Characteristics
+@subsubsection Addressing Heterogeneity
+
+It might be interesting to designate a ``save into named folder''
+subclass.  This would require some tricky acrobatics.  For one, an
+individual composition would then have to be sent to multiple kinds of
+address (e.g. three MAPI addresses and one local log file).  In such a
+context, how can we guarantee that the named folder contains messages
+that are at all compatible with the overall structure of the outbound
+composition?
+
+Can we let multiple transports take a stab at the composition, with each
+filtering out the addresses that it can handle?  This could be nice, as
+it would smoothly facilitate separate handling of Bcc's, to whom one
+might wish to send a slightly modified form of the message.  This would
+also permit, say, posting an article via NNTP while also e-mailing other
+interested parties directly via SMTP.
+
+Again, though, we return to the question of how to maximize flexibility
+without creating compositions whose recipients list is so heterogeneous
+as to render the message utterly undeliverable.  Certain kinds of
+address may be compatible, while others are not.  Is a well-formed
+address subclass hierarchy a good place to express these restrictions?
+
+Or is the very problem a non-issue, stemming from unrealistic notions of
+generality that may never actually be implemented?
+
+@node Addresses and Transport Protocols, Addresses and Directory Services, Addressing Heterogeneity, Address Characteristics
+@subsubsection Addresses and Transport Protocols
+
+An address is only meaningful when interpreted in the context of a
+particular protocol.  Therefore, each subclass of address necessarily
+implies a single transport protocol or a family of mutually compatible
+protocols.
+
+For example, an address expressed using the conventions of RFC-822 would
+mandate the use of an 822-ready transport protocol.  This will usually
+be SMTP or ESMTP.  However, there are a wealth of other transports that
+are capable of meaningfully interpreting such an address.  IMAP and POP
+servers, for example, may support additional verbs for outbound mail.
+Under Unix, @code{sendmail} implicitly defines an 822-ready protocol by
+its use of input streams and command-line arguments.
+
+@node Addresses and Directory Services, Address Qualifications, Addresses and Transport Protocols, Address Characteristics
+@subsubsection Addresses and Directory Services
+
+The directory service will most often be the source of addresses.  In
+simple cases, this may simply involve parsing a string supplied by the
+user.  When the address itself is represented as a string, one may think
+of the identity mapping as the most trivial possible directory
+service.@footnote{I [Ben] think that Bart uses way too many footnotes.}
+
+In general, a given directory service may be used as a source of
+instances of some subclass of address.  An X.500 service may yield X.400
+addresses, while an AOCE phone book would supply AOCE addresses.
+
+@node Address Qualifications,  , Addresses and Directory Services, Address Characteristics
+@subsubsection Address Qualifications
+
+Every address carries a @dfn{qualification}.  A qualification further
+clarifies the role of an address within any particular message.
+Whenever possible, qualifications should be orthogonal to the address
+itself, so that any address may meaningfully carry any qualification.
+The following initial set of qualifications are drawn from common
+RFC-822 practice:
+
+@itemize @bullet
+@item
+To
+
+The address represents an entity for whom the message is primarily
+intended.
+
+@item
+Cc
+
+The addressed recipient is receiving the message in an advisory or
+secondary capacity.
+
+@item
+Bcc
+
+The addressed entity is to receive a copy of the message secretly.
+Other recipients should not be able to know, by examining the message,
+that this address has also received a copy.
+
+@item
+Unqualified
+
+No special qualification is associated with this address.  Addresses
+culled from alias lists or directory services will usually be
+unqualified, though that is not a requirement.  Some addresses must be
+qualified before they can be used to transport a message; others may not
+require qualification.
+
+@end itemize
+
+Other qualifications may be added to this set as needed.  Additional
+research is needed in this area.
+
+It is not clear that address qualifications are useful at this level in
+the class hierarchy.  It is clearly the case that qualifications have
+meaning for certain @emph{subclasses} of address, but not for all.  What
+does it mean to Bcc a newsgroup?
+
+@node Address Methods,  , Address Characteristics, Address Object
+@subsection Address Methods
+
+Anything else besides the simple stuff below?  It seems that all the
+rest would be directory services' job.
+
+@subsubsection Qualifications interface
+@itemize @bullet
+@item
+Get Qualification
+@item
+Set Qualification
+@end itemize
+
+@subsubsection String interface
+@itemize @bullet
+@item
+Parse from String
+@item
+Express as Parseable String
+@item
+Express as Non-Parseable Presentation String (?)
+@end itemize
+
+@node Mail Transport Object, Directory Service Object, Address Object, Message Store Object Model
+@section Mail Transport Object
+
+@menu
+* Mail Transport Characteristics::  
+* Mail Transport Methods::      
+@end menu
+
+@node Mail Transport Characteristics, Mail Transport Methods, Mail Transport Object, Mail Transport Object
+@subsection Mail Transport Characteristics
+
+@itemize @bullet
+@item
+Each mail transport object is associated with a message store. @footnote{Not
+necessarily the same mstore that created the mail transport!}
+
+@item
+A mail transport has references to at least three mailboxes on its mstore:
+
+@enumerate
+@item
+The ``working'' or ``draft'' mailbox, containing unfinished
+messages. @footnote{Some implementations may require a separate mailbox for
+each unfinished draft.  Others may use a temporary mailbox for compositions
+and require an explicit step to save as a draft.  What model do we impose?}
+
+@item
+The ``outbound'' or ``queue'' mailbox, containing finished messages
+awaiting delivery.
+
+@item
+The ``dead'' mailbox, containing messages that were aborted before being
+finished or for which delivery failed.
+
+@end enumerate
+
+These mailboxes need not be distinct; depending on the implementation,
+any two or even all three may refer to the same mailbox.
+
+@item
+The normal flow of a mail transport interaction is:
+
+@enumerate
+@item
+Initiate new composition; creates a new message in the ``drafts'' mailbox.
+
+@item
+Edit composition; uses message methods @ref{Message Object} to assemble
+and modify the new message.
+
+@item
+Send; moves the message to the ``queue'' mailbox and (possibly) initiates
+the appropriate protocol to deliver the message. @footnote{Tony suggests
+that sending may need to be a message object method, rather than an MTA
+object method.  However, Bart doesn't think it should be defined on generic
+messages; what would it mean, in the majority of cases?}
+
+@end enumerate
+
+Special cases:
+
+@itemize @bullet
+@item
+Fatal send failure; message moves from the ``queue'' mailbox to the ``dead''
+mailbox.  Benign send failures (e.g. unable to connect to SMTP server)
+normally leave the message in the ``queue'' mailbox.
+
+@item
+Resend; copies message directly from a mailbox OTHER THAN the ``drafts''
+mailbox, to the ``queue'' mailbox.  For some delivery protocols, this implies
+adding new attributes (e.g. Resent-* headers) to the message. @footnote{Per
+previous footnote, Tony also thinks that resend may be a message object
+method.  This actually might make sense.}
+
+@item
+Others?
+
+@end itemize
+
+@item
+The mail transport may also reference other folders on its mstore
+for purposes of replying to messages, including sub-parts or other
+portions of messages in new compositions, etc.  The mail transport is
+normally expected to modify only the attributes of these messages, not
+to delete body parts, etc.
+
+@end itemize
+
+@node Mail Transport Methods,  , Mail Transport Characteristics, Mail Transport Object
+@subsection Mail Transport Methods
+
+@itemize @bullet
+
+@item
+Compose new Message
+
+@item
+Reply to Message
+
+@item
+Send composed Message
+
+This is defined in several steps to permit multiple queued messages to be
+delivered in a single conversation with a remote transport provider.
+
+@itemize @bullet
+
+@item
+Connect to Transport Provider
+
+@item
+Begin Message Transaction
+
+@item
+Deliver Message
+
+@item
+End Message Transaction
+
+@item
+Disconnect from Transport Provider
+
+@end itemize
+
+@item
+Resend Message (forward)
+
+@item
+Edit Message, including:
+
+@itemize @bullet
+
+@item
+Include Message @footnote{For most message stores, this is simply a fetch
+of the message to be included, to copy its text (with possible formatting)
+into the ``body'' of the new message.  However, some mstores may implement
+the include message operation directly, so we specify it as a primitive.}
+
+@item
+Message methods for editing @ref{Message Object} (e.g. Create
+Sub-part) @footnote{Is this sufficient, or do we need special primitives
+for ``Attach Message'', ``Attach File'', etc.?}
+
+@item
+Others?
+
+@end itemize
+
+@end itemize
+
+@node Directory Service Object,  , Mail Transport Object, Message Store Object Model
+@section Directory Service Object
+
+@subsection Directory Service Characteristics
+
+@itemize @bullet
+@item
+The Directory Services object is unspecified at this time.
+
+@end itemize
+
+@subsection Directory Service Methods
+
+@node Remarks, User-Interface Considerations, Message Store Object Model, Top
+@chapter Remarks
+
+@heading Implementation Notes
+
+It is the intent of this design that each subclass of the message store
+object interfaces with only one concrete message store implementation.
+Thus any operation that involves two or more message store types, such
+as moving a message from one store to another, must be handled by the
+meta-store.  However, it is of course possible to interface to more than
+one concrete store with a single mstore subclass.
+
+The architecture that this document defines has two aspects:
+
+@enumerate
+@item
+The object model that a user agent @footnote{Specifically, the Z-Mail `core'.}
+uses to ``view'' the message database and perform management tasks;
+
+@item
+The set of tasks that must be expressible in a given message store
+implementation to implement a workable subset of the model.
+@end enumerate
+
+Of these, the second is the more important in terms of interfacing to
+existing message store implementations.  The first is more important
+for those stores that we must implement ourselves (for example, a UNIX
+file/directory structure containing MIME-formatted messages).
+
+Thus the API specified by this document has a somewhat top-heavy feel;
+it attempts to express the notion that the mailbox/message heirarchy is
+mainly representative of the first item above, whereas the mstore object
+is the primary expression of the second item.  It is, however, the
+intention that callers of the API will treat the objects as if the
+implementation were ``bottom heavy''; that is, it would be considered
+incorrect in nearly all cases for a caller to make a request directly of
+the mstore for any operation that is defined on a message object.
+
+Given the API definition and a particular message store implementation,
+the API developer has two choices:
+
+@enumerate
+@item
+Subclass the message store object and express the required functions
+entirely within that object; this permits generic mailbox (folder)
+and message objects to be re-used to access that store (assuming
+that the generic objects delegate operations UP the heirarchy when
+necessary).
+
+@item
+Subclass across the entire heirarchy and implement each function at
+the lowest level where it makes sense; at the mstore level, delegate
+some operations DOWN the heirarchy to the folders and messages.
+@end enumerate
+
+It's of course implicit that the API developer can scrap our object
+heirarchy completely and simply implement the API calls in terms
+of some other object model.  The API definition document should specify
+which API calls are required for all mstores and which are representative
+of stores we will implement in-house.
+
+@heading Miscellaneous
+
+MStore should possibly first be subclassed into ``local'' and ``remote''
+message stores, and then further subclassed from there.  It is sometimes
+important to the user to be able to differentiate stores in this manner.
+On the other hand, it may be desirable to have e.g. both local and remote
+IMAP stores; how should this be handled?
+
+Remote access protocols such as IMAP 4 and especially POP 3 are probably
+most easily represented by TWO messages stores, one local and one
+remote.  When connected to the server, the remote mstore performs its
+operations (through the protocol) directly on the server mailbox(es),
+including fetching messages from the server to the local machine.  Once
+messages are on the local machine and the server connection is dropped,
+the local mstore is used to operate on the messages.  When the
+connection is re-established, the state of the local store can be copied
+to the remote store.  Rather than implement folder synchronization for
+every type of store that could be used in a disconnected manner, it
+should be possible to make synch the responsibility of the meta-store.
+Thus, any two mstores could be synched with one another (within
+limitations of individual store implementations), and disconnected
+access simply becomes one case of the general scheme.
+
+Each V7 or MMDF folder, and each @emph{distinct} MH hierarchy (that is,
+any hierarchy that is not a subdirectory of an MH hierarchy) should be
+treated as a separate message store.  This permits the existing Z-Mail
+open/update/close semantics to be mapped straightforwardly onto the
+message store model.
+
+@heading Special Discussion of MAPI
+
+Some specific statements regarding MAPI were made in the course of
+discussion of this requirements document and the associated API document.
+These represent valid issues, but have often been stated in terms that
+imply a basic conflict between this proposal and use of MAPI.  It is
+therefore important that those statements be addressed.
+
+@quotation
+The future of Z-Mail as a cross-platform e-mail product depends
+upon, among other things, our choice of a backend mstore architecture.
+@end quotation
+
+It is a premise of this document that the above statement, at least in
+its strictest interpretation, is incorrect.  This document resulted from
+a strong belief that the future of Z-Mail depends not upon any specific
+backend message store architecture, but instead upon our being as
+independent as possible of any specific backend.
+
+@quotation
+In a nutshell, we need to decide if we'll commit to MAPI on Windows
+and/or AOCE on Mac, or we'll try to use our own, substantially
+similar, object model being developed by Bart and Bob.
+@end quotation
+
+This is an both an oversimplification and an obfuscation of the issues.
+The two are not mutually exclusive!  MAPI and our model overlap at some
+level, but MAPI extends much farther into the ``backend'' than our model
+is intended to.  The question is not whether we'll commit to MAPI, but
+how we will go about interfacing Z-Mail to MAPI. @footnote{As a data
+point, CE Software, makers of QuickMail, are in the process of building
+a ``middle layer'' for their product that is in many ways similar in
+purpose (though not design) to our proposal.  CE's layer will support
+a CMC API and is planned to interface to MAPI, VIM, and Oracle databases
+as message stores (based on my informal conversation with their director
+of product development).}
+
+@quotation
+I @footnote{Dani} prefer that we make a decision on MAPI.  I am a firm
+believe of *not* reinventing the wheel especially since MAPI already has
+a name and is out there.
+@end quotation
+
+It makes no difference whether MAPI ``has a name'', because we do intend to
+support it.  Buzzwords are not at issue.
+
+MAPI is not ``already out there'' for a large number of the cases we want
+to consider.  It is not available on UNIX (though it is being worked on by
+at least one vendor); and even when it is, can we have confidence that it
+will be available in any reasonable time frame for all the platforms we
+support?  Furthermore, although we have little choice of being tied to
+Microsoft on the Windows platform, there is a question whether we want to
+be tied to some other vendor's MAPI implementation as our entire livelyhood
+on any other platform.
+
+Finally, even if we did decide to employ MAPI's object model exclusively,
+we have the issue of drivers for POP, IMAP, NNTP, etc.  Not only can we
+not afford to wait for MAPI to become universally available before
+we begin providing clients for these protocols, it is far from clear
+that we would save any significant effort by writing those drivers
+directly to MAPI rather than first to our object model.
+
+@node User-Interface Considerations, Z-Script Considerations, Remarks, Top
+@chapter User-Interface Considerations
+
+Each message store may have different message formats, mail transport
+submissions formats, and addressing conventions (e.g., X.400, MHS, MAPI,
+VIM).  It may therefore be desirable to have specialized user interface
+components for each message store.  For example, at the least the
+``Address Area'' section of the Z-Mail compose window would need to be
+different when entering X.400-style addresses.  Similarly, it should
+also be possible to customize the Address Browser and related dialogs
+for different directory service objects.
+
+Should this customization be considered part of the message store, (or mail
+transport, or directory service, as appropriate) objects?  Or is a parallel
+model needed in each user interface?
+
+To perform appropriate user interaction during the folder synchronization
+process, the user interface elements that deal with display of messages
+must become more independent of folder context.  Also, the UI needs to be
+active during the update procedure, so that the user can (for example)
+ask to see the body of a message from the server in order to decide what
+to do with it.  We may not be able to handle this completely in the
+initial release of a folder-synchronizing zmail.
+
+Note that some APIs, notably simple and extended MAPI, actually provide
+UI elements such as dialogs for entering addresses or reading messages.
+We need to carefully consider which of these we will use.
+
+@node Z-Script Considerations, Additional Recommendations, User-Interface Considerations, Top
+@chapter Z-Script Considerations
+
+IMAP 4 most closely resembles the zscript model of acting on messages in
+a ``selected'' (active) folder.
+
+Existing zscript commands act either on messages or on folders.  Most of
+those acting on messages translate directly into message methods; some,
+however, become mailbox (folder) methods.  Does this introduce any need
+for mailbox/message pairings when performing zscript actions?
+
+@node Additional Recommendations, Unresolved Issues, Z-Script Considerations, Top
+@chapter Additional Recommendations
+
+Support these message stores ``natively,'' that is, built in to Z-Mail:
+
+@itemize @bullet
+@item
+``V7'' and MMDF flat-file stores containing RFC822/MIME messages
+@item
+MH directory-format stores (UNIX only; possibly by calling MH commands)
+@item
+NetWare/MHS directory-format stores
+@item
+IMAP 4
+@item
+POP 3
+@end itemize
+
+For mail transports, support SMTP and MHS on all platforms, UUPC on Windows
+(and Mac?).  Continue to support programmatic interface (through $sendmail)
+for mail submission on UNIX.
+
+MAPI needs special consideration.  For Windows 95 (``Chicago'') we will
+need to support Extended MAPI in order to be the mail service provider
+for MicroSoft and probably many other mail-enabled apps once MAPI 2 is
+available.  We may be able to implement the enabling part of this without
+actually using a MicroSoft Exchange (MSX) back-end, but that isn't clear
+as of this writing.
+
+Support other stores (OpenMail, etc.) through external processes
+whenever possible.  Although that the message store object model should
+make it easy to link directly to various APIs, there are more flexible
+approaches possible.  Investigate ways to use Apple and Windows IPC to
+communicate with e.g. a simple local IMAP server that then interacts
+with the desired message store through that store's API.  This avoids
+the need to link Z-Mail itself with every possible message store API.
+(Another way to look at this:  Use a special ``mail exchange'' mstore
+object whose external format is ``published'' to interact with separate
+processes; those separate processes in turn interact with message stores
+that are not ``native.'')
+
+Suggestion:  Consider using the MHS directory format as the ``outbox''
+for compositions-in-progress.  This format can easily be collected into
+a MIME message at send time, and maps well onto OpenMail and MAPI
+submission schemes that treat attachments as separate files/objects.
+
+@node Unresolved Issues,  , Additional Recommendations, Top
+@chapter Unresolved Issues
+
+What are the semantics of the ``delete'' operation when a message is
+contained in more than one mailbox?  Is this message store implementation
+dependent?  Is delete a mailbox operation, or a message operation?
+
+How do OLE objects map onto the generalized scheme proposed?  My guess
+is that an OLE-aware Z-Mail will have to map this scheme onto OLE and
+then use OLE to access it, rather than mapping OLE onto this scheme; but
+I'm not familiar enough with OLE to say for certain.  Tony says:
+
+@quotation
+I think the ``right'' thing to do is to try and map OLE2 onto this scheme
+if at all possible, since:
+
+@enumerate
+@item
+I believe that OpenDoc is quite similar
+in structure to OLE2 (chicken and egg...:)
+@item
+OLE2 is on the Mac 3.
+@end enumerate
+
+If we're going to use this mstore model, I'd like the interface to the
+application to be consistent; ie, I'd like to avoid the old ``well, in
+this case you have to go straight to OLE2 -- but not in this one...''.
+Too confusing and error prone in practice.
+@end quotation
+
+Should recursive interpretation of parts be considered the responsibility
+of the message store object, at least from the viewpoint of the API?  Or
+should the API permit retrieval of the part and require that it then be
+interpreted ``locally''?
+
+Should the ``local cache'' (used to draw message summaries, compute reply
+addresses, etc.) be hidden inside the message store object, or made part
+of the message object?
+
+Some protocols (e.g. MAPI, OpenMail) don't support disconnected operation
+in a nice way---there's no well-defined way to ``download'' messages from
+the store to work on them locally.
+
+Should we extend the IMAP 4 protocol to provide for message submission
+functionality, to facilitate using IMAP as an interface to other protocols?
+
+How do you do digital signatures and encryption on an MTA that handles
+attachments as separate objects (OpenMail, X.400, MHS)?
+
+Do we permit mix-and-match of outgoing message transport function with
+various message stores, even in the case of message stores that provide
+outgoing transport function?  That is, can you specify accessing your
+mail with OpenMail but submitting it with SMTP?  Note that the structure
+of messages being received would be radically different from those sent,
+in this example.
+
+Some zscript operations (such as ``pipe'') don't make sense, even on UNIX,
+for some message store formats.  We'll probably have to deal with this on
+a case-by-case basis.
+
+@contents
+
+@bye

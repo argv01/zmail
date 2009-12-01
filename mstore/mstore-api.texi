@@ -1,0 +1,1521 @@
+\input texinfo @c -*- texinfo -*-
+@comment %**start of header (This is for running Texinfo on a region.)
+@setfilename mstore-api.info
+@settitle Message Store API
+@c @finalout
+@c @smallbook
+@c @setchapternewpage odd
+@footnotestyle end
+@comment %**end of header (This is for running Texinfo on a region.)
+
+@syncodeindex vr fn
+@syncodeindex tp fn
+
+@ifinfo
+This document describes the Z-Mail Message Store API.  It is a
+PROPRIETARY and CONFIDENTIAL DRAFT.
+
+Software and documentation Copyright @copyright{} 1994 Z-Code Software
+Corp., a usurpation of NCD.
+@end ifinfo
+
+@titlepage
+@title Message Store API
+@subtitle Manual version $Revision: 1.34 $
+@subtitle $Date: 1995/06/23 20:01:24 $
+@author Bart Schaefer
+@author Bob Glickstein
+@author and the Z-Code Engineers
+@page
+@vskip 0pt plus 1filll
+This document describes the Z-Mail Message Store API.  It is a
+PROPRIETARY and CONFIDENTIAL DRAFT.
+
+Software and documentation Copyright @copyright{} 1994 Z-Code Software
+Corp., a usurpation of NCD.
+@end titlepage
+
+@node Top, Overview, (dir), (dir)
+@unnumbered Introduction
+
+This is a PROPRIETARY and CONFIDENTIAL DRAFT.  Comments and critique are
+urgently requested.
+
+@menu
+* Overview::                    
+* Initializing::                
+* Mailobj::                     
+* Bodypart::                    
+* Message::                     
+* Folder::                      
+* Message store::               
+* Envelope::                    
+* Additional operations::       
+* Defining new subtypes::       
+* Subsystems::                  
+* To-do::                       
+* Programming Index::           
+* Concept Index::               
+
+ --- The Detailed Node Listing ---
+
+Bodypart
+
+* Bodypart parentage::          
+* Bodypart contents::           
+* Bodypart subtypes::           
+
+Bodypart contents
+
+* Bodypart content reading::    
+* Bodypart content setting::    
+
+Message
+
+* Message contents::            
+* Other message operations::    
+* Compose subclass::            
+
+Compose subclass
+
+* Composition addressing::      
+
+Folder
+
+* Messages in folders::         
+* Other folder operations::     
+* Ghosts::                      
+
+Additional operations
+
+* Querying about capabilities::  
+
+Defining new subtypes
+
+* New mailobj subtypes::        
+* New bodypart subtypes::       
+* New message subtypes::        
+* New folder subtypes::         
+* New mstore subtypes::         
+
+Subsystems
+
+* SPOOR::                       
+* Dynadt::                      
+* Except::                      
+
+To-do
+
+* Unresolved design issues::    
+* A small matter of writing::   
+@end menu
+
+@node Overview, Initializing, Top, Top
+@chapter Overview
+
+The Z-Mail Message Store API provides the application programmer with a
+unified, abstract view of folders and messages.  The details of
+format-specific I/O are relegated to an object termed the @dfn{message
+store} (mstore), which is to folders and messages what filesystems are
+to directories and files:  that is, the caller may ``open'' an entity
+without concern for whether that maps to the opening of a local file,
+the opening of a directory, the fetching of a remote index, the
+dialing-up of a serial server, etc.
+
+In fact, since the parallels between filesystem and mstore, directory
+and folder, and file and message are so strong, some decisions in this
+API were made, in the absence of other deciding factors, to strengthen
+the resemblance.
+
+These are the major concepts in this API:
+
+@table @asis
+@item Message store (mstore)
+This is the entity which provides most of the functionality behind the
+folder and message abstractions.
+
+@item Mailobj
+This is a generic class for all the others in this API to inherit from.
+It provides the ability to register callbacks on individual instances.
+
+Folders, messages, and mstores are all subclasses (that is,
+specializations) of mailobj.  Subparts of messages are also mailobjs of
+various kinds.
+
+@item Message (mmsg)
+A message is a mailobj from which one can extract (and possibly modify)
+header and body data.
+
+Each message resides in one or more folders and has exactly one
+@dfn{owner}, which must be a real folder (as opposed to a ``virtual
+folder,'' see below).
+
+@item Folder (mfldr)
+A folder is a mailobj containing a sequence of messages.  It optionally
+resides in a message store.  If it does, it is termed a @dfn{real
+folder}, because the message store provides the means for saving the
+folder to persistent storage.  If the folder is not in some message
+store, it is a @dfn{virtual folder} and cannot be written to persistent
+storage.  A virtual folder may not own messages, but unlike a real
+folder, it may contain messages originating in a variety of message
+stores.
+@end table
+
+Just as there are different kinds of filesystem corresponding to
+different devices and drivers, so there are different kinds of message
+store corresponding to different folder formats, access methods, and
+API's.  The ``different kinds'' of mstore are provided as @sc{Spoor}
+subclasses of an abstract mstore class.
+
+@cindex delegating
+When an operation is invoked on an entity in this API, the entity may
+implement the operation itself or it may @dfn{delegate} the operation to
+its container (which may also delegate the operation to @emph{its}
+container, and so on).  Which operations are handled at which level of
+abstraction will depend on the type of message store.  For instance,
+when manipulating a message in an MH folder, it is possible to write out
+changes to a single message without updating the whole folder; thus an
+``update message'' operation can be implemented at the message level.
+In a V7 folder, however, the ``update message'' operation will need to
+be delegated to the containing folder, which can rewrite the entire
+folder (or which can cache the message's change until an update of the
+folder is forced).
+
+To expedite the delegation mechanism, each operation on an object has a
+corresponding operation on the object's container and the object,
+according to the following naming convention:
+
+@itemize @bullet
+@item
+Calling a function
+
+@example
+mmsg_@var{Foo}(@var{msg}, @r{@dots{}})
+@end example
+
+@noindent
+is equivalent to calling a function
+
+@example
+mfldr_mmsg_@var{Foo}(mmsg_Owner(@var{msg}), @var{msg}, @r{@dots{}})
+@end example
+
+@item
+Calling a function
+
+@example
+mfldr_@var{Bar}(@var{fldr}, @r{@dots{}})
+@end example
+
+@noindent
+is equivalent to calling a function
+
+@example
+mstore_mfldr_@var{Bar}(mfldr_Mstore(@var{fldr}), @var{fldr}, @r{@dots{}})
+@end example
+@end itemize
+
+The generic folder and message types delegate most operations to the
+message store.
+
+@node Initializing, Mailobj, Overview, Top
+@chapter Initializing
+
+@deftypefn Function void Zmail_Init ()
+Initializes the Z-Mail Message Store API.
+@end deftypefn
+
+@node Mailobj, Bodypart, Initializing, Top
+@chapter Mailobj
+
+@cindex mailobj
+@tindex mailobj
+A @dfn{mailobj} is an abstract object meant to be subclassed.  It
+provides the ability to register callbacks on instances.
+
+Messages, bodyparts, folders, and mstores are all subclasses of mailobj.
+
+All mailobjs share the ability to invoke callbacks when interesting
+changes and other events occur.  This chapter describes the functions
+that implement this feature.  A later version of this document will
+include a specification of exactly what event types are available as
+callback triggers and what data are associated with them.
+
+Among (many) other uses, messages install these callbacks on their
+bodyparts in order to be informed of changes which will have to be
+turned into update requests.
+
+@deftypefn Function int mailobj_AddCallback (@w{struct mailobj *@var{mobj}}, @w{int @var{which}}, @w{void (*@var{func})(struct mailobj *, int, void *, void *)}, void *@var{cbdata})
+Adds to @var{mobj} a callback on event @var{which} calling @var{func}
+which, when called back, is passed (among other things) @var{cbdata}.
+In particular, when @var{func} is called back, its arguments will be
+@var{mobj}, @var{event} (from the @w{@code{mailobj_CallCallbacks}}
+call), @var{cbdata}, and @var{evdata} (also from
+@w{@code{mailobj_CallCallbacks}}).  If @var{which} is 0, this callback
+is invoked for all events on @var{mobj}.
+
+Return value is an integer which identifies the callback in @var{mobj}'s
+list, and can be used in a call to @w{@code{mailobj_RemoveCallback}}.
+@end deftypefn
+
+@deftypefn Function {void *} mailobj_RemoveCallback (@w{struct mailobj *@var{mobj}}, @w{int @var{num}})
+Removes the callback on @var{mobj} whose number is @var{num} (as
+returned by @w{@code{mailobj_AddCallback}}).  Returns the pointer that was
+given to @w{@code{mailobj_AddCallback}} as @var{cbdata}.
+@end deftypefn
+
+@deftypefn Function void mailobj_CallCallbacks (@w{struct mailobj *@var{mobj}}, @w{int @var{event}}, @w{void *@var{evdata}})
+Invokes all of @var{mobj}'s callbacks in no particular order, passing
+each one the arguments @var{mobj}, @var{event}, @var{cbdata} (from
+@w{@code{mailobj_AddCallback}}), and @var{evdata}.
+@end deftypefn
+
+@node Bodypart, Message, Mailobj, Top
+@chapter Bodypart
+
+@cindex bodypart
+@tindex bodypart
+One key subclass of mailobj is @code{bodypart}, which is the type of a
+single subpart of a message.  The @code{bodypart} class is itself
+subclassed into a rich type hierarchy which is derived from MIME.
+
+@deftypefn Function {char *} bodypart_Subtype (@w{struct bodypart *@var{part}})
+Returns the name of the most-specific subtype of
+@var{part}.@footnote{@w{@code{char *}} is a placeholder here for what is
+more likely to be an integral or enumerated type describing the bodypart
+hierarchy.  [No, I think @w{@code{char *}} is right.  We can get the
+benefits of using constants by making the strings live in global
+variables whose values can be compared (rather than calling
+@code{strcmp}). --bg]}
+@end deftypefn
+
+@menu
+* Bodypart parentage::          
+* Bodypart contents::           
+* Bodypart subtypes::           
+@end menu
+
+@node Bodypart parentage, Bodypart contents, Bodypart, Bodypart
+@section Bodypart creation and parentage
+
+@deftypefn Function {struct mailobj *} bodypart_Container (@w{struct bodypart *@var{part}})
+Returns the object containing @var{part}.  This will either be a message
+(if @var{part} is at top-level within the message), or it will be
+another bodypart which can contain subparts, such as
+@w{@code{multipart_mixed}}.  Returns @code{NULL} if @var{part} is a
+free-floating orphan.
+@end deftypefn
+
+@deftypefn Function {struct mmsg *} bodypart_Mmsg (@w{struct bodypart *@var{part}})
+Returns the message in which @var{part} is ultimately contained.  If
+@var{part} is at top-level within the message, then this is the same as
+@w{@code{bodypart_Container(@var{part})}}, otherwise it is equal to two or
+more nested calls to @w{@code{bodypart_Container}}.  Returns @code{NULL}
+if @var{part} is a free-floating orphan.
+@end deftypefn
+
+@deftypefn Function {void} bodypart_Liberate (@w{struct bodypart *@var{part}})
+Removes @var{part} from its container.  The body part is placed into an
+orphaned state as though it had just been created.
+@end deftypefn
+
+@node Bodypart contents, Bodypart subtypes, Bodypart parentage, Bodypart
+@section Bodypart contents
+
+@menu
+* Bodypart content reading::    
+* Bodypart content setting::    
+@end menu
+
+@node Bodypart content reading, Bodypart content setting, Bodypart contents, Bodypart contents
+@subsection Bodypart content reading
+
+@deftypefn Function void bodypart_Stream (@w{struct bodypart *@var{part}}, @w{struct dpipe *@var{dp}})
+Provides the caller with read access to the data portion of @var{part}
+via the dpipe @var{dp}.  Initially, @var{dp} should point to an
+uninitialized dpipe, since @w{@code{bodypart_Stream}} will call
+@w{@code{dpipe_Init}} on it.
+
+Exactly what data the caller can read from @var{dp} depends on the
+particular subclass of @code{bodypart} being used.
+
+When the caller is finished with the dpipe, it should be discarded with
+@w{@code{bodypart_DestroyStream}}, @emph{not} with @w{@code{dpipe_Destroy}}.
+This is because @w{@code{bodypart_Stream}} may place private data in the
+dpipe which it will need to finalize prior to the dpipe's destruction.
+
+Some mstore types will allow multiple concurrent dpipes reading from a
+bodypart, others will not.
+@end deftypefn
+
+@deftypefn Function void bodypart_DestroyStream (@w{struct dpipe *@var{dp}})
+Finalizes private data in, and calls @w{@code{dpipe_Destroy}} on @var{dp},
+which must have been initialized via an earlier call to
+@w{@code{bodypart_Stream}}.
+@end deftypefn
+
+@node Bodypart content setting,  , Bodypart content reading, Bodypart contents
+@subsection Bodypart content setting
+
+Body parts may draw their actual content from a variety of sources.
+We outline some such sources here; additional sources may be deployed as
+the need arises.
+
+For each potential content source, the mstore must cope with varying
+restrictions on the availability of that data.  Some of these sources
+may only be available once; the mstore must cache the content internally
+if it intends to read the data multiple times.  Other sources may be
+directly available for multiple reads.
+
+Some sources may be external to the running application, such that they
+will tend to remain available across sessions.  Other sources may only
+be available within a single session; the mstore must cache the content
+externally if it intends to recreate the body part in a later session.
+This later distinction has particular bearing on how composition drafts
+are stored and restored.
+
+@deftypefn Function void bodypart_SetSource_Pipe (@w{struct bodypart *@var{part}}, @w{struct dpipe *@var{dp}})
+Sets the content of @var{part} to the data that may be read from
+@var{dp}.
+
+This data is only available once; the pipe cannot be restarted.  The
+data will not remain available across sessions.
+@end deftypefn
+
+@deftypefn Function void bodypart_SetSource_PipeFunc (@w{struct bodypart *@var{part}}, @w{struct dpipe *@var{func}(struct bodypart *, void *)}, @w{void *data}, @w{void @var{done}(void *)})
+Sets the content of @var{part} to the data that may be read by a pipe
+returned by the pipe-generating function @var{func}.
+
+The pipe may only be read once, but the generator may be called many
+times to produce many read-once pipes.  The opaque pointer @var{data} is
+passed as the second parameter to each such call; the first parameter is
+@var{part}.
+
+The data will not remain available across sessions.
+
+The function @var{done} will be called to destroy @var{data} when it is
+no longer needed by @var{part}.
+@end deftypefn
+
+@deftypefn Function void bodypart_SetSource_Filename (@w{struct bodypart *@var{part}}, @w{struct persistent *@var{name}})
+Sets the content of @var{part} to the data that may be read from the
+named persistent object @var{name}.  The name is interpreted according
+to system-dependent conventions; it may contain a string filename or
+some device handle that is independent of the file's name.  In general,
+though, it is taken to represent some named entity in persistent
+storage.
+
+This data is available many times; it may be opened, closed, reopened,
+and otherwise manipulated freely within the capabilities of the host
+system.  The data will tend to remain available across sessions,
+although it may be spontaneously removed before a composition in
+progress is actually sent.
+@end deftypefn
+
+@deftypefn Function void bodypart_SetSource_FilePtr (@w{struct bodypart *@var{part}}, @w{struct FILE *@var{file}}, @w{void @var{done}(FILE *)}))
+Sets the content of @var{part} to the data that may be read from the
+open stream @var{file}.
+
+The data may be read many times by calling fseek(), assuming that
+@var{file} was opened in the appropriate manner.  In some cases, such as
+reading from a popen()'ed stream, the data may only be available once.
+The data will not remain available across sessions.
+
+The function @var{done} will be called to close @var{file} when it is no
+longer needed by @var{part}.
+@end deftypefn
+
+@node Bodypart subtypes,  , Bodypart contents, Bodypart
+@section Bodypart subtypes
+
+Here are the subtypes of @code{bodypart}.  It is possible to add new
+ones.  @xref{New bodypart subtypes}.
+
+@table @code
+@item bp_text
+@tindex bp_text
+This is an abstract superclass for textual bodyparts.
+
+@deftypefn Function {char *} bp_text_Charset (@w{struct bp_text *@var{part}})
+Returns the name of the character set of @var{part}.
+@end deftypefn
+
+Here are the subtypes of @w{@code{bp_text}}.
+
+@table @code
+@item bp_text_plain
+@tindex bp_text_plain
+Plain text.
+
+@item bp_text_other
+@tindex bp_text_other
+Any other kind of text, such as RFC 1341 text/richtext.  All
+@w{@code{bp_text_other}} objects have a subtype field naming the particular
+subtype of bp_text, such as @w{@code{"richtext"}} or @w{@code{"x-smelly"}}.
+
+@deftypefn Function {char *} bp_text_other_Subtype (@w{struct bp_text_other *@var{part}})
+Returns the name of the text subtype of @var{part}.
+@end deftypefn
+@end table
+
+@item bp_multipart
+@tindex bp_multipart
+This is an abstract superclass for bodyparts which can contain subparts.
+
+@deftypefn Function {int} bodypart_PartNum (@w{struct bodypart *@var{part}}, @w{struct bp_multipart *@var{mpart}})
+Returns the index within @var{mpart} of the bodypart @var{part}.
+@end deftypefn
+
+@deftypefn Function int bp_multipart_NumParts (@w{struct bp_multipart *@var{part}})
+Returns the number of subparts contained in @var{part}.
+@end deftypefn
+
+@deftypefn Function {struct bodypart *} bp_multipart_Nth (@w{struct bp_multipart *@var{part}}, @w{int @var{n}})
+Returns the subpart of @var{part} numbered @var{n} (zero-based).
+@end deftypefn
+
+@deftypefn Function {void} bp_multipart_InsertPart (@w{struct bp_multipart *@var{mpart}}, @w{struct bodypart *@var{part}}, @w{int @var{pos}})
+Insert into @var{mpart} a bodypart @var{part} at position @var{pos}.
+The position @var{pos} may range from 0 through
+@w{@code{bp_multipart_NumParts(@var{mpart})}}, inclusive; or it may be
+-1 as shorthand for @w{@code{bp_multipart_NumParts(@var{mpart})}} (i.e.,
+appending a bodypart).
+
+It is an error to insert a bodypart which is already contained within
+another bodypart elsewhere.
+@end deftypefn
+
+@deftypefn Function {void} bp_multipart_DeletePart (@w{struct bp_multipart *@var{part}}, @w{int @var{n}})
+Delete from @var{part} the sub-part numbered @var{n}.
+@end deftypefn
+
+Here are the subtypes of @w{@code{bp_multipart}}.
+
+@table @code
+@item bp_multipart_mixed
+@tindex bp_multipart_mixed
+Has a number of subparts to be presented in order.
+
+@item bp_multipart_alternative
+@tindex bp_multipart_alternative
+Has a number of equivalent subparts in increasingly sophisticated
+representations.  The one presented to the user should be the farthest
+down the list whose type we recognize.
+
+@item bp_multipart_digest
+@tindex bp_multipart_digest
+The subparts are expected to be of type @w{@code{message_rfc822}}.  The
+entire @w{@code{bp_multipart_digest}} can be exported to a local file and
+thence opened as its own message store.
+
+@deftypefn Function void bp_multipart_digest_Export (@w{struct bp_multipart_digest *@var{part}}, @w{char *@var{name}}, @w{void *@var{data}})
+Export the subparts of @var{part} to a local file named @var{name},
+with @var{data} as filesystem-specific extra mstore-creation data.  The
+resulting local entity is suitable for opening with @w{@code{mstore_Open}}.
+@end deftypefn
+
+@item bp_multipart_parallel
+@tindex bp_multipart_parallel
+Has a number of subparts whose presentation order does not matter, but
+is intended to be as nearly simultaneous as possible.
+
+@item bp_multipart_enabledmail
+@tindex bp_multipart_enabledmail
+As in the Safe-Tcl paper, has two expected subparts:  one unspecified,
+the other an @w{@code{application_safetcl}}.
+@end table
+
+@item bp_message
+@tindex bp_message
+An abstract superclass for bodyparts that are full-fledged nested mail
+messages.
+
+@table @code
+@item bp_message_rfc822
+@tindex bp_message_rfc822
+An ordinary mail message.
+
+@item bp_message_externalbody
+@tindex bp_message_externalbody
+A few items of data indicating where else on the network the ``real''
+contents may be found.
+
+@deftypefn Function {char *} bp_message_externalbody_AccessType (@w{struct bp_message_externalbody *@var{part}})
+Returns the access-type of the external body, such as
+@w{@code{"local-file"}} or @w{@code{"anon-ftp"}}.
+@end deftypefn
+
+@deftypefn Function {char *} bp_message_externalbody_Name (@w{struct bp_message_externalbody *@var{part}})
+Returns the name of the external entity containing the dereferenced body
+of @var{part}.
+@end deftypefn
+
+@item bp_message_partial
+@tindex bp_message_partial
+One in a series of messages meant to be reassembled in order to produce
+a single new message.
+
+@deftypefn Function {char *} bp_message_partial_Id (@w{struct bp_message_partial *@var{part}})
+Returns a unique identifier associated with @var{part} and (presumably)
+its companion parts.  This identifier is used for matching this part to
+its companions whenever and wherever they're found.
+@end deftypefn
+
+@deftypefn Function int bp_message_partial_Number (@w{struct bp_message_partial *@var{part}})
+Returns the sequence number of @var{part} among its companion parts
+(one-based).
+@end deftypefn
+
+@deftypefn Function int bp_message_partial_Total (@w{struct bp_message_partial *@var{part}})
+Returns the total number of parts in the sequence of which @var{part} is
+a member.  If @var{part} is not the last in the sequence, then this
+function may return zero; but if @var{part} is the last in the
+sequence, then @w{@code{bp_message_partial_Total(@var{part})}} must equal
+@w{@code{bp_message_partial_Number(@var{part})}}.
+@end deftypefn
+@end table
+
+@item bp_application
+@tindex bp_application
+An abstract superclass for bodyparts whose data is totally opaque (but
+which may be viewable by invoking some other viewer).  This section
+needs to be filed in.
+@end table
+
+@node Message, Folder, Bodypart, Top
+@chapter Message
+
+@cindex message
+@cindex owner
+This chapter describes operations on messages.  A message is a mailobj
+that resides in one or more folders and has single top-level bodypart.
+Exactly one of the folders in which a message resides is its @dfn{owner}
+and is responsible for providing access to it and for saving changes to it.
+
+@menu
+* Message contents::            
+* Other message operations::    
+* Compose subclass::            
+@end menu
+
+@node Message contents, Other message operations, Message, Message
+@section Message contents
+
+@deftypefn Function {struct bodypart *} mmsg_Body (@w{struct mmsg *@var{msg}})
+Returns the top-level bodypart of @var{msg}.
+@end deftypefn
+
+@deftypefn Function void mmsg_SetBody (@w{struct mmsg *@var{msg}}, @w{struct bodypart *@var{part}})
+Sets the top-level bodypart of @var{msg} to @var{part}.@footnote{This
+operation is expected to be useful mainly when composing new messages.
+See the description of the Mail Transport Agent object in the API
+Requirements document.}
+@end deftypefn
+
+The following functions constitute a means for accessing the ``raw''
+data of a message without the overhead of parsing it.@footnote{Are
+mmsg_RawData and friends necessary or even appropriate?  They're
+intended as a way to optimize the case where we want to copy a
+conventional mail message from one place to another without parsing it;
+but they violate the object-oriented view of messages and folders that
+the rest of the API presents.}
+
+@deftypefn Function int mmsg_BodyOffset (@w{struct mmsg *@var{msg}})
+Returns the number of bytes into the raw data of @var{msg} at which the
+bodypart begins (i.e., after the separator between the headers and the
+body).  This number is for use in calls to @w{@code{mmsg_RawData}}.
+@end deftypefn
+
+@deftypefn Function int mmsg_Size (@w{struct mmsg *@var{msg}})
+Returns the number of bytes that can be read from @var{msg} using
+@w{@code{mmsg_Stream}}.
+@end deftypefn
+
+@deftypefn Function void mmsg_Stream (@w{struct mmsg *@var{msg}}, @w{struct dpipe *@var{dp}})
+Provides the caller with read access to the raw data of @var{msg}
+via the dpipe @var{dp}.  Initially, @var{dp} should point to an
+uninitialized dpipe, since @w{@code{mmsg_Stream}} will call
+@w{@code{dpipe_Init}} on it.
+
+Exactly what data the caller can read from @var{dp} depends on the
+particular subclass of @code{mmsg} being used.
+
+When the caller is finished with the dpipe, it should be discarded with
+@w{@code{mmsg_DestroyStream}}, @emph{not} with
+@w{@code{dpipe_Destroy}}.  This is because @w{@code{mmsg_Stream}} may
+place private data in the dpipe which it will need to finalize prior to
+the dpipe's destruction.
+
+Some mstore types will allow multiple concurrent dpipes reading from a
+message, others will not.  Beware of attempts to concurrently read both
+a message and one of its (possibly nested) components.@footnote{Both
+@code{mmsg} and @code{bodypart} have raw data access functions.
+Perhaps they should share a superclass, which would be a sibling of
+folder and mstore?  [I agree; Ben was going to try to come up with a
+name for such a class, which as we know is the hardest part of the whole
+endeavor. --bg]}
+
+@emph{Implementation Note:}  @w{@code{mmsg_DestroyStream}} expects
+the @var{wrdata} parameter supplied to @w{@code{dpipe_Init}} to be of
+type @w{@code{struct mmsgStream_data *}}.  (The @w{@var{rddata}}
+parameter @emph{must} be @code{NULL}, as it is reserved for use by the
+caller of @w{@code{mmsg_Stream}}.)  This means that generic dpipe
+writer functions may need to be wrapped in another function to extract
+the desired data from the @w{@code{mmsgStream_data}} object.
+
+@quotation
+@emph{Insert definition of @w{@code{struct messsageStream_data}} here.}
+@end quotation
+@end deftypefn
+
+@deftypefn Function void mmsg_DestroyStream (@w{struct dpipe *@var{dp}})
+Finalizes private data in, and calls @w{@code{dpipe_Destroy}} on
+@var{dp}, which must have been initialized via an earlier call to
+@w{@code{mmsg_Stream}}.
+@end deftypefn
+
+@deftypefn Function void mmsg_RawData (@w{struct mmsg *@var{msg}}, @w{int @var{start}}, @w{int @var{len}}, @w{char *@var{buf}})
+Fetch the raw text of @var{msg}, starting at offset @var{start} and
+continuing for @var{len} bytes, placing it in @var{buf} (which must be
+long enough to hold it).  For some mstore types, the raw text does not
+include the headers (usually it does); in such cases,
+@w{@code{mmsg_BodyOffset(@var{msg})}} will return 0.
+@end deftypefn
+
+Typically, one of @w{@code{mmsg_RawData}} and
+@w{@code{mmsg_Stream}} is implemented in terms of the other,
+depending on which is the most efficient way to access data in a
+particular @code{mstore} subclass.  Note, however, that
+@w{@code{mmsg_RawData}} permits random access, whereas
+@w{@code{mmsg_Stream}} requires sequential access.
+
+@node Other message operations, Compose subclass, Message contents, Message
+@section Other message operations
+
+@deftypefn Function {struct mfldr *} mmsg_Owner (@w{struct mmsg *@var{msg}})
+Returns the folder that owns @var{msg}.
+@end deftypefn
+
+@deftypefn Function void mmsg_Summary (@w{struct mmsg *@var{msg}}, @w{char *@var{fmt}}, @w{struct dynstr *@var{d}})
+Generate a summary for @var{msg} according to the format specifier
+@var{fmt} and append it to the Dynstr pointed to by @var{d}.  The
+interpretation of @var{fmt} depends on the type of message store where
+@var{msg} resides.  If @var{fmt} is @code{NULL}, a default format is
+used.
+@end deftypefn
+
+@cindex key hash
+@cindex key headers
+@deftypefn Function {void} mmsg_KeyHash (@w{struct mmsg *@var{msg}}, @w{struct mailhash *@var{hashbuf}})
+Computes the @dfn{key hash} of @var{msg} and fills in @var{hashbuf} with
+the value.  The key hash is constructed from the contents of the message
+body, and from the following @dfn{key headers}:
+
+@display
+Apparently-To; Cc; Date; From; Message-Id; Resent-Cc; Resent-Date;
+Resent-From; Resent-To; Subject; To.@refill
+@end display
+@end deftypefn
+
+@deftypefn Function {void} mmsg_HeaderHash (@w{struct mmsg *@var{msg}}, @w{struct mailhash *@var{hashbuf}})
+Computes the @dfn{header hash} of @var{msg} and fills in @var{hashbuf}
+with the value.
+@end deftypefn
+
+@deftypefn Function void mmsg_Update (@w{struct mmsg *@var{msg}}, @w{int @var{force}})
+Write changes to @var{msg} back to the mstore.  If this operation is
+delegated, changes may not actually get written until later, unless
+@var{force} is non-zero.
+@end deftypefn
+
+@node Compose subclass,  , Other message operations, Message
+@section Compose subclass
+
+A composition is a message that supports additional operations related
+to creating and manipulating its internal structure, and ultimately
+sending it via some mail transport agent.  For brevity, the class name
+is shortened to @dfn{compose}, those instances of this class will be
+described as @dfn{compositions} in this documentation.
+
+@menu
+* Composition addressing::      
+@end menu
+
+@node Composition addressing,  , Compose subclass, Compose subclass
+@subsection Composition addressing
+
+Each composition maintains a single unordered set of addresses, called
+an @dfn{envelope}.  When a composition is ultimately sent off, the
+transport agent uses these addresses to determine exactly where the
+composition should go.
+
+The envelope API itself is described elsewhere (@pxref{Envelope}).  The
+following interface defines the relationship between envelopes and
+compositions.
+
+Every composition directly contains exactly one envelope.  This envelope
+is automatically created when the composition is created; it will be
+automatically destroyed when the composition is destroyed.  There are no
+distinguished set/get operations to change a composition's envelope.
+Envelope manipulation should instead be done in-place using the
+referenced envelope returned by this call.@footnote{Is this wise?  Or
+might set/get be useful?}
+
+@deftypefn Function {struct envelope *} compose_Envelope (@w{struct compose *@var{compose}})
+Returns a reference to the envelope used by composition @var{compose}.
+The memory occupied by this envelope is still considered to be owned by
+the containing composition.  The contents of the referenced envelope may
+be manipulated in place by the caller, but the envelope itself must not
+be deallocated or destroyed.
+@end deftypefn
+
+Some transports, such as SMTP+822, allow redundant specification of
+addressing information.  An outbound composition may show one set of
+addresses in its headers, but use a completely different set in the
+actual transport envelope.
+
+In such cases, a simple heuristic cascade is used.  If the composition
+has a nonempty envelope, that envelope is used regardless of any
+conflicting header information.  If the composition's envelope is empty,
+@emph{and} a nonempty set of intended recipients can be deduced from the
+composition's headers, the implied addresses will be used as a fallback.
+We expect the fallback case to be the more common by far.
+
+@deftypefn Function {int} compose_Addressed (@w{const struct composition *@var{compose}})
+Determines if the composition @var{compose} is addressed fully enough to
+be sent.  This implies that either the envelope is nonempty or that a
+nonempty envelope can be deduced from other information contained in the
+composition.
+@end deftypefn
+
+@deftypefn Function {struct envelope *} compose_ImpliedEnvelope (@w{const struct composition *@var{compose}})
+Allocates and returns an envelope containing the set of addresses that
+would be used to send the composition @var{compose}.  This may be a copy
+of the composition's envelope, or it may have been generated on-the-fly
+from other information contained in the composition.  The memory
+occupied by the returned envelope becomes the responsibility of the
+caller; the caller should release this memory using the envelope API
+when it is no longer needed.
+@end deftypefn
+
+@node Folder, Message store, Message, Top
+@chapter Folder
+
+@cindex folder
+This chapter describes operations on folders.  A folder is a mailobj
+containing a sequence of messages.
+
+@menu
+* Messages in folders::         
+* Other folder operations::     
+* Ghosts::                      
+@end menu
+
+@node Messages in folders, Other folder operations, Folder, Folder
+@section Messages in folders
+
+@deftypefn Function int mfldr_MessageNum (@w{struct mfldr *@var{fldr}}, @w{struct mmsg *@var{msg}})
+Returns the index within @var{fldr} of the message whose handle is
+@var{msg}.
+@end deftypefn
+
+@deftypefn Function {struct mmsg *} mfldr_NthMessage (@w{struct mfldr *@var{fldr}}, @w{int @var{n}})
+Returns a handle on the message in @var{fldr} whose index is @var{n}
+(zero-based).
+@end deftypefn
+
+@deftypefn Function int mfldr_NumMessages (@w{struct mfldr *@var{fldr}})
+Returns the number of messages in @var{fldr}.
+@end deftypefn
+
+@deftypefn Function void mfldr_Insert (@w{struct mfldr *@var{fldr}}, @w{struct mmsg *@var{msg}}, @w{int @var{pos}})
+Insert into @var{fldr} the message @var{msg} at position @var{pos}.
+This operation is only valid if @var{fldr} is virtual, or if @var{msg}
+and @var{fldr} reside on the same mstore.  The position @var{pos} may
+range from 0 through @w{@code{mfldr_NumMessages(@var{fldr})}}, inclusive;
+or it may be -1 as shorthand for
+@w{@code{mfldr_NumMessages(@var{fldr})}} (i.e., appending to the end of
+@var{fldr}).
+@end deftypefn
+
+@deftypefn Function {struct mmsg *} mfldr_Import (@w{struct mfldr *@var{fldr}}, @w{struct mmsg *@var{msg}}, @w{int @var{pos}})
+Insert into @var{fldr} a copy of @var{msg} at position @var{pos}.  If
+@var{pos} is @w{-1}, appends @var{msg} to @var{fldr}.  This is like
+@w{@code{mfldr_Insert}} but can be used when the mstores of @var{fldr}
+and @var{msg} do not match; however, @var{msg} may undergo changes in
+translation.  Returns a handle to the new message.
+@end deftypefn
+
+@deftypefn Function void mfldr_DeleteMsg (@w{struct mfldr *@var{fldr}}, @w{int @var{n}})
+Delete the message from @var{fldr} numbered @var{n}.
+
+Note that this is the operation that actually removes the message
+(modulo cached writes); most UI's will want to allow the user to set a
+``deleted'' flag rather than delete the message outright; the flag would
+then be tested by the API at a later time to indicate that
+@w{@code{mfldr_DeleteMsg}} should be called.
+@end deftypefn
+
+@deftypefn Function {int} mfldr_Select (@w{struct mfldr *@var{fldr}}, @w{int (*@var{pred}) (@w{struct mfldr *}, @w{struct mmsg *}, @w{void *})}, @w{void *@var{data}}, @w{struct intset *@var{which}})
+Selects messages from @var{fldr} according to the predicate @var{pred}
+and using selection criteria in @var{data}, returning a ``map'' of the
+selected messages in @var{which}.  The function @var{pred} takes
+@var{fldr}, a message in @var{fldr}, and @var{data} as arguments and
+returns non-zero iff the message should be selected.  The Intset
+@var{which} is @emph{not} cleared before the position numbers of
+selected messages are added to it.  The return value is the number of
+messages which met the selection criteria.
+@end deftypefn
+
+@deftypefn Function {void} mfldr_Sort (@w{struct mfldr *@var{fldr}}, @w{int (*@var{cmp}) (@w{struct mfldr *}, @w{struct mmsg *}, @w{struct mmsg *}, @w{void *})}, @w{void *@var{data}})
+Sort the messages in @var{fldr} according to the comparison predicate
+@var{cmp} and using comparison data @var{data}.  The function @var{cmp}
+takes @var{fldr}, a pair of messages in @var{fldr}, and @var{data} as
+arguments and returns an integer in the style of @code{strcmp}:  less
+than zero if the first message should come before the second, greater
+than zero if the first message should come after the second, and exactly
+0 if they should be considered the same for sorting purposes.
+@end deftypefn
+
+@deftypefn Function {int} mfldr_NewMail (@w{struct mfldr *@var{fldr}}, @w{struct intset *@var{new}})
+Polls for new messages in @var{fldr}, inserting them as appropriate and
+returning a ``map'' of the new messages in @var{new}.  The Intset
+@var{new} is @emph{not} cleared before the position numbers of messages
+that were new are added to it.  The return value is the number of new
+messages.
+@end deftypefn
+
+@node Other folder operations, Ghosts, Messages in folders, Folder
+@section Other folder operations
+
+@deftypefn Function {struct mstore *} mfldr_Mstore (@w{struct mfldr *@var{fldr}})
+Returns the mstore on which @var{fldr} resides.  If @var{fldr} is a
+virtual folder, returns @code{NULL}.
+@end deftypefn
+
+@deftypefn Function {struct mfldr *} mfldr_Create (@w{struct mstore *@var{mstore}}, @w{char *@var{name}}, @w{void *@var{data}})
+Create a new, empty folder on @var{mstore} named @var{name} with
+mstore-specific creation data in @var{data}, and return it.  If
+@var{mstore} is @code{NULL}, the result is a virtual folder.
+@end deftypefn
+
+@deftypefn Function {void} mfldr_SuperHash (@w{struct mfldr *@var{fldr}}, @w{int @var{bits}}, @w{struct intset *@var{which}}, @w{struct glist *@var{hashbuf}}, @w{int @var{keyp}}, @w{struct intset *@var{subset}})
+Compute the @dfn{superhash} for @var{fldr} partitioned using @var{bits}
+bits; then select the hash buckets indicated in @var{which} and append
+their hash values to @var{hashbuf}.  The superhash is computed using key
+hashes if @var{keyp} is non-zero and using header hashes otherwise.  If
+@var{subset} is non-zero, it is a set of message numbers to include in
+computing the superhash, and message numbers not appearing in this set
+do not participate.
+
+The available buckets are numbered 0 through @w{2^@var{bits} - 1}.
+Passing @var{which} as @code{NULL} selects all buckets.  The selected
+hash values are appended to @var{hashbuf}, which is a Glist with
+elements of type @w{@code{struct mailhash}}, in ascending numerical
+order.  It is the caller's responsibility to keep track of which entries
+in @var{hashbuf} correspond to which hash buckets.  For example, if
+@var{which} contains the numbers 5, 8, and 12 (and presuming
+@var{hashbuf} starts out empty), then after a call to
+@w{@code{mfldr_SuperHash}} @w{@code{glist_Nth(@var{hashbuf}, 0)}} will
+contain the value for hash bucket 5, @w{@code{glist_Nth(@var{hashbuf},
+1)}} will contain the value for hash bucket 8, and
+@w{@code{glist_Nth(@var{hashbuf}, 2)}} will contain the value for hash
+bucket 12.
+
+@cindex superhash
+@cindex superhash bucket
+@cindex partitioned superhash
+The superhash is constructed from the key hashes or headers hashes of
+all the messages in @var{fldr}.  Partitioning the superhash works by
+computing the hashes for all the messages in @var{fldr}, then dividing
+them up according to the first @var{bits} bits of each and hashing each
+subset into its own @dfn{superhash bucket}.  Note that the space of
+messages is not partitioned; the space of hashes is.
+@end deftypefn
+
+@deftypefn Function {int} mailhash_bucket (@w{struct mailhash *@var{hash}}, @w{int @var{bits}})
+Given @var{hash}, determine the number of the bucket it belongs in when
+partitioning on @var{bits} bits.
+@end deftypefn
+
+@deftypefn Function void mfldr_Update (@w{struct mfldr *@var{fldr}})
+Writes changes to @var{fldr} back out to its mstore.  Note that some
+mstore types will not cache changes at all---they'll get written
+straight through---in which cases @w{@code{mfldr_Update}} will be a no-op.
+@end deftypefn
+
+@deftypefn Function void mfldr_Close (@w{struct mfldr *@var{fldr}}, @w{int @var{flush}})
+Release all resources associated with @var{fldr} and disallow further
+operations on it, updating first if @var{flush} is
+non-zero.@footnote{It's not yet clear what should happen to messages
+owned by the folder being closed, but which also appear in folders which
+are remaining open.}  Some mstores, especially ones opened read-only,
+will not permit flushing.
+@end deftypefn
+
+@deftypefn Function {void} mfldr_Diff (@w{struct mfldr *@var{fldr1}}, @w{struct mfldr *@var{fldr2}}, @w{struct dlist *@var{a}}, @w{struct dlist *@var{b}})
+Compare @var{fldr1} with @var{fldr2}.  Messages which appear in
+@var{fldr1} and not in @var{fldr2} are recorded in @var{a}.  Messages
+which appear in @var{fldr2} and not in @var{fldr1} are recorded in
+@var{b}.  This function uses the @dfn{partitioned superhash algorithm}
+based on key-hashes to optimize the comparison.
+
+@tindex mfldr_diff
+The arguments @var{a} and @var{b} are pointers to initialized Dlists,
+the type of whose elements is@w{@code{struct mfldr_diff}}, which is
+defined as follows:
+
+@example
+@group
+struct mfldr_diff @{
+    int num, remove, apply;
+@};
+@end group
+@end example
+
+These lists are meant to be passed to a subsequent call to
+@w{@code{mfldr_Sync}}.  In the @w{@code{mfldr_diff}} structure,
+@code{num} is the number of a message within its folder, @code{delete}
+indicates whether the message should be deleted rather than copied (see
+below), and @code{apply} indicates whether @w{@code{mfldr_Sync}}
+should apply the requested change (or ignore the record).
+
+@cindex ghost
+If a @dfn{ghost} exists for a given message, then the @code{delete}
+field in that message's record will be set, otherwise it will be zero.
+A ghost indicates that the message was once seen and deleted.
+
+The @w{@code{mfldr_diff}} records are appended to @var{a} and @var{b}.
+Either @var{a} or @var{b} may be 0 to indicate that the corresponding
+information is not needed.
+@end deftypefn
+
+@deftypefn Function {void} mfldr_RefineDiff (@w{struct mfldr *@var{fldr1}}, @w{struct mfldr *@var{fldr2}}, @w{struct dlist *@var{a}}, @w{struct dlist *@var{b}}, @w{struct dlist *@var{d}})
+Detect differences between pairs of messages considered ``identical'' in
+@var{fldr1} and @var{fldr2}.  The Dlists @var{a} and @var{b} are the
+lists computed by a prior call to @w{@code{mfldr_Diff}}.  Differences
+detected by this function are appended to @var{d}.  Messages that are
+``identical'' according to @w{@code{mfldr_Diff}} may nevertheless have
+differences, such as in the Status and Priority headers, that do not
+affect their identity.
+
+@tindex mfldr_refinedDiff
+The folders @var{fldr1} and @var{fldr2} must be unchanged since the call
+to @w{@code{mfldr_Diff}} which produced @var{a} and @var{b}.  The
+Dlist @var{d} (``differences'') must be initialized to hold records of
+type @w{@code{struct mfldr_refinedDiff}}, defined as follows:
+
+@example
+@group
+struct mfldr_refinedDiff @{
+    int num1, num2, apply1, apply2;
+@};
+@end group
+@end example
+
+@noindent
+In this structure, @code{num1} is the number of a message in @var{fldr1}
+and @code{num2} is the number of the corresponding message in
+@var{fldr2} which has the same message identity as the first one but
+differs in some way or ways.  The fields @code{apply1} and @code{apply2}
+are used by @w{@code{mfldr_Sync}} (q.v., to which the list @var{d} as
+computed by this function is passed).
+
+Message identity is determined using a message's ``key hash,'' which is
+computed from the contents of the message body and from the following
+``key'' message headers:
+
+@display
+@w{Apparently-To}; Cc; Date; From; @w{Message-Id}; @w{Resent-Cc};
+@w{Resent-Date}; @w{Resent-From}; @w{Resent-To}; Subject; To.@refill
+@end display
+
+@noindent
+Differences between ``identical'' messages are guaranteed not to be in
+the body or in the key headers (which means such differences will only
+be found in non-key headers).
+@end deftypefn
+
+@deftypefn Function {void} mfldr_Sync (@w{struct mfldr *@var{fldr1}}, @w{struct mfldr *@var{fldr2}}, @w{struct dlist *@var{a}}, @w{struct dlist *@var{b}}, @w{struct dlist *@var{d}}, @w{mfldr_SyncProgress_t @var{progress_fn}}, @w{void *@var{progress_data}})
+Transfer data between @var{fldr1} and @var{fldr2} according to the
+instructions in @var{a}, @var{b}, and @var{d}.  The Dlists @var{a} and
+@var{b} must have been computed in a previous call to
+@w{@code{mfldr_Diff}}, and the Dlist @var{d} must have been computed
+in a previous call to @w{@code{mfldr_RefineDiff}}.  Each of the Dlist
+pointers may be zero to be ignored.
+
+If non-zero, @var{progress_fn} is a function to be called at each
+iteration of the loop.  It is called with three arguments: a zero-based
+counter (type @code{int}) that is incremented by one with each call; the
+total number of iterations that are expected (i.e., the sum of the
+lengths of @var{a}, @var{b}, and @var{d}), and @var{progress_data}.  The
+caller can use this callback function to update a progress meter.  Note
+that the callback is invoked @emph{prior} to each iteration, and is not
+called upon completion of the last iteration.
+
+For each @w{@code{struct mfldr_diff}} in @var{a}, if the @code{apply}
+field is zero, the record is ignored.  Otherwise, if the @code{delete}
+field is zero, the corresponding message is copied from @var{fldr1} into
+@var{fldr2}.  Otherwise, the message is deleted from @var{fldr1}.
+
+For each @w{@code{struct mfldr_diff}} in @var{b}, if the @code{apply}
+field is zero, the record is ignored.  Otherwise, if the @code{delete}
+field is zero, the corresponding message is copied from @var{fldr2} into
+@var{fldr1}.  Otherwise, the message is deleted from @var{fldr2}.
+
+Note that when @w{@code{mfldr_Diff}} creates the records in @var{a}
+and @var{b}, @code{apply} is always initialized to zero, meaning that
+the caller must first traverse the lists and ``turn on'' each change it
+wishes @w{@code{mfldr_Sync}} to execute.  Also, @code{delete} is set
+to the result of a search for a ``ghost'' for the message, so the caller
+should probably double-check that field too before calling this
+function.
+
+For each @w{@code{struct mfldr_refinedDiff}} in @var{d}, if the
+@code{apply1} field is non-zero, the change is applied to
+@var{fldr1}---that is, the headers of the message are copied from
+@var{fldr2} to the corresponding message in @var{fldr1} (replacing the
+original headers).  If the @code{apply2} field is non-zero, the change
+is applied to @var{fldr2}, with headers from the message in @var{fldr1}
+replacing those in its counterpart in @var{fldr2}.  Only one of the
+@code{apply} fields should be set; in any case, the copy will only
+happen in at most one direction.@footnote{This limitation comes from the
+implementation difficulty of preserving the headers of message @var{x}
+somewhere while those of message @var{y} are replacing them, so that the
+preserved headers can then replace those in @var{y}.}  As with @var{a}
+and @var{b}, the @code{apply} fields are initialized to zero by
+@w{@code{mfldr_RefineDiff}}, meaning that the caller must first
+traverse the lists and ``turn on'' each change it wishes
+@w{@code{mfldr_Sync}} to execute.
+@end deftypefn
+
+@heading Folder synchronization discussion
+
+The functions @w{@code{mfldr_Diff}}, @w{@code{mfldr_RefineDiff}},
+and @w{@code{mfldr_Sync}} form a customizable three-step process for
+efficient folder synchronization.  A full synchronization should proceed
+something like this:
+
+@example
+@group
+struct dlist a, b, d;
+
+dlist_Init(&a, (sizeof (struct mfldr_diff)), @var{growsize});
+dlist_Init(&b, (sizeof (struct mfldr_diff)), @var{growsize});
+dlist_Init(&d, (sizeof (struct mfldr_refinedDiff)), @var{growsize});
+@end group
+@group
+TRY @{
+    mfldr_Diff(@var{fldr1}, @var{fldr2}, &a, &b);
+    mfldr_RefineDiff(@var{fldr1}, @var{fldr2}, &a, &b, &d);
+    /* @r{here the caller selects which changes in a, b, and d}
+     * @r{are desired by ``turning on'' the appropriate apply fields.}
+     */
+    mfldr_Sync(@var{fldr1}, @var{fldr2}, &a, &b, &d);
+@} FINALLY @{
+    dlist_Destroy(&a);
+@end group
+@group
+    dlist_Destroy(&b);
+    dlist_Destroy(&d);
+@} ENDTRY;
+@end group
+@end example
+
+@noindent
+Note that @var{fldr1} and @var{fldr2} must not change between the call
+to @w{@code{mfldr_Diff}} and the call to @w{@code{mfldr_Sync}}, and
+that they must be passed in the same order to each function.
+
+This sequence may be altered if refined diffs are not desired:
+
+@example
+@group
+struct dlist a, b;
+
+dlist_Init(&a, (sizeof (struct mfldr_diff)), @var{growsize});
+dlist_Init(&b, (sizeof (struct mfldr_diff)), @var{growsize});
+@end group
+@group
+TRY @{
+    mfldr_Diff(@var{fldr1}, @var{fldr2}, &a, &b);
+    /* @r{here the caller selects which changes in a and b}
+     * @r{are desired by ``turning on'' the appropriate apply fields.}
+     */
+    mfldr_Sync(@var{fldr1}, @var{fldr2}, &a, &b, 0);
+@} FINALLY @{
+    dlist_Destroy(&a);
+@end group
+@group
+    dlist_Destroy(&b);
+@} ENDTRY;
+@end group
+@end example
+
+Selecting changes in @code{a} and @code{b} could be written like so:
+
+@example
+@group
+struct mfldr_diff *md;
+int i;
+
+dlist_FOREACH(&a, struct mfldr_diff, md, i) @{
+    if (user_approves(@var{fldr1}, md))
+        md->apply = 1;
+@}
+@end group
+@group
+dlist_FOREACH(&b, struct mfldr_diff, md, i) @{
+    if (user_approves(@var{fldr2}, md))
+        md->apply = 1;
+@}
+@end group
+@end example
+
+@noindent
+where @w{@code{user_approves}} is a hypothetical function which queries
+the user about the proposed change.  Finally, selecting changes in
+@code{d} could be written like so:
+
+@example
+@group
+struct mfldr_refinedDiff *mrd;
+int i, direction;
+
+dlist_FOREACH(&d, struct mfldr_refinedDiff, mrd, i) @{
+    direction = user_chooses_direction(@var{fldr1}, @var{fldr2}, mrd);
+    if (direction < 0)         /* @r{copy towards @var{fldr1}} */
+        mrd->apply1 = 1;
+    else if (direction > 0)    /* @r{copy towards @var{fldr2}} */
+        mrd->apply2 = 1;
+@}
+@end group
+@end example
+
+@noindent
+where @w{@code{user_chooses_direction}} is a hypothetical function which
+queries the user about the proposed change and returns 0 meaning ``do
+not select the change,'' or a negative or positive number to indicate
+one or another direction for the copy.  Alternatively, the lists
+@code{a}, @code{b}, and @code{d} could be turned into GUI elements which
+can be interactively edited (turned on and off) before invoking
+@w{@code{mfldr_Sync}}.
+
+@node Ghosts,  , Other folder operations, Folder
+@section Ghosts
+
+@deftypefn Function {void} ghost_OpenTomb (@w{const char *@var{tombname}})
+Make @var{tombname} the name of the current tombfile and prepare it for
+writing.  Raises the exception @w{@code{ghost_err_Unsealed}} if called
+successively without an intervening call to @w{@code{ghost_SealTomb}}.
+(This function doesn't actually open the tombfile; that's handled
+lazily, e.g. by @w{@code{ghost_Bury}}.)
+@end deftypefn
+
+@deftypefn Function {void} ghost_SealTomb ()
+Close the tombfile opened by @w{@code{ghost_OpenTomb}}.
+@end deftypefn
+
+@deftypefn Function {void} ghost_Bury (@w{struct mailhash *@var{keyhash}}, @w{time_t @var{interment}})
+Bury the @var{keyhash} (obtained via a prior call to
+@w{@code{mmsg_KeyHash}}), recording its @var{interment} time, thus
+causing it to become a ghost.  Several keyhashes may be buried in
+succession, but a call to @w{@code{ghost_SealTomb}} must intervene
+between the last burial and any other ghost operation.
+@end deftypefn
+
+@deftypefn Function {int} ghostp (@w{struct mailhash *@var{keyhash}})
+Returns nonzero if @var{keyhash} matches that of a ghost, zero
+otherwise.  If @w{@code{ghost_OpenTomb}} has never been called, this
+will always return zero.  If @w{@code{ghost_Bury}} or
+@w{@code{ghost_Exorcise}} has been called without a subsequent call to
+@w{@code{ghost_SealTomb}}, @w{@code{ghostp}} will raise the exception
+@w{@code{ghost_err_Unsealed}}.  We only commune with ghosts that have
+had a proper burial.
+@end deftypefn
+
+@deftypefn Function {void} ghost_Exorcise (@w{time_t @var{afterlife}})
+Purges from the tombfile any ghosts that have been haunting us for
+longer than the specified @var{afterlife}.  May also raise the exception
+@w{@code{ghost_err_Unsealed}} if a burial or another exorcism has taken
+place without an intervening call to @w{@code{ghost_SealTomb}}.
+@end deftypefn
+
+@node Message store, Envelope, Folder, Top
+@chapter Message store
+
+@cindex message store
+A message store (mstore) is the manager for one or more folders.  It is
+responsible for providing the interface between the folder abstraction
+and the concrete representation of a folder on its persistent storage
+medium.  Whereas the folder is a data structure providing a
+format-independent container and sequencer for messages, the message
+store provides the format-specific access methods.
+
+@deftypefn Function {struct mstore *} mstore_Open (@w{char *@var{name}}, @w{void *@var{data}})
+Connect to the mstore named @var{name},@footnote{This document assumes
+that entity names of various kinds can be represented as C strings.  It
+would be better, would it not, to have an abstract type for entity
+(e.g., folder and file) names which would map to C strings for, say,
+Unix files.  The Mac and Windows platforms may have something special to
+add on this subject.  However, such a generalization can wait until the
+rest of the API is stable and possibly even implemented.  Right?} with
+additional connect-time data contained in @var{data}.  The contents of
+the structure pointed to by @var{data} depend on the type of mstore
+being opened.  Returns a pointer to a new mstore object.
+@end deftypefn
+
+@deftypefn Function void mstore_Setup (@w{struct mstore *@var{mstore}}, @w{void *@var{data}})
+Initialize @var{mstore} (obtained via @w{@code{mstore_Open}}) with additional
+data contained in @var{data}.  The contents of the structure pointed to
+by @var{data} depend on the type of mstore being initialized.
+
+This call is intended to perform functions such as authenticating with a
+server after connecting.  For some mstore types, repeated calls to
+@w{@code{mstore_Setup}} will be meaningful; other types will require closing
+and reopening the mstore before calling @w{@code{mstore_Setup}} again.
+@end deftypefn
+
+@deftypefn Function {void} mstore_Update (@w{struct mstore *@var{mstore}})
+Writes changes to @var{mstore} to persistent storage.  This includes any
+pending cached changes to folders and messages contained within
+@var{mstore}, as well as attribute information and other
+mstore-type-specific state that may have changed.
+@end deftypefn
+
+@deftypefn Function void mstore_Close (@w{struct mstore *@var{mstore}}, @w{int @var{flush}})
+Release all resources associated with @var{mstore} and disallow further
+operations on it, updating all changes to persistent storage if and only
+if @var{flush} is non-zero.
+@end deftypefn
+
+@deftypefn Function {struct mfldr *} mstore_OpenFolder (@w{struct mstore *@var{mstore}}, @w{char *@var{name}}, @w{void *@var{data}})
+Opens the folder in @var{mstore} named @var{name} and requiring
+additional (opaque) data @var{data}, returning the resulting folder
+object.
+
+A particular mstore type may wish to subclass @code{mfldr} to express
+mstore-type-specific functionality at the folder level.
+@end deftypefn
+
+@node Envelope, Additional operations, Message store, Top
+@chapter Envelope
+
+A set of addresses.  Work in progress.
+
+@node Additional operations, Defining new subtypes, Envelope, Top
+@chapter Additional operations
+
+This chapter, when written, will describe the functionality attributed
+to the ``meta-store'' in the companion document, @ref{Top, Meta-Store
+API Requirements, Meta-Store API Requirements, mstore.info}.
+
+@menu
+* Querying about capabilities::  
+@end menu
+
+@node Querying about capabilities,  , Additional operations, Additional operations
+@section Querying about capabilities
+
+This section, when written, will describe an API allowing a caller to
+inquire about a particular mstore's capabilities.
+
+@node Defining new subtypes, Subsystems, Additional operations, Top
+@chapter Defining new subtypes
+
+@menu
+* New mailobj subtypes::        
+* New bodypart subtypes::       
+* New message subtypes::        
+* New folder subtypes::         
+* New mstore subtypes::         
+@end menu
+
+@node New mailobj subtypes, New bodypart subtypes, Defining new subtypes, Defining new subtypes
+@section New mailobj subtypes
+
+@node New bodypart subtypes, New message subtypes, New mailobj subtypes, Defining new subtypes
+@section New bodypart subtypes
+
+@node New message subtypes, New folder subtypes, New bodypart subtypes, Defining new subtypes
+@section New message subtypes
+
+@node New folder subtypes, New mstore subtypes, New message subtypes, Defining new subtypes
+@section New folder subtypes
+
+@node New mstore subtypes,  , New folder subtypes, Defining new subtypes
+@section New mstore subtypes
+
+@node Subsystems, To-do, Defining new subtypes, Top
+@chapter Subsystems
+
+This chapter describes the subsystems used by the Mstore API.
+
+@menu
+* SPOOR::                       
+* Dynadt::                      
+* Except::                      
+@end menu
+
+@node SPOOR, Dynadt, Subsystems, Subsystems
+@section SPOOR
+
+@sc{Spoor} is the Simple, Poor-man's Object-Oriented Runtime.  It
+provides a portable object-oriented environment for programs written in
+C, featuring single inheritance of data and methods with method
+overriding and polymorphism.  A combination of compile-time notations
+and run-time initializations convert an ordinary C @code{struct} into a
+@sc{Spoor} class.
+
+The central data types in the Mstore API are @sc{Spoor} classes; they
+form an inheritance hierarchy that looks like this:
+
+@example
+@group
+mailobj
+        bodypart
+                 bp_text
+                         bp_text_plain
+                         bp_text_other
+                 bp_multipart
+                              bp_multipart_mixed
+                              bp_multipart_alternative
+                              bp_multipart_digest
+                              bp_multipart_parallel
+                              bp_multipart_enabledmail
+                 bp_message
+                            bp_message_rfc822
+                            bp_message_externalbody
+                            bp_message_partial
+                 bp_application
+        message
+        folder
+        mstore
+@end group
+@end example
+
+@node Dynadt, Except, SPOOR, Subsystems
+@section Dynadt
+
+Dynadt is the Dynamic Abstract Data Types library which features a variety
+of general-purpose, dynamically-resizing data types.
+
+@node Except,  , Dynadt, Subsystems
+@section Except
+
+Except is a library providing portable exception-handling constructs for
+programs written in C.
+
+@node To-do, Programming Index, Subsystems, Top
+@appendix To-do
+
+This appendix describes what remains to be done in completing this
+document.
+
+@menu
+* Unresolved design issues::    
+* A small matter of writing::   
+@end menu
+
+@node Unresolved design issues, A small matter of writing, To-do, To-do
+@section Unresolved design issues
+
+This section describes design issues that have not yet been resolved.
+
+@itemize @bullet
+@item
+What are better names@footnote{As I've often said, naming is the hardest
+part of software design.---bobg} for everything in this API?  In
+particular, the type name @code{message} is
+too likely to collide with something we include or link with;
+@code{mailobj} is hard to pronounce; and most of the other names lack
+aesthetic appeal.
+
+@item
+Under this new API, what will be the meaning of ``opening'' a folder as
+we now understand it?  On a related note, does parsing a folder happen
+when it's opened?
+
+Bob believes that a folder is ``open'' any time the caller has a handle
+to it.  Whether or not this maps directly to an open file depends on the
+mstore type.  Bart points out that this may be troublesome for the case
+of appending a message to a folder which is not otherwise ``open.''  In
+the present core, we simply open the file for appending, and write out
+the data.  Within the new framework, such an operation might entail
+parsing the entire folder merely for the purpose of appending a message!
+
+Bob counters that the right approach is to stick with the present
+framework, but allow folder-parsing to be a lazy (and even an
+incremental) operation; that is, no parsing happens until the app
+requests some info out of the folder.  Using this approach, a folder can
+be opened and a message appended without causing a parse.  Comments?
+
+@item
+In the @sc{Spoor} widget library, when a widget is removed from its
+parent widget, the most amazingly complex protocol begins.  The idea is
+to notify the parent and its parent hierarchy that the affected widget
+is leaving; @emph{and} to notify every widget in the affected widget's
+child hierarchy that they're now no longer embedded in an app.  When you
+combine all this structure traversal with the fact that the mechanisms
+for doing this are object-oriented methods which may be overrides making
+``super'' calls, the protocol, called @code{unEmbedNotice}, is
+triply-recursive!
+
+The reason I mention this is that I'm wondering whether something like
+that will be necessary for mstores and folders and messages and
+bodyparts, which may be deeply nested.  We might try to rely on the
+callback mechanism for this, but I think for this purpose, that might
+become unwieldy.  Anyone wishing to discuss this, please see me.
+
+@item
+An API for modifying bodyparts of the various types.
+
+@item
+An API for finding out what folders exist in an mstore, and for renaming
+and deleting them.
+
+@item
+Specify an API for accessing the list of presently-opened folders within
+an mstore (to be used, for instance, in the implementation of
+@w{@code{mstore_Update}} to traverse the folder list, looking for changes).
+
+@item
+Address mail transport and directory services.
+@end itemize
+
+@node A small matter of writing,  , Unresolved design issues, To-do
+@section A small matter of writing
+
+This section describes things that are missing from this document, but
+merely haven't gotten written yet.  They're not things that require
+lots of thought.
+
+@itemize @bullet
+@item
+Specify exceptions.
+
+@item
+Specify built-in callbacks.
+
+@item
+Make an index-constructing pass.
+
+@item
+Specify which operations are essential (to implement in any mstore
+back-end) and which are optional.
+@end itemize
+
+@node Programming Index, Concept Index, To-do, Top
+@unnumbered Programming Index
+
+@printindex fn
+
+@node Concept Index,  , Programming Index, Top
+@unnumbered Concept Index
+
+@printindex cp
+
+@c @shortcontents
+@contents
+
+@bye

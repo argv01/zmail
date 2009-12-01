@@ -1,0 +1,57 @@
+<HTML>
+<HEAD>
+<TITLE>Quick Sync with ZPOP</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<pre>
+"Sync should be easier!" - the masses
+"All right, all right!" - the sync folks
+
+
+New File Menu item:
+     QuickSync -> Check In
+                  Check Out 
+
+
+Description:
+"QuickSync" is a hierarchical/pull-right/cascading menu item containing
+the items "Check In" and "Check Out".  The "QuickSync" item should be
+placed just below the "Synchronize Mailbox..." menu item.
+
+The "Check In" menu item will call a z-script that starts a sync
+scenario called "QuickSync Check In".  The "Check Out" menu item will
+call a z-script that starts a sync scenario called "QuickSync Check
+Out".
+
+Menu Sensitivity:
+The "QuickSync" menu item and its contents should be gray but visible
+whenever the current, active folder is not the main spool.  It is
+potentially misleading to allow people to choose this item while they
+are looking at some other folder.
+
+
+New User Scenarios:
+  QuickSync Check In
+  QuickSync Check Out
+
+
+Description:
+These are the scenarios used by the "Check In" and "Check Out" sub-
+menus.
+
+To start with, let's make "QuickSync Check In" the same as "Check in
+from PC" and "QuickSync Check Out" the same as "Check out to PC
+(regular use)".
+
+The one exception is that these two scenarios will be set to "Never
+Preview".  To quote Steve, "By God, it's going to be simple."
+
+RQ and Robert are currently working on the settings for these
+scenarios.  When they are done, we should get feedback from people far
+and wide.
+
+Note these are user level scenarios, so users can go change them to
+their hearts' content.
+</pre>
+</BODY>
+</HTML>

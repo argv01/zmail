@@ -1,0 +1,29 @@
+<HTML>
+<HEAD>
+<!-- This HTML file has been created by texi2html 1.35
+     from ../general/except.texinfo on 9 August 1996 -->
+
+<TITLE>Except - Footnotes</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>Except</H1>
+<H3><A NAME="FOOT1" HREF="except.html#FOOT1">(1)</A></H3>
+<P>Using <CODE>setjmp</CODE> and <CODE>longjmp</CODE>.
+<H3><A NAME="FOOT2" HREF="except.html#FOOT2">(2)</A></H3>
+<P>Note
+that when control reaches the end of a loop construct such as a
+<CODE>while</CODE> loop and jumps back to the beginning, a non-local exit is
+<EM>not</EM> considered to have taken place.
+<H3><A NAME="FOOT3" HREF="except.html#FOOT3">(3)</A></H3>
+<P><CODE>EXC_RETURNVAL</CODE> is a macro that creates a
+temporary variable whose type is <VAR>t</VAR>, which must be a type
+descriptor that can be placed entirely to the left of a variable name in
+a variable declaration.  If <VAR>v</VAR> has a more complicated type, use
+<CODE>typedef</CODE> to create a simple name for it.  For instance, if <VAR>v</VAR>
+is a pointer to a function returning <CODE>int</CODE>, its declaration would
+normally be written as<BR><TT> int (*<VAR>v</VAR>)();</TT><BR>but here <VAR>v</VAR> does
+not lie entirely to the right of its type descriptor.  Use something
+like<BR><TT> typedef int (*intfn_t)();</TT><BR>and then call
+<CODE>EXC_RETURNVAL(intfn_t, <VAR>v</VAR>)</CODE>.
+</BODY>
+</HTML>

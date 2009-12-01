@@ -1,0 +1,432 @@
+		       Z-Code Coding Practices
+
+This is the raw beginnings of what will hopefully be a useful information
+repository rather than a bureaucratic nightmare.
+
+Internationalization
+
+This section describes internationalizing strings in C code 
+(using message catalogs), internationalizing strings in Z-Script commands 
+(using locale.zmailrc), and how to edit strings for internationalization.
+
+Message Catalogs
+
+The following are instructions for maintaining the English language
+message catalogues.
+
+1) adding new strings to the catalogue
+
+   a) strings that appear where function calls are legal
+
+      When a user-visible string appears in a context where a function
+      call would be legal, wrap that string in the CATGETS() macro
+      defined in <include/catalog.h>.  Do not edit the file
+      "lib/locale/C/Catalog" directly.  Instead, do "make catalog"
+      just before committing (see below).
+
+      Example:
+
+         puts( "Are you sure?" );
+
+      Becomes:
+
+         puts( CATGETS( "Are you sure?" ) );
+
+   b) strings that appear where function calls are illegal
+
+      Some user-visible strings may appear in contexts that do not
+      allow function calls.  Static arrays of user-visible strings are
+      a common example of this.  In such cases, wrap each string in
+      the CATREF() macro defined in <include/catalog.h>.  CATREF's are
+      no longer (char *), but rather are of type catalog_ref, so
+      adjust your declarations accordingly.  When the string is
+      actually presented to the user, use macro catgetref() to convert
+      it to (char *).  Do not edit the file "lib/locale/C/Catalog"
+      directly, but instead "make catalog" just before committing (see
+      below).
+
+      Example:
+
+         static char *choices[] = { "Yes", "No" };
+         [...]
+         puts( choices[ i ] );
+
+      Becomes:
+
+         static catalog_ref choices[] = {
+            CATREF( "Yes" ),
+            CATREF( "No" )
+         };
+         [...]
+         puts( catgetref( choices[ i ] ) );
+
+
+2) changing the English form of an already-catalogued string
+
+   To change the English text of a catalogued string, simply change
+   the fallback string embedded in the source itself, generally found
+   within a CATGETS(), CATREF(), catgets(), or catref() form.  Do not
+   change or remove any other parameters appearing within that form.
+   Do not edit the file "lib/locale/C/Catalog" directly, but instead
+   do "make catalog" just before committing (see below).
+
+   Example:
+
+      puts( catgets( catalog, CAT_DEMO, 12, "Are you sure?" ) );
+
+   Becomes:
+
+      puts( catgets( catalog, CAT_DEMO, 12, "Surely you jest." ) );
+
+   Remember that whenever you change the English form of a string,
+   translating bureaus will have to be paid to re-translate that
+   string into any other languages we support.  Do not take such
+   changes lightly; make every reasonable effort to get it right the
+   first time.
+
+
+3) removing catalogued strings from the catalogue
+
+   To "uncatalogue" a string, remove the entire CATGETS(), CATREF(),
+   catgets(), or catref() form, and replace it with the string itself.
+   In the case of CATREF() and catref() forms, you will probably need
+   to change some declaration's type from CATALOG_REF or catalog_ref
+   back to (char *).  Do not edit the file "lib/locale/C/Catalog"
+   directly.  Issuing "make catalog" just before committing is
+   reasonable, but not strictly necessary.
+
+   Example:
+
+      static catalog_ref command[] = {
+         catref( CAT_DEMO, 1, "save" ),
+         catref( CAT_DEMO, 2, "delete" ),
+      };
+      [...]
+      execute( catgetref( command[ i ] ) );
+
+   Becomes:
+
+      static char *command[] = { "save", "delete" };
+      [...]
+      execute( command[ i ] );
+
+
+4) adding new non-catalogued strings
+
+   To add a new string that should not be catalogued, do the obvious
+   and just plunk it right in.  If someone else is likely to think
+   the string was mistakenly uncatalogued, add a comment.
+
+
+5) updating the catalogue via "make catalog"
+
+   Issuing "make catalog" in a directory containing internationalized
+   sources activates Catsup: the Catalogue Synchronizer and Updater.
+   Catsup attempts to keep the English catalogue sources in synch with
+   the C sources.  The CATGETS and CATREF forms are intended for
+   temporary use only.  Catsup rewrites these as catgets and catref,
+   after assigning message reference id numbers and adding other
+   necessary parameters.
+
+   Catsup issues warnings when catalogued strings have changed or new
+   strings have been added; in the future, this may indicate that
+   (re)translation is required.  Catsup also displays error messages
+   when id number conflicts are found, but it does not attempt to
+   repair this type of error.
+
+   Catsup always rewrites the "Catalog" file; the previous contents
+   are saved as "Catalog~".  Catsup may also rewrite C source files
+   that contain CATGETS or CATREF forms.  When it does so, the
+   previous contents of each file "foo.c" are saved in "foo.c~".
+
+   Catsup allocates new id numbers in "Catalog" the file.  If two
+   people run Catsup, they may each allocate the same id number for
+   two different strings.  To minimize the risk of such conflicts, you
+   should "cvs update lib/locale/C/Catalog" soon before "make
+   catalog", and "cvs commit lib/locale/C/Catalog" soon after.  Since
+   you generally update your source tree right before a commit, simply
+   add a "make catalog" step in the middle.
+
+6) Creating a compilable catalog source
+
+Issuing "make zmail.cat" performs all the symbol substitutions on 
+Catalog that will turn it into a real, XPG3, gencat-able catalog source.
+This is the form that should be provided to translators.
+
+Strings in Z-Script Commands
+
+The following are instructions for maintaining strings in Z-Script
+commands.
+
+1) Adding new Z-Script commands with embedded strings
+
+When you add new Z-Script functions to system.zmailrc.src or
+system.menus, separate function logic from user-visible strings.
+Put the user-visible strings in variables which are defined 
+in locale.zmailrc.  
+
+Example:
+	ask -f __file 'File to read:'
+
+Becomes:
+	in system.zmailrc.src:
+		ask -f __file "$__ask_file_read"
+	in locale.zmailrc
+		set __ask_file_read     = 'File to read:'
+
+Button and menu labels may be placed directly in button and menu commands.
+For Motif builds, they are pulled out into X resources by a preprocessor.
+
+2) changing the English form of a string in Z-Script
+
+Change the English form of the string directly in locale.zmailrc.
+At this time, our only automated method for detecting such changes is
+to use cvs diffs.
+
+Remember that whenever you change the English form of a string,
+translating bureaus will have to be paid to re-translate that
+string into any other languages we support.  Do not take such
+changes lightly; make every reasonable effort to get it right the
+first time.
+
+3) removing Z-Script commands with embedded strings 
+
+When you remove Z-Script commands which have embedded strings,
+remove the string definitions from locale.zmailrc, as well.
+At this time, our only automated method for detecting such changes is
+to use cvs diffs.
+
+Editing Strings for Internationalization
+
+Use of the following techniques will make our strings easier to localize,
+and improve consistency of our interface.
+
+   1) Avoiding grammatical assumptions
+
+      When a sentence may require a singular or plural form, use two
+      entirely separate strings, rather than tacking an 's' onto the
+      end of the appropriate English word.  Pluralization may be
+      arbitrarily complex in other languages; you cannot assume that
+      it is grammatically correct to simply adding some fixed suffix
+      to one noun.
+
+	Example:
+		"saved %d message%s\n"
+	Becomes:
+		"saved 1 message\n" and
+		"saved %d messages\n" with proper conditional use
+
+      Generally speaking, you should not make any assumptions about
+      grammar or sentence structure.  Changes to one part of a
+      sentence or phrase may have essentially arbitrary effects on the
+      rest of that string. Languages are convoluted, and what is true
+      of English may be dead wrong elsewhere.
+
+      For example, many Romance languages associate a gender with all
+      nouns, and require gender agreement between subjects and verbs.
+      If the subject of a sentence can change in different contexts,
+      its verb may need to change as well.  Do not assume that you can
+      simply drop in different words without changing the rest of the
+      sentence as well.
+
+Coding for Localization
+
+Your challenge as an international coder is to create software that
+can be localized to use any human language, having any properties,
+anywhere in the world, with zero a priori knowledge about that
+language's particular characteristics.  This is not easy, but it can
+be done.  The most important things you can do are to think ahead and
+to avoid making English-biased assumptions.
+
+   1) Anticipating size and length changes
+
+      Different languages vary widely in how much physical space
+      expressions take up.  German, for example, contains many nouns
+      that are much longer than their English equivalents.  Japanese,
+      on the other hand, may use only one or two glyphs to describe
+      the same object.  On the other hand, a single full-width
+      Japanese Katakana character will tend to be twice as wide as a
+      Roman character in the same size font.
+
+      Try to minimize the number of assumptions your code makes about
+      the size of fonts, or about the length of words and phrases.
+      For example, suppose that translation doubles the length of
+      every button label.  Will your buttons stretch?  If so, will
+      they still fit on screen?  If they don't stretch, will long
+      labels get cut off?
+
+      This can be a particularly vexing problem for graphical user
+      interfaces.  Take full advantage of all available facilities for
+      flexibly defining a window or dialog's layout.  Use algorithmic
+      geometry manager if you have them.  Don't hardwire a text field
+      to be ten characters wide ... ten Japanese characters are twice
+      as you think they are.
+
+   2) Eight-bit languages
+
+      Most languages require characters not found in the English-based
+      ASCII character set.  Romance languages, in particular, tend to
+      require additional special characters and diacritical marks.
+      ASCII itself occupies values 0-127; the lower half of an
+      eight-bit space.  Most languages that are based upon a Roman
+      alphabet simply extend ASCII by defining glyphs for bit patterns
+      128-255.  This includes all of the ISO 8859 family of encodings,
+      as well as myriad regional and national standards throughout
+      Europe and the Middle East.
+
+      In order to accommodate such encodings, the software you create
+      must be "eight-bit clean".  That is, it cannot use the eighth
+      bit as a scratch space, or assume that it will be off.  The
+      eighth bit must be respected and preserved, just as one would
+      respect and preserve the seven lower bits.
+
+      Eight-bit clean software cannot make certain assumptions about
+      how bit patterns relate to qualitative properties of characters.
+      For example, in Poland, it may not be true that all upper-case
+      letters are located between 65 and 90; there may be upper-case
+      characters above 127 as well.  And Hebrew letters do not even
+      have cases; the very question is meaningless.
+      
+      Instead of "rolling your own", use standard and native
+      facilities for querying characters' properties.  If you need to
+      know if some byte represents an alphanumeric character, don't
+      check for 48-57, 65-90, and 97-122.  That won't cut it for
+      eight-bit encodings.  Instead, use the standard C function/macro
+      isalnum().  On internationally-aware systems, the standards
+      require this call to properly adapt to the local language.  You
+      can trust it to do the right thing.
+
+      On the other hand, the classic C string manipulation functions
+      generally do *not* know about local languages.  The str*()
+      functions are mathematical, not linguistic.  All they know about
+      is bytes.  For example, strcmp() orders strings according to the
+      numeric value of the bytes it contains.  It knows nothing about
+      diacritics or special characters.  If you try to sort French
+      strings using strcmp(), you will end up incorrectly placing
+      "é" (e accent egue) after "z".  Using strcmp() is still safe
+      for non-localized strings; it is also safe for establishing
+      inequality with no partial ordering.
+
+      Some systems do provide additional functions that let you
+      perform lexical operations on strings.  For example, many Unix
+      systems provide strcoll().  Strcoll() gives you a linguistic
+      collating order on a locally-encoded string.  It knows about
+      diacritics; it knows about specials.  This is the thing to use
+      when ordering localized strings.
+
+      The guiding principle for dealing with eight-bit encodings is
+      this: any direct numeric or bitwise manipulation of a character
+      is probably wrong.  You can usually assume that the lower-half
+      will stay ASCII-like, but the upper half could be anything.  Use
+      native macros and calls.  Don't do it yourself.  If you cannot
+      figure out what the native, locale-sensitive calls are, ask
+      someone.
+
+   2) Multiple byte languages
+
+      Many languages, particularly Asian ones, require more than 2^8
+      bits to distinguish their glyphs.  There is great variation in
+      how encodings for these languages are arranged.  Generally
+      speaking, you will be dealing with two broad classes of
+      encoding: multibyte and wide character.
+
+      a) Multibyte encodings
+
+	 Multibyte encodings use a variable number of bytes to
+	 represent characters.  For example, all of ASCII may be
+	 represented as single bytes.  Other characters may appear in
+	 two bytes, where the first is 128 or greater, and the second
+	 is 0-127.  Still others may use three bytes, with the first
+	 two high and the third arbitrary.  This is just an example,
+	 but it highlights some important caveats when dealing with
+	 multibyte strings:
+
+	   - Random access to the n'th character is impossible.  You
+	     can index down to the n'th *byte*, but you cannot know
+	     how many characters came before this byte, or whether this
+	     byte is the start of a character or in the middle of
+	     another one.
+
+	   - Arbitrary substrings of a string may not be valid
+	     strings.  You cannot simply split at any byte you choose.
+	     For all you know, you may be splitting a character right
+	     in half.
+
+	   - The only safe way to process a multibyte string is by
+	     scanning from start to end.  If you hop right into the
+	     middle, you have no way of knowing where you are.
+
+	 Given these limitations, multibyte encodings seem fairly
+	 unattractive.  In fact, they are extremely common.  With
+	 multibyte encodings, the payback comes in storage size.
+	 Multibyte strings take up only as much space as they need.
+	 In the degenerate case of strings containing only ASCII, most
+	 multibyte representations use only a single byte per
+	 character.  For this reason, multibyte encodings are use
+	 almost universally for transport and persistent storage.
+	 
+	 Multibyte strings are represented in C code as (char *).
+	 Just remember: those are not characters, they are bytes.  The
+	 classic C "str" functions still work, but only on the byte
+	 level.  They do *not* change their behavior in different
+	 locales.  So strlen() gives you a byte count, not a character
+	 count.  And index() hunts for bytes; it doesn't know a thing
+	 about characters.  You get the picture.
+	       
+	 All of the caveats about eight-bit encodings apply doubly to
+	 multibyte encodings.  Almost all of the classic C str*()
+	 calls will operate on the byte level; they are mathematical,
+	 not linguistic.  You can make few, if any, assumptions about
+	 the qualitative characteristics of a string based upon the
+	 bit patterns it contains.  Use any locale-sensitive native
+	 calls where available; ask for advice if you are unsure how
+	 to proceed.
+	 
+      b) Wide character encodings
+
+	 Wide character encodings use a fixed number of bytes per
+	 character.  They are sort of like ASCII scaled up.  Narrow
+	 Unicode, for example, is an encoding where every single
+	 character is expressed in 2 bytes.  Some other encodings
+	 might use 3 per character, or even 4.  You might even think
+	 of ASCII as a 1-byte-per-character wide encoding.
+
+	 The obvious down side of wide encodings is that they will
+	 tend to require more space to represent a given string.  The
+	 up side is that you can randomly access into the string.  As
+	 long as you stay on fixed, wide character boundaries, you
+	 know you are safe.
+
+	 In C, a single wide character is represented by (wchar_t).  A
+	 string of wide characters would be (wchar_t *), while a
+	 string of fixed length might be (wchar_t [20]).  You're
+	 simply replacing (char) with (wchar_t).  The host system's
+	 headers will define (wchar_t) to some suitably wide type.  It
+	 might be (int), or (long), for example.  The actual type used
+	 depends on the possible wide encodings supported by that
+	 platform.
+
+	 Wide characters are rather easier to deal with than
+	 multibytes.  Since (wchar_t) is a completely different type
+	 from (char), you obviously cannot use things like strcmp() or
+	 getc() or fputs() at all.  If you try, any prototyping
+	 compiler will smack you for type violations.
+
+	 Instead, systems that support wide characters supply an
+	 entire second set of manipulators that mimic the classic
+	 (char) and (char *) calls.  Instead of strlen(), you use
+	 wslen().  Instead of strncmp(), you use wsncmp().  Instead of
+	 gets(), you use getws().  And so on.
+
+	 Unfortunately, while wide character encodings are much easier
+	 to manipulate, they are much less commonly used than
+	 multibyte encodings.  The additional storage space is just
+	 too unattractive, as is the complete loss of even partial
+	 ASCII compatibility.  Software that uses wide characters at
+	 all tends to do so only for internal processing.  You may
+	 read in a multibyte string as a (char *), convert it to wide
+	 character (wchar_t *), modify it in some manner, and then
+	 convert it back to multibyte before writing it out to disk.
+	 Systems that support both wide and multibyte encodings will
+	 usually also provide lossless conversion routines between
+	 the two.

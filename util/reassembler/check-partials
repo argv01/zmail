@@ -1,0 +1,20 @@
+#!/bin/sh -ep
+
+parts="`ls -dt \"$1\"/* | egrep '/[0-9]+$'`"
+
+stale="`find $parts -mtime +2 -print`"
+
+if [ -n "$stale" ]; then
+  oldest="`echo \"$parts\" | head -1`"
+  date="`ls -l \"$oldest\" | awk '{ print $6, $7, $8 }'`"
+  from="`sed -n '1,/^$/s/^From:[ 	]*//p' \"$oldest\" | head -1`"
+  if [ -z "$from" ]; then from=someone; fi
+  
+  fmt <<EOF
+A very large message from $from started to arrive on $date.  All pieces have still not arrived.
+
+Ask the sender to resend pieces that may have "bounced" back to them.  If the message still does not arrive, remove the peices that have arrived and ask the sender to resend the message.
+
+Pieces are located in $1. These pieces will continue to occupy space on your hard disk until you delete them. 
+EOF
+fi

@@ -1,0 +1,10 @@
+#!/bin/sh
+exec 2>&1
+ZMLIB=/usr/lib/Zmail
+export ZMLIB
+/usr/local/bin/zmail  -i -shell -noinit! \
+      -zcnlserv zyrcon:2721 \
+       -source /tmp/"$1".initrc \
+      -eval "set index_dir = /tmp; open '$2'; \
+      update; quit"
+

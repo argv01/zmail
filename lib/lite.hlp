@@ -1,0 +1,3680 @@
+# lite.hlp
+# Copyright 1990-1998 NetManage, Inc.  All Rights Reserved.
+
+# NOTE:
+#
+# This file should not contain TAB characters.
+# Use spaces for all formatting of text.
+#
+# The format of an entry in this file is:
+#
+# %index entry string%
+# %other key strings%
+# text of help entry, if any
+# %%<continuation entry
+# %%
+#
+# If the index entry string begins with the
+# character '-' it is assumed
+# to be a continuation of another entry and is
+# not included in the index.
+# A "continuation entry" may be a "key string"
+# for another entry in this
+# file or a string of the form "variable>key
+# string" where the key string
+# is to be looked up in the file named by the
+# indicated Z-Mail variable.
+#
+# NOTE: Some lines in this file consist of a
+# single space on an otherwise
+# blank line.  This is intentional, and is
+# used when reformatting entries
+# for display in the GUI Help Index.
+#
+# Because the help dialog in Lite is very
+# narrow, keep the line width to 38 character
+# or less for bullet items and examples. (Regular
+# paragraphs are automatically filled.)
+
+%About This Program%
+Z-Mail Lite, version 5.0,
+Copyright 1990-1998 NetManage, Inc.
+
+%%
+%General%
+Welcome to Z-Mail Lite, Version 5.0!
+
+With Z-Mail Lite, you can read and reply to
+your incoming mail, send new messages,
+save messages, print messages, search,
+and do many more mail-related
+functions.  Many of the
+common tasks can be found in the
+~#Main Screen#~'s menu bar, where
+pulldown menus provide access to most
+Z-Mail functions.  
+
+Since Z-Mail Lite is designed to
+be used on a character terminal without
+a pointing device (such as a mouse),
+actions are accomplished through the
+use of keybindings.  See the section
+on Keybindings for more information.
+
+%%<Help 
+%%
+
+%Help%
+Help is available in most parts of the
+application.  Most dialogs have a Help
+button in the lower right corner or a
+Help menu on the right side of the
+menu bar, if one exists.  Help
+information guides you through common
+tasks, and shows correct usage for
+commands and techniques for
+interacting with Z-Mail Lite dialogs.  Help
+for Z-Script commands is accessed
+either by typing
+
+  help <command>
+
+or
+
+ ? <command>
+
+in the Command Area of the Main Screen. (Replace
+<command> with the command name on which you
+want help).
+The "?" command lists all the Z-Script commands.
+%%
+
+%Help Index%
+%help_index_dialog%
+Select a topic in the left hand list
+of the Help Index dialog and hit the
+space bar twice to see help in the
+text field to the right.
+%%
+
+%Keybindings%
+Many different keystrokes are used in
+Z-Mail Lite.  Most of them are
+described in these help topics:
+
+   Moving the Cursor
+   Selecting Items
+   Using Buttons and Toggles
+   Using Menus
+   Moving in Text Areas
+   Moving Among Screens
+
+The ESC-k keystroke displays all the
+keybindings that are valid for the area
+where the cursor is currently located.
+
+For example, to see all the
+keybindings that can be used in the
+Message Summaries area of the Main
+Screen, place the cursor there and
+type ESC-k.
+
+You may use ESC-k in any part of the
+interface.  For information on
+creating your own key bindings, see
+the Z-Script help for the bindkey and
+multikey commands, or the document
+"Configuring Your Terminal for Z-Mail
+Lite."
+%%
+
+%Moving the Cursor%
+In Z-Mail Lite, there are several
+screens, such as the Message Reading
+screen and the Compose screen.  You
+are only shown one screen at a time.
+
+There are also many dialog boxes,
+which appear on top of screens.  Each
+screen and dialog box is composed of
+areas containing items such as
+buttons, lists, toggle buttons, and
+text.  Before you can use any item in
+an area, you must first move the
+cursor to it.
+
+These keystrokes may be used to move
+the cursor among areas:
+
+This keystroke  Moves the cursor
+--------------  ----------------
+
+TAB or ESC-TAB  to the next area. Use
+or CTRL+x n     ESC-TAB in text areas
+                where TAB inserts a
+                TAB character.
+
+CTRL+x p        to the previous
+                area.
+
+F10 or ESC-/    to the menu bar.
+or \ or /
+
+ESC-a           to the buttons at the
+                bottom of a screen
+                or dialog.
+
+These keystrokes may be used to move
+within an area:
+
+This keystroke  Moves the cursor
+--------------  ----------------
+
+HOME or ESC-<   to the top of an area
+
+END or ESC->    to the bottom of an area
+
+Left arrow      one item (button, check
+or CTRL+b       box or character, for
+                example) to the left
+
+Right arrow     
+or CTRL+f       one item to the right
+
+Up arrow        one item above (to the
+or CTRL+p       previous line in text
+                and list areas; in
+                other areas this key
+                often behaves like
+                the Left arrow).
+
+Down arrow      one item below (to the
+or CTRL+n       next line in text and
+                list areas; in other
+                areas this key often
+                behaves like the
+                Right arrow.
+%%
+
+%Selecting in Lists%
+There are several special keystrokes
+that are useful when moving through
+and selecting items in lists.  These
+keystrokes are especially helpful when
+selecting messages in the Message
+Summaries list.
+
+When moving in a list, it is important
+to note the difference between moving
+the selection and moving the cursor.
+When an item is selected, it appears
+in reverse video. To select an item,
+move the cursor to it and press the
+SPACE bar.
+
+Once an item is selected, you may move
+the selection using the following
+keystrokes:
+
+ This keystroke  Moves the selection
+ --------------  ------------------
+
+ Up arrow or p   to the item above
+
+ Down arrow or n to the item below
+
+When you move the selection, the previously
+selected item is no longer selected.
+
+You may also leave the selection on the item and
+move the cursor instead.  This is necessary if
+you want to select more than one item in a list.
+
+ This keystroke    Moves the cursor
+ -------------     ----------------
+
+ CTRL+P or k       up one line
+ CTRL+N or j       down one line
+
+To select an additional item, press
+. (period).
+
+To select all the items between the
+selected item and the cursor, press
+> (greater-than).  If you press the
+SPACE bar, the previously selected
+items will become unselected and only
+the item the cursor is on will be
+selected.
+
+If you know the first letter of the
+item you are looking for, you may jump
+directly to that part of the list by
+typing the letter.  For example, if
+you are using a File Finder to locate
+a directory called "knife-info" you
+can jump directly to the first name in
+the list beginning with "K" by typing
+the letter "K".
+
+However, in the Message Summaries list
+of the Main screen, several letter
+keys are shortcuts for common tasks.
+
+%Message Shortcuts%
+These shortcuts may be used in 
+the Message screen:
+
+ This keystroke Is a shortcut to
+ -------------- ----------------
+   W            toggle line wrapping
+
+   SPACE        show next page 
+
+   BACKSPACE    show previous page
+
+   CTRL+x f     show an X-Face, if
+                one exists
+
+   n            read next message
+
+   p            read previous message
+
+   c or m       start a composition
+
+   d            delete the selected
+                message
+
+   r            reply to sender of the 
+                message
+
+   R            reply to all recipients
+                of the message
+
+   f            forward message
+
+   F            resend message
+
+   P            print message
+
+   s            save message
+
+   A,B,C,D,E    assign priority to a
+                message
+
+   +            mark message
+
+   -            remove the mark from
+                a message
+
+   U            remove priority from
+                a message
+%%
+
+%Main Screen Shortcuts%
+%%<Summaries Shortcuts
+%%
+
+%Summaries Shortcuts%
+In the Message Summaries list in the
+Main screen:
+
+ This keystroke Is a shortcut to
+ -------------- ----------------
+   n            move the selection
+                down one line
+
+   p            move the selection
+                up one line
+
+   $            move the cursor to the
+                last item in the list
+
+   c or m       start a composition
+
+   d            delete the selected
+                message
+
+   u            undelete a message
+
+   o            open a folder
+
+   %            make your mailbox the
+                active folder
+  
+   #            make the most recently 
+                accessed folder the active
+                folder
+
+   r            reply to sender of the 
+                selected message
+
+   R            reply to all recipients
+                of the selected message
+
+   f            forward selected message
+
+   F            resend selected message
+
+   P            print selected
+                messages
+
+   s            save selected message
+ 
+   &            save selected message
+                in your ~/mbox file
+                (see the mbox variable
+                for more information)
+
+   w            write message body 
+                to a file
+
+   A,B,C,D,E    assign priority to a
+                message
+
+   +            mark a message
+
+   -            remove the mark from
+                a message
+
+   U            remove priority from
+                a message
+
+   H            hide selected
+                messages
+
+   v            view only selected 
+                messages
+
+   V            make hidden messages
+                visible
+
+   *            display the message
+                selection dialog
+
+   ?            display the help dialog
+
+   :            display a dialog in which
+                you may enter a Z-Script
+                command
+   
+   Q            update all open folders and
+                quit Z-Mail Lite
+
+   q            prompt before updating open
+                folders, then quit Z-Mail 
+                Lite
+%%
+
+%Buttons%
+Buttons appear surrounded by square
+brackets, like this:
+
+   [Print]
+
+To "click" a button, move the cursor 
+to it using the TAB and arrow keys,
+then press the SPACE bar or the RETURN 
+key.
+
+Note that you must choose Button Panel
+from the Layout menu to see buttons on
+the Main, Message, or Compose screens.
+
+The actions that may be performed with
+buttons are usually also possible with
+function keys.  For example, when
+using the Printer dialog to print a message,
+you may either select the Print button,
+or you may press the F2 function key.
+%%
+
+%Toggles%
+A toggle button looks like this:
+
+    [ ]User Interface
+
+When the toggle button is on, an X
+appears:
+
+    [X]User Interface
+
+To activate a toggle button, use the
+SPACE bar.  Note that you may not be
+able to move directly to a toggle
+button using TAB. Some toggle buttons
+appear in rows or columns; the TAB key
+will move the cursor to only the top
+or leftmost toggle.  Use the arrow
+keys to move the cursor to the toggle
+you want.
+%%
+
+%Using Menus%
+These keystrokes may be used to move
+within menus and menu bars:
+
+This keystroke   Moves the cursor
+--------------   ----------------
+
+F10 or ESC-\     to the menu bar of the
+or \ or /        current screen
+
+Left arrow       one menu to the left
+or CTRL+b
+
+Right arrow      one menu to the
+or CTRL+f        right, or to a
+                 pullright menu
+
+Up arrow         one menu to the
+or CTRL+p        left in the menu
+                 bar, or to the
+                 item above in a
+                 menu
+
+Down arrow       one menu to the
+or CTRL+n        right in a menu bar,
+                 or to the next item
+                 within a menu.
+
+These keystrokes may be used to
+display menus and choose menu items:
+
+This keystroke   Performs this action
+---------------  --------------------
+
+SPACE or RETURN  displays a menu in a
+                 menu bar; chooses the
+                 current item in a
+                 menu.
+
+ESC-ESC          jumps out of a menu
+                 or menu bar without
+                 performing a command.
+
+%%
+%Cutting Text%
+%%<Selecting Text
+%%
+
+%Pasting Text%
+%%<Selecting Text
+%%
+
+%Copying Text%
+%%<Selecting Text
+%%
+
+%Selecting Text%
+You may select text in the Message
+Display Screen or the Compose Screen.
+Once text is selected you may cut or
+copy it and then paste it elsewhere.
+
+To select a region of text:
+
+ Move the cursor to the beginning of
+ the text you want to select.
+
+ Type ESC-s to start selecting text.
+
+ Move the cursor over the text you
+ want to select.
+
+ Type ESC-e to stop selecting.
+
+To cut the text, type CTRL+w.  You
+may only cut text from compositions,
+not from messages you have received.
+
+To copy the text, type ESC-w.
+
+To paste text that has been cut or
+copied, move the cursor to a new
+location and type CTRL+y.
+%%
+
+%Editing Text%
+In addition to using the Cut, Copy,
+and Paste menu items to edit text, in
+text areas, you may also use several
+keystrokes to position the cursor,
+scroll the display, delete text and
+insert new lines.  These key bindings
+are similar to those used in the
+Emacs editor and are provided as
+defaults; you or your system
+administrator may override them.
+
+
+ This keystroke    Moves the cursor
+ -------------     ----------------
+ Left arrow  or    one character
+ CTRL+f            to the left
+
+ Right arrow or    one character
+ CTRL+b            to the right
+
+ Up arrow or       up one line
+ CTRL+p
+
+ Down arrow or     down one line
+ CTRL+n
+
+ CTRL+a            to the beginning
+                   of the line
+
+ CTRL+e            to the end of line
+
+ ESC-Left arrow    backward one word
+
+ ESC-Right arrow   forward one word
+
+ CTRL+v or
+ PAGE DOWN         forward one page
+
+ HOME or ESC-<     to the beginning of
+                   the text area
+
+ END or ESC->      to the end of the
+                   text area
+
+These keystrokes may be used to
+delete text:
+
+ This keystroke  Deletes
+ --------------  -------
+ CTRL+d          next character
+ CTRL+h          previous character
+ CTRL+u          backwards to start
+                 of line
+ CTRL+k          forwards to end of
+                 line
+ CTRL+w          previous word
+ ESC-d           next word
+
+These keystrokes may be used to
+insert newlines:
+
+ This keystroke  Inserts a newline
+ --------------  -----------------
+ CTRL+m          below the cursor
+ CTRL+o          above the cursor
+
+These keystrokes may be used to
+scroll within text areas:
+
+ This keystroke       Scrolls the area
+ -------------        ----------------
+ ESC-z                forward one line
+ ESC-q                backward one line
+
+ CTRL+v or            forward one page
+ PAGE DOWN
+
+ ESC-v or             backward one page
+ PAGE UP
+%%
+
+%Moving Among Screens%
+Although you may only view one screen
+at a time in Z-Mail Lite, you may
+have many screens active at any time.
+For example, you may have several
+different Compose screens, each
+containing a different message.
+
+When you are in any screen other than
+the Main Screen, you may go to the
+Main Screen by pressing ESC-m.  From
+there, you may choose to read other
+messages or start a new composition.
+You may move back to the other screen
+by typing ESC-o.
+
+If you have more than two screens
+active, you may cycle between them
+using ESC-n (to view the next one in
+the cycle) and ESC-p (to view the
+previous one).  Once you dismiss a
+screen (by sending a composition, for
+example) it disappears from the cycle
+and you will no longer come across it
+with ESC-n and ESC-p.  
+%%
+
+%Opening Folders%
+%open_folder_dialog%
+To open a folder:
+
+- Choose the Open... item from the
+  Folder menu on the Main screen.
+
+The "Open..." menu item brings up a
+~#File Finder#~ where you choose the
+folder to open.  Use "OK" to open a
+folder once it is selected.  Use
+"Search" to show the contents of a
+selected directory.  Folders may be
+opened "read-only" by setting the
+"Read Only" toggle button.  You cannot
+change a folder that is opened
+read-only, and it loads somewhat
+faster, since Z-Mail Lite does not have to
+make a temporary working copy.
+
+If you lack permissions to modify the
+folder, Z- Mail Lite will automatically
+mark the folder read-only, even if
+the "Read Only" button is not
+selected.
+%%
+
+%Moving Among Folders%
+Although you may have many folders
+open at one time, you may only display
+the contents of one folder in the
+Message Summaries area.  The currently
+displayed folder is known as the
+active folder.
+
+There are several ways to change the
+active folder.
+
+If you have the Folder Status list
+displayed,  select the name of a
+folder in this list and press SPACE.
+(Use the Layout menu on the
+Main Screen to display the Folder Status
+area.)
+
+You may use keystrokes to move among open
+folders:
+
+ This keystroke Is a shortcut to
+ -------------- ----------------
+   %            make your mailbox the
+                active folder
+  
+   #            make the most recently 
+                accessed folder the active
+                folder
+
+%%
+
+%Removing Folders%
+To remove a folder:
+
+- Choose the Remove...  item from the
+  Folder menu in the ~#Main Screen#~.
+
+The "Remove..." item brings up a
+~#File Finder#~ where you specify the
+folder to be removed.  Click "OK" to
+remove the selected folder.  If you
+have selected a directory in the file
+list, click "Search" to show its
+contents.  
+%%
+
+%Renaming Folders%
+To rename a folder:
+
+- Choose the Rename... item from the
+  Folder menu on the Main Screen.
+
+The Rename... item brings up a 
+~#File Finder#~ where you choose the 
+folder to renamed.  The name of the 
+selected file appears in the File 
+field.  Specify the new name for the 
+folder in the New Name field, and 
+use "OK".  If you have selected a 
+directory in the file list, use
+"Search" to show its contents.
+%%
+
+%Closing Folders%
+To close a folder:
+
+- Choose the Close Folder item from the
+  Folder menu on the Main Screen.
+
+You may only close the folder that is
+"active".
+
+You may type a percent sign (%) in the Main
+screen to make your mailbox the active
+folder, even if you have just closed it.
+%%
+
+%-shared-opening-folders%
+Folders may be opened "read-only" by
+setting the "Open Read Only" toggle.
+You cannot change a folder that is
+opened read-only, and it loads
+somewhat faster, since Z-Mail Lite does
+not have to make a temporary working
+copy.  Z-Mail Lite will automatically mark
+the folder read-only, even if the
+"Open Read Only" toggle is not
+selected.  
+%%
+
+%Creating Folders%
+To create a folder:
+
+- Choose the New... item from the
+  Folder menu in the Main Screen.
+
+The New... item brings up a 
+~#File Finder#~.  In the File field, 
+specify the name of the folder you 
+want to create.  If you specify the 
+name of a folder that already exists, 
+a dialog will pop up asking if you 
+want to empty the existing folder. Be 
+certain that the Create Mail Folder 
+toggle is on, and click OK to create 
+the folder.
+
+You may also use this dialog to
+create directories. Specify the name
+of the directory in the File field,
+make sure the Create Directory toggle
+is on, and click OK.  If you have
+selected a directory in the file
+list, click "Search" to show its
+contents.  
+
+You can also create a folder by
+saving a message to it.  In this
+case, you are not asked to confirm
+creation of the folder.
+%%
+
+%Folders%
+A folder is a file that contains a
+number of messages.  Your Mailbox is
+a folder where your mail is
+delivered. See below for instructions
+on creating new folders.
+
+See ~#Saving Messages#~ for
+information about saving messages to
+folders.
+
+If you manage large amounts of mail,
+you'll probably want to group your
+mail into a number of folders, each
+one holding related messages on a
+particular topic.
+
+To create a new folder, save a
+message into a folder name which is
+not already in use, or choose
+"New..." from the Folder menu of the
+Main Screen.
+
+You may open a new folder by choosing
+"Open..." from the Folder menu in the
+~#Main Screen#~.  You must open a
+folder in order to view or manipulate
+the messages in it.  The folder name
+may start with a tilde (~/reports,
+for example) indicating that it
+resides in your home directory; or it
+may start with a plus sign (+) to
+indicate your folder directory
+(+reports, for example).  Your folder
+directory is specified by the
+~#folder~var#~ variable.  Note that a
+slash (/) must appear between the
+tilde (~) and the file name when
+referring to your home directory.
+However, the slash is optional when
+using plus (+) to refer to the
+~#folder~var#~ directory.  
+
+You may rename an existing folder by 
+choosing "Rename..." from the Folder menu in the
+~#Main Screen#~.  Selecting this item will cause
+a dialog to be displayed which allows you to select 
+an old folder and specify the name of the new folder.
+The naming conventions for the new folder are the 
+same as those described for the "Open..." menu item, 
+above.
+
+You may remove an existing folder by choosing
+"Remove..." from the Folder menu in the
+~#Main Screen#~.  You will be prompted for
+the name of the folder to remove.
+
+To update the contents of the currently open folder,
+choose "Update" from the Folder menu in the
+~#Main Screen#~.
+
+To close the currently open folder, choose "Close 
+Folder" from the Folder menu in the
+~#Main Screen#~.
+
+If you're using the Z-POP program to deliver your mail, this Z-Mail for 
+Motif version now supports mailbox and local folder synchronization. 
+This feature is available by choosing the "Close Folder" menu item 
+from the Folder menu in the ~#Main Screen#~.
+
+Synchronization offers three scenarios for synchronizing your 
+mailboxes:
+
+- Quick Check Out
+
+- Quick Check In
+
+- Check New Mail
+
+In addition, you can synchronize two open mail folders.
+
+Configuring for synchronization
+
+To enable Z-Mail synchronization capabilities, you must first set the 
+following Z-Script variables:
+
+set mailhost=hostname
+
+set use_pop
+
+set pop_options=use_sync
+
+You can also set these variables through the Z-Mail Variables dialog.
+
+After you set the mailhost, use_pop, and pop_options variables, save 
+your changes to your.zmailrc file.
+
+Synchronizing mailboxes
+
+To synchronize your mailboxes, from the Main window:
+
+1.	Pull down the Folder menu and select Synchronize.
+
+2.	Select one of the following synchronization scenarios:
+
+To check the current state of your mailbox when you start a 
+Z-Mail session, select Quick Check Out.
+
+To check the current state of your mailbox when you're 
+finishing a Z-Mail session, select Quick Check In.
+
+To check your mailbox for new mail during a Z-Mail session, 
+select Check New Mail.
+
+Synchronizing mail folders
+
+To synchronize mail folders, open only the two mail folders you want 
+to synchronize. All other mail folders must be closed.
+
+From the Main window, follow these steps:
+
+1.	Pull down the Folder menu and select Synchronize.
+
+2.	Select Folders. 
+
+This synchronizes all open mail folders. For additional information, 
+refer to the Z-Script zpop_sync command.
+%%
+
+%Printing Messages%
+There are three ways to print a
+message:
+
+- In the ~#Main Screen#~, select the
+  messages you wish to print and type P.
+
+- In the ~#Main Screen#~, select the
+  message(s) you wish to print from the
+  ~#Message Summaries#~, and select
+  "Print" from the Message menu.
+
+- On the ~#Message Display Screen#~,
+  select "Print" from the Message menu
+  to print the message you're viewing.
+
+The print dialog appears.
+%%<Print Dialog
+%%
+
+%Print Dialog%
+%printer_dialog%
+In the Print dialog, you can adjust:
+
+- Which messages are printed by
+  changing the ~#message list#~ in the
+  Messages field.
+
+- Which ~#headers#~, if any, are
+  printed along with the message by
+  setting one of the Print Message:
+  toggles.
+
+- Which printer to print on, by
+  selecting a printer from the
+  Printers list.
+
+Click the "Print" button to send the
+message to the printer.
+
+By default, the entire message (except
+for attachments, see below) including
+the ~#headers#~ is sent to the
+printer.  If you have explicitly
+"ignored" headers using the
+~#Headers#~ dialog, then those headers
+are omitted from the printed message.
+If you have explicitly set headers to
+"Show Only" in the Headers dialog,
+then only those headers are printed
+with the message.
+
+The setting of "Show Only" in the
+headers dialog overrides the setting
+of "Ignored Headers" when you print
+messages.
+
+Most message attachments are not
+printed.  Short, plain-text
+attachments that are not encoded will
+be printed, as will any RFC822
+attachment, regardless of
+encoding. Other attachments will only
+be summarized.  The text printed is
+the same as that which appears in the
+Message Display Screen.
+
+The list of printers is taken from the
+value of the variable ~#printer~var#~.
+If the printer name begins with a
+hyphen (-), it is treated as an option
+that should be passed to the command
+that does the actual printing.
+
+At the bottom of the dialog is the
+"Print Command" type-in field. 
+
+When the default printing command
+(lpr or lp) is to be used, this field
+is labeled "Printer Name:".  If a
+special printing command has been
+specified by setting the variable
+~#print_cmd~var#~, then that command
+is displayed and the type-in field is
+labeled "Print Command:".  See the
+~#printer~var#~ and ~#print_cmd~var#~
+variables for details.  You may edit
+this field, but you should do so only
+if you are sure you know what you are
+doing, lest you make printing stop
+working!  
+%%
+
+%Save Dialog%
+%save_dialog%
+The Save dialog is used for saving
+messages to folders.
+%%<Saving Messages
+%%
+
+%Saving Messages%
+"Saving" a message means copying it
+into a folder.  If the folder into
+which you are saving the message(s)
+does not exist, it will be created for
+you.
+
+You can save the currently selected
+message(s) by:
+
+- Choosing the "Save..." item from the
+  Message menu in the Main or 
+  ~#Message Display Screen#~.
+
+- Clicking the "Save" button or
+  function key on the Main or 
+  ~#Message Display Screen#~s.
+
+The Save dialog appears, where you
+specify the folder in which to save
+the message(s).  The Save dialog is a
+~#File Finder#~.  
+
+Click "Save" to save the messages.
+Click "Search" to scan the selected
+directory.  You can also select a file
+name and hit the space bar twice to
+save to that file, or double-space on
+a directory name to search that
+directory.  When you save a message,
+Z-Mail Lite marks it as saved (S) in the
+~#Message Summaries#~.
+
+%%<-shared-saving-messages
+%%
+
+%-shared-saving-messages%
+You may save messages to your main
+mailbox or to any other folder.  A
+folder is a file containing one or
+more messages and their headers. The
+location of your main mailbox is
+specified by the ~#mbox~var#~
+variable; by default, it is "~/ mbox".
+
+If you regularly save large amounts of
+mail, you can organize your mail by
+saving related messages to appropriate
+folders.  New mail is delivered to
+your system folder, so you don't
+normally save messages to that folder.
+If the file does not exist, it is
+created.  If the file exists, the
+message is appended to it.
+
+To save the body of a message only, to
+a plain file (rather than to a
+folder), turn on the "Save Text Only"
+toggle before clicking "Save".  This
+toggle is also reset after each save
+operation.  If you attempt to save
+text only to a file that is a folder,
+a Warning popup appears to confirm the
+action.  You can specify a range, or
+group of messages to save by typing
+arrange in the "Messages" type-in
+field.
+
+Usually when messages are saved,
+Z-Mail Lite marks them as saved in the
+~#Message Summaries#~ and deletes them
+in the next update.  If you don't want
+to have saved messages deleted, set
+the variable ~#keepsave~var#~.
+%%
+
+%Updating%
+%update%
+When you update a folder, the changes
+that you've made to the folder since
+the last update are made permanent.
+Deleted mail is permanently purged
+from the folder and cannot be
+retrieved after an update.
+
+You can only update the active folder.
+To update the active folder, you can:
+
+- Choose the Update item from the
+  Folder menu on the ~#Main Screen#~.
+
+- Click the Update button or function
+  key on the ~#Main Screen#~.
+
+If new mail has arrived in the folder,
+Z-Mail Lite will incorporate it before
+updating.
+%%
+
+%Unpreserve%
+%%<Preserve
+%%
+
+%Preserve%
+After you read mail and you "update"
+your system mailbox
+or quit Z-Mail Lite, unread messages are
+copied back into your system mailbox
+and deleted messages are removed.
+Messages which have been read but not
+deleted may either be held in the
+system mailbox or saved in your main
+mailbox file.  The location of your
+main mailbox is by the value of the
+~#mbox~var#~ variable and is "~/ mbox"
+by default.  This file is referred to
+as the mbox file.
+
+The variable ~#hold~var#~ determines
+whether messages remain in the system
+mailbox or are saved to your mbox.
+Normally messages are held, but your
+system administrator may have
+configured Z-Mail Lite to save them.
+
+You can mark specific messages to be
+held in your system mailbox by
+preserving" them with the Preserve
+menu item.  Preserved messages are
+always held, even when Z-Mail Lite has been
+configured to save other messages in
+the mbox.  To preserve a message,
+select Preserve from the main screen
+Message menu .  To remove the preserved
+mark from a message, use the
+Unpreserve menu item.
+%%
+
+%Next%
+In the Message Display Screen,
+pressing
+the Next function key (F2) or choosing
+the "Read Next" item from the View
+menu will take you to the next message
+in the folder that has neither been
+saved nor deleted.
+%%<-shared-delete
+%%
+
+%Delete%
+The Delete item of the Main Screen
+Message menu marks as deleted all
+messages whose numbers appear in the
+Messages: field.  Unless you have
+edited the Messages: field, the
+numbers there are those of the
+selected messages in the Message
+Summaries list.
+
+In the Message Screen, the "Delete"
+button marks as deleted the message
+that is displayed.  The Delete item
+from the Message menu marks as deleted
+all messages whose numbers are shown
+in the Messages: field. Unless you
+have edited the Messages: field, the
+numbers there are the same as that of
+the selected messages.
+%%<-shared-delete
+%%
+
+%-shared-delete%
+Selecting "Delete" may also take you
+to the next message in the folder,
+except that the current message is
+deleted before advancing. The variable
+~#autoprint~var#~ must be set in order
+for "Delete" to advance automatically
+to the next message.  It is advisable
+to delete unimportant mail after
+reading it, as it conserves system
+resources and improves the efficiency
+of Z-Mail Lite.
+%%
+
+%Aliases%
+%alias_dialog%
+Aliases allow you to mail to users
+with long addresses using short
+names. For example, if you often send
+messages to:
+
+    daniel@z-code.com
+
+but don't want to type this long
+address every time you send a message,
+you may make an alias for that
+address.
+
+To create aliases, choose
+Aliases... from the Options menu. The
+Mail Aliases dialog appears.  In the
+"Alias Name:" text entry field enter a
+shorter but equally meaningful name,
+such as:
+
+    dan
+
+then move to the the "Alias
+Address(es):" field and type:
+
+ daniel@z-code.com
+
+To have this address passed through
+the ~#Address Browser#~, turn on the
+Use Address Book toggle.  To have the
+real address (rather than the alias name)
+appear in the other alias definitions
+that include this alias, turn on the
+Always Expand toggle.
+
+Finally, click on the Set button (or
+press the F2 function key) to add the
+new alias to the alias list.  Now,
+whenever you specify
+
+   dan
+
+as the recipient of a message, it will
+be sent to daniel@z-code.com.
+
+See the Help Index entry for
+~#Addressing#~ for more details on
+address formats and syntax.
+
+If you frequently mail to a group of
+people, you may create an alias to
+stand for the entire group.  Choose an
+alias name as usual and simply place
+all the recipients in the "Alias
+Address(es):" field:
+
+  Alias Name:  project-group
+
+  Alias Address(es):  fred mary bob
+
+To remove one or more aliases, select
+them the list and click Unset.
+
+%%<Mailing to Aliases
+%%
+
+%Mailing to Aliases%
+When composing a message, you may use
+an alias name anywhere you would use a
+normal address:
+
+    To: dan
+    Subject: Alias example
+    Cc: project-group
+
+    (rest of letter)
+
+You may send mail to aliases from the
+list in the Mail Aliases
+dialog. Select the aliases to which
+you want to send from the list, then
+click the "Mail" button.  A new
+~#Compose Screen#~ opens, addressed to
+the aliases you have selected.
+%%<comp_alias_dialog
+%%
+
+%Using Aliases%
+%comp_alias_dialog%
+You may select aliases to add to the
+the address fields of an existing
+Compose Screen by selecting the
+"Aliases" item from the Address menu
+of the ~#Compose Screen#~.  This
+brings up the Aliases dialog with a
+list from which you may select
+aliases.
+
+Click any of the "To", "Cc", or "Bcc"
+buttons to add the selected aliases to
+the corresponding address fields of
+the message.  
+
+You may also type alias names directly
+into any of the address fields in the
+Compose Screen.
+%%
+
+%Z-Mail Options%
+Z-Mail options: See ~#Variables~ui#~.
+%%
+
+%Variables%
+%variable%
+%variables_dialog%
+Z-Mail Lite stores many configuration
+options in variables.  To view or
+change variable settings, use the 
+Variables screen.
+
+To bring up the Variables screen,
+from the ~#Main Screen#~, pull
+down the Options menu and select
+"Variables."
+
+To use the Variables screen, look
+through the "Variables" list. (For information
+about looking through lists in Z-Mail,
+refer to ~#Selecting in Lists#~.)
+
+To constrain the list of variables,
+use the TAB key to move your
+cursor to the field labeled "All."
+Press SPACE to pull down the menu and
+select the menu item associated with
+types of variables you want to view
+or change.
+
+The Variable Description field
+in the upper right contains
+information about the currently
+selected variable. To scroll through the
+variable description, ensure your
+cursor is in the Variable Description
+field. Press TAB to move your cursor
+among fields. To page through the
+variable description, press SPACE.
+
+Use the area below the Variable
+Description field to change the state of the
+currently selected variable. The
+contents of this area varies,
+depending on the selected variable.
+For some variables, Z-Mail displays only toggles
+labeled "Set" and "Unset." For
+others, Z-Mail displays text fields,
+additional toggle
+boxes, or numeric sliders.  The
+text in the Variable Description field
+explains the purpose of each toggle or
+text field.
+
+After entering text in a text field,
+be certain to press the Return
+key. The value of the variable
+only changes when you press
+Return.
+
+The buttons at the bottom of the
+screen affect all the variables, not
+just the variable that is currently
+selected.  The "Save" button
+writes the current state of Z-Mail Lite to a
+file, including the values of all
+variables. The "Load" button
+reads variable values from a file. 
+
+When saving your settings, Z-Mail Lite
+prompts you for two different file names,
+one in which to save your variable
+settings, and another in which to save
+your key bindings.  If you have only
+changed variables settings, you can
+click "Cancel" when Z-Mail prompts you
+for a key bindings file.
+%%
+
+%Main Screen%
+%Main Window%
+%main_window%
+The Main Screen contains up to six
+"panes", each of which has a special
+function.  You can turn panes on and
+off with the 'Layout' menu.  The
+screen always contains a menu bar at
+the top, and function key labels at
+the bottom.
+
+The function key labels and the
+actions of the function keys change
+depending on what part of Z-Mail Lite
+you're using.  For example, the F3 key
+is used to compose a new message when
+you are looking at the Main Screen;
+when you are reading a message, F3
+is used to read the previous message.
+
+See ~#Moving the Cursor#~ for
+information about using the menu bar
+and the panes described in this
+section.
+
+Two panes are turned on by default:
+
+Folder Information Panel
+  The Folder: field shows the name of the
+  active folder and some information
+  about the status of the messages
+  in it.  The Messages: field shows 
+  the numbers of the currently selected 
+  messages.  You  can type a 
+  ~#message list#~ into
+  the Messages field to select
+  messages.
+
+~#Message Summaries#~
+  Lists summaries of all the
+  messages in the current folder.
+  You can change the way message
+  summaries are listed by changing
+  the ~#summary_fmt#~ variable.
+
+You may choose to turn on three
+additional panes using the Layout
+Menu:
+
+Folder Status List
+  Located below the menu bar, this
+  scrolling list shows information
+  about the current folder,
+  including the name of the folder
+  and a summary of the folder's
+  contents.  The status of each open
+  folder may be viewed by scrolling
+  the list.  To make a different
+  folder active, select its name in
+  this list and press the space bar
+  twice.  You can change the
+  information that is displayed in
+  this list by setting the
+ ~#folder_title#~ variable.
+
+~#Button Panel#~
+  Located under the message
+  summaries, this panel contains
+  customizable pushbuttons.  Most of
+  the default buttons are used for
+  actions that may also be
+  accomplished using function keys.
+  The name of the function key that
+  executes the same action is
+  displayed in the label of the
+  button
+
+~#Output Area#~
+  This scrolled text displays error
+  messages and other short
+  informative messages.
+
+~#Command Line#~
+  You enter Z-Script commands 
+  into this field. See the Z-Mail 
+  Reference Manual or the on-line 
+  help for Z-Script commands for 
+  more information.
+%%
+
+%Message Summaries%
+Messages Summaries are composed of
+various pieces of information
+about each message in your current
+folder.  They are listed in the
+middle of Z-Mail Lite's Main Screen.
+You can select a message summary
+and press the space bar twice or
+the F2 key to view the message, or
+you may select a range of messages
+and invoke an action on them using
+buttons or function keys, or by
+making a choice from a menu in the
+menu bar.
+
+%%<Summaries Shortcuts
+You may reformat the information
+displayed in these summaries by
+using the Variables screen to
+change the value of the
+~#hdr_format~var#~ variable.
+%%<Header Format
+%%
+
+%Output Area%
+%Output Screen%
+The Output area pane of the 
+~#Main Screen#~ displays various 
+error messages, status information, 
+and other short output messages 
+from certain actions taken by 
+Z-Mail Lite.  For example, the status 
+of each "save" operation is 
+displayed, as is the status when 
+you update a folder.
+
+If the Output area is toggled off
+in the Layout menu of the Main
+Screen, some important output may
+appear in pop-up dialogs.  If
+these are error messages or
+warnings, you must acknowledge the
+dialog before proceeding.  Other
+important output will create a
+scrolled text dialog which may be
+left open.
+%%
+
+%Command Line%
+%Command: Line%
+%Command: Field%
+%Command Area%
+The Command: line is a text field
+where you to type Z-Script
+commands and functions.  For more
+information about Z-Script, see
+the on-line help for Z-Script
+commands or the Z-Mail Reference
+Manual.
+
+To enter a single Z-Script command
+when this panel is not displayed,
+type a colon (:).  A dialog will
+appear where you may enter a Z-Script
+command.
+%%
+
+%Header Format%
+%%<cmd_help>Header Format
+%%
+
+%Ignored Headers%
+%%<Headers
+%%
+
+%Retained Headers%
+%%<Headers
+%%
+
+%Headers%
+%headers_dialog%
+The Mail Headers dialog lets you tell
+Z-Mail Lite which headers you wish to
+see, and which you wish to ignore,
+when you read messages.  The
+"Headers..." item in the Options
+menu of the ~#Main Screen#~ brings
+up the Mail Headers dialog.  The
+"headers" of a mail message are
+the lines at the top containing
+delivery and subject information.
+Sometimes these headers can be
+quite verbose, and of little
+interest to the casual user.  For
+example, you are probably not
+interested in the "Received" or
+"Errors-To" headers of the
+message, since they describe
+details of how the message got to
+you, and not the message itself.
+
+To reduce the clutter of unwanted
+message headers, you may "ignore"
+named headers.  This will cause
+the named headers not to be
+displayed, and will clean up the
+appearance of the message.
+Headers typically ignored include:
+
+  Received
+  Message-Id
+  Status
+
+If you want tighter control over
+what is displayed in the message
+frame, you may specify which
+headers are the ones to display,
+and Z-Mail Lite will ignore ALL OTHER
+headers.  To choose this option,
+select the "Show Only" toggle.
+Typical settings for this are:
+
+  From
+  Subject
+  Date
+  Cc
+
+The problem with setting explicit
+headers using "Show Only" is the
+chance that Z-Mail Lite will hide
+important headers which you may
+not have anticipated wanting to
+see.  If you have headers set in
+the "Show Only" list, Z-Mail Lite will
+show only those headers, even if
+you toggle the Mail Headers dialog back
+to the "Ignored Headers" list.
+You must toggle "Show Only" and
+unset all the Current Settings
+from that list in order for the
+"Ignored Headers" to be in effect.
+
+See also the ~#alwaysignore~var#~
+variable.
+%%
+
+%Message Lists%
+%Message List%
+%%<Messages: Field
+%%
+
+%Messages: Field%
+The "current message list" refers
+to the set of currently-selected
+messages.  The numbers of the
+messages in the current message
+list are displayed in the
+"Messages:" type-in field.  You
+may change the message list by
+selecting or deselecting messages
+summaries, or by directly editing
+the numbers in the "Messages:"
+type-in field.
+
+Most Z-Mail Lite actions which affect
+messages will affect the messages
+belonging to the current message
+list.  Some dialogs, such as
+"Save", have their own
+message-list field.  To specify a
+message-list, list the numbers of
+the messages you wish to belong to
+the list separated by commas, as
+in:
+
+    3,7,8,9,10,11,17
+
+There is a shorthand notation for
+specifying a range of consecutive
+messages.  The list above can also be
+written as:
+
+    3,7-11,17
+
+The complete syntax for specifying
+message lists is:
+%%<cmd_help>-shared-message-lists
+%%
+
+%Sorting%
+To sort the messages in your folder,
+select one of the sort criteria from
+the list in the Sort menu.
+
+The "Custom Sort" option on that menu
+enables you to create your own sort
+criteria.
+%%<Sort Dialog
+%%
+
+%Custom Sort%
+%%<Sort Dialog
+%%
+
+%Sort Dialog%
+%sort_dialog%
+Use the Custom Sort dialog to
+specify criteria Z-Mail uses to
+sort messages in your current folder.
+
+To bring up the Custom Sort dialog,
+from the ~#Main Screen#~, pull down
+the Sort menu and select Custom Sort.
+
+In the "Sort By" column, select
+criteria for Z-Mail to use when sorting
+your messages. Z-Mail uses sorting criteria
+in the  order by which you set these
+toggles.
+
+For example, if you choose sorting by "Date,"
+followed by sorting by "Length," Z-Mail 
+primarily sorts messages according to date.
+Messages with identical dates are
+subsequently sorted by message length.
+
+When selecting sorting criteria,
+check the Sorting Order list to
+ensure your sorting criteria are correctly
+ordered.
+
+To change the order of sorting criteria, unset
+the toggles, then reset them in the order
+you want Z-Mail to consider them.
+
+Reverse the sorting order of any criterion
+by setting the "Reverse" toggle, which
+is to the right of each criterion.  
+
+You can also choose any of the
+following conditions for your selected
+sorting criteria:
+
+Ignore Case:
+
+  Set this toggle to make sorting
+  insensitive to case.
+
+Use "Re:" in Subject:
+
+  Set this toggle if you want
+  "Re:" to be considered when
+  sorting by subject.
+
+Use Date Received: 
+
+  Set this toggle to sort by date
+  messages are received, rather than
+  by date-sent, when sorting by date.
+
+After fully specifying custom sorting
+criteria, click the Sort button at the bottom
+of the screen.
+%%
+
+%Priority%
+%%<Marks and Priorities
+%%
+
+%Marks and Priorities%
+Marks can be used to tag messages for
+later reference.  They are temporary
+and will not be saved when the folder
+is updated.  To place a mark on a
+message, press the "+" key when the
+message's summary is selected, or
+choose Mark from the main Screen Edit
+menu.
+
+A priority setting using a letter
+between A and E may also be placed on
+messages.  Priorities, unlike
+ordinary marks, are saved when
+folders are updated.  Some actions,
+such as sorting, may be performed
+with respect to marks or priorities.
+When sorting by priority, marks have
+the highest priority, followed by A,
+B, etc.
+
+To set the priority of a message,
+select its summary in the Main Screen
+and type one of the following
+letters: A, B, C, D, E. Or, use the
+Set Priority pullright menu on the
+Message menu in the main screen.  To
+remove priority, set a priority of
+"None" or type U when the message is
+selected.
+
+Messages may have both a temporary
+mark and a priority, but may not have
+more than one priority.  The presence
+of a mark is indicated by a "+", and
+the presence of a priority is
+indicated by the priority letter,
+immediately following the message's
+number in the Message Summaries area.
+%%
+
+%Opened Folders%
+You may have multiple folders open,
+but you may only display one folder
+at a time in the Main screen.  When
+you have multiple folders open, it's
+helpful to display the 
+~#Folder Status Area#~. You may 
+display the contents of an open folder 
+in the Main Screen by selecting its 
+name in the Folder Status area and 
+pressing RETURN or SPACE.
+
+You may also use keystrokes to move among 
+open folders:
+
+ This keystroke Is a shortcut to
+ -------------- ----------------
+   %            make your mailbox the
+                active folder
+  
+   #            make the most recently 
+                accessed folder the active
+                folder
+
+%%
+
+%Reading Messages%
+%read messages%
+You can read messages several ways:
+
+- Select the message you wish to read
+  in the ~#Message Summaries#~ on the
+  ~#Main Screen#~ and press the space
+  bar twice or the F2 key.
+
+- Choose the Read item of the Message
+  menu in the ~#Main Screen#~.
+%%
+
+%Message Display Screen%
+%message_window%
+%pinup_window%
+
+The Message Display Screen is where
+you read messages.  This screen
+displays a message and some
+information about it.
+
+The number of the message you're
+reading is displayed in the Messages:
+field.  You may type a new number in
+this field and press RETURN to view a
+different message.
+
+The ~#Next#~ and Prev function keys
+and buttons take you to the next and
+previous message in the folder,
+respectively.
+
+The displayed message may be saved,
+printed, deleted, preserved,
+unpreserved, marked, undeleted, pinned up, 
+unmarked and prioritized
+from the Message menu. Its displayed 
+character set can also be changed using the 
+Message menu. You may also
+display a list of attachments, if
+the message has any.
+
+The Edit menu contains items for selecting and
+copying text, as well as scrolling and paging.
+
+The Find menu may be used to read the next or
+previous message or to pin-up the displayed
+message.  The "Next Reference By and "Previous
+Reference By" pullrights from the Find menu 
+search for another message related to the 
+displayed message. The "Search"
+item brings up a dialog for locating strings or
+patterns in the text of the message.
+
+The Compose menu can be used to start a 
+new composition, with or without a message
+template.
+
+The Reply menu gives choices to reply to only
+the sender of the message, to all recipients of
+the message, and to either sender or all
+recipients with a copy of the displayed message
+included in the reply.  All items in this menu
+call up a ~#Compose Screen#~.  See ~#Replying to
+a Message#~ for more information.
+
+The Forward menu allows you to resend the
+message or include its text in the body of a new
+composition.  The Resend item does not open a
+Compose Screen, but instead prompts for an
+address sends a copy of the displayed message
+directly to that address.  The "Edited"
+selection brings up a Compose Screen. You may
+also forward messages as ~#attachments#~.
+
+To display or save an attachment, press the F6
+function key or choose Attachments from the
+Message menu. The Attachments dialog appears.
+See Attachments for more information.  
+
+The Layout menu is used to display other
+areas of the screen.  By default, the message
+headers and message body areas are displayed.
+You may also choose to display the button 
+panel.  
+
+The Wrap Long Lines toggle is also on by
+default, indicating that long lines in a 
+message will be automatically wrapped to
+the next line.  To prevent this from happening,
+turn off this toggle.  
+
+When Wrap Long Lines is off, you may display
+the far end of long lines of text by moving
+the cursor onto the line and pressing CTRL+e.
+
+To display all the headers in a message
+(rather than only To:, From:, Subject: and
+Cc:) turn on the Full Headers toggle.  
+
+If displayed, the button panel
+contains a number of buttons that act
+on the message being displayed.  Note
+that these actions are always
+performed on the message whose number
+is in the ~#Messages: field#~.
+
+Next        Displays the next unde-
+            leted and unsaved message.
+Prev        Displays the previous
+            undeleted and unsaved
+            message.
+Delete      Deletes the message (and
+            advances if autoprint
+            is on).
+Save        Brings up the Save dialog
+            for saving the current
+            message.
+Reply       Replies to the sender
+            of the message.
+ReplyAll    Replies to the sender and
+            all recipients of the
+            message.
+Cancel        Closes the Screen
+            the message is unchanged.
+
+If the variable ~#autoprint~var#~ is set,
+"Cancel" will automatically display the next
+undeleted message (as if you had also selected
+"Next").
+
+If the variable ~#autoinclude~var#~ is set,
+"Reply" will automatically include the message
+body of the current message in your reply.  If
+the variable ~#autoedit~var#~ is set, "Reply"
+will automatically open a Screen running the
+editor specified by the ~#visual~var#~ variable.
+
+%%<Message Shortcuts
+%%
+
+%Replying to a Message%
+%replying%
+There are several ways to reply to a
+message:
+
+- press the F7 key in the Main Screen
+  while the message summary is
+  highlighted
+
+- press F7 in the Message Reading
+  Screen
+
+- choose one of the four items from
+  the Reply pullright menu of the
+  Compose menu of the ~#Main Screen#~
+
+- choose one of the items on the
+  Reply menu in the Message Screen
+
+- press the 'Reply' or 'ReplyAll'
+  buttons in the Message Screen's
+  button panel, if it is displayed.
+
+When you choose one of these actions,
+a new composition is started with the
+name of the original sender already
+placed into the To: field.
+
+The four kinds of Reply are:
+
+- Sender Only, which starts a new
+  composition and places the name of
+  the address to which you're replying
+  into the To: field.
+
+- All Recipients, which works like
+  Sender Only, but places all the
+  original recipients of the message
+  and the sender in the To: field.
+
+- Sender (Include Msg.), which works
+  like Reply to Sender, and also
+  includes a copy of the original
+  message, indented, in your
+  composition.
+
+- All (Include Msg.), which works
+  like Reply to Sender, and also
+  includes a copy of the original
+  message, indented, in your
+  composition.
+
+If the variable ~#autoinclude~var#~
+is set, "Reply" will automatically
+include the message body of the
+current message in your reply.  If
+the variable ~#autoedit~var#~ is set,
+"Reply" will automatically invoke the
+editor specified by your
+~#visual~var#~ variable.
+%%
+
+%Button Panel%
+The button panels in the 
+~#Main Screen#~, 
+~#Message Display Screen#~, and 
+~#Compose Screen#~ provide shortcuts 
+for performing common tasks.
+Each action represented by a button
+may also be performed by choosing a
+menu item from the menu bar of the
+Screen; many actions may be executed
+using function keys.
+
+The button panel is not displayed by
+default in any screen.  To turn it
+on, choose Button Panel from the
+Layout menu.
+
+To use a button, move the cursor to
+it using the TAB and arrow keys, then
+press RETURN or the SPACE bar.
+%%
+
+%Search for Pattern%
+%Search by Pattern%
+%search_dialog%
+The Pattern Search dialog lets you
+search messages in the active folder,
+or all the open folders, for a
+pattern you specify.  Choose the
+Pattern Search... item from the Find
+menu of the ~#Main Screen#~ to bring
+up the Pattern Search dialog.
+
+Use the text fields to specify both
+the pattern you want to look for and
+its location.  You may only enter a
+pattern in one of these fields per
+search.
+
+The unlabeled field containing only a
+colon is used to search in
+non-standard headers.  For example,
+to find messages that have an
+"X-Security-Level" header containing
+the phrase "top secret", type
+"X-Security-Level" to the left of the
+colon and type "top secret" in the
+next text field to the right of the
+colon.
+
+Click the Search button to begin a
+search, or press the F2 function key.
+
+Messages that match the search
+criteria are selected in the main
+Screen, if you have the Select
+Matches toggle set.  If you've set
+the View Only Matches toggle, only
+matching messages will be displayed
+in the Main Screen.  (Choose View All
+from the View menu in the Main Screen
+to display all the messages in the
+current folder.)  
+%%<-shared-search
+%%
+
+%Extended Patterns%
+%regular expressions%
+%regex%
+When performing pattern searches, you
+may specify the following regular
+expression operators when the
+Extended Patterns check box is turned
+on:
+
+.    matches anything except a
+     newline.  The expression 'a.b'
+     matches any three character
+     string which begins with 'a' and
+     ends with 'b'.
+
+*    is a suffix indicating that the
+     preceding regular expression is
+     to be repeated as many times as
+     possible.  For example, the
+     expression
+
+     'fo*' matches 'f' followed by any
+     number of `o''s (including zero;
+     'fo* does match 'f').
+
+     '*' always applies to the
+     smallest possible preceding
+     expression.  So 'fo*' will not
+     match 'fofo'.
+
+[ ]  '[' begins a "character set",
+     which is terminated by a ']'. For
+     example, '[ad]' matches either
+     `a' or `d', and `[ad]*' matches
+     any string of `a''s and `d''s.
+     Character ranges can also be
+     included in a character set, by
+     writing two characters with a '-'
+     between them.  Thus, '[a-z]'
+     matches any lower-case letter.
+     Ranges may be intermixed freely
+     with individual characters, as in
+     '[a-z$%.]', which matches any
+     lower case letter or '$', '%' or
+     period.
+
+     Note that the usual special
+     characters are not special any
+     more inside a character set.  A
+     completely different set of
+     special characters exists inside
+     character sets: `]', `-' and `^'.
+
+     To include a `]' in a character
+     set, you must make it the first
+     character.  For example, `[]a]'
+     matches `]' or `a'.  To include a
+     `-', you must use it in a context
+     where it cannot possibly indicate
+     a range: that is, as the first
+     character, or immediately after a
+     range.
+
+[^]  '[^' begins a "complement
+     character set", which matches any
+     character except the ones
+     specified.  Thus, `[^a-z0-9A-Z]'
+     matches all characters except
+     letters and digits.
+
+`^'  is not special in a character
+     set unless it is the first
+     character.  The character
+     following the `^' is treated as
+     if it were first (it may be a `-'
+     or a `]').
+
++    '+' is like '*' except that at
+     least one match for the preceding
+     pattern is required for `+'.
+     Thus, 'c[ao]+p' does not match
+     'cp' but does match 'cap' and
+     'cop'.
+
+?    '?' is like '*' except that it
+     allows either zero or one match
+     for the preceding pattern.  Thus,
+     `c[ao]?p' matches `cp' or `cap'
+     or `cop', and nothing else.
+
+^    is a special character that
+     matches the empty string, but
+     only if at the beginning of a
+     line in the text being
+     matched. Otherwise it fails to
+     match anything.  Thus, '^ugly'
+     matches 'ugly' which occurs at
+     the beginning of a line.
+
+$    is similar to '^' but matches
+     only at the end of a line.  Thus,
+     '-*$' matches a string of one or
+     more '-''s at the end of a line,
+     and '^-*$' matches lines that
+     contain only '-''s.
+
+\    If you need to search for a
+     character that is itself a
+     regular expression operator, you
+     must precede it with a backslash.
+     For example, to search for lines
+     that begin with one or more
+     asterisk characters, use '^\**'.
+
+\|   specifies an alternative.  Two
+     regular expressions A and B with
+     '\|' in between form an
+     expression that matches anything
+     that either A or B will match.
+     Thus, 'foo\|bar' matches either
+     'foo' or 'bar' but no other
+     string.
+
+'\|' applies to the largest possible
+     surrounding expressions.  Only a
+     surrounding '\( ... \)' grouping
+     can limit the grouping power of
+     '\|'.  Full backtracking
+     capability exists when multiple
+     '\|''s are used.
+
+\( \)
+     is a grouping construct that
+     serves three purposes:
+
+     1. To enclose a set of '\|' for
+     other operations. Thus,
+     '\(foo\|bar\)x' matches either
+     'foox' or 'barx'.
+
+     2. To enclose a complicated
+     expression for the postfix '*' to
+     operate on.  Thus, 'ba\(na\)*'
+     matches 'bananana', etc., with
+     any (zero or more) number of
+     'na''s.
+
+     3. To mark a matched substring
+     for future reference.
+
+\DIGIT
+     After the end of a '\( ... \)'
+     construct, the matcher remembers
+     the beginning and end of the text
+     matched by that construct.  Then,
+     later on in the regular
+     expression, you can use '\'
+     followed by DIGIT to mean "match
+     the same text matched the
+     DIGIT'th time by the '\( ... \)'
+     construct."  The '\( ... \)'
+     constructs are numbered in order
+     of commencement in the
+     expression.
+
+     The strings matching the first
+     nine '\( ... \)' constructs
+     appearing in a regular expression
+     are assigned numbers 1 through 9
+     in order of their beginnings.
+     '\1' through '\9' may be used to
+     refer to the text matched by the
+     corresponding '\( ... \)'
+     construct.
+
+     For example, '\(.*\)\1' matches
+     any string that is composed of
+     two identical halves.  The
+     '\(.*\)' matches the first half,
+     which may be anything, but the
+     '\1' that follows must match the
+     same exact text.
+
+\b   matches the empty string, but
+     only if it is at the beginning or
+     end of a word.  Thus, '\bfoo\b'
+     matches any occurrence of 'foo'
+     as a separate word.
+     '\bball\(s\|\)\b' matches 'ball'
+     or 'balls' as a separate word.
+
+\B   matches the empty string,
+     provided it is not at the
+     beginning or end of a word.
+
+\<   matches the empty string, but
+     only if it is at the beginning of
+     a word.
+
+\>   matches the empty string, but
+     only if it is at the end of a
+     word.
+
+\w   matches any word-constituent
+     character.
+
+\W   matches any character that is not
+     a word-constituent.
+%%
+
+%Search by Date%
+%Search for Date%
+%dates_dialog%
+Use the  Date Search dialog to
+search for messages in the active
+folder.  You can search for messages
+associated with a specified date or
+date range.
+
+To bring up the Date Search dialog,
+from the ~#Main Screen#~, pull down
+the Find menu and select Date Search.
+
+If you want to constrain your search
+to a specified list of messages in your
+current folder, enter a list of messages
+in the Messages field. For information
+about entering a message list, refer to
+"~#Messages: Field#~."
+
+Press TAB to move your cursor to the Date 1
+area and enter a date associated with
+messages you want to find. Enter integers
+representing the year, month, and day. Use the
+TAB key to move your cursor from the Year field
+to the Month and Day fields.
+
+To enter a date range, use Date 1 to enter
+the starting date of your date search range.
+Use the TAB key to move your cursor to the
+Date 2 area and enter the end date for your
+date search range.
+
+Use the TAB key to move to the date search
+options area beneath the Date1 field. Use
+the arrow keys or CTRL+n and CTRL+p to
+select options. To set or unset a selected
+option, press RETURN.
+
+The following are descriptions of date
+search options:
+
+Constrain:
+
+  Limit the search to only the messages
+  listed in the Message field at the top
+  of the dialog.
+
+  When unset, Z-Mail searches the
+  entire folder.
+
+Use received date:
+
+  Search messages by the date the message
+  was received. 
+
+  When unset, Z-Mail searches for messages
+  according to date sent.
+
+Find non-matches:
+
+  Find messages that do not match
+  the search.
+
+All open folders:
+
+  Search all open folders, not just the
+  current folder.
+
+  When unset, Z-Mail searches messages
+  only in the current folder.
+
+Perform function:
+
+  Automatically copy, save, delete,
+  undelete, mark, or unmark messages
+  found by the search.
+
+  When you select "Perform function,"
+  Z-Mail brings up a list of functions.
+  Press RETURN to select a function.
+
+Press TAB to move to the area beneath
+the Date 2 area and choose a type
+of search. Use the arrow keys or CTRL+n
+and CTRL+p to select a search type. Press
+RETURN to set the search type. You
+can only choose one search type.
+
+If you select "Between Date1 &
+Date2," you must specify a valid 
+date search range by completing both the
+Date 1 and Date 2 fields.
+
+Press TAB to move to the "Select matches"
+area. Use the arrow keys or CTRL+n to move
+your cursor between "Select matches" and
+"View matches only." Press RETURN to turn
+on the desired switch.
+
+"Select matches" selects message summaries
+in the ~#Main Screen#~ for messages that
+match the search.
+
+"View matches only" hides message summaries
+in the ~#Main Screen#~ for messages that do
+not match the search.
+
+Press TAB to move to the button area. Press
+RETURN to begin the search.
+
+To clear the Date Search dialog so you can
+enter information for a new search, use
+the arrow keys or press CTRL+n to select the
+Clear button, then press RETURN.
+
+To exit the Date Search dialog, press ESC ESC,
+or use the arrow keys or press CTRL+n to select the
+Done button and press RETURN.
+%%
+
+%-shared-search%
+You may modify the search using the
+check boxes at the right of the
+dialog:
+
+- Constrain only performs the search
+  on the messages that are specified
+  in the Messages: field, rather
+  than on all the messages in the
+  folder.
+
+- Ignore case performs a
+  case-insensitive search, so the
+  pattern "ALOHA" will match the
+  string "AloHa" in a message.
+
+- Extended patterns allows you to
+  use regular expressions to specify
+  a search pattern.  See 
+  ~#Extended Patterns~# for more 
+  information.
+
+- Find non-matches causes messages
+  that do not match the pattern to
+  be selected.
+
+- All open folders searches all open
+  folders, rather than only the
+  currently folder.  When you set this
+  toggle, a list of functions appears,
+  from which you must select the
+  function to be performed.  The
+  function you select will be performed
+  on every message that matches the
+  search pattern.
+
+- If you click Perform function, you
+  must select the function to be
+  performed from the list that appears:
+
+  - copy     to copy messages to a file
+  - save     to save messages to a
+             folder
+  - delete   to delete messages
+  - undelete to undelete messages
+  - mark     to mark messages
+  - unmark   to unmark previously
+             marked messages.
+%%
+%Compose Screen%
+%Compose Window%
+%compose_window%
+You compose new messages in the
+Compose screen.  There are several
+ways to bring up a Compose screen:
+
+- Press the F3 function key, or
+  click the "Compose" button on
+  the ~#Main screen#~, if the
+  button panel is displayed.
+
+- Make a selection from the "Compose"
+  menu on the Main screen.
+
+The Compose Screen provides input
+fields for entering the addresses to
+which your message should be sent and
+for the subject of the message, and a
+simple text editor for entering the
+text that you wish to send.  You can
+also include ~#attachments#~ with your
+composition.
+
+Select the Editor... item of the Edit
+menu or press the F3 key to invoke the
+editor program you've specified in the
+~#visual#~ variable.  Your composition
+will appear in the editor program.
+When you quit the editor program, your
+edited composition will reappear in
+the Compose screen.
+
+You must specify at least one
+addressee before you can send a
+message.  See ~#Addressing#~ for more
+information about addressing your
+message.
+
+You can include other messages and
+files in your composition.  See
+~#Including Messages#~ for more
+information.
+
+See ~#Sending a Message#~ for more
+information about sending completed
+compositions.
+
+You can save a partially-completed
+composition in a file with the Write
+to File... item of the Message menu.
+To restart the composition later, use 
+the Compose->Drafts->View Drafts
+menu item on the Main window to open 
+the folder to which you saved your composition.  
+Then select the message you wish to restart and use
+the Compose->Drafts->Resume Draft menu item.
+
+You can start a new composition using a predefined
+template with the Templates item of
+the Message menu.  See ~#Templates#~ for more
+information.
+
+See ~#Formatting text#~ for information about
+formatting the text of your composition.
+See ~#Search and Replace#~ for information about
+using the Search and Replace dialog (in the Edit
+menu).  See ~#Spell Checking#~ for information
+about using an interactive spell checker or
+the spell checking facility of the Search and
+Replace dialog.
+
+The Options menu controls how your message is
+composed and delivered. The "Options..." item
+brings up the ~#Compose Options#~ dialog,
+which provides more detailed control over
+these selections.  See the help section on
+Compose Options for more information.
+
+There is one setting on the Options menu that
+does not appear in the Compose Options
+dialog.  When the Send Time Check toggle is
+on, addresses are passed to the address book
+program immediately before the message is
+sent.  See ~#Address Browser#~ for more
+information.
+
+Setting "Edit Headers" in the Compose Options
+dialog changes the appearance of the Compose
+screen.  When this option is selected, the
+addressing and subject fields disappear, and the
+complete set of message headers for your message
+appears in the text editor.  You may edit the
+contents of these headers (anything to the right
+of the colon (:) in each header line) in the
+same way that you edit the text of your message.
+However, unless you are familiar with electronic
+mail transport, you should not edit or remove
+the header labels themselves.  Also be careful
+to leave a blank line between the headers and
+the text of your message.
+
+The Aliases item from the Address menu calls
+up an abbreviated version of the Aliases dialog.
+>From this dialog, you can browse your list of
+aliases and select aliases to which to address
+your message.  See ~#Using Aliases#~ for
+details.
+
+Selecting addresses from this dialog temporarily
+turns off the Edit Headers option.
+%%
+
+%Sending a Message% To send your message,
+press F7 or click the "Send" button at the
+bottom of the ~#Compose screen#~.  The
+"Messages" menu at the top of the screen
+provides additional delivery options.  If you
+decide you don't want to send the message
+you're composing, click the "Cancel" button.
+
+Once you have selected Send, your message is
+on its way and cannot be retrieved or canceled,
+and the Compose screen is automatically dismissed.
+%%
+
+%Addressing%
+Addresses specify the recipients of your
+composed message. You enter addresses into the
+To, Cc, and Bcc fields of the 
+~#Compose screen#~.  Each address that you 
+specify in one of these fields receives one 
+copy of your message.
+
+The only difference between the three
+addressing fields is their
+presentation to the recipient:
+
+  'To' addresses are to whom the message
+  is directed.
+
+  'Cc' addresses are 'Carbon copies.'
+
+  'Bcc' addresses are 'Blind carbon
+  copies.' Bcc addressees receive a copy
+  of the message, but do not appear in
+  the message's headers, so no other
+  recipients can tell that the Bcc
+  recipient got a copy.
+
+A Bcc: field does not appear by
+default.  Choose Bcc from the Address
+menu to access the Bcc: field.
+
+A mail recipient may be a user, an alias, a
+file, or a program.  Mail sent to a filename
+will simply be stored in the named file; mail
+sent to a program will cause that program to run
+with the message as its standard input.  Mail
+sent to an alias is sent to every recipient
+named in that alias.  See the Help Index entry
+for ~#Aliases~ui#~ for details of creating an
+using aliases.
+
+When more than one address is specified, the
+addresses given should be separated by
+commas.  The simplest addresses are just the
+login names of the local users you wish to
+send your message to:
+
+ martha fred jerry jane
+
+In these cases, Z-Mail Lite can figure out that
+they are separate addresses and insert commas
+between them automatically:
+
+ martha, fred, jerry, jane
+
+More complex address lists must have the
+commas included in order for Z-Mail Lite to read them
+correctly.
+
+Addresses for users on machines other than
+your local machine may also contain `!', `@' and
+`%' characters which are used to separate the
+hostnames from the user name.
+Domain addresses (also called Arpanet, Internet,
+RFC822, and "fully qualified" addresses) are
+specified as
+
+ user@host.domain
+
+where "domain" is usually a compound name such
+as "berkeley.edu" or "z-code.com".  This is
+the most common form of electronic addressing.
+Another form of addressing describes the UUCP
+(UNIX-to-UNIX CoPy) path used to transmit a
+message:
+
+ host1!host2!user
+
+where there may be as many hosts as necessary to
+route the message to the recipient user.  In the
+example above, the "user" account is on
+"host2" and that machine is connected to
+"host1".  Your machine should have a UUCP
+connection to "host1" in this case.  UUCP
+addressing is becoming less common, but you
+may still see it occasionally.
+
+UUCP and Domain addresses are sometimes mixed:
+
+    host2!user@host1.domain
+
+This tells the local system to transmit the
+message to host1 in the named domain, with the
+expectation that host1 will then UUCP the
+message to host2.  Delivery to "user" occurs
+on host2.
+
+A `%' character has the same meaning as `@', but
+its interpretation is delayed until the
+message has crossed the uucp connection:
+
+    host1!user%host2.domain
+
+The above example tells the local system to UUCP
+the message to host1, with the expectation
+that host1 will transmit the message to host2 in
+the named domain.  Again, delivery to "user"
+occurs on host2.
+
+Mixing of addresses in this way is
+discouraged, but it is sometimes required to
+assure delivery.  The complete syntax and
+ramifications of inter-network mailing are too
+complex to cover here.  More information can
+be obtained through your system administrator.
+If a recipient is a filename, it must be a
+full path name beginning with slash (/), tilde
+(~) (meaning the user's home directory) or
+plus (+) (meaning the user's folder directory).
+If a recipient is a program, is must begin
+with the pipe symbol (vertical bar, "|") and
+be enclosed in angle brackets:
+
+    <|program arguments ...>
+
+Note that because < and > have a special meaning
+to the mail system, programs to which mail is
+sent cannot use shell input and output
+redirection.  The arguments to a program also
+must not include comma (,) characters.  Commas
+are used by the mail system to separate one
+address from another.
+
+See the Z-Mail Reference Manual for detailed
+information about address formats.
+%%
+
+%Address Browser%
+%-Browser%
+The Address Browser dialog provides an
+interactive interface to the ~#address_book#~
+program, also known as the "directory
+service".  If you have such a program available,
+this dialog acts as a "phone book" to look up
+electronic mail ~#addresses#~ for you.
+
+Type a pattern of the form expected by your
+address book program in the Pattern field and
+click Search.  If Z-Mail Lite has remembered the
+result of a previous lookup of that pattern, the
+remembered result appears in the Recalls
+field.  The address book program is also
+executed, and the results are displayed in the
+Matches area.  This permits the remembered
+lookup to be verified against the current
+address book information.
+
+The Edit menu provides Remember and Forget
+functions.  If Remember is selected, Z-Mail Lite
+stores the contents of the Pattern and Recalls
+fields.  At any time thereafter, when the
+Pattern string is used to address a message, the
+address from the Recalls field is used.  This
+behavior is controlled by the variable
+~#address_cache#~.
+
+If Forget is selected, any remembered address
+associated with the value of the Pattern field
+is forgotten.  If the Pattern field is empty,
+Z-Mail Lite looks for the first pattern that
+corresponds to the value of the Recalls field,
+and forgets that pattern instead.  If several
+patterns recall the same address, only one is
+forgotten.
+
+Forget All causes the list of all remembered
+addresses, not just those matching the Pattern
+or Recalls fields, to be discarded.
+
+The Display toggles below the Matches area allow
+you to change the view to show either any
+descriptive text generated by your address
+book program, or the actual electronic mail
+addresses associated with each description.  For
+example, your address book program might return:
+
+ Fred Jones, President, Jones Inc.
+ <fred@fjones.com>
+
+If the Descriptions toggle is on, the Matches area
+displays only the text "Fred Jones, President,
+Jones Inc.".  If the Addresses toggle is on, the
+Matches area displays the address, such 
+as <fred@fjones.com>
+
+The Options menu provides access to the
+~#Aliases~ui#~ dialog, where your personal
+addressing shorthands (aliases) are stored. When
+sending a message, aliases are always
+substituted before either the remembered
+patterns or the address book are consulted.
+
+See the ~#address_book#~ and ~#lookup_sep#~
+variables for interface specifications of the
+address book program.
+
+Note that the ~#address_filter#~ is not
+applied when browsing.
+%%
+
+%Outgoing Character Set%
+%charset_compose%
+Use the Outgoing Character Set menu
+to change the character set label for a
+message you are sending.
+
+To bring up the Outgoing Character Set menu
+from the Compose Screen, pull
+down the Message menu and select Character
+Set. From the menu, choose the character set
+you want to use to label your current composition
+when you send it.
+
+Z-Mail labels outgoing messages according to
+the value of the ~#outgoing_charset#~ variable,
+which is listed as the default value in the menu.
+If the recipient of your message cannot
+view messages in the character set specified by
+the value of ~#outgoing_charset#~, 
+use the Outgoing Character Set menu to temporarily
+override the value of ~outgoing_charset#~
+in order to correctly label your outgoing message.
+
+If there is a character set mapping from the
+~#display_charset#~ to the character set
+you select, Z-Mail maps all plain text parts
+of your composition from the character set identified
+by ~#display_charset#~ to the character set you
+select.
+
+If no mapping exists for the character set identified by
+~#display_charset#~ to the character set you select,
+Z-Mail only labels your outgoing message and does
+not translate it.
+
+When replying to a message, to match the
+character set of the sender of the original
+message, select the "Match Sender's"
+menu item.
+
+If you are unsure which
+character set is the one you want to
+use to translate and label your outgoing message,
+select "More Information," which
+brings up the Outgoing Character Sets dialog.
+The Outgoing Character Sets dialog
+provides brief descriptions of valid
+character sets.
+
+In the Outgoing Character Sets dialog,
+Z-Mail lists all known character sets, but may
+identify some character sets with asterisks (*).
+Character sets marked with asterisks
+are those Z-Mail cannot map.
+When selecting a character set, it's 
+recommended that you select one that
+is not marked with an asterisk.
+
+To specify a character set that is not
+listed, select "Other" from the Outgoing
+Character Set menu. Provide the name of
+the outgoing character set.
+
+When you select an outgoing character set,
+your selection affects the current composition.
+Your selection does not change the value of the variable
+~#outgoing_charset#~.
+%%
+
+%Incoming Character Set%
+%charset_message%
+Use the Incoming Character Set menu
+to change the character set of
+of an incoming message you are currently
+viewing.  This is useful when a message
+you are reading is unlabeled or incorrectly labeled.
+
+To bring up the Incoming Character Set menu,
+from the Message screen,
+pull down the Message menu and select
+Character Set.
+
+Z-Mail only displays the names of character
+sets that have mappings
+to the character set specified by the
+~#display_charset#~ variable.  When you
+select an incoming character set, Z-Mail maps the message
+from that character set to the character set identified
+by the value of ~#display_charset#~.
+
+If you are unsure which
+character set is the one you want to
+use to translate your incoming message,
+select "More Information," which
+brings up the Incoming Character Sets
+dialog. The Incoming Character Set dialog
+provides brief descriptions of valid
+character sets.
+ 
+Selecting a character set
+only affects the current message.
+Your selection not change the value
+of the ~#incoming_charset#~ variable.
+%%
+
+%Compose Options%
+%comp_opts_dialog%
+The Compose Options dialog allows you to
+change less-frequently changed options
+associated with composing a message.  You may
+change the following items:
+
+Record File: This identifies a file to
+which all outgoing mail is copied.
+(See the "record" variable.)
+
+Log File: Like the record file,
+outgoing messages are copied here;
+unlike the record file, only message
+HEADERS are copied.  (See the
+"logfile" variable.)
+
+Autosign: When set, the value of your
+"autosign" variable is used as an
+addendum to your outgoing mail.
+
+Autoformat: Z-Mail Lite attempts to
+automatically format your mail before
+it goes out.  You may type text
+without pressing RETURN at the ends of
+lines, and Z-Mail Lite will figure out
+where to "wrap" the lines.
+
+Return-Receipt: When the message is
+delivered to the recipient, a
+confirming message is mailed back to
+you automatically.  Note that a return
+receipt is not an indication that the
+mail has been read by the recipient,
+but merely that it has been delivered.
+
+Edit Headers: This allows you to
+change the way you edit the headers of
+your message.  When turned on, the
+"To:", "Cc:", "Subject:" lines and
+other headers appear in the same text
+area as the body of the message you
+are composing; they can then be edited
+like normal text.  See the "edit_hdrs"
+variable.
+
+Verbose: This causes verbose output to
+be generated by the transport agent
+when it delivers mail.
+
+Synch Send: This causes Z-Mail Lite to wait
+for each message to be sent before
+returning control to the user.
+
+Autoclear: After sending mail, the
+Compose screen text-composition area
+is cleared of all text.  (See the
+"autoclear" variable.)
+
+Record-User: When sending mail, if
+there exists a folder in your folder
+directory (see the "folder" variable)
+that has the same name as a recipient
+of your mail, then a copy of your
+message is automatically recorded in
+that folder.  (Note, the folder must
+already exist for this option to take
+effect.)
+
+Sort Addresses: This causes the
+addresses to be sorted alphabetically
+within each address field.
+
+Address Book: Causes addresses to
+automatically be passed to the address
+book program for checking as soon as
+you finish entering them into the
+address field.  
+See ~#Address Browser#~ for 
+more information.
+
+%%
+
+%Formatting text%
+The ~#Compose screen#~ provides
+several mechanisms for formatting the
+text of your composition.
+
+The Paste Special pullright of the
+Edit menu performs the following two
+functions:
+
+- "Indent" pastes the contents
+  of the clipboard (the last text
+  you Cut or Copied) at the
+  insertion cursor like a normal
+  Paste, but also "indents" the text
+  by preceding every line with "> ".
+  See the ~#indent_str#~ variable if
+  you wish to change the default
+  characters with which the text is
+  indented.
+
+- "Fill" pastes the contents of
+  the clipboard (the last text you
+  Cut or Copied) at the insertion
+  cursor like a normal Paste, but
+  also "fills" each pasted line by
+  rearranging the line breaks so
+  that each line is as long as
+  possible without exceeding the
+  setting of the #wrapcolumn#~
+  variable (78 characters by
+  default)
+
+The Format pullright of the Edit
+menu performs the following four
+functions on a selected region of
+text:
+
+- "Fill" fills each line in the
+  region by rearranging the line
+  breaks so that each line is as
+  long as possible without exceeding
+  the setting of the ~#wrapcolumn#~
+  variable (78 characters by
+  default)
+
+- Indent "indents" the text by
+  preceding every line with "> ".
+  See the ~#indent_str#~ variable if
+  you wish to change the default
+  characters with which the text is
+  indented.
+
+- Unindent removes characters that
+  occur at the beginning of each
+  line of the selected region.
+
+- Pipe through Command... sends
+  the selected region though the
+  UNIX command you specify,
+  replacing the selected region with
+  the output of the command.
+%%
+
+%Including Files%
+%%<Including Messages
+%%
+
+%Including Messages%
+%including%
+While you are Composing a message,
+you can include other messages and
+files into your composition with
+the "Include" menu of the
+~#Compose Screen#~.
+
+To include other messages in your composition,
+select one of the items from the
+Include->Messages pullright.  The message(s)
+with the number(s) indicated in the 
+~#Messages: field#~ of the Compose Screen will 
+be included in your message.
+
+The three ways to include a message
+are:
+
+- Indented, which prepends "> " to
+  every line of the included
+  message.  See the
+  ~#pre_indent_str#~,
+  ~#indent_str#~, and
+  ~#post_indent_str#~ variables for
+  details.
+
+- Nonindented, which precedes and
+  follows the included message with
+  a comment of the form:
+
+ --- Forwarded mail from <user>
+
+ ...message here...
+
+ --- End of forwarded mail from <user>
+
+- As Attachment(s), which attaches
+  each included message as a
+  ~#MIME#~ "message/rfc822"
+  attachment instead of placing it
+  in the body of your composition.
+  This is useful for forwarding each
+  message with comments but without
+  modification, so that all headers
+  and attachments are retained.
+
+To include a file (or files) in your
+composition, select one of the items from the
+Include->File pullright of the Include menu.
+Both items bring up a ~#File Finder#~, where you
+specify the file to include.
+
+- The Insert... item inserts the
+  contents of the file you specify
+  at the insertion cursor in the
+  message body.
+
+- The Replace... item replaces the
+  entire contents of the composition
+  in progress with the file you
+  specify.  If you have set Edit
+  Headers in the Compose Options
+  dialog, headers in the message
+  body will be replaced as well.
+%%
+
+%Attachments%
+Attachments are files that are "attached" to
+messages, rather than "inserted" in message
+bodies. Attachments may be text, binary, or
+executable files.
+
+Inserting files into the body of a mail
+message can be cumbersome.  You may have to
+use several programs to properly encode the file
+for safe delivery, and the recipient will have
+to extract the file from the mail message and
+use several programs to decode the file before
+they can view it.
+
+However, when files are attached to mail
+messages, Z-Mail Lite automatically encodes them
+for safe delivery. If the recipient is also a Z-Mail
+user, they can easily view an attachment or
+save it as a file of its own, separate from
+the mail message delivered with it.
+
+See ~#Receiving Attachments#~ and 
+~#Sending Attachments#~ for more information.
+
+Z-Mail Lite uses the ~#MIME#~ (Multipurpose Internet
+Mail Extensions) draft standard for handling
+attachments.
+%%
+
+%Receiving Attachments%
+When you receive a message containing
+attachments, the type of attachment
+is indicated in square brackets.
+
+Some attachments, such as those containing
+plain text, are displayed in the message body
+area.  In this case, the text of the attachment
+is preceded with a line like this:
+
+  [ Text: ]
+
+Attachments such as binary files or graphic
+images cannot be displayed in the body area.
+In this case, information about the attachment
+appears in square brackets:
+
+[ Attachment (image/gif): "Screen1.gif" 103255 bytes
+  Gif Image
+  Encoded with "base64" ]
+
+Attachments are manipulated using the
+Attachments dialog, which appears if you press
+the F6 function key in the Message Display
+screen, or choose Attachments... from the
+Message menu.
+
+Attachments may be "detached" from messages
+and saved as files.  To do this, choose
+Attachments from the  Message menu of the
+~#Message Display screen#~.
+%%<-attachments_dialog_receiving
+%%
+
+%Sending Attachments%
+To send an attachment, choose the
+"Attachments..." item from the Include menu
+in the ~#Compose screen#~ or press F6.
+%%<-attachments_dialog_sending
+%%
+
+%MIME%
+MIME is a commonly-used mechanism for sending
+multimedia Internet mail. MIME stands for
+"Multipurpose Internet Mail Extensions."  Z-Mail Lite
+is MIME-compliant, which means Z-Mail Lite uses
+MIME mechanisms for sending and receiving
+messages that contain ~#attachments#~.
+
+If you are exchanging multimedia messages with
+users of other MIME-compliant mail programs or
+Z-Mail users at other sites, you should be
+careful to avoid using "extended" MIME
+attachment types in the Attachments dialog.
+Extended types are indicated by an "x-" in their
+names.
+
+By avoiding the use of extended types, you
+will improve the chances that the recipients
+of your multimedia message will be able to
+successfully view it.
+%%
+
+%-attachments_dialog_receiving%
+The Attachments dialog appears, listing all the
+attachments. To view an attachment, select it
+from the list and click the Display button.
+Z-Mail Lite will attempt to run the program suitable
+for viewing the attachment.  If this isn't
+possible, Z-Mail Lite will notify you.  You may wish
+to detach the attachment for viewing at a later
+date.
+
+To "detach" or save an attachment you've
+received, select its name in the Attachment
+list and click Save.  
+
+A file finder appears, which you use to specify
+where to save the attachment. By default, the
+file finder dialog displays the contents of your
+~/Mail/detach.dir directory, and the File:
+field contains the name the file had on 
+the sender's system.  You may save the
+attachment to any other location by specifying a
+new name in the File field.
+
+%%<Attachment Types
+%%
+
+%-attachments_dialog_sending%
+A file finder dialog appears. 
+
+Use the file finder to specify name of the file
+you wish to attach.  Then click OK or
+press F2.
+
+Then, set the File Type and Encoding menus
+appropriately using the dialog that appears.
+
+The Type menu indicates the type of the file you
+are sending.  This determines what program to
+execute to display the attachment when it is
+received, and may also determine whether the
+file must be encoded for safe inclusions in the
+message.  Press the RETURN key to pop-up the
+Type menu.
+
+If you don't know what type of file you are
+sending, or if it does not appear in the File
+Type menu, select the type "application/octet stream".
+
+An Encoding must be used if you want to send
+binary data.  This encoding is usually
+"base64" for ~#MIME#~ compliance.
+If you are uncertain what encoding to use,
+select "None".  Z-Mail Lite will automatically supply
+an encoding when one is required, even if the
+Encoding menu is set to "None".
+
+You may also use this dialog to provide an
+additional comment for the attachment.
+
+Once you have specified the  type and 
+encoding for the file, click OK or press
+F2 to attach it.
+
+To see a list of all files you have attached
+to a composition, Choose List
+Attachments... from the Attachments pullright
+menu in the Message menu.
+
+The Attachments list summarizes the name,
+type, and size of each attachment to the
+message.  When attaching files to a composition,
+the size of the attachment depends on the
+setting of the Encoding menu, so the size is
+shown as "pending" in the list. If you decide
+not to send a particular attachment, select it
+in the Attached Documents list and click
+Unattach.
+%%
+
+%Attachment Types%
+Z-Mail Lite determines how to encode and display
+attachments according to the file attach.types
+in the Z-Mail Lite library directory (usually
+/usr/lib/Zmlite).  If you frequently
+receive attachments for which the File Type or
+Encoding are "unknown", notify your system
+administrator.
+
+You may define your own types by placing them in
+a file and setting the variable "attach_types"
+to contain the file's full path name. Refer to
+the attach.types file and the Z-Mail Reference
+Manual to see how to construct entries in your
+own attachment-types file. See ~#MIME#~ for more
+information about the mechanism Z-Mail Lite uses for
+attachment handling.
+%%
+
+%File Finder%
+%file_finder%
+The File Finder is used in several dialogs to
+search for files (including mail folders) and
+directories.  It consists of a list of file and
+directory names and a type-in field.  Below the
+type-in field are other controls specific to the
+dialog using the file finder.  Select an item
+from the list to copy its name to the type-in
+field. Double-click (press the SPACE bar twice)
+on a directory name to examine the contents of
+that directory.  In most cases, double-clicking
+on a file name causes the default action to be
+applied to that file.  Sometimes when there is
+more than one possible action you must
+explicitly select the action rather than double-
+clicking.  However, double clicking a directory
+always examines that directory.
+
+The ".." entry represents the parent directory
+and is always shown so that you can navigate up the
+file tree by double-clicking on the parent
+directory item.
+%%
+
+%Searching%
+To search for a pattern in the text of a message
+you're reading, use the "Search Text" dialog.
+You can bring up the Search Text dialog with the
+Search... item of the Find menu in the
+~#Message Display screen#~.
+
+To find and optionally replace patterns in a
+message you're composing, bring up the
+~#Search and Replace#~ dialog by choosing  the
+"Search/Replace/Spell..." item on the Edit
+menu in the ~#Compose screen#~.
+
+To search for messages containing a particular
+string, use the ~#Pattern Search dialog#~.
+To search for messages received during a
+specific time period, use the 
+~#Date Search dialog#~.
+%%
+
+%Search and Replace%
+%editor_dialog%
+Use the "Search and Replace" dialog to search
+for patterns, and optionally replace them, in
+messages you're composing.  The Search and
+Replace dialog also includes a 
+~#spelling checker#~.  You can bring up the 
+Search and Replace dialog with the
+Search/Replace/Spell... item of the Edit menu
+in the ~#Compose screen#~.
+
+To search for a pattern, enter it in the Search
+field, and use the Search button.  If the pattern
+is found in the text of the composition, the dialog
+box displays it and the text preceding it.  The
+line containing the pattern is the last line of
+text visible in the dialog.
+
+To see the next occurrence of the pattern, click
+Search again.
+
+To replace the pattern, specify the replacement
+in the Replace field.  Once you have located
+the pattern using the Search button, click
+the Replace button to replace it.
+
+%%<Spell Checking
+%%
+
+%Pattern Search Dialog%
+%%<Search for Pattern
+%%
+
+%Spell Checking%
+%spelling checker%
+To check the spelling of your text, click the
+Spell button in the ~#Search and Replace#~
+dialog.  The Misspelled Words list at the
+right will be filled in with possible spelling
+errors.  To correct a misspelling, select the
+word from the list.  This word is copied to
+the Search field.  Fill in the correct
+spelling in the Replace field, and click
+Replace.
+
+This dialog is accessed via the
+Search/Replace/Spell... item from the Edit menu
+in the ~#Compose screen#~.
+
+See the variable ~#speller#~
+for additional information.
+%%
+
+%Templates%
+%templates_dialog%
+Templates are predefined text forms that you can
+use when composing outgoing mail.  The Templates
+dialog shows you a list of the available
+prepared forms.  Select one of the forms in
+the list and click the "Use" button.  A
+~#Compose screen#~ will be opened with the
+template inserted in the composition area, ready
+for your editing.
+
+You can define your own template files.  See the
+~#templates~var#~ variable for more information.
+If one of the templates in your templates
+directory (as defined by the ~#templates~var#~
+variable) is named "default", Z-Mail Lite reads
+that file into every message you compose, unless
+you explicitly select a different template.
+%%
+
+%Text Pager%
+The Text Pager dialog displays text files, and
+lets you perform editing and file operation on
+them.  The Text Pager is primarily used to
+display textual ~#attachments#~.
+
+The "Editable" toggle must be set before you can
+edit the text. This toggle can be set in the Edit
+menu.
+
+The File menu contains the following items:
+
+- Open... brings up a ~#File Finder#~ where 
+  you select the file you wish to view 
+  or edit.
+
+- Insert brings up a File Finder where you 
+  select a file to insert into the text 
+  pager.
+
+- Save saves your changes to the file.
+
+- Save As... saves your changes to
+  the file you specify.
+
+- Print... brings up the
+  ~#Print Dialog#~.
+
+- Close closes the Text Pager
+  dialog. If you have unsaved
+  changes, you'll be prompted to
+  save changes.
+
+The Edit menu contains the standard Cut,
+Copy, Paste, Select All, and Clear items, and
+
+- Search/Replace/Spell... brings
+  up the ~#Search and Replace#~
+  dialog.
+
+- Editor... starts the editing
+  program specified in the
+  ~#visual~var#~ variable.
+
+- The Editable toggle must be on
+  in order to make changes to a file
+  in a text pager.  When this toggle
+  is off, editing keystrokes will not
+  work.
+%%
+
+%Text Attachments%
+%Displaying Text Attachments%
+Textual ~#attachments#~ that cannot be
+displayed in the body of a message are displayed in a
+~#Text Pager#~ dialog.  You may edit the text in
+this dialog and save the text to other files;
+see ~#Text Pager#~ for more information.
+%%
+
+%Envelope%
+%envelope_dialog%
+%%<Custom Headers
+%%
+
+%Creating a Signature%
+A 'signature' is a short, optional piece of text 
+that is automatically appended to your outgoing
+messages.  To create a signature, select the
+Signature... item from the Options menu of the
+Main screen.
+
+A Text Page dialog will appear.  Your real name
+will already be present in the text editing 
+area.  Edit the text in the signature as you
+wish; it is considered good form to keep your
+signature to three lines or less.  
+
+See the Text Page help section for more information
+about using the Text Pager dialog.  See the
+autosign1 and autosign2 variables for more
+information about controlling which outgoing
+addressees get a signature appended to their
+messages.
+
+Your signature is stored in the file ~/.signature.
+You may edit this file with any text editor you
+like.  To turn off your signature completely, 
+unset the autosign variable in the Variables
+dialog.
+%%
+
+%Custom Headers%
+You may create your own customized mail headers
+for outgoing mail using the Envelope dialog,
+which may be accessed by choosing
+Envelope... from the Options menu in the main
+screen.  Headers you define in this dialog will
+appear on your outgoing messages.  Common
+customized headers include your phone number,
+address, organization, and other personal
+information.
+
+Examples:
+
+ Organization: Z-Code Software
+ X-Phones: (415) 898-UNIX
+ Reply-To: dan@z-code.com
+
+A header name must consist of one word without
+spaces.  Multi-word header names are usually
+separated by dashes, as in "Reply-To" above.  The
+header text is usually a single line of text.
+
+If the header you are creating is not a standard
+RFC822 header, or you aren't sure, always
+precede the name of the header with "X-" as in
+the "X-Phones" example above.
+
+When you have entered the header name and header
+text in the Envelope dialog, click Set.  If you
+would like to have this header included in all
+your outgoing mail messages, you must save
+this information by clicking Save.
+
+You may use this dialog to define dynamic headers
+which may be set to one of several values on 
+a per-composition basis.  See the Z-Script help
+for the my_hdr command or the Z-Mail Reference
+Manual for more information.
+%%
+
+%Multikey Dialog%
+To display the multikey dialog, type
+
+  dialog multikey
+
+at the command line.  (Use the Layout
+menu in the Main screen to turn on the
+command line, or type a colon (:)
+in the main screen to display a dialog
+in which you may enter a single
+command.)
+
+The multikey dialog is used to bind the sequences
+emitted by special keys (such as arrow keys or
+function keys) to key names that Z-Mail
+Lite understands. Is most helpful when you find
+that only one or two of the special keys on your
+terminal aren't working correctly. If none of
+your special keys work, exit Z-Mail Lite and
+use the zmtermkey utility to create definitions
+for all your special keys.
+  
+The Key Names list contains names of many
+standard keys used in Z-Mail Lite. Use the down
+key or Ctrl+n to move the cursor down the
+list. Use the up key or Ctrl+p to move back up
+the list. To select the name next to the cursor,
+press Return.
+ 
+The cursor moves to the Key Name field, and the
+name of the key you selected from Key Names
+appears.
+ 
+Press Return if you want to define the key name
+currently displayed.  To change the key name,
+press Backspace to erase the current entry, 
+type the name of the key you want to define,
+and press Return.
+ 
+The cursor moves to the Sequence field. Press
+the key you want to define. When you press a
+key, a series of characters appears in the
+field and the cursor moves to Define.  If no
+characters appear in the field it means that
+the key is not emitting any information and you
+must reconfigure your terminal or emulator so
+that the key emits a sequence.
+ 
+After pressing a key for the Sequence field,
+the cursor moves to Define. If you want to keep
+the definition, press Return.  If you have made
+a mistake, press Tab to move to the Key Names
+list and begin again.
+ 
+"Save" saves the multikey definitions you have
+defined by using the Define button.  Before
+using Save, be certain to use Define with each
+definition you want to retain. Accepting the
+default file name results in your new settings
+being used the next time you run Z-Mail Lite.
+ 
+"Load" loads multikey definitions from
+multifile specified by $LITETERM, or $TERM, if
+$LITETERM isn't set. This activates your
+current definitions.
+ 
+Quit out of Define Multikey by pressing
+Done. "Done" neither defines nor saves
+changes. Use Define and Save, if you wish to
+save your changes.
+%% 
+
+%Dynamic Headers%
+The Dynamic Headers dialog may be used to change
+the contents of To, Cc, and Bcc headers in a
+composition.  If you have defined dynamic
+headers in the Envelope dialog, you may use
+this dialog to set their value on a per-composition
+basis.  See the Z-Script help for the my_hdr
+command or the Z-Mail Reference Manual for more
+information on creating dynamic headers.
+%%
+
+%Displaying an X-Face%
+Some e-mail users have an X-Face
+header in their messages which
+contains a specially formatted
+graphic, usually a picture of the
+person's face.
+
+When you use other versions of Z-Mail
+on bitmapped displays, the picture in
+the sender's X-Face header appears in
+the upper right hand corner of the
+message reading window.
+
+Although the terminals on which
+Z-Mail Lite is used can't display
+graphics, you can see a converted
+ASCII representation of an X-Face by
+typing CTRL+x f in the message
+reading screen.
+
+If no face appears, it means that the
+message does not have an X-Face
+header.
+%%
+
+%License Agreement%
+
+%%<zmlib>License.txt
+%%

@@ -1,0 +1,633 @@
+<HTML>
+<HEAD>
+<TITLE>Internationalization and Localization</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>Internationalization and Localization</H1>
+<P>
+<UL>
+<LI><A HREF="#top1">Internationalization</A> <I>(I18N)</I>
+<UL>
+<LI><A HREF="#top1-1">Message Catalogs</A>
+<UL>
+<LI><A HREF="#mcat1">Adding New Strings To the Catalog Source</A>
+<UL>
+<LI><A HREF="#mcat1-1">Strings That Appear Where Function Calls Are Legal</A>
+<LI><A HREF="#mcat1-2">Strings That Appear Where Function Calls Are Illegal</A>
+</UL>
+<LI><A HREF="#mcat2">Changing the English Form of an Already-Catalogued String</A>
+<LI><A HREF="#mcat3">Removing Catalogued Strings From the Catalog</A>
+<LI><A HREF="#mcat4">Adding New Non-Catalogued Strings</A>
+<LI><A HREF="#mcat5">Updating the Catalog via <TT>make catalog</TT></A>
+<LI><A HREF="#mcat6">Creating a Compilable Catalog Source</A>
+<LI><A HREF="#mcat7">Editing the Catalog Source</A>
+</UL>
+<LI><A HREF="#top1-2">Editing Strings for Internationalization</A>
+<UL>
+<LI><A HREF="#i18n1">Avoiding grammatical assumptions</A>
+<LI><I>More to come ...</I>
+</UL>
+</UL>
+<LI><A HREF="#top2">Localization</A> <I>(L10N)</I>
+<UL>
+<LI><A HREF="#loc0">Coding for Localization</A>
+<UL>
+<LI><A HREF="#loc1">Anticipating Size and Length Changes</A>
+<LI><A HREF="#loc2">Eight-bit Languages</A>
+<LI><A HREF="#loc3">Multiple Byte Languages</A>
+<UL>
+<LI><A HREF="#loc3-1">Multibyte Encodings</A>
+<LI><A HREF="#loc3-2">Wide Character Encodings</A>
+</UL>
+<LI><A HREF="#loc4">Right-To-Left Languages</A>
+</UL>
+<LI><A HREF="#loc00">What Z-Mail Actually Uses</A>
+<UL>
+<LI><A HREF="#loc01">Size and Length Changes</A>
+<LI><A HREF="#loc02">Eight-bit Languages</A>
+<LI><A HREF="#loc03">Multiple Byte Languages</A>
+<LI><A HREF="#loc04">Right-To-Left Languages</A>
+</UL>
+</UL>
+</UL>
+<P>
+The abbreviations <B>I18N</B> and <B>L10N</B> are derived by replacing all characters except
+the first and last with a count of the number of c8s so r6d. E10g, is it not?
+<P>
+<H2><A NAME="top1">Internationalization</A></H2>
+<P>
+This section describes internationalizing strings in C code 
+(using message catalogs) and how to edit strings for internationalization.
+<P>
+<UL>
+<LI><A HREF="#top1-1">Message Catalogs</A>
+<UL>
+<LI><A HREF="#mcat1">Adding New Strings To the Catalog Source</A>
+<UL>
+<LI><A HREF="#mcat1-1">Strings That Appear Where Function Calls Are Legal</A>
+<LI><A HREF="#mcat1-2">Strings That Appear Where Function Calls Are Illegal</A>
+</UL>
+<LI><A HREF="#mcat2">Changing the English Form of an Already-Catalogued String</A>
+<LI><A HREF="#mcat3">Removing Catalogued Strings From the Catalog</A>
+<LI><A HREF="#mcat4">Adding New Non-Catalogued Strings</A>
+<LI><A HREF="#mcat5">Updating the Catalog via <TT>make catalog</TT></A>
+<LI><A HREF="#mcat6">Creating a Compilable Catalog Source</A>
+<LI><A HREF="#mcat7">Editing the Catalog Source</A>
+</UL>
+<LI><A HREF="#top1-2">Editing Strings for Internationalization</A>
+<UL>
+<LI><A HREF="#i18n1">Avoiding grammatical assumptions</A>
+<LI><I>More to come ...</I>
+</UL>
+</UL>
+<P>
+<H3><A NAME="top1-1">Message Catalogs</A></H3>
+<P>
+Z-Mail uses XPG3 string catalogs for I18N and L10N.  An XPG3 string catalog is created from a
+specially formated source text file by using a facility such as <TT>gencat</TT>, which is the
+catalog compiler on IRIX 5+ and on some other platforms that support XPG3.  Other platforms use
+a different program name, but the process is similar.  Refer to the documentation for the catalog
+compiler you are using for details of generating the shippable run-time string catalogs.
+<P>
+After the catalogs have been created, the environment variables LANG, LC_MESSAGES, etc. are used
+at run-time to identify which local language catalog to use.  Instead of using the original string
+constants, Z-Mail retrieves the corresponding string from the compiled catalog and uses that.  If
+a given string cannot be found in the catalog, the original constant is used.
+<P>
+The following are instructions for maintaining the US-English language
+string catalog source files and the corresponding C and C++ string constants.
+<P>
+<UL>
+<LI><A NAME="mcat1">Adding New Strings To the Catalog Source</A>
+<P>
+<UL>
+<LI><A NAME="mcat1-1">Strings That Appear Where Function Calls Are Legal</A>
+<P>
+When a user-visible string appears in a context where a function
+call would be legal, wrap that string in the CATGETS() macro
+defined in <TT>include/catalog.h</TT>.  Do not edit the file
+<TT>lib/locale/C/Catalog</TT> directly.  Instead, do <TT>make catalog</TT>
+just before committing (see below).
+<P>
+Example:
+<BLOCKQUOTE>
+<CODE>puts( "Are you sure?" );</CODE>
+</BLOCKQUOTE>
+Becomes:
+<BLOCKQUOTE>
+<CODE>puts( CATGETS( "Are you sure?" ) );</CODE>
+</BLOCKQUOTE>
+<P>
+<LI><A NAME="mcat1-2">Strings That Appear Where Function Calls Are Illegal</A>
+<P>
+Some user-visible strings may appear in contexts that do not
+allow function calls.  Static arrays of user-visible strings are
+a common example of this.  In such cases, wrap each string in
+the <CODE>CATREF()</CODE> macro defined in <TT>include/catalog.h</TT>.  <CODE>CATREF</CODE>'s are
+no longer <CODE>(char *)</CODE>, but rather are of type <CODE>catalog_ref</CODE>, so
+adjust your declarations accordingly.  When the string is
+actually presented to the user, use macro <CODE>catgetref()</CODE> to convert
+it to <CODE>(char *)</CODE>.  Do not edit the file <CODE>lib/locale/C/Catalog</CODE>
+directly, but instead <TT>make catalog</TT> just before committing (see
+below).
+<P>
+Example:
+<BLOCKQUOTE>
+<PRE><CODE>static char *choices[] = { "Yes", "No" };
+[...]
+puts( choices[ i ] );</CODE></PRE>
+</BLOCKQUOTE>
+<P>
+Becomes:
+<BLOCKQUOTE>
+<PRE><CODE>static catalog_ref choices[] = {
+    CATREF( "Yes" ),
+    CATREF( "No" )
+};
+[...]
+puts( catgetref( choices[ i ] ) );</CODE></PRE>
+</BLOCKQUOTE>
+</UL>
+<P>
+<LI><A NAME="mcat2">Changing the English Form of an Already-Catalogued String</A>
+<P>
+To change the English text of a catalogued string, simply change
+the fallback string embedded in the source itself, generally found
+within a <CODE>CATGETS()</CODE>, <CODE>CATREF()</CODE>, <CODE>catgets()</CODE>, or <CODE>catref()</CODE> form.  Do not
+change or remove any other parameters appearing within that form.
+Do not edit the file <TT>lib/locale/C/Catalog</TT> directly, but instead
+do <TT>make catalog</TT> just before committing (see below).
+<P>
+Example:
+<BLOCKQUOTE><PRE><CODE>puts( catgets( catalog, CAT_DEMO, 12, "Are you sure?" ) );</CODE></PRE></BLOCKQUOTE>
+<P>
+Becomes:
+<BLOCKQUOTE><PRE><CODE>puts( catgets( catalog, CAT_DEMO, 12, "Surely you jest." ) );</CODE></PRE></BLOCKQUOTE>
+<P>
+Remember that whenever you change the English form of a string,
+translating bureaus will have to be paid to re-translate that
+string into any other languages we support.  Do not take such
+changes lightly; make every reasonable effort to get it right the
+first time.
+<P>
+<LI><A NAME="mcat3">Removing Catalogued Strings from the Catalog Source</A>
+<P>
+To "uncatalog" a string, remove the entire <CODE>CATGETS()</CODE>, <CODE>CATREF()</CODE>,
+<CODE>catgets()</CODE>, or <CODE>catref()</CODE> form, and replace it with the string itself.
+In the case of <CODE>CATREF()</CODE> and <CODE>catref()</CODE> forms, you will probably need
+to change some declaration's type from <CODE>CATALOG_REF</CODE> or <CODE>catalog_ref</CODE>
+back to <CODE>(char *)</CODE>.  Do not edit the file <TT>lib/locale/C/Catalog</TT>
+directly.  Issuing <TT>make catalog</TT> just before committing is
+reasonable, but not strictly necessary.
+<P>
+Example:
+<BLOCKQUOTE><PRE><CODE>static catalog_ref command[] = {
+    catref( CAT_DEMO, 1, "save" ),
+    catref( CAT_DEMO, 2, "delete" ),
+};
+[...]
+execute( catgetref( command[ i ] ) );</CODE></PRE></BLOCKQUOTE>
+<P>
+Becomes:
+<BLOCKQUOTE><PRE><CODE>static char *command[] = { "save", "delete" };
+[...]
+execute( command[ i ] );</CODE></PRE></BLOCKQUOTE>
+<P>
+<LI><A NAME="mcat4">Adding New Non-Catalogued Strings</A>
+<P>
+To add a new string that should not be catalogued, do the obvious
+and just plunk it right in.  If someone else is likely to think
+the string was mistakenly uncatalogued, add a comment.
+<P>
+<LI><A NAME="mcat5">Updating the Catalog Via <TT>make catalog</TT></A>
+<P>
+   Issuing <TT>make catalog</TT> in a directory containing internationalized
+   sources activates <I><B>Catsup</B>: the Catalog Synchronizer and Updater</I>.
+   Catsup attempts to keep the English catalog sources in synch with
+   the C sources.  The <CODE>CATGETS</CODE> and <CODE>CATREF</CODE> forms are intended for
+   temporary use only.  Catsup rewrites these as <CODE>catgets</CODE> and <CODE>catref</CODE>,
+   after assigning message reference id numbers and adding other
+   necessary parameters.
+<P>
+   Catsup issues warnings when catalogued strings have changed or new
+   strings have been added; in the future, this may indicate that
+   (re)translation is required.  Catsup also displays error messages
+   when id number conflicts are found, but it does not attempt to
+   repair this type of error.
+<P>
+   Catsup always rewrites the <TT>Catalog</TT> file; the previous contents
+   are saved as <TT>Catalog~</TT>.  Catsup may also rewrite C source files
+   that contain <CODE>CATGETS</CODE> or <CODE>CATREF</CODE> forms.  When it does so, the
+   previous contents of each file <TT>foo.c</TT> are saved in <TT>foo.c~</TT>.
+<P>
+Catsup allocates new id numbers in <TT>Catalog</TT> (the file).  <I>If two
+people run Catsup, they may each allocate the same id number for
+two different strings.</I>  To minimize the risk of such conflicts, you
+should <TT>cvs update lib/locale/C/Catalog</TT> soon before <TT>make catalog</TT>,
+and <TT>cvs commit lib/locale/C/Catalog</TT> soon after.  Since
+you generally update your source tree right before a commit, simply
+add a <TT>make catalog</TT> step in the middle.
+<P>
+<LI><A NAME="mcat6">Creating a Compilable Catalog Source</A>
+<P>
+Issuing <TT>make zmail.cat</TT> performs all the symbol substitutions on 
+Catalog that will turn it into a real, XPG3, <TT>gencat</TT>-able catalog source.
+This is the form that should be provided to translators.
+<P>
+Note that <TT>lib/locale/C/Catalog</TT> is <B>not</B> directly input to <TT>gencat</TT>.
+You must first create <TT>zmail.cat</TT> and then feed <TT>zmail.cat</TT> to <TT>gencat</TT>.
+<P>
+<LI><A NAME="mcat7">Editing the Catalog Source</A>
+<P>
+In spite of all the admonitions, above, to avoid editing <TT>lib/locale/C/Catalog</TT> directly,
+it is sometimes necessary to do so.  Catsup and <TT>make zmail.cat</TT> are not perfect, so it
+is a good idea to examine the final catalog source for discrepancies before doing
+<TT>make zmail.cat</TT> and sending the result out for translation.
+<P>
+However, it really <I>is</I> true that you should not edit <TT>zmail.cat</TT>.  If <TT>gencat</TT>
+complains about the contents of <TT>zmail.cat</TT>, fix <TT>Catalog</TT> and rerun <TT>make</TT>.
+<P>
+For a complete description of the catalog format, see the documentation for <TT>gencat</TT> or your
+catalog compiler.  For editing <TT>lib/locale/C/Catalog</TT>, the following rules are sufficient:
+<P>
+<UL>
+<LI>Never edit lines beginning with a dollar sign (<CODE>$</CODE>).
+<LI>The catlog is divided into sets of strings; lines beginning with <CODE>$set</CODE> name
+the sets.
+<LI>Strings are numbered in <B>increasing</B>, but <B>not</B> necessarily consecutive, order
+within each set; the numbers within a set must be <B>unique</B>.
+<LI>There <I>must</I> be <B>exactly one tab</B> between the string number and the string.
+<LI>Strings are quoted as in C (see the <CODE>$quote</CODE> directive at the top of the file);
+strings may be continued across multiple lines by using the C backslash-newline convention.
+<LI>Each string appearing in the catalog must be <B>exactly</B> the same as any strings using the
+same catalog set and string number in <CODE>catgets()</CODE> or <CODE>catref()</CODE> calls in
+the C code.  <I>If you edit the catalog, you must edit the C code to match.</I>
+</UL>
+<P>
+If you are very careful, and follow the above rules closely, you can do <TT>catsup</TT>'s job
+manually in the event that you have to change or add a string at the last minute.  Be sure that
+any new strings that you add:
+<OL>
+<LI>are added at the end of the appropriate string set;
+<LI>have a larger number than the largest already in the set;
+<LI>are properly quoted, and separated from the number by a tab; and
+<LI>have a matching <CODE>catgets()</CODE> or <CODE>catref()</CODE> in the C code,
+specifying the same set name and string number.
+</OL>
+</UL>
+<P>
+<H3><A NAME="top1-2">Editing Strings for Internationalization</A></H3>
+<P>
+Use of the following techniques will make our strings easier to localize,
+and improve consistency of our interface.
+<P>
+<UL>
+<LI><A NAME="i18n1">Avoiding Grammatical Assumptions</A>
+<P>
+      When a sentence may require a singular or plural form, use two
+      entirely separate strings, rather than tacking an 's' onto the
+      end of the appropriate English word.  Pluralization may be
+      arbitrarily complex in other languages; you cannot assume that
+      it is grammatically correct to simply adding some fixed suffix
+      to one noun.
+<P>
+Example:
+<BLOCKQUOTE><PRE><CODE>printf("saved %d message%s\n",
+       count,
+       (count == 1 ? "" : "s"));</CODE></PRE></BLOCKQUOTE>
+Becomes:
+<BLOCKQUOTE><PRE><CODE>if (count == 0)
+    printf(CATGETS("saved 0 messages\n"));
+else if (count == 1)
+    printf(CATGETS("saved 1 message\n"));
+else
+    printf(CATGETS("saved %d messages\n"),
+           count);</CODE></PRE></BLOCKQUOTE>
+<P>
+      Generally speaking, you should not make any assumptions about
+      grammar or sentence structure.  Changes to one part of a
+      sentence or phrase may have essentially arbitrary effects on the
+      rest of that string. Languages are convoluted, and what is true
+      of English may be dead wrong elsewhere.
+<P>
+      For example, many Romance languages associate a gender with all
+      nouns, and require gender agreement between subjects and verbs.
+      If the subject of a sentence can change in different contexts,
+      its verb may need to change as well.  Do not assume that you can
+      simply drop in different words without changing the rest of the
+      sentence as well.
+<P>
+<LI><I>More to come ...</I>
+</UL>
+<P>
+<H2><A NAME="top2">Localization</A></H2>
+<P>
+<UL>
+<LI><A HREF="#loc0">Coding for Localization</A>
+<UL>
+<LI><A HREF="#loc1">Anticipating Size and Length Changes</A>
+<LI><A HREF="#loc2">Eight-bit Languages</A>
+<LI><A HREF="#loc3">Multiple Byte Languages</A>
+<UL>
+<LI><A HREF="#loc3-1">Multibyte Encodings</A>
+<LI><A HREF="#loc3-2">Wide Character Encodings</A>
+</UL>
+<LI><A HREF="#loc4">Right-To-Left Languages</A>
+</UL>
+<LI><A HREF="#loc00">What Z-Mail Actually Uses</A>
+<UL>
+<LI><A HREF="#loc01">Size and Length Changes</A>
+<LI><A HREF="#loc02">Eight-bit Languages</A>
+<LI><A HREF="#loc03">Multiple Byte Languages</A>
+<LI><A HREF="#loc04">Right-To-Left Languages</A>
+</UL>
+</UL>
+<P>
+<H3><A NAME="loc0">Coding for Localization</A></H3>
+<P>
+Your challenge as an international coder is to create software that
+can be localized to use any human language, having any properties,
+anywhere in the world, with zero <I>a priori</I> knowledge about that
+language's particular characteristics.  This is not easy, but it can
+be done.  The most important things you can do are to think ahead and
+to avoid making English-biased assumptions.
+<P>
+<UL>
+<LI><A NAME="loc1">Anticipating Size and Length Changes</A>
+<P>
+      Different languages vary widely in how much physical space
+      expressions take up.  German, for example, contains many nouns
+      that are much longer than their English equivalents.  Japanese,
+      on the other hand, may use only one or two glyphs to describe
+      the same object.  On the other hand, a single full-width
+      Japanese Katakana character will tend to be twice as wide as a
+      Roman character in the same size font.
+<P>
+      This can be a particularly vexing problem for graphical user
+      interfaces.  Take full advantage of all available facilities for
+      flexibly defining a window or dialog's layout.  Use algorithmic
+      geometry manager if you have them.  Don't hardwire a text field
+      to be ten characters wide ... ten Japanese characters are twice
+      as wide as you think they are.
+<P>
+      Try to minimize the number of assumptions your code makes about
+      the size of fonts, or about the length of words and phrases.
+      For example, suppose that translation doubles the length of
+      every button label.  Will your buttons stretch?  If so, will
+      they still fit on screen?  If they don't stretch, will long
+      labels get cut off?
+<P>
+<LI><A NAME="loc2">Eight-bit Languages</A>
+<P>
+      Most languages require characters not found in the English-based
+      ASCII character set.  Romance languages, in particular, tend to
+      require additional special characters and diacritical marks.
+      ASCII itself occupies values 0-127; the lower half of an
+      eight-bit space.  Most languages that are based upon a Roman
+      alphabet simply extend ASCII by defining glyphs for bit patterns
+      128-255.  This includes all of the ISO 8859 family of encodings,
+      as well as myriad regional and national standards throughout
+      Europe and the Middle East.
+<P>
+      In order to accommodate such encodings, the software you create
+      must be ``eight-bit clean''.  That is, it cannot use the eighth
+      bit as a scratch space, or assume that it will be off.  The
+      eighth bit must be respected and preserved, just as one would
+      respect and preserve the seven lower bits.
+<P>
+      Eight-bit clean software cannot make certain assumptions about
+      how bit patterns relate to qualitative properties of characters.
+      For example, in Poland, it may not be true that all upper-case
+      letters are located between 65 and 90; there may be upper-case
+      characters above 127 as well.  And Hebrew letters do not even
+      have cases; the very question is meaningless.
+<P>
+      Instead of ``rolling your own,'' use standard and native
+      facilities for querying characters' properties.  If you need to
+      know if some byte represents an alphanumeric character, don't
+      check for 48-57, 65-90, and 97-122.  That won't cut it for
+      eight-bit encodings.  Instead, use the standard C function/macro
+      <CODE>isalnum()</CODE>.  On internationally-aware systems, the standards
+      require this call to properly adapt to the local language.  You
+      can trust it to do the right thing.
+<P>
+      On the other hand, the classic C string manipulation functions
+      generally do <B>not</B> know about local languages.  The <CODE>str*()</CODE>
+      functions are mathematical, not linguistic.  All they know about
+      is bytes.  For example, <CODE>strcmp()</CODE> orders strings according to the
+      numeric value of the bytes it contains.  It knows nothing about
+      diacritics or special characters.  If you try to sort French
+      strings using <CODE>strcmp()</CODE>, you will end up incorrectly placing
+      <CODE>"é"</CODE> (e accent egue) after <CODE>"z"</CODE>.  Using <CODE>strcmp()</CODE> is still safe
+      for non-localized strings; it is also safe for establishing
+      inequality with no partial ordering.
+<P>
+      Some systems do provide additional functions that let you
+      perform lexical operations on strings.  For example, many Unix
+      systems provide <CODE>strcoll()</CODE>, which gives you a linguistic
+      collating order on a locally-encoded string.  It knows about
+      diacritics; it knows about specials.  This is the thing to use
+      when ordering localized strings.
+<P>
+      The guiding principle for dealing with eight-bit encodings is
+      this: any direct numeric or bitwise manipulation of a character
+      is probably wrong.  You can usually assume that the lower-half
+      will stay ASCII-like, but the upper half could be anything.  Use
+      native macros and calls.  Don't do it yourself.  If you cannot
+      figure out what the native, locale-sensitive calls are, ask
+      someone.
+<P>
+<LI><A NAME="loc3">Multiple Byte Languages</A>
+<P>
+      Many languages, particularly Asian ones, require more than 2<SUP>8</SUP>
+      integer values to distinguish their glyphs.  There is great variation in
+      how encodings for these languages are arranged.  Generally
+      speaking, you will be dealing with two broad classes of
+      encoding: multibyte and wide character.
+<P>
+<UL>
+<LI><A NAME="loc3-1">Multibyte Encodings</A>
+<P>
+ Multibyte encodings use a variable number of bytes to
+ represent characters.  For example, all of ASCII may be
+ represented as single bytes.  Other characters may appear in
+ two bytes, where the first is 128 or greater, and the second
+ is 0-127.  Still others may use three bytes, with the first
+ two high and the third arbitrary.  This is just an example,
+ but it highlights some important caveats when dealing with
+ multibyte strings:
+<P>
+<UL>
+<LI>Random access to the <CODE>n</CODE>'th character is impossible.  You
+     can index down to the <CODE>n</CODE>'th <I>byte</I>, but you cannot know
+     how many characters came before this byte, or whether this
+     byte is the start of a character or in the middle of
+     another one.
+<LI>Arbitrary substrings of a string may not be valid
+     strings.  You cannot simply split at any byte you choose.
+     For all you know, you may be splitting a character right
+     in half.
+<LI>The only safe way to process a multibyte string is by
+     scanning from start to end.  If you hop right into the
+     middle, you have no way of knowing where you are.
+</UL>
+<P>
+ Given these limitations, multibyte encodings seem fairly
+ unattractive.  In fact, they are extremely common.  With
+ multibyte encodings, the payback comes in storage size.
+ Multibyte strings take up only as much space as they need.
+ In the degenerate case of strings containing only ASCII, most
+ multibyte representations use only a single byte per
+ character.  For this reason, multibyte encodings are use
+ almost universal for transport and persistent storage.
+<P>
+ Multibyte strings are represented in C code as <CODE>(char *)</CODE>.
+ Just remember: those are not characters, they are bytes.  The
+ classic C <CODE>str*()</CODE> functions still work, but only on the byte
+ level.  They do <I>not</I> change their behavior in different
+ locales.  So <CODE>strlen()</CODE> gives you a byte count, not a character
+ count.  And <CODE>index()</CODE> hunts for bytes; it doesn't know a thing
+ about characters.  You get the picture.
+<P>
+ All of the caveats about eight-bit encodings apply doubly to
+ multibyte encodings.  Almost all of the classic C <CODE>str*()</CODE>
+ calls will operate on the byte level; they are mathematical,
+ not linguistic.  You can make few, if any, assumptions about
+ the qualitative characteristics of a string based upon the
+ bit patterns it contains.  Use any locale-sensitive native
+ calls where available; ask for advice if you are unsure how
+ to proceed.
+<P>
+<LI><A NAME="loc3-2">Wide Character Encodings</A>
+<P>
+ Wide character encodings use a fixed number of bytes per
+ character.  They are sort of like ASCII scaled up.  <I>Narrow
+ Unicode</I>, for example, is an encoding where every single
+ character is expressed in 2 bytes.  Some other encodings
+ might use 3 per character, or even 4.  You might even think
+ of ASCII as a 1-byte-per-character wide encoding.
+<P>
+ The obvious down side of wide encodings is that they will
+ tend to require more space to represent a given string.  The
+ up side is that you can randomly access into the string.  As
+ long as you stay on fixed, wide character boundaries, you
+ know you are safe.
+<P>
+ In C, a single wide character is represented by <CODE>(wchar_t)</CODE>.  A
+ string of wide characters would be <CODE>(wchar_t *)</CODE>, while a
+ string of fixed length might be <CODE>(wchar_t [20])</CODE>.  You're
+ simply replacing <CODE>(char)</CODE> with <CODE>(wchar_t)</CODE>.  The host system's
+ headers will define <CODE>(wchar_t)</CODE> to some suitably wide type.  It
+ might be <CODE>(int)</CODE>, or <CODE>(long)</CODE>, for example.  The actual type used
+ depends on the possible wide encodings supported by that
+ platform.
+<P>
+ Wide characters are rather easier to deal with than
+ multibytes.  Since <CODE>(wchar_t)</CODE> is a completely different type
+ from <CODE>(char)</CODE>, you obviously cannot use things like <CODE>strcmp()</CODE> or
+ <CODE>getc()</CODE> or <CODE>fputs()</CODE> at all.  If you try, any prototyping
+ compiler will smack you for type violations.
+<P>
+ Instead, systems that support wide characters supply an
+ entire second set of manipulators that mimic the classic
+ <CODE>(char)</CODE> and <CODE>(char *)</CODE> calls.  Instead of <CODE>strlen()</CODE>, you use
+ <CODE>wslen()</CODE>.  Instead of <CODE>strncmp()</CODE>, you use <CODE>wsncmp()</CODE>.  Instead of
+ <CODE>gets()</CODE>, you use <CODE>getws()</CODE>.  And so on.
+<P>
+ Unfortunately, while wide character encodings are much easier
+ to manipulate, they are much less commonly used than
+ multibyte encodings.  The additional storage space is just
+ too unattractive, as is the complete loss of even partial
+ ASCII compatibility.  Software that uses wide characters at
+ all tends to do so only for internal processing.  You may
+ read in a multibyte string as a <CODE>(char *)</CODE>, convert it to wide
+ character <CODE>(wchar_t *)</CODE>, modify it in some manner, and then
+ convert it back to multibyte before writing it out to disk.
+ Systems that support both wide and multibyte encodings will
+ usually also provide lossless conversion routines between
+ the two.
+</UL>
+<P>
+<LI><A NAME="loc4">Right-To-Left Languages</A>
+<P>
+Languages like Hebrew and Arabic often require that the entire user interface be reversible, so
+that labels can appear on the other side of text fields and so forth.  On terminals that display
+from right to left, this frequently works without additional effort, but care may still be
+required for cursor addressing and the like.  In X11, the problem is more complicated.
+<P>
+Motif 1.1 supports ``directional'' text only in labels, not in text widgets.  Motif 1.2 and 2.0
+support directional text in the ``compound text'' widget, but not in the base text widgets.
+User interface elements usually need to be laid out with <CODE>XmForm</CODE> containers, with at
+least the <CODE>leftAttachment</CODE> and <CODE>rightAttachment</CODE> resources settable in the
+external resource files (and possibly <CODE>topAttachment</CODE> and <CODE>bottomAttachment</CODE>
+resoruces so settable, as well).
+<P>
+Finally, all the size and length requirements 
+</UL>
+<P>
+<H3><A NAME="loc00">What Z-Mail Actually Uses</A></H3>
+<P>
+<UL>
+<LI><A NAME="loc01">Size and Length Changes</A>
+<P>
+<UL>
+<LI>Z-Mail Motif
+<P>
+Most Motif UI objects size themselves sensibly for the font selected.  Care may need to be taken
+in specifying certain labels on the dialogs, but menus and most buttons generally work out fine.
+Text widgets and the like automatically adjust to the size of the font they are asked to display,
+but editing widths may need to be changed via resources or variable defaults to avoid taking up
+too much screen space with wide characters.
+<P>
+<LI>Z-Mail Lite
+<P>
+Lite does a very sophisticated job of computing screen geometry for dialog boxes and so forth.
+It is not usually necessary to code for string sizes.  However, because of the very limited
+screen real estate on a typical terminal, translators must be cautioned to use the shortest
+strings possible for user-interface elements such as menu items and function key labels.
+</UL>
+<P>
+<LI><A NAME="loc02">Eight-bit Languages</A>
+<P>
+Z-Mail in general makes no assumptions about the 8th bit, and uses the <TT>ctype.h</TT> macros
+such as <CODE>isalnum()</CODE> and <CODE>isspace()</CODE> to test character properties for most
+<I>classes</I> of characters.  <I>Individual</I> characters, particularly space, tab,
+carriage-return, and linefeed (newline), are usually checked by direct comparison to a C character
+constant (<I>e.g.,</I> <CODE>'\n'</CODE>).  Comparisons to integer values are used only in special
+cases; for example, the Mac C compiler reverses the integer values of the constants
+<CODE>'\n'</CODE> and <CODE>'\r'</CODE> so the numeric constants <CODE>'\012'</CODE> and
+<CODE>'\015'</CODE> are used when the integer value is important (such as in SMTP transactions).
+<P>
+However, the <CODE>isspace()</CODE> macro on some platforms is broken with respect to characters
+with the 8th bit set, so it is necessary to test <CODE>isascii() && isspace()</CODE>.  A macro
+<CODE>ISSPACE()</CODE> is provided for this, but may not be used everywhere that it should be.
+<P>
+Lexical operations on strings do not use <CODE>strcoll()</CODE> at this time.  However, most are
+performed using a set of ``case-independent'' string routines, such as <CODE>ci_strcmp()</CODE>,
+defined in <CODE>general/strcase.c</CODE> and <CODE>general/strcase.h</CODE> to either map to the
+platform's provided routines (<I>e.g.,</I> <CODE>strcasecmp()</CODE> or <CODE>stricmp()</CODE>) or
+to implement a bytewise comparison with characters converted to ``lower case'' by <TT>ctype.h</TT>
+macros such as <CODE>tolower()</CODE>.  These routines should handle local languages correctly.
+<P>
+Automatic text wrapping fails on some non-Romance languages because the concept of a ``word'' does
+not match Z-Mail's heuristics.
+<P>
+<LI><A NAME="loc03">Multiple Byte Languages</A>
+<P>
+As of this writing, all Z-Mail products on all platforms use 8-bit characters only, no wide or
+multibyte encodings.
+<P>
+<LI><A NAME="loc04">Right-To-Left Languages</A>
+<P>
+Z-Mail's support for right-to-left text is tenuous at best.  Lite needs a number of code changes.
+Motif needs extensive geometry changes because it does not in general use <CODE>XmForm</CODE> or
+permit the
+geometry to be changed via resources.  (The layout of the address editing area at the top of the
+compose window is an exception, but even that is incompletely configurable for right-to-left style.)
+Those platforms built with Motif 1.1 cannot handle editing
+of right-to-left text at all (though UI labels can be made to work).
+<P>
+Automatic text wrapping doesn't work at all for right-to-left strings.
+</UL>
+</BODY>
+</HTML>

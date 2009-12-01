@@ -1,0 +1,288 @@
+<HTML>
+<HEAD>
+<TITLE>The Documentation Repository</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<H1>The Documentation Repository</H1>
+<P>
+Most source for published Z-Mail (and related) product documentation, for all
+platforms including Windows, is presently stored on
+<tt>zyrcon.diego.netmanage.com</tt>
+in the directory <tt>/usr1/build/DocRep</tt>.  This directory is colloquially
+referred to as <I>the DocRep</I>.
+<P>
+Within the DocRep are directories named for documentation projects.  Of
+these, only a few are of direct interest to the Z-Mail developer:
+<P>
+<UL>
+<LI><tt>nls</tt> - Network License Server
+<LI><tt>mac</tt> - ZM-Mac
+<LI><tt>sgihelp</tt> - <I>MediaMail</I> (help books)
+<LI><tt>windows</tt> - ZM-Win
+<LI><tt>zmail</tt> - Z-Mail (UNIX/Motif)
+<LI><tt>zmlite</tt> - Z-Mail Lite
+<LI><tt>zpop</tt> - ZPOP server
+</UL>
+<P>
+<A HREF="index.html#doc">The <tt>doc.sh</tt> script</A> looks for
+documentation in only three of these:
+<P>
+<UL>
+<LI><tt>nls</tt> - version specified in <tt>doc.sh</tt>
+<LI><tt>zmail</tt> - version extracted from <tt>shell/version.c</tt>
+<LI><tt>zmlite</tt> - version extracted from <tt>shell/version.c</tt>
+</UL>
+<P>
+Each of these three directories must contain subdirectories whose names
+match the <tt><B>version-string</B></tt> values used by <tt>doc.sh</tt>
+when <A HREF="index.html#buildsummary">building a release distribution</A>
+of any Z-Mail product for UNIX.
+<P>
+Within the version subdirectories, <tt>doc.sh</tt> looks for the following
+directories and files:
+<UL>
+<LI><tt>zmail</tt> and <tt>zmlite</tt>
+<UL>
+<LI><tt>Copyrights/Copyrights.txt</tt>
+<LI><tt>ig/Install.ps</tt>
+<LI><tt>ig/Install.txt</tt>
+<LI><tt>License/License.ps</tt>
+<LI><tt>License/License.txt</tt>
+<LI><tt>README</tt>
+<LI><tt>Relnotes/Relnotes.ps</tt>
+<LI><tt>Relnotes/Relnotes.txt</tt>
+</UL>
+<LI><tt>zmail</tt> only <I>(Motif)</I>
+<UL>
+<LI><tt>zmail.1</tt><br>
+<I>This probably should be included with Lite as well.</I>
+</UL>
+<LI><tt>zmlite</tt> only
+<UL>
+<LI><tt>README.doc</tt>
+<LI><tt>RefCard/card.ps</tt>
+<LI><tt>TermConfig/TermConfig.ps</tt>
+<LI><tt>TermConfig/TermConfig.txt</tt>
+<LI><tt>ug/Guide.ps</tt>
+</UL>
+<LI><tt>nls</tt> only <I>(currently included with both Motif and Lite releases)</I>
+<UL>
+<LI><tt>ig/NLSinstall.ps</tt>
+<LI><tt>ig/NLSinstall.txt</tt>
+</UL>
+</UL>
+<P>
+An error is generated if any of these files is not found.  All of these
+files are copied out of the DocRep by <tt>doc.sh</tt>, regardless of what
+product distribution of Z-Mail is being built.  However, the
+<tt><B>version-string</B></tt> need not be the same for Motif and Lite,
+so if the product releases are not in sync either of these may refer to
+an older existing version of the documentation.
+<P>
+If documentation for a given release is partially completed, <I>e.g.</I> the
+release notes are finished for a beta release but other documentation has not
+been updated, then the version subdirectory should be created to hold the
+completed documents and then populated with symbolic links to the most recent
+older version directory to make the other required documents available.
+<P>
+<center>
+<TABLE border=1>
+
+<TR align="center">
+<TH colspan=3>DocRep/</TH>
+</TR>
+<TR align="top">
+	<TD><TABLE border=1>
+
+<TR align="left">
+<TH>nls<I>/version/</I></TH>
+</TR>
+<TR align="left">
+	<TD><TABLE border=1>
+
+<TR align="left">
+<TH>ig/</TH>
+</TR>
+<TR align="left">
+	<TD>NLSinstall.ps</TD>
+</TR>
+<TR align="left">
+	<TD>NLSinstall.txt</TD>
+</TR>
+</TABLE></TD>
+</TR>
+</TABLE></TD>
+
+
+	<TD><TABLE border=1>
+
+<TR align="left">
+<TH>zmail<I>/version/</I></TH>
+</TR>
+<TR align="left">
+	<TD><TABLE border=1>
+
+<TR align="left">
+<TH>Copyrights/</TH>
+</TR>
+<TR align="left">
+	<TD>Copyrights.txt</TD>
+</TR>
+</TABLE></TD>
+</TR>
+<TR align="left">
+	<TD><TABLE border=1>
+
+<TR align="left">
+<TH>ig/</TH>
+</TR>
+<TR align="left">
+	<TD>Install.ps</TD>
+</TR>
+<TR align="left">
+	<TD>Install.txt</TD>
+</TR>
+</TABLE></TD>
+</TR>
+<TR align="left">
+	<TD><TABLE border=1>
+
+<TR align="left">
+<TH>License/</TH>
+</TR>
+<TR align="left">
+	<TD>License.ps</TD>
+</TR>
+<TR align="left">
+	<TD>License.txt</TD>
+</TR>
+</TABLE></TD>
+</TR>
+<TR align="left">
+	<TD>README</TD>
+</TR>
+<TR align="left">
+	<TD><TABLE border=1>
+
+<TR align="left">
+<TH>Relnotes/</TH>
+</TR>
+<TR align="left">
+	<TD>Relnotes.ps</TD>
+</TR>
+<TR align="left">
+	<TD>Relnotes.txt</TD>
+</TR>
+</TABLE></TD>
+</TR>
+<TR align="left">
+	<TD>zmail.1</TD>
+</TR>
+</TABLE>
+</TD>
+	<TD><TABLE border=1>
+
+<TR align="left">
+<TH>zmlite<I>/version/</I></TH>
+</TR>
+<TR align="left">
+	<TD><TABLE border=1>
+
+<TR align="left">
+<TH>Copyrights/</TH>
+</TR>
+<TR align="left">
+	<TD>Copyrights.txt</TD>
+</TR>
+</TABLE></TD>
+</TR>
+<TR align="left">
+	<TD><TABLE border=1>
+
+<TR align="left">
+<TH>ig/</TH>
+</TR>
+<TR align="left">
+	<TD>Install.ps</TD>
+</TR>
+<TR align="left">
+	<TD>Install.txt</TD>
+</TR>
+</TABLE></TD>
+</TR>
+<TR align="left">
+	<TD><TABLE border=1>
+
+<TR align="left">
+<TH>License/</TH>
+</TR>
+<TR align="left">
+	<TD>License.ps</TD>
+</TR>
+<TR align="left">
+	<TD>License.txt</TD>
+</TR>
+</TABLE></TD>
+</TR>
+<TR align="left">
+	<TD>README</TD>
+</TR>
+<TR align="left">
+	<TD>README.doc</TD>
+</TR>
+<TR align="left">
+	<TD><TABLE border=1>
+
+<TR align="left">
+<TH>RefCard/</TH>
+</TR>
+<TR align="left">
+	<TD>card.ps</TD>
+</TR>
+</TABLE></TD>
+</TR>
+<TR align="left">
+	<TD><TABLE border=1>
+
+<TR align="left">
+<TH>Relnotes/</TH>
+</TR>
+<TR align="left">
+	<TD>Relnotes.ps</TD>
+</TR>
+<TR align="left">
+	<TD>Relnotes.txt</TD>
+</TR>
+</TABLE></TD>
+</TR>
+<TR align="left">
+	<TD><TABLE border=1>
+
+<TR align="left">
+<TH>TermConfig/</TH>
+</TR>
+<TR align="left">
+	<TD>TermConfig.ps</TD>
+</TR>
+<TR align="left">
+	<TD>TermConfig.txt</TD>
+</TR>
+</TABLE></TD>
+</TR>
+<TR align="left">
+	<TD><TABLE border=1>
+
+<TR align="left">
+<TH>ug/</TH>
+</TR>
+<TR align="left">
+	<TD>Guide.ps</TD>
+</TR>
+</TABLE></TD>
+</TR>
+</TABLE></TD>
+</TR>
+</TABLE>
+</center>
+</BODY>
+</HTML>

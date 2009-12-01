@@ -1,0 +1,67 @@
+# Sample Z-Script  function: uniq
+#	 	     button: Uniq
+
+function uniq() {
+#%
+# Cull duplicate messages out of a folder.  Useful if you've saved the
+# same message more than once or merged together two folders that had
+# some overlap.  Removes duplicates of the argument message (e.g., the
+# selected message, if attached to a button in GUI mode).
+#
+# To apply this function to all the messages, just do:
+#
+#    each * uniq
+#%
+#
+# If you plan to use it that way regularly, you might check the comments
+# for suggestions on speeding it up.  See also "fastuniq".
+#
+    unset any same first	# Initialize variable state
+    set deleted=""
+    if $?1
+	msg_list - $1	# Set current message = first argument
+    else
+	msg_list - 1	# Set current message = first message
+    endif
+    if $status != 0
+	return
+    endif
+    #
+    # Get the deleted messages -- speeds up later operations.
+    # If .-$ is used in the pick range below, you can speed this
+    # up too by using:     msg_list .-$ | :d | set deleted
+    #
+    :d | set deleted
+    #
+    # If the current message is deleted, don't do anything
+    #
+    msg_list . { $deleted } | set any
+    if $?any == 0
+	return
+    endif
+    #
+    # Find all the messages with the same message-id as this message
+    # Restrict the pick to non-deleted messages for speed.  Faster
+    # still would be to replace * with .-$ (here to the end).
+    #
+    eval -h pick -r * { $deleted } -h message-id %i | set same
+    #
+    # If some of your messages don't have a message-id, you can apply
+    # this more time-consuming test (only in version 2.1 and later):
+    #
+    # eval -h pick -r .-$ { $deleted } -h date,subject %?date?, %?subject?
+    #
+    # Sanity check -- perhaps the header is missing?
+    #
+    if $?same
+	# Get the number of the first of the selected messages
+	pick +1 -r $same | set first
+	# Delete all the matches except that first message
+	delete $same { $first }
+	msg_list $first		# The "output" of uniq is $first
+    else
+	echo -p Skipping %m
+    endif
+    return 0
+}
+button -n Uniq uniq

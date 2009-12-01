@@ -1,0 +1,47 @@
+:
+
+#
+# Send instructions to a running Mosaic
+#
+#  If the Mosaic action is "goto", and no Mosaic is running, a new one
+#  will be started.  All other commands must be sent to an
+#  alreay-active Mosaic.
+#
+
+if [ $# -ge 1 ]; then
+  
+  if [ -r $HOME/.mosaicpid ]; then
+    pid=`cat $HOME/.mosaicpid`
+  fi
+  
+  file="/tmp/Mosaic.$pid"
+
+  cmd="$1"
+  shift
+  args="$*"
+
+  fixhtml "$args"
+  
+  {
+    echo "$cmd"
+    echo "$args"
+  } > $file
+  
+  if [ -n "$pid" ] && kill -USR1 $pid 2>/dev/null; then
+    exit 0
+  else
+    rm $file
+    if [ "$cmd" = "goto" ]; then
+      Mosaic "$args" &
+    else
+      echo "Cannot find a running Mosaic"
+      exit 1
+    fi
+  fi
+  
+else
+
+  echo "Usage:  $0 <action> [ <arguments> ... ]"
+  exit 1
+  
+fi

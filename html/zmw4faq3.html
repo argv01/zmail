@@ -1,0 +1,826 @@
+<TITLE>Z-Mail for Windows FAQ</TITLE>
+<HEAD><A href=""><IMG align=middle SRC="../images/zncd-color.gif"></A>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<pre>
+<a name="V"><b>V. Z-Mail Troubleshooting</b></a>
+
+   <a name="VA"><b>A. Network Problems</b></a>
+
+      <a name="VA1"><b>1. What is a "Cannot connect to network - WINSOCK not found" error?</b></a>
+
+It is likley that Z-Mail could not process a WSAStartUp call, which can result
+from a missing WINSOCK compatible TCP/IP network stack, or from a missing
+WINSOCK.DLL file.  Check your PATH to see that your stack is accessable by
+Windows applications.
+
+      <a name="VA2"><b>2. Where can I find a WINSOCK-compatible TCP/IP network interface?</b></a>
+
+Z-Mail now ships with one:
+
+	<a href="ftp://ftp.ncd.com/pub/z-code/supported/z-mail/windows/4.0/ncdtcpip.exe">ftp://ftp.ncd.com/pub/z-code/supported/z-mail/windows/4.0/ncdtcpip.exe</a>
+
+      <a name="VA3"><b>3. In UUPC mode Z-Mail complains about WINSOCK.  How can I fix that?</b></a>
+
+This is only true for Z-Mail 3.2x, and not for Z-Mail 4.0.  NCD suggests using
+a "dummy WINSOCK" to remedy this.  (see next question)
+
+      <a name="VA4"><b>4. What is a dummy WINSOCK.DLL and where do I find one?</b></a>
+
+The dummy WINSOCK.DLL (stub) is userful for people who will use Z-Mail 3.2x 
+in UUPC mode only, without the need to ever hook up to a network.  The file 
+WSCKSTUB.DLL should be placed in the C:\WINDOWS directory and renamed to 
+WINSOCK.DLL.
+
+It can be found at:
+
+	<a href="ftp://ftp.ncd.com/pub/z-code/supported/z-mail/windows/patch/wsckstub.dll">ftp://ftp.ncd.com/pub/z-code/supported/z-mail/windows/patch/wsckstub.dll</a>
+
+      <a name="VA5"><b>5. Will Z-Mail work with WINSOCK 2.0?</b></a>
+
+Yes.  For more info see: <a href="http://www.intel.com/IAL/winsock2/specs.htm">http://www.intel.com/IAL/winsock2/specs.htm</a>
+
+     <a name="VA6"><b> 6. How can I debug my WINSOCK TCP/IP stack?</b></a>
+
+NCD offers a unique debugging tool for WINSOCK compatible stacks, called
+WSASNOOP.  It, and it's instructions for use, can be found at:
+
+ftp://ftp.ncd.com/pub/z-code/supported/z-mail/windows/debug/wsasnoop.zip
+
+   <a name="VB"><b>B. Receiving Email</b></a>
+
+      <a name="VB1"><b>1. What POP-3 servers do you recommend (NFS)?</b></a>
+
+First and foremost NCD recommends Z-POP because of its robust POP-3
+capabilities and enhances features for dealing with synchronization, remote
+preferences and configuration.  Z-POP is free and can be found at:
+
+<a href="ftp://ftp.ncd.com/pub/z-code/supported/z-pop/current/">ftp://ftp.ncd.com/pub/z-code/supported/z-pop/current</a>
+
+We also recommend the University of Washington's iPOP3d server, which is
+currently contained as a subset of the IMAP sources at:
+
+<a href="ftp://ftp.cac.washington.edu/imap/">ftp://ftp.cac.washington.edu/imap/</a>
+
+      <a name="VB2"><b>2. What is Mailbox Synchronization?</b></a>
+
+Z-Mail synch is a feature of the interaction that is possible between Z-Mail 
+for Windows 4.0 and the Z-POP mail server. A better explaination that space 
+allows for here are available from both:
+
+<a href="http://www.ncd.com/Z-Code/zproducts/wp-synchronization.html">http://www.ncd.com/Z-Code/zproducts/wp-synchronization.html</a>
+<a href="ftp://ftp.ncd.com/pub/z-code/supported/doc/windows/sync.doc">ftp://ftp.ncd.com/pub/z-code/supported/doc/windows/sync.doc</a>
+
+      <a name="VB3"><b>3. Do you support IMAP?</b></a>
+
+IMAP support is planned for future releases of Z-Mail.
+
+      <a name="VB4"><b>4. What alternatives to POP-3 do you support?</b></a>
+
+If you want to install Z-Win on another system and have it work with an
+NFS-mounted spool folder all you'll need to do is go through a standard
+SETUP and afterward make the following changes:
+
+1. In Z-Mail 4.0 use the Login's Setup dialog to set your Incoming Mail's 
+   "Inbox file name:" to the full path and file of your NFS-mounted mail 
+   spool: "DRIVE:\PATH\TO\UNIX\SPOOLDIR\FILE"
+
+2. Turn off the "Download new mail when connecting" option in the Login's 
+   Setup dialog "Incoming Mail" section.
+
+3. Edit your C:\ZMAIL\USERS\$USER\ZMAIL.RC file to add the entry:
+
+   ###################
+   # sets use_pop to 
+   # the number zero 
+   # for NFS-mounting
+   set use_pop=0
+   ###################
+
+4. That's it!
+
+      <a name="VB5"><b>5. How do I set up a vacation filter?</b></a>
+
+NCD suggests using host-based vacation filters.  See also:
+
+	<a href="http://www.wsr.ac.at/cgi-bin/man/vacation/1#sect0">http://www.wsr.ac.at/cgi-bin/man/vacation/1#sect0</a>
+
+      <a name="VB6"><b>6. Why does Z-Mail download duplicates of all my email?</b></a>
+
+You can keep your mail on your mail host (not on your PC) if you set the
+pop_options variable to the value preserve (not all POP-3 servers support this
+functionality).
+
+If you set this variable and still receive duplicate copies of each message,
+your POP-3 server does not support the "last" command, used to preserve mail.
+Both the University of Washington's iPOP3d Server and Z-Code Software's Z-POP
+server support the full POP-3 feature set, including "last".
+
+If you wish, you may disable mail preservation entirely by unsetting the
+pop_options variable and removing lines beginning with POP_OPTIONS= from
+C:\WINDOWS\ZMAIL.INI and C:\ZMAIL\$USER\$USER.INI.
+
+      <a name="VB7"><b>7. What is a pop_dropcopy ERROR?</b></a>
+
+The Z-POP config file contains a number of directives that should be set by 
+your site's system administrator.  In the casee of a pop_dropcopy ERROR the 
+SPOOL directive could be pointing to an incorrect location.  It is also 
+important to note that Z-POP should be setgid the same as the mail spool 
+directory:
+
+% ls -ld /var/mail
+drwxrwxr-x   3 root   mail           512 Sep 21 17:10 /var/mail/
+
+% ls -l zpop
+-rwxr-xr-x   1 root     bin        24081 Sep 21 16:51 zpop
+
+% chgrp mail zpop
+% chmod 2755 zpop
+% ls -l zpop
+-rwxr-sr-x   1 root    mail        24081 Sep 21 16:51 zpop
+
+
+      <a name="VB8"><b>8. What is the init_check option for POP-3?</b></a>
+
+The init_check option found in the "pop_options" variable listing is used for 
+checking the user's email when starting a Z-Mail session, or when entering 
+"connected mode".  This option cannot be set from the variables list, and is 
+instead set from the login's setup dialog, under Incoming Mail as the 
+"Download new mail when connecting" option.  Turning this off is useful if 
+you are using NFS to mount your mail spool, connecting via Z-POP Synch, or 
+are just plain interested in getting into Z-Mail a little quicker.
+
+      <a name="VB9"><b>9. Why are my "Quick Check" synch scenerios greyed out?</b></a>
+
+Because synchronization scenarios are potentially destructive or can cause
+message duplication, we try to create an environment where things are set up
+properly for the user - for example, one does not want generally want to use
+POP and Sync simultaneously unless one is really paying attention to what
+they're doing.  In the case of Quick Sync, the  scenarios were designed to be
+used as a complete set: Check out, get new mail via sync, and check back in.
+So, we disabled the Quick Sync options on the menu if get mail via sync is not
+enabled (pop_options=use_sync).
+
+All sync scenarios are available through the "other scenarios" menu at all
+times.
+
+     <a name="VB10"><b>10. Why does some of my new mail show up out of order after a synch?</b></a>
+
+Z-POP client / server code doesn't request / send messages in order by date.
+This results in users sometimes getting new mail out of order.  (The sort
+stuff only exists in zmenu_qs_checkout.)  This Z-Script function should be
+useful to users who would like to defined sort criteria.  Cut and paste into
+your ZMAIL.RC file:
+
+####################
+# The following two functions and two interpose commands sort new mail
+# delivered via a synchronization scenario according to the value of
+# $sort (if set) or by date sent.
+
+function presort() {
+    set __sort_count = $(%t)
+}
+
+function newsort() {
+    # Don't sort empty folder
+    if $(%t) == 0
+	return 0
+    endif
+
+    # Define "new mail" as "folder has more messages than before"
+    if $(%t) <= $__sort_count
+	return 0
+    endif
+
+    if $?sort
+	sort $sort
+    else
+	sort -d
+    endif
+    if $?newmail_scroll
+	:n | redraw
+    endif
+}
+
+interpose -before zpop_sync presort
+interpose -after zpop_sync newsort
+####################
+
+     <a name="VB11"><b>11. What is a "pop_stat" error, and how do I get around it?</b></a>
+
+To get around a pop_stat error, which occurs when Z-Mail and Z-POP use
+synch to create a temporart maildrop that is so big it tiimes out a serial 
+setting, we  recommend bumping the value of the IOTimeoutSeconds (Serial 
+Read/Write Timeout (secs) in the Setup UI) from 30 to 60 (or more) seconds.
+
+      <a name="VB12"><b>12. What is a "ZHB2" error?</b></a>
+
+This results when a user is attempting to synchronize mail between Z-Mail and 
+an older version of Z-POP (or a generic POP-3 server) that does not support 
+this feature.
+
+   <a name="VC"><b>C. Sending Email</b></a>
+
+      <a name="VC1"><b>1. What is a "SMTP error - connection refused"?</b></a>
+
+This can happen when Z-Mail tries to start a SMTP session with a bad PC
+hostname, which the SMTP server does not recognize.  Check your login's setup 
+screen to verify that your PC hostname is set correctly.  This information 
+can be stored in the form "ZMHOST=hostname" in your $USER.INI file.
+
+      <a name="VC2"><b>2. How do I save a copy of my outgoing email?</b></a>
+
+Setting the "record" variable will create a file for copies of your outgoing
+email.
+
+      <a name="VC3"><b>3. Do you support UUCP (UUPC)?</b></a>
+
+Not offically.  Z-Mail 4.0 now has asynch serial support, negating the need 
+for UUPC/UUCP based mail transfer, though the Z-Script hooks that were used 
+in Z-Mail for Windows 3.2x still work in 4.0.  Also, keep in mind that UUPC's 
+paradigm requires that only one user access Z-Mail on a given PC, and it 
+should not be used in multiple-user configurations.
+
+
+Installing UUPC/extended on your PC for use with Z-Mail for Windows
+-------------------------------------------------------------------
+
+Obtain the latest release of uupcx from:
+
+         <a href="ftp://ftp.z-code.ncd.com/pub/z-code/unsupported/windows/uupc/">ftp://ftp.z-code.ncd.com/pub/z-code/unsupported/windows/uupc/</a>
+
+To install UUPC/extended on a PC to set up a uucp e-mail connection between
+a UNIX host and your PC follow these steps...
+
+        01) Make a directory c:\uupc
+        02) Copy the file uupcx12.zip into c:\uupc
+        03) Extract with 'pkunzip -d uupcx12.zip'
+        04) Add this line to autoexec.bat...
+                if exist c:\uupc\uupc-set.bat call c:\uupc\uupc-set.bat
+        05) Add c:\uupc\bin to the search path set in autoexec.bat
+        06) Change the directory c:\uupc\home\jcole to your e-mail name
+        07) Edit the file c:\uupc\systems for your UNIX host connection
+        08) Edit c:\uupc\uupc.rc and c:\uupc\home\yourname\uupc.rc
+            appropriately for your environment
+        09) Edit c:\uupc\uupc-set.bat and change 'jcole' to your e-mail
+            name as in 6 and 7 above. Also change the timezone setting
+            if you're not on the US West Coast timezone.
+        10) Edit c:\uupc\bin\uudial.bat and change the system name
+            (after the '-s') to the name of the UNIX system your PC
+            connects to for e-mail.
+
+Connecting from your PC to a UNIX Mail Host
+-------------------------------------------
+
+The file UUDIAL.BAT is what you run to invoke a connection with your UNIX
+uucp host to send e-mail messages you've queued up and receive mail queued 
+up for you on the UNIX side. Three things execute when UUDIAL.BAT is run.
+
+The first thing called in UUDIAL.BAT is the UUCICO.EXE program, which
+is what connects the PC to the UNIX uucp host and exchanges e-mail and/or
+files. The 'r' parameter specifies 'Master' role <you initiate the call>, 
+and the 'x' parameter specifies the debugging level <goes to stdout and 
+also to c:\uupc\spool\uucico.log>. The 's' parameter specifies the uucp
+system to connect to.
+
+After UUCICO.EXE finishes UUXQT.EXE is invoked to deliver mail in the
+uupc queue to local uupc mailboxes in C:\UUPC\MAIL.
+
+Lastly a program provided by Z-Code named NEWMAIL.EXE is invoked to
+process mail delivered to a uupc mailbox and append it to it's Z-Mail
+mailbox counterpart. Newlines in the uupc-delivered mail folder consist
+of CRLF pairs, and NEWMAIL converts these to LF's only. As well any
+Ctrl-A delimters are stripped. This is necessary as Z-Mail for Windows
+parses files in a particular fashion to establish MIME body part 
+boundaries, and the CRLF pairs confuse that process.
+
+If you want to invoke UUDIAL.BAT from within Windows you should use the
+UUDIAL.PIF (Program Information File) file. You may add this to a Program
+Manager group. It will execute in the background in a small DOS window
+which can be iconified if you like.
+
+As well UUDIAL.PIF can be invoked from a running Z-Mail for Windows by
+invoking the Z-Script command
+
+        sh -iconic UUDIAL.PIF
+
+from either the command line in the main window or by defining a button
+to call that command when clicked. In either case the uucp connection will
+be executed from within an iconized DOS window which will run in the
+background unobtrusively.
+
+Lastly in order to have UUDIAL.PIF called periodically from Z-Mail for
+Windows while it is up and running place the following function and
+variable definitions in either the global Z-Mail system initialization
+file (SYSTEM.RC in the Z-Mail lib directory) or in your personal
+Z-Mail initialization file (ZMAIL.RC in your Z-Mail home directory). 
+The unit of time specified for 'fetch_timeout' is in minutes. It's
+value denotes how often the fetch_mail_hook() function will be called.  The 
+use_pop variable can also be set to 0 (zero) and will enable you to check mail
+without using POP-3.
+
+function fetch_mail_hook() {
+    sh -iconic uudial.pif
+}
+set fetch_timeout=15
+set use_pop=0
+
+Setting up a UUCP account on the UNIX Side
+------------------------------------------
+
+On the UNIX host which serves as a mail relay there are basically four
+files (on a Sun BSD system) which have to be edited. They are...
+
+        /etc/uucp/Systems       ...when to allow uucp connections
+        /etc/uucp/Permissions   ...what to do when connecting
+        /etc/passwd             ...account info including password
+        /etc/sendmail.cf        ...specify PC as a uucp connection for mail
+
+
+A few other things you should know
+----------------------------------
+
+The O'Reilly & Associates book "Managing UUCP and Usenet" is an excellent 
+general reference. Well worth the money. 
+
+The file in the top level uupc directory named HOWTOGET.TXT is from the
+original UUPC/extended distribution, and explains where to get the latest
+version of UUPC/extended on the Internet and other places. 
+
+This zip'd up version of UUPC/extended 1.12 is provided merely to facilitate
+implementation by those who may not be familiar with setting up UUPC from
+scratch. I highly encourage anyone interested in getting the original
+complete distribution of UUPC/extended to consult HOWTOGET.TXT. Source
+code for UUPC/extended is also available in the complete distribution.
+
+      <a name="VC4"><b>4. Do you support PGP (Pretty Good Privacy) for email encryption?</b></a>
+
+Yes.  Several Z-Scripts have been penned by our user community for the Windows
+line of products.  NCD Software is also currently working with several vendors
+for Z-Script integration with encryption software.  Please discuss the terms
+of PGP availability with your NCD sales representative or qualified NCD
+reseller.
+
+The PGP Authorization Form can be found at: 
+
+<a href="http://bs.mit.edu:8001/pgp-form.html">http://bs.mit.edu:8001/pgp-form.htm</a>
+
+Scripts for integrating PGP with ZMail:
+
+Author: Guy Berliner 
+<a href="ftp://ftp.netcom.com/pub/be/berliner/readme.html">ftp://ftp.netcom.com/pub/be/berliner/readme.html</a>
+<a href="ftp://kaiwan.com/user/mckinnon/pgp4zm.zip">ftp://kaiwan.com/user/mckinnon/pgp4zm.zip</a>
+
+      <a name="VC5"><b>5. How do I avoid loosing email with bad addresses?</b></a>
+
+To avoid losing mail after mistyping an address and getting an SMTP error,
+set picky_mta += precheck.  This option is set by default in Z-Mail 4.0.
+
+   <a name="VD"><b>D. Filtering Email</b></a>
+
+       <a name="VD1"><b>1. How come my autoreply only works on the first filtered message?</b></a>
+
+There is a slight discrepancy in the zmfilter_reply function:  You will need 
+to edit the function (located in C:\ZMAIL\LIB\SYSTEM.RC so that it looks 
+like this:
+
+	function zmfilter_reply() {
+	    foreach m $input 'msg_list - $m ; zmfilter_reply_each $1;'
+	}
+
+
+NOTE: There needs to be a trailing ';' to reset the status for the foreach 
+      loop.
+
+<a name="VI"><b>VI. Graphical User Interface</b></a>
+
+   <a name="VIA"><b>A. Where did all my Z-Mail 3.21 buttons go when I upgraded?</b></a>
+
+Most of the buttons seen as defaults in Z-Mail 3.21 are now commented out in
+Z-Mail 4.0.  This was done to remove duplication between the Toolbar and the 
+Button Panel. All you need top do is edit the C:\ZMAIL\LIB\ZMAILMNU.RC file 
+and uncomment the buttons you want.
+
+   <a name="VIB"><b>B. Where did all my Z-Mail 3.21 toolbar items go when I upgraded?</b></a>
+
+These are also commented out in the C:\ZMAIL\LIB\ZMAILMNU.RC file.  This was 
+done to remove duplication between the Toolbar and the Button Panel. 
+
+   <a name="VIC"><b>C. How do I use one of my own icons or bitmaps to the toolbar?</b></a>
+
+The default icons use 24x24 bitmaps. If your bitmap is smaller or larger
+than 24x24, it will not be centered on the toolbar button. There are four
+toolbars.  At the command line or resource file, specify which
+toolbar to which you want to add an icon.
+
+button -B MainFrameToolbar
+button -B MainChildToolbar
+button -B MessageChildToolbar
+button -B ComposeChildToolbar
+
+You may not use external bitmaps in the text button panels.  Enter the button
+command following the syntax in the online help.  After the '-icon' option,
+enter the full path to the ICO or BMP file.  For example:
+
+button -n -name connect	 -label 'Connect/Disconnect' -icon
+'c:\zmail\icons\discon.ico'  -on-icon
+'c:\zmail\icons\connect.ico' -value '$?connected'
+
+button -n -name create -label 'Create New'  -icon 'c:\zmail\icons\compose.bmp' mail
+
+   <a name="VID"><b>D. Where can I find a listing of Z-Mail for Windows toolbar icons?</b></a>
+
+Note: To change a toolbar icon definition, with the size defined as "medium",
+all you need to add is: ADDRBOOK_BMP instead of the full name: MD_ADDRBOOK_BMP.
+
+///////////////			////////////////
+//				//
+// Small Bitmap			// Medium Bitmap
+//				//
+				
+SM_ADDRBOOK_BMP			MD_ADDRBOOK_BMP
+SM_ALIAS_BMP			MD_ALIAS_BMP
+SM_ATTACH_BMP			MD_ATTACH_BMP
+SM_ATTACH_TB_BMP		MD_ATTACH_TB_BMP
+SM_CANCEL_TB_BMP		MD_CANCEL_TB_BMP
+SM_CLOSE_TB_BMP			MD_CLOSEFOLDER_BMP
+SM_COMPOSE_BMP			MD_CLOSE_TB_BMP
+SM_CONNECT_TB_BMP		MD_COMPOSE_BMP
+SM_COPY_TB_BMP			MD_CONNECT_TB_BMP
+SM_CUT_TB_BMP			MD_COPY_TB_BMP
+SM_DATES_BMP			MD_CUT_TB_BMP
+SM_DELETE_TB_BMP		MD_DATES_BMP	
+SM_DISCONNECT_TB_BMP		MD_DELETE_TB_BMP
+SM_ENVELOPE_BMP			MD_DISCONNECT_TB_BMP
+SM_FILTERS_BMP			MD_ENVELOPE_BMP
+SM_FINDER_BMP			MD_FILTERS_BMP
+SM_FUNCTIONS_BMP		MD_FINDER_BMP
+SM_FWD_TB_BMP			MD_FUNCTIONS_BMP
+SM_GETMAIL_TB_BMP		MD_FWD_TB_BMP	
+SM_HEADERS_BMP			MD_GETMAIL_TB_BMP
+SM_HELP_BMP			MD_HEADERS_BMP
+SM_INCLUDE_TB_BMP		MD_HELP_BMP	
+SM_MAIL_BMP			MD_INCLUDE_TB_BMP
+SM_NEWMAIL_BMP			MD_LAPTOP_BMP
+SM_NEXT_TB_BMP			MD_MAIL_BMP
+SM_OPEN_BMP			MD_NEWMAIL_BMP
+SM_PASTE_TB_BMP			MD_NEXT_TB_BMP
+SM_PINUP_BMP			MD_OPEN_BMP
+SM_PREV_TB_BMP			MD_PASTE_TB_BMP
+SM_PRINTER_BMP			MD_PINUP_BMP
+SM_READ_BMP			MD_PREV_TB_BMP
+SM_REPLYALL_TB_BMP		MD_PRINTER_BMP	
+SM_REPLY_TB_BMP			MD_READ_BMP
+SM_REPL_BMP			MD_REPLYALL_TB_BMP
+SM_SAVE_TB_BMP			MD_REPL_BMP
+SM_SEARCH_BMP			MD_SAVE_TB_BMP
+SM_SEND_TB_BMP			MD_SEARCH_BMP
+SM_SERIAL_TB_BMP		MD_SEND_TB_BMP	
+SM_SORT_BMP			MD_SERIAL_TB_BMP
+SM_SPELL_BMP			MD_SORT_BMP
+SM_SRCH_BMP			MD_SPELL_BMP
+SM_TEMPLATES_BMP		MD_SRCH_BMP	
+SM_UNDELETE_TB_BMP		MD_TEMPLATES_BMP	
+SM_UPDATE_TB_BMP		MD_UPDATE_TB_BMP	
+SM_VARIABLES_BMP		MD_VARIABLES_BMP	
+
+   <a name="VIE"><b>E. How do I "pinup" my MDI Child windows Z-Mail 4.0?</b></a>
+
+In each MDI Child Toolbar definition in the C:\ZMAIL\LIB\ZMAILMNU.RC there 
+are remarked references to the "Pinup" button.  All you need to do is uncomment
+these definitions to use the pinup command.  This operation will be enhanced in
+future versions of Z-Mail, and is not highly recommended.
+
+   <a name="VIF"><b>F. I have a laptop.  How can I set Z-Mail 4.0 to 640x480?</b></a>
+
+In your C:\ZMAIL\LIB\ZMAILMNU.RC file, uncomment out the line:
+
+#button -n -name laptop -label 'Laptop' -icon laptop_bmp 'laptop'
+
+   <a name="VIG"><b>G. How do I paste addresses into a Z-Mail 4.0 compose "To:" field?</b></a>
+
+Z-Mail for Windows 4.0 uses the standard "Shift+Ins" to paste into all 
+editable composition fields.  Z-Mail also supports the standard 
+"Crtl+Insert" for copying.
+
+   <a name="VIH"><b>H. How do I start Z-Mail minimized?</b></a>
+
+Z-Mail 4.0 now remembers window states between sessions.  In order to start
+ Z-Mail in minimized state each time, add the following function to your
+zmail.rc:
+
+ function exit_hook() {
+    iconify
+ }
+
+This will ensure that you iconify Z-Mail before exiting each session, and
+Z-Mail
+will remember this state the next time you start the program.
+
+Note:  There is a known bug related to this feature.  When you restore Z-Mail's
+window size, space is not distributed correctly within and between panes.
+
+   <a name="VIi"><b>I. How do I bypass the Z-Mail login dialog?</b></a>
+
+Z-Mail 4.0 allows you to bypass the login screen.  Note that you may only
+bypass the login screen if you store your user password.  This may be an
+unacceptable security risk at some sites.
+
+1) In Z-Mail's installation program, set the toggle that allows users to store
+encrypted passwords.
+
+2) In the Z-Mail User Setup dialog, select the store password option from the
+User Information pane.
+
+3)  Enter your password in the Login dialog, and click Connect.  Your password
+is now encrypted and stored in your $user.ini.  Quit Z-Mail.
+
+4) Hand-edit the [Environment] section of your $user.ini to include the line:
+StartOffline=False
+
+5) In program manager, create an icon with the command line:
+c:\zmail\zmail16.exe @c:\zmail\users\yourname\yourname.ini
+
+where "c:\zmail\zmail16.exe" is the full path to the Z-Mail executable and
+"c:\zmail\users\yourname\yourname.ini" is the full path to your $user.ini file.
+Note that there is no space after the @ and the path to the ini file.
+
+6) Double click on the icon you have created.  Z-Mail should not display the
+login dialog, but go straight to the Main Summaries window.
+
+   <a name="VIJ"><b>J. How do I save an alias after changing it?</b></a>
+
+After modifying an alias through the alias dialog, remember to click on 
+the "Define Alias" button, or the current state will not be saved.
+
+   <a name="VIK"><b>K. Why doesn't Z-Mail remember my printer setup?</b></a>
+
+Z-Mail uses the same printer setup API that other applications, like "Notepad"
+use, and therefor it falls into some of that API's limitations.  The most 
+common example is the default setup is always reset to whatever the control 
+panel is set to, and not the most recent settings within Z-Mail.
+
+   <a name="VIL"><b>L. Can I use the Address Browser offline?</b></a>
+
+Yes.  There is currently an unsupported Offline Address Browser that works 
+only with Z-Mail 4.0 and the Z-Mail MAPI.DLL.  It can be found in:
+
+<a href="ftp://ftp.z-code.ncd.com/pub/z-code/unsupported/windows/Visual_Basic/Browser/">ftp://ftp.z-code.ncd.com/pub/z-code/unsupported/windows/Visual_Basic/Browser/</a>
+
+The files in this directory show how to use the MAPIRunScript
+function (in the Z-Code MAPI.DLL) in a Visual Basic application.
+
+To use...
+
+	1) Make sure you have a copy of VBRUN100.DLL in the
+	   \WINDOWS directory on your PC.
+
+	2) Source the z-script file "EXBROWSE.ZSC" in the
+	   $ZMLIB\SYSTEM.RC file on your PC.
+
+	3) Make sure you're running a beta version of Z-Win
+	   4.0 (earlier known as 3.3), and that you have the
+	   Z-Code MAPI.DLL in the ...\WINDOWS\SYSTEM directory
+	   on your PC.
+
+The MAPIRunScript function provides a way for an external MAPI-aware
+Windows app to pass arbitrary z-script to Z-Win. This is a very 
+powerful hook, and the included test application, BROWSER.EXE, created
+with Visual Basic v1.0, demonstrates the hook as it might be used
+from an external directory service browser program to pass an e-mail
+address to Z-Win. 
+
+Since Z-Win can't make use of the address_book hook while in
+disconnected mode the VB browser can be used to provide access to a
+local flat file directory for Z-Win when in disconnected mode.
+
+A few things to know...
+
+	The BROWSER.EXE file assumes there will be a flat file
+	directory named ADDRESS.TXT in the same directory it
+	is located in.
+
+	The format for user entries in ADDRESS.TXT is...
+
+		Descriptive info|&&|e-mail address
+
+	This is hard coded but may be changed in the VB source files (which
+	are included in the ZIP file). The string |&&| which is embedded in
+	a user 'record' corresponds to setting lookup_sep to the same string
+	when using the built in Z-Win online browser. This will provide for
+	using e-mail addresses which contain spaces (comments).
+
+	Any lines in ADDRESS.TXT which begin with a "#" will be treated as
+	comments, and any lines which do not contain the separator string
+	"|&&|" will not be considered user record lines. This allows for
+	ADDRESS.TXT to be managed by ZPOP central config capability,
+	assuming you're willing to keep BROWSER.EXE in $ZMLIB (the browser
+	and the address file must be in the same directory).
+
+	One undocumented feature is that if you leave the pattern field blank
+	and click the Search button *all* of the valid user entries in
+	ADDRESS.TXT will populate the match list box.
+
+   <a name="VIM"><b>M. How can I view uuencoded inclusions in Z-Mail 3.2?</b></a>
+
+If a file has actually been "included" into the message body, as some 
+mailers will do, then Z-Mail 3.2 will not treat it as an attachment.  
+You will need to Z-Script around this to detach these "inclusions:"
+
+	##############################
+	# Place in your zmail.rc file
+	#
+	# Function to uudecode files
+	# included in the body of a
+	# mail message, not attached.
+	# Requires a dos UUDECODE.EXE
+	##############################
+	function uudecode_inclusion {
+	 compcmd save-to-file c:\temp\ztemp.uue
+	 sh uudecode c:\temp\ztemp.uue
+	 sh del c:\temp\ztemp.uue
+	}
+	#
+	button -window message UUdecode uudecode_inclusion
+	##############################
+
+<a name="VII"><b>VII. Z-Script, Filters, Functions</b></a>
+
+   <a name="VIIA"><b>A. Where can I learn about Z-Script?</b></a>
+
+Currently, the "Z-Script Cookbook" provides the most definitive guide on the 
+in's and out's of Z-Script.  It contains a reference guide for all commands 
+and variables on each supported platform, as well as an in-depth tutorial 
+on how to get started.
+
+The Z-Script Cookbook can be found at:
+
+	ftp://ftp.ncd.com/pub/z-code/supported/doc/zscript
+
+Z-Mail for Windows / Z-Script References can be found at:
+
+	ftp://ftp.ncd.com/pub/z-code/supported/doc/windows
+
+   <a name="VIIB"><b>B. How can I get Z-Mail to automatically run filters and
+      open folders during startup?</b></a>
+
+By utilizing a startup_hook function in your personal C:\ZMAIL\$USER\ZMAIL.RC,
+which is the same as $HOME\ZMAIL.RC in 4.0.
+
+  function startup_hook() {
+      close #0
+      open -filter $mail
+      open +folder1
+      open -filter +folder2
+      folder %
+  }
+
+   <a name="VIIC"><b>C. What other automatic "hook" functions are available?</b></a>
+
+Z-Mail 4.0 supports three automatic hook functions:
+
+startup_hook
+send_mail_hook
+exit_hook
+
+   <a name="VIID"><b>D. What happens to my zmail.rc file when I upgrade?</b></a>
+
+Nothing happens to your old ZMAIL.RC file.  The old $USER directory structure
+is maintained during the upgrade, so that the user can edit their custom .RC
+files and place them into the new C:\ZMAIL\USERS\$USER directory.
+
+<a name="VIII"><b>VIII. Other Sources of Information</b></a>
+
+   <a name="VIIIA"><b>A. Where can I find additional info on Z-Mail for Windows?</b></a>
+
+Offical documentation in both PostScript and .pdf formats, as well as online 
+hypertext, on the following subjects can be found at:
+
+		    <b>---- Z-Mail for Windows ----</b>
+<i>Install Guides</i>
+3.21	<a href="http://www.ncd.com/Z-Code/zsupport/win321-install.html">http://www.ncd.com/Z-Code/zsupport/win321-install.html</a>
+4.0	<a href="http://www.ncd.com/Z-Code/zsupport/win4000-install.html">http://www.ncd.com/Z-Code/zsupport/win4000-install.html</a>
+	<a href="ftp://ftp.ncd.com/pub/z-code/supported/doc/windows/zwin40ig.pdf">ftp://ftp.ncd.com/pub/z-code/supported/doc/windows/zwin40ig.pdf</a>
+
+<i>User Guides</i>
+4.0	<a href="ftp://ftp.ncd.com/pub/z-code/supported/doc/windows/userguid.pdf">ftp://ftp.ncd.com/pub/z-code/supported/doc/windows/userguid.pdf</a>
+
+<i>Synchronization</i>
+WWW	<a href="http://www.ncd.com/Z-Code/zproducts/wp-synchronization.html">http://www.ncd.com/Z-Code/zproducts/wp-synchronization.html</a>
+FTP	<a href="ftp://ftp.ncd.com/pub/z-code/supported/doc/windows/sync.doc">ftp://ftp.ncd.com/pub/z-code/supported/doc/windows/sync.doc</a>
+
+<i>Info on Windows TCP/IP</i>
+WWW	<a href="http://www.rtd.com/pcnfsfaq/faq.html">http://www.rtd.com/pcnfsfaq/faq.html</a>
+
+		       <b>---- Z-POP Server ----</b>
+<i>Z-POP Server</i>
+1.0	<a href="http://www.ncd.com/Z-Code/zsupport/pop-install.html">http://www.ncd.com/Z-Code/zsupport/pop-install.html</a>
+
+			<b> ---- Z-Script ----</b>
+<i>Z-Script Cookbook</i>
+FTP	<a href="ftp://ftp.ncd.com/pub/z-code/supported/doc/zscript/Cookbook.pdf">ftp://ftp.ncd.com/pub/z-code/supported/doc/zscript/Cookbook.pdf</a>
+
+			   <b>---- Misc. ----</b>
+<i>Adobe Acrobat (.pdf viewer)</i>
+WWW	<a href="http://www.adobe.com/Acrobat/AcrobatWWW.html">http://www.adobe.com/Acrobat/AcrobatWWW.html</a>
+
+WWWeb searches constantly turn up new, private Z-Mail support pages, though 
+I recommend highly the comp.mail.zmail newsgroup for beginning and advanced 
+user community support. 
+
+Also, the newsgroups comp.mail.mime and comp.mail.zmail are archived
+at NCD and will be maintained as a public service to the electronic
+messaging community.
+
+	<a href="ftp://ftp.z-code.com/pub/usenet/comp.mail.mime">ftp://ftp.z-code.com/pub/usenet/comp.mail.mime</a>
+	<a href="ftp://ftp.z-code.com/pub/usenet/comp.mail.zmail">ftp://ftp.z-code.com/pub/usenet/comp.mail.zmail</a>
+
+The first of these is a large collection of messages posted to
+comp.mail.mime, it has well over six thousand articles dating
+back as far as December of 1992, although there may still be some
+gaps.
+
+The second archive is a complete collection of messages posted to
+comp.mail.zmail.  This archive is much smaller, since that group is
+much younger, but it should contain every article posted to the group
+since the day it was born.
+
+New articles are merged into the existing archives daily.  Articles
+are archived three ways in three directories:
+
+    number/
+
+        This directory holds every article in the archive.  Each
+        article appears in its own sequentially-numbered file.  The
+        entire directory looks like one huge MH-format mail folder.
+        The oldest article is named "1", followed by "2", "3", and so
+        on.
+
+    month/
+
+        This directory holds one small archive for each month and year
+        of the newsgroup.  Each monthly archive is in its own
+        subdirectory, named using a pattern of "yymm".  So all
+        articles from January, 1995 would be found in the directory
+        named "month/9501/".
+
+        Within each month's subdirectory, each article appears in an
+        individual file whose name is a number.  The numbers will not
+        be strictly sequential though -- rather, they will match up
+        with the same numbers used in the "number/" directory.  So if
+        a grand total of six thousand articles had been archived by
+        the end of one month, the next month's archive will start with
+        an article named "6001".
+
+        You can also download an entire month's worth of articles at
+        once, as a tar archive.  Just add ".tar" to the end of any
+        subdirectory name, such as "month/9501.tar", and get that as
+        though it were a file.  The entire contents of that directory
+        will be streamed to you as a single tar archive.  You can also
+        use ".tar.Z" or ".tar.gz" to speed things up if you have
+        decompression tools.
+
+    subject/
+
+        This directory is also split into subdirectories, each with
+        its own small archive.  Here, articles are grouped by subject.
+        The name of each subdirectory is the same as the subjects of
+        all the articles in that directory.  Again, the individual
+        articles are named using the same numbers found in the
+        "number/" directory.
+
+        For example, if article number/23 has the subject:
+
+            MIME and Z-Mail
+
+        And if number/27 was a followup, with the subject:
+
+            Re: MIME and Z-Mail
+
+        The archiver will clean off the "Re:", and those two articles
+        will also be found as:
+
+            subject/MIME and Z-Mail/23
+            subject/MIME and Z-Mail/27
+
+        Again, you can also download an entire subject's worth of
+        articles at once, as a tar archive.  Just add ".tar",
+        ".tar.Z", or ".tar.gz" to the end of any subdirectory name,
+        and get that as though it were a file.  The entire contents of
+        that directory will be streamed to you as a single tar
+        archive.
+
+</pre>
+
+<HR>
+<address><a href="mailto:support@z-code.com">support@z-code.com</a></address><p>
+<a href="zsupport.html">
+<img src="../images/zslacker.gif"></a>
+<a href="../zcode.html">
+<img src="../images/zcode.gif"></a>
+<a href="../../welcome.html">
+<img src="../images/corp_small_icon.gif"></a><p>
+[<a href="zsupport.html">Z-Support</a>] [<a href="../zcode.html">Z-Code</a>] [<a
+ href="../../welcome.html">NCD</a>]
+<h6>COPYRIGHT 1994 Network Computing Devices , Inc.</H6>
+</BODY>

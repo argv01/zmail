@@ -1,0 +1,179 @@
+<HTML>
+<HEAD>
+<TITLE>Character Set UI</TITLE>
+<BODY BGCOLOR="#FFFFFF">
+<H1>Character Set UI</H1>
+<ADDRESS>David Hartman</ADDRESS>
+<P>
+<H3>Reading Messages</H3>
+<P>
+When read, a message containing a known MIME character set definition will have
+that character set mapped into the character set defined in the variable
+<tt>display_charset</tt> for display only.  This mapping occurs every time the
+message is read.
+<P>
+If a message does not contain a character set specification, or if the
+specified character set is not a valid MIME identifier, it will be assumed to
+be in the character set defined in the variable <tt>incoming_charset</tt>.
+<P>
+If the message contains a valid but unknown MIME character set definition, no
+mapping is performed.
+<P>
+<H3>Modifying Displayed Messages</H3>
+<P>
+There is a new menu item in the <I>[Message/View]</I> menu called ``Character
+Set...'' This menu is only available when 1) a message window is open and
+front-most, 2) there is at least one translation table available.
+<P>
+Selecting this menu when the message has a valid but unknown MIME character set
+definition results in a error dialog:
+<blockquote><samp>
+Can't change the character set for this message<br>
+because it uses an unknown character set: %s.
+</blockquote></samp>
+Where the <tt>%s</tt> will be the MIME character set identifier.
+<P>
+Selecting this menu opens a modal dialog (similar to an <tt>ask -list</tt>)
+that lists the available character sets and the special case of <tt>None.</tt>
+The user can then select one of the choices and click OK, or double-click a
+choice, and the front-most message window's body text is mapped into the
+selected character se.  If <tt>None</tt> is selected as the character set, the
+original text is displayed ``as is'' with no mapping applied to it.
+<P>
+The user selected character set is only used while that message is displayed.
+This is a serious limitation, one which users will definitely notice.  Ideally,
+changes to messages' character sets would become part of the message structure,
+so it would persist through and across Z-Mail sessions.
+See <A HREF="#future">Future</A> below.
+<P>
+<H3>Screen Fonts</H3>
+<P>
+On systems where fonts can be or are required to change when changing character
+sets, Z-Mail will change the font on the fly.
+<P>
+<H3>Printing Messages</H3>
+<P>
+When messages are printed, if the character set of the message is known, the
+text is mapped onto the character set defined in the <tt>printer_charset</tt>
+variable.  If the character set is valid but unknown, then the data is printed
+as is.  If a message is currently displayed in a message window and the display
+character set has been overridden by the ``Character Set...'' menu and dialog.
+In this case, the user-selected character set overrides the
+<tt>printer_charset</tt> set for the printing of that message.
+<P>
+<H3>Saving</H3>
+<P>
+When saving messages, if the character set of the message is known, the text is
+mapped onto the character set defined in the <tt>printer_charset</tt> variable.
+The text is written to disk in the character set defined in the variable
+<tt>file_charset</tt>. If a message is currently displayed in a message window
+and the display character set has been overridden by the ``Character Set...''
+menu and dialog.  In this case, the user-selected character set overrides the
+<tt>file_charset</tt> set for saving that message.
+<P>
+<H3>Compositions</H3>
+<P>
+By default, outgoing mail is translated into the character set defined in the
+<tt>outgoing_charset</tt> variable.
+<P>
+There is a menu item in the Compose (Options on the Mac, Tools on Windows?)
+menu called ``Character Set...'' This menu item is available only when 1) a
+composition is the front-most window, 2) there is at least one translation
+table available.
+<P>
+Selecting this menu opens a dialog almost identical to the Message menu's
+``Character Set...'' item described above.  Only the prompt at the top of the
+dialog differs.  The composition is both translated and labelled with the
+selected character set at the time the message is sent.
+<P>
+Note: any messages which contains only us-ascii characters will be typed
+<tt>us-ascii</tt> regardless of the setting of the <tt>outgoing_charset</tt>.
+<P>
+<H3>Address Book</H3>
+<P>
+A new variable called <tt>lookup_charset</tt> defines the address server's
+character set.   If set, address data is translated from lookup_charset to
+display_charset before it is displayed in the address browser.  When unset,
+data received from the address server is not translated before it is displayed
+in the address browser.
+<P>
+<H3>Variables</H3>
+<P>
+<DL>
+<DT><tt>incoming_charset</tt>
+<DD>when unset defaults to <tt>us-ascii</tt>
+<DD>factory setting: <tt>us-ascii</tt>
+<DT><tt>outgoing_charset</tt>
+<DD>when unset defaults to <tt>iso-8859-1</tt>
+<DD>factory setting: <tt>iso-8859-1</tt>
+<DT><tt>display_charset</tt>
+<DD>when unset defaults to:
+<UL>
+<LI>Motif: <tt>iso-8859-1</tt>
+<LI>Windows: <tt>iso-8859-1</tt>
+<LI>Macintosh: <tt>x-Macintosh</tt>
+<LI>Lite: <tt>us-ascii</tt>
+<LI>CLI mode: <tt>us-ascii</tt>
+</UL>
+<DD>factory setting: same as above
+<DT><tt>printer_charset</tt>
+<DD>when unset defaults to: same as <tt>display_charset</tt>
+<DD>factory setting: same as <tt>display_charset</tt>
+<DT><tt>lookup_charset</tt>
+<DD>when unset defaults to <tt>us-ascii</tt>
+<DD>factory settings: <tt>us-ascii</tt>
+<DT><tt>file_charset</tt>
+<DD>when unset defaults to: same as <tt>display_charset</tt>
+<DD>factory setting: same as <tt>display_charset</tt>
+</DL>
+<P>
+<H3>Tables</H3>
+<P>
+The following conversion tables are to be supplied in the Z-Mail run-time
+library on all platforms.
+<P>
+<TABLE border="1" space="2">
+<TR><TH align="left">Desired Character Set
+	<TH>MIME Charset Name
+<TR><TD>Macintosh Latin character set 1
+	<TD><tt>apple-1</tt>
+<TR><TD>ASCII
+	<TD><tt>us-ascii</tt>
+<TR><TD>UK 7-bit character set
+	<TD><tt>iso-646-gb</tt>
+<TR><TD>Norwegian 7-bit character set
+	<TD><tt>iso-646-no</tt>
+<TR><TD>Croatian/Slovene 7-bit character set
+	<TD><tt>iso-646-yu</tt>
+<TR><TD>Latin-1 8-bit character set
+	<TD><tt>iso-8859-1</tt>
+<TR><TD>Latin-2 8-bit character set
+	<TD><tt>iso-8859-2</tt>
+<TR><TD>Latin-Cyrillic 8-bit character set
+	<TD><tt>iso-8859-5</tt>
+<TR><TD>Original IBM PC character set
+	<TD><tt>x-ibm-437</tt>
+<TR><TD>International IBM PC character set
+	<TD><tt>x-ibm-850</tt>
+<TR><TD>Swedish general de facto character set
+	<TD><tt>x-iso-646-se1</tt>
+<TR><TD>Swedish de facto character set for names
+	<TD><tt>x-iso-646-se2</tt>
+</TABLE>
+<P>
+<P>
+<H3><A NAME="future">Future</A></H3>
+<P>
+<I>Config UI</I> - new pane with popups to set the character set default
+variables.
+<P>
+Store changes to individual messages' character sets.
+<P>
+<I>Font/Language UI</I> - to select from the character sets that the
+workstation can support in addition to the charset sets that it can be
+translated into.  For example, Win95 allows you to change the LANG on the fly,
+so if you get a Russian message, you could just change the LANG and display it
+100% correctly rather than have it translated by C3 from Russian to the current
+LANG charset.
+</BODY>
+</HTML>

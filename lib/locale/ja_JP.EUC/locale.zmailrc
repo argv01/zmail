@@ -1,0 +1,367 @@
+# locale.zmailrc -- locale-specific init file information for Z-Mail
+# Copyright 1993-94 Z-Code Software, a Division of NCD.  All rights reserved.
+
+# Set the prompt to show current time, name of the current folder,
+# current message number, and count of total messages.
+
+set prompt="(%T) %f: #%m of %t> "
+
+
+# When you use the -i option to reply, or use the ~i tilde escape in a letter
+# when in compose mode, the current message will be included in your text.
+# Put a nice wrapper around those included messages.  Here, show the author's
+# name and the subject of his letter, label the end, and add a trailing blank
+# to separate each inclusion and make finding the end easier.
+
+set pre_indent_str='On %M %N, %T, %.50n wrote:\n> Subject: %.65s'
+set indent_str='> '	# actual message text is preceded by a ">"
+set post_indent_str='>-- End of excerpt from %.50n\n'
+
+
+# Set formats for status bars
+if ! is_lite
+    set main_status_bar_fmt = 'w6,s;w4,c,f%t 合計, %n 新規, %u 未読, %d 削除'
+    set comp_status_bar_fmt = 'w475,s;w125,c,f%f%.;w400,c,f%t 合計, %n 新規, %u 未読, %d 削除'
+    set msg_status_bar_fmt  = 'w475,s;w125,c,f%f%.;w400,c,f%t 合計, %n 新規, %u 未読, %d 削除'
+endif
+
+
+#%
+# Assorted prompts and messages for zmail.menus and other functions.
+# Note that when one of these contains $variable references of its
+# own, the command that uses it (usually ask, echo, error) must be
+# eval'ed for the $variable reference to be expanded properly.
+
+set __ask_add_comment	= 'コメントの追加:'
+set __ask_draft_write	= '書き込み用ドラフト・ファイル:'
+set __ask_file_read	= '下のリストからオープンしたいディレクトリを選択してください。\nオープンしたいファイルを選んで"了解"をクリックしてください。'
+set __ask_file_write	= '下のリストから書き込みしたいディレクトリを選択してください。\n"'"'"ファイル"'"'"フィールドに名前を入力して\n"了解"をクリックしてください。'
+
+set __ask_indent_with	= 'インデント:'
+set __ask_pipe_to_shell	= 'シェル・コマンドへパイプする:'
+set __ask_folder_remove = '下のリストから削除したいメールフォルダを選択して\n"了解"をクリックしてください。'
+set __ask_folder_merge	= '結合するフォルダ:'
+set __ask_saving	= '保存しています: $*'
+set __ask_pri_other     = '使用するメッセージの優先度(A-Z、または定義してあるワード):'
+set __ask_files_to_view = '表示するファイルの選択:'
+
+set __info_saved_draft	= '"$__draft_file" にドラフトを保管しました。'
+set __info_saved_to	= '"$__save_file" に保管しました。'
+set __info_no_new_mail	= '最後に確認してからメールは届いていません。'
+
+set __ask_include	= '引用:'
+set __ask_file_include	= 'どのファイルを引用しますか?'
+set __choice_message	= 'メッセージ'
+set __choice_file	= 'ファイル'
+
+set __ask_show_folder	= 'フォルダの表示:'
+set __ask_show_message	= 'どのメッセージを表示しますか？'
+set __ask_folder_write	= '書き込むフォルダを入力してください:'
+set __choice_merge	= '現在のフォルダに結合します'
+set __choice_create	= '新しいフォルダへ保管します'
+set __choice_temp	= '一時的なフォルダとして表示します'
+set __ask_comp_cancel   = '動作を選択してください:'
+set __choice_cc_continue = '編集の継続'
+set __choice_cc_discard = '手紙の廃棄'
+set __choice_cc_send    = '手紙を送る'
+
+set __err_no_addrbook	= 'address_book が設定されていません。'
+set __err_no_compose	= 'このウィンドウには[作成]がありません。'
+set __err_no_subject	= 'メッセージ $__msgno に Subject がありません。'
+set __err_no_message_id	= 'メッセージ $__msgno に Message-Id がありません。'
+set __err_no_priority	= 'メッセージ $__msgno に優先度がありません。'
+set __err_no_next_about	= '$__subj に関する次のメッセージがありません。'
+set __err_no_next_from	= '$__auth からの次のメッセージはありません。'
+set __err_no_next_ref	= 'このメッセージを参照している次のメッセージはありません。'
+set __err_no_next_mark	= 'マークされている次のメッセージはありません。'
+set __err_no_next_priority = '優先度 $__pri の次のメッセージはありません。'
+set __err_no_prev_about	= '$__subj に関する前のメッセージがありません。'
+set __err_no_prev_from	= '$__auth からの前のメッセージはありません。'
+set __err_no_prev_ref	= 'このメッセージを参照している前のメッセージはありません。'
+set __err_no_prev_mark	= 'マークされている前のメッセージはありません。'
+set __err_no_prev_priority = '優先度 $__pri の次のメッセージはありません。'
+set __err_takes_one_arg	= '$0 は失敗です: ひとつしか引数をとりません。'
+set __err_read_multiple = '順番に並んで表示されたメッセージの一覧を表示するには\n表示メニューの 「選択されたものを表示」というメニュー項目 を選択してください。\nメッセージ・リストを通常に戻すには 「全てを表示」 を選択してください。'
+set __err_clipboard_empty  = 'クリップボードが空です。\nペーストする前に文字列をカットまたは複写してください。'
+set __err_no_selection  = 'テキストが選択されていません。'
+set __err_no_server     = "サーバ・アプリケーションが見つかりません。"
+set __err_no_uuencoded  = 'このメッセージには アンエンコードされたアタッチメントがありません。'
+
+set __ask_really_quit	  = '本当に Z-Mail を中止しますか？'
+set __info_all_displayed  = '全てのメッセージが表示されました。'
+set __info_select_hidden  = '選択したメッセージを隠しました。'
+set __info_this_unmarked  = 'このメッセージをアンマークしました。'
+set __info_this_marked	  = 'このメッセージをマークしました。'
+set __info_this_message   = 'これはメッセージ $_the_selected $(%t) です。'
+set __err_select_to_mark  = 'マークするメッセージを選択してください。'
+set __ask_select_messages = 'メッセージ選択: '
+set __info_priority_clear = '選択されたメッセージの優先度を消去しました。'
+set __info_priority_given = '選択されたメッセージは優先度 $1 に設定されました。'
+set __info_priority_A	  = 'このメッセージを優先度 A にしました。'
+set __info_priority_B	  = 'このメッセージを優先度 B にしました。'
+set __info_priority_C	  = 'このメッセージを優先度 C にしました。'
+set __info_priority_D	  = 'このメッセージを優先度 D にしました。'
+set __info_priority_E	  = 'このメッセージを優先度 E にしました。'
+set __info_priority_U	  = 'このメッセージの優先度を消去しました。'
+set __err_no_fkey_given = '$0\: ファンクション・キー (-f) が指定されていません。'
+set __err_part_removed	  = 'このアタッチメントは受信者により削除されています。'
+set __err_suspect_address = '疑問なアドレス "$1" を無視します。'
+
+# This section deals with strings from the file system.literc only.
+
+if is_lite
+  # format string for header listings
+  set msg_win_hdr_fmt = 'From: %46.46n %d (%l)\nSubject: %s'
+
+  # various prompts and messages
+  set __lite_ask_really_quit		= '本当に Z-mail を中止しますか？'
+  set __lite_ask_file_write		= '読み込みファイル:'
+  set __lite_info_wrote_file		= '書き込みファイル'
+  set __lite_ask_toggle_marks		= 'マークするメッセージを選択してください。'
+  set __lite_ask_asksel			= 'メッセージを選択する: '
+  set __lite_info_priority_cleared	= '選択したメッセージの優先度を消去しました。'
+  set __lite_info_priority_marked	= '指定したメッセージは優先度 $1でマークされました。'
+  set __lite_error_no_fkey		= '$0\: ファンクション・キー (-f) が指定されていません。'
+
+  # these info messages are associated with key bindings
+  set __lite_info_unhide_all		= '全てのメッセージが表示されました。'
+  set __lite_info_hide_selected		= '選択したメッセージを隠しました。'
+  set __lite_info_unmark		= 'このメッセージをアンマークしました。'
+  set __lite_info_mark			= 'このメッセージをマークしました。'
+  set __lite_info_show_msg_num		= 'これはメッセージ $_the_selected $(%t) です。'
+  set __lite_info_assign_A		= 'このメッセージを優先度 A にしました。'
+  set __lite_info_assign_B		= 'このメッセージを優先度 B にしました。'
+  set __lite_info_assign_C		= 'このメッセージを優先度 C にしました。'
+  set __lite_info_assign_D		= 'このメッセージを優先度 D にしました。'
+  set __lite_info_assign_E		= 'このメッセージを優先度 E にしました。'
+  set __lite_info_clear_priority	= 'このメッセージの優先度を消去しました。'
+
+  # strings from bindkey commands
+  set __lite_bind_msgbody_next		= '次のページまたはメッセージへ'
+  set __lite_bind_help			= 'ヘルプ '
+  set __lite_bind_reply_all		= '差出人と全ての受信者に返信する'
+  set __lite_bind_reply			= '差し出し人に返信する'
+  set __lite_bind_resend		= 'メッセージを再送する'
+  set __lite_bind_forward		= 'メッセージを送信する'
+  set __lite_bind_display		= '選択したメッセージの表示'
+  set __lite_bind_compose		= '新しいメッセージの作成'
+  set __lite_bind_unhide_all		= '全てのメッセージを表示する'
+  set __lite_bind_hide_selected		= '指定したメッセージを隠す'
+  set __lite_bind_view_selected		= '選択したメッセージのみを表示する'
+  set __lite_bind_unmark_selected	= '選択したメッセージをアンマークする'
+  set __lite_bind_unmark		= 'メッセージをアンマークする'
+  set __lite_bind_mark_selected		= '選択したメッセージをマークする'
+  set __lite_bind_mark			= 'このメッセージをマークする'
+  set __lite_bind_show_msg_num		= 'メッセージの数を表示する'
+  set __lite_bind_quit_prompt		= '中止、 prompt for update'
+  set __lite_bind_quit_noprompt		= '中止、開いているフォルダの更新'
+  set __lite_bind_save_selected		= '選択したメッセージの保管'
+  set __lite_bind_save_message		= 'メッセージの保管'
+  set __lite_bind_find_Message_ID	= 'メッセージ ID で全ての情報を検索する。'
+  set __lite_bind_undelete_selected	= '選択したメッセージを Undelete'
+  set __lite_bind_undelete		= 'メッセージを Undelete'
+  set __lite_bind_print_selected	= '選択したメッセージを印刷する'
+  set __lite_bind_print_message		= 'メッセージを印刷する'
+  set __lite_bind_disp_next		= '次のメッセージを表示する'
+  set __lite_bind_disp_prev		= '前のメッセージを表示する'
+  set __lite_bind_open			= 'フォルダのオープン'
+  set __lite_bind_delete_selected	= '選択したメッセージの削除'
+  set __lite_bind_delete		= 'メッセージの削除'
+  set __lite_bind_write			= 'ファイルにメッセージの本文を書き込む'
+
+  set __lite_bind_last_folder		= '一番最後にアクセスしたフォルダを開く'
+  set __lite_bind_system_folder		= 'システム・フォルダをアクティブにする'
+  set __lite_bind_save_mbox		= '選択したメッセージを mbox に保管する'
+  set __lite_bind_go_list_beg		= 'リストの最初に戻る'
+  set __lite_bind_go_list_end		= 'リストの最後に進む'
+  set __lite_bind_select_to_list_beg	= '現在の選択からリストの最初までを選択する'
+  set __lite_bind_select_to_list_end	= '現在の選択からリストの最後までを選択する'
+  set __lite_bind_prompt_select		= 'メッセージ選択のためのプロンプト'
+
+  set __lite_bind_assign_A_selected	= '選択したメッセージに優先度 A をつけてください。'
+  set __lite_bind_assign_B_selected	= '選択したメッセージに優先度 B をつけてください。'
+  set __lite_bind_assign_C_selected	= '選択したメッセージに優先度 C をつけてください。'
+  set __lite_bind_assign_D_selected	= '選択したメッセージに優先度 D をつけてください。'
+  set __lite_bind_assign_E_selected	= '選択したメッセージに優先度 E をつけてください。'
+  set __lite_bind_clear_marks		= 'マークと優先度を消去してください。'
+
+  set __lite_bind_assign_A		= '優先度 A をつけてください。'
+  set __lite_bind_assign_B		= '優先度 B をつけてください。'
+  set __lite_bind_assign_C		= '優先度 C をつけてください。'
+  set __lite_bind_assign_D		= '優先度 D をつけてください。'
+  set __lite_bind_assign_E		= '優先度 E をつけてください。'
+  set __lite_bind_clear_priority	= '優先度とマークを消去してください。'
+
+  set __lite_bind_cursel_up		= 'カーソルを移動して、１行上を選択します。'
+  set __lite_bind_cursel_down		= 'カーソルを移動して、１行下を選択します。'
+  set __lite_bind_curonly_up		= 'カーソルを１行上に移動して、選択したものを削除します。'
+  set __lite_bind_curonly_down		= 'カーソルを１行下に移動して、選択したものを削除します。'
+
+  set __lite_bind_update_folder		= '現在のフォルダを更新'
+  set __lite_bind_resend_selected	= '選択したメッセージを再信する'
+  set __lite_bind_sort_folder		= '現在のフォルダを sort'
+  set __lite_bind_select_first		= '最初のメッセージを選択'
+  set __lite_bind_select_last		= '最後のメッセージを選択'
+  set __lite_bind_attach_dialog		= 'アタッチメント・ダイアログを呼び出す'
+  set __lite_bind_goto_main		= 'メイン・スクリーンへ戻る'
+
+  set __lite_bind_scroll_down		= 'スクロール・ダウン'
+  set __lite_bind_scroll_up		= 'スクロール・アップ'
+  set __lite_bind_prev_page		= '前ページへ'
+  set __lite_bind_next_page		= '次ページへ'
+
+  set __lite_bind_move_text_beg		= 'テキストの最初に移動'
+  set __lite_bind_move_text_end		= 'テキストの最後に移動'
+  set __lite_bind_toggle_read_wrap	= '長い行のラップ／トランケイトの切り換え'
+
+  set __lite_bind_select_next_field	= '次のフィールドを選択'
+  set __lite_bind_select_prev_field	= '前のフィールドを選択'
+  set __lite_bind_select_prev_item	= '前のアイテムを選択'
+  set __lite_bind_select_next_item	= '次のアイテムを選択'
+
+  set __lite_bind_accept_settings	= '設定を適用しダイアログを閉じる'
+  set __lite_bind_include_selected	= '選択したメッセージを含む'
+  set __lite_bind_invoke_editor		= 'エキスターナル・エディタを呼び出す'
+  set __lite_bind_cancel_compose	= 'メッセージの作成を取り消す'
+  set __lite_bind_save_compose		= 'メッセージをファイルに保管する'
+  set __lite_bind_attach_file		= 'ファイルをアタッチする'
+  set __lite_bind_send_message		= 'メッセージを送信する'
+
+  set __lite_bind_disp_selected_attach	= '選択したアタッチメントを表示する'
+  set __lite_bind_unattach		= 'アタッチメントを添えない'
+  set __lite_bind_save_attach		= 'ファイルにアタッチメントを保管'
+  set __lite_bind_list_attach		= 'アタッチメントの一覧'
+  set __lite_bind_create_attach		= '新しいアタッチメントの作成'
+
+  set __lite_bind_accept_close		= '返事を適用し、ダイアログを閉じる'
+  set __lite_bind_scan_dir		= 'ディレクトリのスキャン'
+  set __lite_bind_toggle_variable	= '選択した変数の設定'
+  set __lite_bind_load_variables	= '変数の設定をロードする'
+  set __lite_bind_save_variables	= '変数の設定を保管する'
+  set __lite_bind_dismiss_dialog	= 'ダイアログの廃棄'
+  set __lite_bind_perform_search	= '検索の実行'
+  set __lite_bind_mail_selected_addrs	= '選択したアドレスにメイル'
+
+  set __lite_bind_to_header		= 'To'
+  set __lite_bind_cc_header		= 'Cc'
+  set __lite_bind_bcc_header		= 'Bcc'
+
+  set __lite_bind_to_address		= 'To アドレス'
+  set __lite_bind_cc_address		= 'Cc アドレス'
+  set __lite_bind_bcc_address		= 'Bcc アドレス'
+  set __lite_bind_clear_addresses	= 'アドレスの消去'
+  set __lite_bind_done			= '終了'
+  set __lite_bind_search_for_text	= 'テキストの検索'
+  set __lite_bind_search_and_replace	= 'テキストの検索と置き換え'
+  set __lite_bind_check_spelling	= 'スペルのチェック'
+  set __lite_bind_clear_fields		= 'フィールドの消去'
+
+  set __lite_bind_usrint_topics		= 'ユーザ・インターフェイス・トッピク'
+  set __lite_bind_zscript_commands	= 'Z-Script のコマンド'
+  set __lite_bind_print			= '印刷'
+
+  set __lite_bind_clear_search_pattern	= '検索パターンを消去'
+  set __lite_bind_clear_search_dates	= '検索の日付を消去'
+  set __lite_bind_set_selected_header	= '選択したヘッダの設定'
+  set __lite_bind_unset_selected_header	= '選択したヘッダの設定を外す'
+  set __lite_bind_list_ignored_headers	= '無効にしたヘッダの一覧'
+  set __lite_bind_save_settings		= '設定の保管'
+  set __lite_bind_list_showonly		= '表示のみのヘッダの一覧'
+  set __lite_bind_close_dialog		= 'ダイアログを閉じる'
+
+  set __lite_bind_set_header		= 'ヘッダの設定'
+  set __lite_bind_unset_header		= 'ヘッダの設定を外す'
+  set __lite_bind_set_alias		= ' アリアス の設定'
+  set __lite_bind_unset_alias		= 'アリアスの設定を外す'
+  set __lite_bind_mail_selected_aliases	= '選択したアリアスへメイル'
+  set __lite_bind_use_template		= 'テンプレートの使用'
+  set __lite_bind_perform_sort		= '並べ替えの実行'
+  set __lite_bind_toggle_ign_case	= '大文字、小文字の識別をトグル動作する'
+  set __lite_bind_toggle_sortbydate	= '日付による並べ替えをトグル動作する'
+  set __lite_bind_toggle_sortbysubject	= 'サブジェクトによる並べ替えをトグル動作する'
+  set __lite_bind_toggle_sortbyauthor	= '作成者による並べ替えをトグル動作する'
+  set __lite_bind_toggle_sortbystatus	= 'ステータスによる並べ替えをトグル動作する'
+
+  set __lite_bind_save			= '保管'
+  set __lite_bind_search		= '検索'
+  set __lite_bind_print_pager_contents	= 'ページャーの内容を印刷'
+  set __lite_bind_save_pager_contents	= 'ページャーの内容を保管'
+  set __lite_bind_save_pager_contents_file = '指定したファイルへページャーの内容を保管'
+  set __lite_bind_define_key		= 'キーの定義'
+  set __lite_bind_load_settings		= '設定をロードする'
+
+
+  # this section defines labels for function keys
+  set __lite_label_1_Help		= '1/ヘルプ '
+  set __lite_label_1_Index		= '1/インデックス'
+  set __lite_label_2_Define		= '2/定義'
+  set __lite_label_2_Dsplay		= '2/表示'
+  set __lite_label_2_Inclde		= '2/Inclde'
+  set __lite_label_2_Next		= '2/次へ'
+  set __lite_label_2_OK		 	= '2/了解'
+  set __lite_label_2_Ok			= '2/了解'
+  set __lite_label_2_Print		= '2/印刷'
+  set __lite_label_2_Read		= '2/読み込み'
+  set __lite_label_2_Search		= '2/検索'
+  set __lite_label_2_Set		= '2/設定'
+  set __lite_label_2_Sort		= '2/並べ替え'
+  set __lite_label_2_To			= '2/To'
+  set __lite_label_2_Toggle		= '2/トグル動作する'
+  set __lite_label_2_Use		= '2/使用'
+  set __lite_label_2_UsrInt		= '2/UsrInt'
+  set __lite_label_3_Cc			= '3/Cc'
+  set __lite_label_3_Compos		= '3/Compos'
+  set __lite_label_3_Edit		= '3/編集'
+  set __lite_label_3_IgnCas		= '3/IgnCas'
+  set __lite_label_3_Load		= '3/ロードする'
+  set __lite_label_3_Mail		= '3/メール'
+  set __lite_label_3_Prev		= '3/Prev'
+  set __lite_label_3_Print		= '3/印刷'
+  set __lite_label_3_Replace		= '3/置き換え'
+  set __lite_label_3_Search		= '3/検索'
+  set __lite_label_3_To			= '3/To'
+  set __lite_label_3_Unattc		= '3/Unattc'
+  set __lite_label_3_Unset		= '3/Unset'
+  set __lite_label_3_ZScrpt		= '3/ZScrpt'
+  set __lite_label_4_Bcc		= '4/Bcc'
+  set __lite_label_4_Cancel		= '4/取り消す'
+  set __lite_label_4_Cc			= '4/Cc'
+  set __lite_label_4_Date		= '4/日付'
+  set __lite_label_4_Delete		= '4/削除'
+  set __lite_label_4_Ignore		= '4/Ignore'
+  set __lite_label_4_Mail		= '4/メール'
+  set __lite_label_4_Spell		= '4/スペル'
+  set __lite_label_5_Bcc		= '5/Bcc'
+  set __lite_label_5_Save		= '5/保管'
+  set __lite_label_5_Subj		= '5/Subj'
+  set __lite_label_6_Attach		= '6/Attach'
+  set __lite_label_6_Author		= '6/作成者'
+  set __lite_label_6_Clear		= '6/消去'
+  set __lite_label_6_SaveAs		= '6/別名保管'
+  set __lite_label_6_ShwOnl		= '6/表示のみ'
+  set __lite_label_6_Update		= '6/更新'
+  set __lite_label_7_Done		= '7/終了'
+  set __lite_label_7_Reply		= '7/返信'
+  set __lite_label_7_Send		= '7/送信'
+  set __lite_label_7_Status		= '7/状況'
+  set __lite_label_8_Cancel		= '8/取り消す'
+  set __lite_label_8_Done		= '8/終了'
+  set __lite_label_8_Main		= '8/Main'
+  set __lite_label_8_Quit		= '8/中止'
+  set __lite_label_9_Resend		= '9/再送'
+  set __lite_label_11_Print		= '11/印刷'
+  set __lite_label_12_Sort		= '12/並べ替え'
+
+endif # is_lite (phew!)
+
+if -e $ZMLIB/bin/getprinters
+    function getprinters() {
+        # call the "getprinters" script to get a list of printers, in order
+        # to set the "printer" variable.
+        sh "LANG=C $ZMLIB/bin/getprinters > /tmp/zmlp$$"
+        source /tmp/zmlp$$
+        sh /bin/rm -f /tmp/zmlp$$
+    }
+    getprinters
+endif
+set print_cmd = "/usr/sbin/jistoeuc | /usr/bin/lp %O"
