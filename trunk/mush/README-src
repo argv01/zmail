@@ -1,0 +1,4 @@
+This is a feeble little package that just contains a script to unpack
+and build mush from source, so that we don't violate its licence.
+
+Pawel Wiecek <coven@debian.org>

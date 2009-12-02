@@ -1,0 +1,89 @@
+#
+# makefile for Xenix machines.  See "MODEL" below for your xenix type.
+# some .c files may require the -LARGE compiler flag.  Examples below.
+# This makefile assumes an 80386 machine.  If you have an 80286, see
+# notes below.  This makefile was built for SCO/microsoft xenix --if you
+# are running some other kind of xenix, you might need to change the
+# CFLAGS and LDFLAGS options.
+#
+HDRS= mush.h config.h-dist strings.h bindings.h options.h version.h glob.h pop.h
+SRCS1= main.c init.c misc.c execute.c hostname.c
+SRCS2= signals.c msgs.c pick.c viewopts.c
+SRCS3= sort.c expr.c folders.c dates.c
+SRCS4= loop.c bind.c options.c
+SRCS5= commands.c commands2.c setopts.c hdrs.c
+SRCS6= mail.c print.c util.c
+SRCS7= curses.c curs_io.c
+SRCS8= file.c strings.c malloc.c string.c
+SRCS9= lock.c macros.c addrs.c glob.c pop.c pmush.c xcreat.c sendmime.c
+OBJS= main.o init.o misc.o mail.o hdrs.o execute.o commands.o print.o file.o \
+      signals.o setopts.o msgs.o pick.o sort.o expr.o strings.o \
+      folders.o dates.o loop.o viewopts.o bind.o curses.o curs_io.o \
+      lock.o macros.o options.o addrs.o malloc.o glob.o command2.o \
+      pop.o pmush.o xcreat.o hostname.o string.o util.o sendmime.o
+HELP_FILES= README README-7.0 README-7.1 README-7.2.0 README-7.2.2 \
+	README-7.2.4 mush.1 cmd_help Mushrc Mailrc Gnurc \
+	sample.mushrc advanced.mushrc digestify
+
+# Memory model.  Use -M3e for 80386 machines.
+# Use -M2le -Mt32 -LARGE for 80286 machines.
+MODEL= -M3e
+
+#
+# 80286 xenix may use this LDFLAGS define:
+#LDFLAGS= -X -lx -M2le -Mt32 -F 8000 -SEG 256 -LARGE
+LDFLAGS= -X -lx -M3
+
+SYS_CFLAGS= -DSYSV -DUSG
+CFLAGS= $(MODEL) -O -DCURSES -DREGCMP $(SYS_CFLAGS) $(OTHER_CFLAGS)
+LIBS= -lcurses -ltermlib
+OTHERLIBS=
+# Use some variant of this one if you #define MMDF in config.h
+#OTHERLIBS=/usr/src/mmdf/lib/libmmdf.a
+
+mush: $(OBJS)
+	@echo loading...
+	@cc $(LDFLAGS) $(OBJS) $(LIBS) $(OTHERLIBS) -o mush
+
+$(OBJS): config.h mush.h
+loop.o: version.h
+
+# For 80286 machines, use these two lines...
+# misc.o:	misc.c
+# 	cc $(CFLAGS) -LARGE -c misc.c
+
+bind.o:	bind.c
+	cc $(CFLAGS) -LARGE -c bind.c
+
+BINDIR= /usr/local/bin
+LIBDIR= /usr/local/lib
+MRCDIR= /usr/lib
+MANDIR= /usr/local/man/man1
+MANEXT= 1
+
+OUTFILES = sedscript Mushrc mush.1 cmd_help
+
+Mushrc: Mushrc.in sedscript
+	sed -f sedscript Mushrc.in >$@
+mush.1: mush.1.in sedscript
+	sed -f sedscript mush.1.in >$@
+cmd_help: cmd_help.in sedscript
+	sed -f sedscript cmd_help.in >$@
+
+sedscript: sedscript.in config.h
+	 /lib/cpp -DBINDIR="$(BINDIR)" $(SYS_CFLAGS) $(OTHER_CFLAGS) sedscript.in | sed -e '/^#/d' -e '/^[ ]*$$/d' -e 's/ ,g/,g/' -e 's/,"\(.*\)"/,\1/' >$@
+
+install: $(OUTFILES) mush
+	cp mush $(BINDIR)
+	strip $(BINDIR)/mush
+	chmod 0755 $(BINDIR)/mush
+	cp mush.1 $(MANDIR)/mush.$(MANEXT)
+	chmod 0644 $(MANDIR)/mush.$(MANEXT)
+	cp cmd_help $(LIBDIR)
+	chmod 0644 $(LIBDIR)/cmd_help
+	cp Mushrc $(MRCDIR)/Mushrc
+	chmod 0644 $(MRCDIR)/Mushrc
+
+clean:
+	rm -f *.o core mush $(OUTFILES)
+

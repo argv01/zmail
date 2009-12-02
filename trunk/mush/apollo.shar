@@ -1,0 +1,758 @@
+#!/bin/sh
+# shar:	Shell Archiver  (v1.22+)
+#
+#	Run the following text with /bin/sh to create:
+#	  README.apollo
+#	  makefile.apollo
+#	  apollo.patch
+#	  apollo_file.c
+#	  apollo_pad.c
+#
+echo "x - extracting README.apollo (Text)"
+sed 's/^X//' << 'SHAR_EOF' > README.apollo &&
+XREADME.apollo - modifications to allow mush to operate smoothly in an Apollo
+X		environment.
+X
+XAuthor:
+X	Mike Pelletier, stealth@engin.umich.edu
+X------------
+X
+XSeveral changes have been made to make mush interact more smoothly with
+Xseveral aspects of the Apollo operating and display system.  The changes
+Xinclude modified versions of open(), fopen(), and flock(), a check for
+Xthe height of the screen using the Display Manager "pad" interfaces,
+Xand a change to make input and output in a pad operate more cleanly.
+X
+XNEW OPEN() ROUTINES:
+X
+X  The default operation of the Apollo filesystem closely mimics the
+X  UNIX OS -- any number of processes can have a file open for reading or
+X  writing at any given time, and writing is essentially on a last come,
+X  first served basis -- the last update to the file is what sticks.
+X  This mode is called FILE_$COWRITERS.  However, this only works correctly
+X  when all the processes in question are running on the same machine.
+X  If a process on another machine tries to open() the file, it will fail
+X  completely no matter what access mode it wants, saying "Text file busy."
+X  In the case of mail, it's very common to have a mail transfer agent
+X  on one central machine, and a user on another machine, and if the COWRITERS
+X  lock mode were used, one or the other would fail to access the file
+X  if they both tried at the same time, even if the user just wanted to
+X  read the mailbox, not update it.
+X  
+X  The Apollo filesystem has another locking mode that works for
+X  processes on multiple nodes, with the caveat that only one
+X  process at a time may have write access to the file.  This is
+X  called FILE_$NR_XOR_1W mode.  In this case, if a MTA opened a users
+X  mailbox for writing to deliver new mail, the user could still open
+X  and read the mailbox at the start of a mail session, and vice-versa
+X  for the end of a mail session.
+X  
+X  The open() replacements in apollo_file.c simply change the default
+X  concurrency control mode from FILE_$COWRITERS to FILE_$NR_XOR_1W,
+X  and can stall for a certain amount of time if the attempt to open
+X  the file fails for concurrency reasons, say if an MTA was updating
+X  the mailbox at the same time that a user wanted to end a mail session.
+X  The stall and frequency of checking can be set with setdeadtime() and
+X  setintervaltime() according to the needs of the application.  A user-
+X  agent would want a longer stall with more frequent checks than a
+X  transfer agent, since the transfer agent can always queue the request
+X  and try again later whereas a user gets upset if he or she gets a
+X  "can't update system mailbox" error.
+X
+X  Since only one routine can have a file open for reading at a time, the
+X  flock() command is essentially useless.  In order to release a lock,
+X  the application must close the file.
+X
+X  These routines are #define-level compatible with their UNIX counterparts.
+X  I.e., #define open apollo_open, #define fopen apollo_fopen,
+X  #define flock apollo_flock may be put in the application header file,
+X  surrounded with "#ifdef apollo .. #endif".
+X
+XDISPLAY MANAGER PAD ROUTINES:
+X
+X  The foremost routine in apollo_pad.c is apollo_ispad().  This simply
+X  returns the logical truth value of the question "Is the standard output
+X  stream a display manager pad?"
+X
+X  Based on this, the screen height for mush may be set according to the
+X  number of lines in the pad, using the apollo_padheight() function.  This
+X  is handled in init.c.
+X
+X  Other special cases to note if the output stream is a pad include the
+X  fact that cbreak and echo mode should not be changed.  If this is done,
+X  the pad will switch into vt100 mode, which is essentially a different
+X  window from the pad.  The switch is visually unpleasant, interrupting
+X  the flow of text, and any transcript is lost once the vt100 window exits.
+X
+X  Also, pagers should not be used in DM pads.  Since they switch into
+X  cbreak mode, the previous problem comes up, and besides, the DM pad
+X  has a large number of commands available for quick scrolling and
+X  searching within the pad, as well as the HOLD key, so pagers aren't
+X  even really necessary.
+X
+X  All these changes are transparent to someone using mush from a terminal.
+X  These only apply when someone is sitting at the display console of an
+X  Apollo workstation.
+X
+X------------------------
+X
+X		Many thanks to Paul Killey <paul@engin.umich.edu>
+X		for his invaluable assistance in making these modifications.
+X
+X			Mike Pelletier, <stealth@engin.umich.edu>
+SHAR_EOF
+chmod 0600 README.apollo || echo "restore of README.apollo fails"
+set `wc -c README.apollo`;Sum=$1
+if test "$Sum" != "4455"
+then echo original size 4455, current size $Sum;fi
+echo "x - extracting makefile.apollo (Text)"
+sed 's/^X//' << 'SHAR_EOF' > makefile.apollo &&
+X# makefile.apollo
+X#
+XHDRS= mush.h config.h-dist strings.h bindings.h options.h version.h glob.h
+X
+XSRCS= main.c init.c misc.c mail.c hdrs.c execute.c commands.c print.c dates.c \
+X      signals.c setopts.c msgs.c pick.c sort.c expr.c folders.c \
+X      loop.c viewopts.c curses.c curs_io.c bind.c file.c strings.c \
+X      lock.c macros.c options.c addrs.c malloc.c glob.c command2.c \
+X      apollo_file.c apollo_pad.c
+XOBJS= main.o init.o misc.o mail.o hdrs.o execute.o commands.o print.o file.o \
+X      signals.o setopts.o msgs.o pick.o sort.o expr.o strings.o \
+X      folders.o dates.o loop.o viewopts.o curses.o curs_io.o bind.o \
+X      lock.o macros.o options.o addrs.o malloc.o glob.o command2.o \
+X      apollo_file.o apollo_pad.o
+X
+XHELP_FILES= README README-7.0 README-7.1 README-7.2.0 README-7.2.2 \
+X	README-7.2.4 mush.1 cmd_help Mushrc Mailrc Gnurc \
+X	sample.mushrc advanced.mushrc digestify
+X
+XMAKES= makefile.bsd makefile.xenix makefile.sys.v makefile.hpux makefile.sun \
+X	makefile.apollo
+X
+XFIXES= file.c init.c lock.c mail.c main.c msgs.c
+X
+XCC= cc -A nansi
+XCFLAGS= -O -DCURSES -DBSD
+XLDFLAGS=
+XLINTFLAGS= -bxah -Dlint -DCURSES -DBSD
+XLIBS= -lcurses -ltermcap
+XOTHERLIBS=
+X
+Xmush: $(OBJS)
+X	@echo loading...
+X	@$(CC) $(LDFLAGS) $(OBJS) $(LIBS) $(OTHERLIBS) -o mush
+X
+X$(FIXES): apollo.patch
+X	@echo '$@ needs patching -- run "patch -N -p1 < apollo.patch"'; exit 1
+X
+X$(OBJS): config.h mush.h
+Xloop.o: version.h
+X
+Xlint:
+X	lint $(LINTFLAGS) $(SRCS)
+X
+Xclean:
+X	rm -f *.o core mush
+X
+XBINDIR= /usr/local/bin
+XLIBDIR= /usr/local/lib
+XMRCDIR= /usr/lib
+XMANDIR= /usr/local/man/man1
+XMANEXT= 1
+X
+Xinstall: mush
+X	mv mush $(BINDIR)
+X	strip $(BINDIR)/mush
+X	chmod 0755 $(BINDIR)/mush
+X	cp mush.1 $(MANDIR)/mush.$(MANEXT)
+X	chmod 0644 $(MANDIR)/mush.$(MANEXT)
+X	cp cmd_help $(LIBDIR)
+X	chmod 0644 $(LIBDIR)/cmd_help
+X	cp Mushrc $(MRCDIR)/Mushrc
+X	chmod 0644 $(MRCDIR)/Mushrc
+SHAR_EOF
+chmod 0644 makefile.apollo || echo "restore of makefile.apollo fails"
+set `wc -c makefile.apollo`;Sum=$1
+if test "$Sum" != "1828"
+then echo original size 1828, current size $Sum;fi
+echo "x - extracting apollo.patch (Text)"
+sed 's/^X//' << 'SHAR_EOF' > apollo.patch &&
+X*** 7.2.5/file.c	Sat Aug 22 11:46:56 1992
+X--- apollo/file.c	Tue Oct 13 23:53:59 1992
+X***************
+X*** 469,475 ****
+X--- 469,479 ----
+X  mask_fopen(file, mode)
+X  char *file, *mode;
+X  {
+X+ #ifdef apollo
+X+     int needs_chmod = (Access(file, F_OK) < 0);
+X+ #else
+X      int omask = umask(077);
+X+ #endif
+X      FILE *fp;
+X  #ifdef SYSV
+X      /* XENIX and other older sytems can't handle "a+".	Even newer
+X***************
+X*** 484,492 ****
+X  	if (fp = fopen(file, mode))
+X  	    (void) fseek(fp, 0L, 2); /* assure we're at the end of the file */
+X      } else
+X! #endif /* SYSV */
+X      fp = fopen(file, mode);
+X      (void) umask(omask);
+X      return fp;
+X  }
+X  
+X--- 488,502 ----
+X  	if (fp = fopen(file, mode))
+X  	    (void) fseek(fp, 0L, 2); /* assure we're at the end of the file */
+X      } else
+X! #endif /* M_XENIX || SYSV && !USG */
+X      fp = fopen(file, mode);
+X+ #ifdef apollo
+X+     /* Initial file ACL's override umask so make sure mode is right */
+X+     if (fp && needs_chmod)
+X+ 	(void) chmod(file, 0600);
+X+ #else
+X      (void) umask(omask);
+X+ #endif
+X      return fp;
+X  }
+X  
+X*** 7.2.5/init.c	Sat Aug 22 13:36:35 1992
+X--- apollo/init.c	Tue Oct 13 23:54:01 1992
+X***************
+X*** 93,98 ****
+X--- 93,105 ----
+X      mailfile = "";
+X  
+X      crt = 24;
+X+ #ifdef apollo
+X+     if (apollo_ispad()) {
+X+ 	/* If a pad, set the screen height properly */
+X+ 	screen = apollo_padheight() - 2;
+X+ 	crt = screen + 3;
+X+     } else
+X+ #endif /* apollo */
+X      screen = 18;
+X      wrapcolumn = 0; /* Default is no wrap */
+X      escape = DEF_ESCAPE;
+X*** 7.2.5/lock.c	Sun Oct 11 18:14:56 1992
+X--- apollo/lock.c	Tue Oct 13 23:54:02 1992
+X***************
+X*** 305,310 ****
+X--- 305,313 ----
+X  {
+X      struct options *tmp;
+X      FILE *fp;
+X+ #ifdef apollo
+X+     int oldinterval, olddead;
+X+ #endif /* apollo */
+X      
+X      for (tmp = exclude_list; tmp; tmp = tmp->next)
+X  	if (strcmp(tmp->option, filename) == 0) {
+X***************
+X*** 319,325 ****
+X      if (dot_lock(filename) != 0)
+X  	return NULL_FILE;
+X  #endif /* DOT_LOCK */
+X!     if (!(fp = mask_fopen(filename, mode)))
+X  	return NULL_FILE;
+X      if (tmp = (struct options *)malloc(sizeof(struct options))) {
+X  	tmp->option = savestr(filename);
+X--- 322,338 ----
+X      if (dot_lock(filename) != 0)
+X  	return NULL_FILE;
+X  #endif /* DOT_LOCK */
+X! #ifdef apollo
+X!     /* Set up only one open attempt and no wait time on failure */
+X!     oldinterval = setintervaltime(0);
+X!     olddead = setdeadtime(1);
+X! #endif /* apollo */
+X!     fp = mask_fopen(filename, mode);
+X! #ifdef apollo
+X!     (void) setintervaltime(oldinterval);
+X!     (void) setdeadtime(olddead);
+X! #endif /* apollo */
+X!     if (!fp)
+X  	return NULL_FILE;
+X      if (tmp = (struct options *)malloc(sizeof(struct options))) {
+X  	tmp->option = savestr(filename);
+X***************
+X*** 386,391 ****
+X--- 399,410 ----
+X  
+X      if (!(mail_fp = exclusive_fopen(filename, mode)))
+X  	return NULL_FILE;
+X+ 
+X+ #ifndef apollo
+X+     /* On the Apollo, mask_fopen() implies a lock,
+X+      * so we needn't mess with any of this stuff.
+X+      */
+X+ 
+X      fd = fileno(mail_fp);
+X  
+X      if (mode[0] != 'r' || mode[1] == '+')
+X***************
+X*** 438,443 ****
+X--- 457,464 ----
+X  	(void) exclusive_fclose(mail_fp);
+X  	return NULL_FILE;
+X      }
+X+ #endif /* !apollo */
+X+ 
+X      return mail_fp;
+X  }
+X  
+X*** 7.2.5/mail.c	Sat Aug 22 11:46:48 1992
+X--- apollo/mail.c	Tue Oct 13 23:54:04 1992
+X***************
+X*** 601,606 ****
+X--- 601,612 ----
+X  	    if (!*p || *p == 'i')
+X  		switch (line[1]) {
+X  		    case 'p' :
+X+ #ifdef apollo
+X+ 			if (apollo_ispad()) {
+X+ 			    p = "NONE";		/* The pad IS the pager */
+X+ 			    break;
+X+ 			}
+X+ #endif /* apollo */
+X  			if (!*p && !(p = do_set(set_options, "pager")))
+X  			    p = DEF_PAGER;
+X  			if (!*p || !strcmp(p, "internal"))
+X*** 7.2.5/main.c	Mon Sep 21 10:32:25 1992
+X--- apollo/main.c	Tue Oct 13 23:54:05 1992
+X***************
+X*** 143,148 ****
+X--- 143,153 ----
+X  	(void) signal(SIGINT, catch);
+X  	(void) signal(SIGQUIT, catch);
+X  	(void) signal(SIGHUP, catch);
+X+ #ifdef apollo
+X+         if (apollo_ispad())
+X+             turnon(glob_flags, ECHO_FLAG);
+X+         else
+X+ #endif /* apollo */
+X  	if (istool || hdrs_only)
+X  	    turnon(glob_flags, ECHO_FLAG);
+X  	if (!hdrs_only)
+X*** 7.2.5/msgs.c	Sat Aug 22 11:46:51 1992
+X--- apollo/msgs.c	Tue Oct 13 23:56:05 1992
+X***************
+X*** 32,37 ****
+X--- 32,42 ----
+X  #ifdef MSG_SEPARATOR
+X      turnon(flg, NO_SEPARATOR);
+X  #endif /* MMDF */
+X+ #ifdef apollo
+X+     if (!istool && apollo_ispad())
+X+ 	pager = "NONE";         /* The pad IS the pager */
+X+     else
+X+ #endif /* apollo */
+X      if (ison(msg[n].m_flags, METAMAIL) && isoff(flg, NO_PAGE) &&
+X  	    (pager = do_set(set_options, "metamail"))) {
+X  	intro = FALSE;
+X*** 7.2.5/mush.h	Sun Sep 20 14:12:32 1992
+X--- apollo/mush.h	Tue Oct 13 23:54:08 1992
+X***************
+X*** 56,61 ****
+X--- 56,67 ----
+X  #ifdef BSD
+X  #define fputs Fputs	/* See comments in print.c */
+X  #endif /* BSD */
+X+ #ifdef apollo		/* See apollo_file.c */
+X+ extern FILE *apollo_lkfopen();
+X+ #define fopen(f,m)	apollo_lkfopen(f,m)
+X+ #define open(p,f,m)	apollo_lkopen(p,f,m)
+X+ #define flock(d,o)	apollo_flock(d,o)
+X+ #endif /* apollo */
+X  
+X  #if defined(BSD) || defined(GETWD)
+X  extern char *getwd();
+SHAR_EOF
+chmod 0644 apollo.patch || echo "restore of apollo.patch fails"
+set `wc -c apollo.patch`;Sum=$1
+if test "$Sum" != "5134"
+then echo original size 5134, current size $Sum;fi
+echo "x - extracting apollo_file.c (Text)"
+sed 's/^X//' << 'SHAR_EOF' > apollo_file.c &&
+X/*
+X *	Take unix open() args, and call ios_$open() appropriately.
+X *
+X *	Written by Paul Killey, paul@engin.umich.edu
+X *	Incorporated into mush by Mike Pelletier, stealth@engin.umich.edu
+X *					Mon Oct 25 13:09:38 EDT 1991
+X */
+X
+X#ifdef apollo
+X
+X#ifdef __STDC__
+X#include <apollo_$std.h>
+X#include <apollo/base.h>
+X#include <apollo/ios.h>
+X#include <apollo/error.h>
+X#include <apollo/type_uids.h>
+X#include <apollo/cal.h>
+X#include <apollo/time.h>
+X#else
+X#include "/sys/ins/base.ins.c"
+X#include "/sys/ins/ios.ins.c"
+X#include "/sys/ins/error.ins.c"
+X#include "/sys/ins/type_uids.ins.c"
+X#include "/sys/ins/cal.ins.c"
+X#include "/sys/ins/time.ins.c"
+X#endif /* __STDC__ */
+X
+X
+X#include <stdio.h>
+X#include <sys/file.h>
+X
+Xstd_$call boolean unix_fio_$status_to_errno();
+X
+X/*
+X * total amount of time to try for.
+X */
+X#ifndef DEADTIME
+X#define DEADTIME	15
+X#endif
+X
+X/*
+X * number of tries to make.
+X */
+X#ifndef INTERVAL
+X#define INTERVAL	3
+X#endif
+X
+Xstatic int lockdeadtime = DEADTIME;
+Xstatic int lockintervaltime = INTERVAL;
+X
+Xapollo_lkopen(path, flags, mode)
+X    char * path;
+X    int flags, mode;
+X{
+X
+X    ios_$open_options_t	ios_open_options;
+X    ios_$create_mode_t	ios_create_options;
+X    status_$t			status;
+X    ios_$id_t			stream_id;
+X
+X    int i;
+X
+X
+X/*
+X *	From file.h
+X *
+X *	#define	O_RDONLY	000		open for reading
+X *	#define	O_WRONLY	001		open for writing
+X *	#define	O_RDWR		002		open for read & write
+X *	#define	O_NDELAY	FNDELAY		non-blocking open
+X *	#define	O_APPEND	FAPPEND		append on each write
+X *	#define	O_CREAT		FCREAT		open with file create
+X *	#define	O_TRUNC		FTRUNC		open with truncation
+X *	#define	O_EXCL		FEXCL		error on create if file exists
+X */
+X
+X/*
+X *	First, figure out the open mode ...
+X */
+X
+X    if (flags == O_RDONLY)
+X	ios_open_options = ios_$no_open_options;
+X    else
+X	ios_open_options = ios_$write_opt;
+X
+X    if (flags & O_WRONLY)
+X	ios_open_options |= ios_$no_read_opt;
+X
+X    if (flags & O_NDELAY)
+X	ios_open_options |= ios_$no_open_delay_opt;
+X
+X/*
+X *	Now, check the create mode ...
+X */
+X
+X    if (flags & O_EXCL)
+X	ios_create_options = ios_$no_pre_exist_mode;
+X    else if (flags & O_TRUNC)
+X	ios_create_options = ios_$truncate_mode;
+X    else
+X	ios_create_options = ios_$preserve_mode;
+X
+X/*
+X *	OK, now what?  These routines are intended for mail applications
+X *	where I wanted some consistency across applications.  My rules are:
+X *		(1)	Try every ten seconds for a minute to open the file.
+X *			If the failure is ios_$concurrency, sleep an try again.
+X *		(2)	Unless a non-blocking open is desired, in which case
+X *			return.  (That runs counter to what I wanted here, so
+X *			I don't call it with that flag, because I *want* this
+X *			routine to do things so callers can take it easy.
+X *		(3)	Or, if there is any other error, return.
+X */
+X
+X
+X    for (i = 0; i < lockdeadtime; i += lockintervaltime) {
+X	if (flags & O_CREAT)
+X#ifdef __STDC__
+X	    ios_$create(path, (short) strlen(path),
+X	    uid_$nil,
+X	    ios_create_options, ios_open_options, &stream_id, &status);
+X#else
+X 	    ios_$create(*path, (short) strlen(path), uid_$nil,
+X		    ios_create_options, ios_open_options, stream_id, status);
+X#endif /* _STDC__ */
+X      	else
+X#ifdef __STDC__
+X      	    stream_id = ios_$open(path, (short)strlen(path),
+X				ios_open_options, &status);
+X#else
+X	    stream_id = ios_$open(*path, (short)strlen(path),
+X				ios_open_options, status);
+X#endif /* __STDC__ */
+X
+X	if (status.all == status_$ok) {
+X	    if ((ios_open_options & ios_$write_opt) &&
+X	    	(ios_create_options ==  ios_$truncate_mode)) {
+X#ifdef __STDC__
+X	    	ios_$truncate(stream_id, &status);
+X#else
+X	    	ios_$truncate(stream_id, status);
+X#endif
+X	    	if (status.all != status_$ok &&
+X	    		status.all != ios_$illegal_operation) {
+X		    unix_fio_$status_to_errno (status, path, strlen(path));
+X#ifdef __STDC__
+X		    ios_$close(stream_id, &status);
+X#else
+X		    ios_$close(stream_id, status);
+X#endif
+X		    return (-1);
+X	    	}
+X	    }
+X#ifdef __STDC__
+X	    ios_$set_obj_flag(stream_id, ios_$of_sparse_ok, true, &status);
+X#else
+X	    ios_$set_obj_flag(stream_id, ios_$of_sparse_ok, true, status);
+X#endif
+X	    if (flags & O_APPEND)
+X#ifdef  __STDC__
+X	    	ios_$set_conn_flag(stream_id, ios_$cf_append, true, &status);
+X#else
+X	    	ios_$set_conn_flag(stream_id, ios_$cf_append, true, status);
+X#endif
+X	    return (stream_id);
+X	}
+X
+X	if (status.all == ios_$concurrency_violation &&
+X		(flags & O_NDELAY) == 0)
+X	    apollo_sleep(INTERVAL);
+X	else {
+X	    /* error_$print (status); */
+X	    unix_fio_$status_to_errno (status, *path, (short)strlen(path));
+X	    return (-1);
+X	}
+X    }
+X    /* error_$print (status); */
+X    unix_fio_$status_to_errno (status, path, strlen(path));
+X
+X    return (-1);
+X}
+X
+X
+X/*
+X *	An interface to get a FILE *
+X */
+X
+XFILE *
+Xapollo_lkfopen(file, mode)
+X    char *file, *mode;
+X{
+X 	int rw, f, oflags;
+X    FILE *fp; 
+X    rw = (mode[1] == '+');
+X
+X    switch (*mode) {
+X    case 'a':
+X	oflags = O_CREAT | (rw ? O_RDWR : O_WRONLY);
+X	break;
+X    case 'r':
+X	oflags = rw ? O_RDWR : O_RDONLY;
+X	break;
+X    case 'w':
+X	oflags = O_TRUNC | O_CREAT | (rw ? O_RDWR : O_WRONLY);
+X	break;
+X    default:
+X	return (NULL);
+X    }
+X
+X    f = apollo_lkopen(file, oflags, 0666);
+X    if (f < 0)
+X	return (NULL);
+X
+X    /*
+X     *  should just use ios_$position_to_eof_opt!
+X     */
+X
+X    if (*mode == 'a')
+X	lseek(f, (long)0, L_XTND);
+X
+X    fp = fdopen(f, mode);
+X
+X    return(fp);
+X}
+X
+X
+Xapollo_sleep(seconds)
+X    unsigned int seconds;
+X{
+X    status_$t s;
+X    time_$clock_t sleeptime;
+X
+X    cal_$sec_to_clock((unsigned long)seconds, &sleeptime);
+X
+X    time_$wait(time_$relative, sleeptime, &s);
+X
+X    return(s.all);
+X}
+X
+X/*
+X * The following functions set the amount of time that the open
+X * command waits for the file, and how frequently it tries.
+X */
+X
+Xsetdeadtime(n)
+X    int n;
+X{
+X    int oldvalue = lockdeadtime;
+X    lockdeadtime = n;
+X    return(oldvalue);
+X}
+X
+Xsetintervaltime(n)
+X{
+X    int oldvalue = lockintervaltime;
+X    lockintervaltime = n;
+X    return(oldvalue);
+X}
+X
+X/*
+X * Because of Domain/OS's file locking semantics, the flock() command
+X * isn't really meaningful in the UNIX usage.
+X */
+X
+Xapollo_flock(fd, operation)
+X{
+X    return 0;
+X}
+X
+X#endif
+SHAR_EOF
+chmod 0600 apollo_file.c || echo "restore of apollo_file.c fails"
+set `wc -c apollo_file.c`;Sum=$1
+if test "$Sum" != "6006"
+then echo original size 6006, current size $Sum;fi
+echo "x - extracting apollo_pad.c (Text)"
+sed 's/^X//' << 'SHAR_EOF' > apollo_pad.c &&
+X/*
+X * apollo_pad.c: 10/24/1991 version 1.2
+X *
+X * apollo_ispad() - returns true if output is going into an Display Manger
+X * 			pad.  Needed because "more" won't work right in a pad.
+X *
+X * apollo_padheight() - Returns the height in characters of the pad associated
+X *			with stdout.  If an error occurs or the stream isn't
+X *			a pad, a default value of 20 is returned.
+X *
+X *	Written by Mike Pelletier, <stealth@engin.umich.edu>, based heavily
+X *	on work by Paul Killey, <paul@engin.umich.edu>.
+X */
+X
+X#ifdef apollo
+X
+X#ifdef __STDC__
+X#include <apollo/base.h>
+X#include <apollo/pad.h>
+X#include <apollo/ios.h>
+X#else
+X#include "/sys/ins/base.ins.c"
+X#include "/sys/ins/pad.ins.c"
+X#include "/sys/ins/ios.ins.c"
+X#endif /* __STDC__ */
+X
+X#ifdef __STDC__
+Xextern status_$t errno_$status;
+X#else
+Xextern  status_$t unix_fio_$status;
+X#define errno_$status unix_fio_$status
+X#endif
+X
+X/*
+X *	Return true if we're outputting into an Apollo DM pad...
+X */
+X
+Xapollo_ispad() {
+X
+X    short disunit = 1;
+X    pad_$display_type_t distype;
+X    status_$t status;
+X
+X#ifdef __STDC__
+X    pad_$inq_disp_type(ios_$stdout, &distype, &disunit, &status);
+X#else
+X    pad_$inq_disp_type(ios_$stdout, distype, disunit, status);
+X#endif /* __STDC__ */
+X
+X    return (status.all == status_$ok);
+X}
+X
+X
+X/*
+X * Returns the height of the pad associated with stdout
+X */
+X
+Xapollo_padheight() {
+X
+X    static short FontHeight, FontWidth, FontNameLength;
+X    static int height;
+X    status_$t Status;
+X    char FontName[256];
+X    short WindowCount;
+X
+X#ifdef __STDC__
+X    pad_$window_list_t CurrentWindow;
+X#else
+X    pad_$window_desc_t CurrentWindow;
+X#endif /* __STDC__ */
+X
+X#ifdef __STDC__
+X    pad_$inq_font(ios_$stdout, &FontWidth, &FontHeight, FontName, 256,
+X			&FontNameLength, &Status);
+X#else
+X    pad_$inq_font(ios_$stdout, FontWidth, FontHeight, FontName, 256,
+X			FontNameLength, Status);
+X#endif /* __STDC__ */
+X
+X    if (Status.all == status_$ok) {
+X#ifdef __STDC__
+X	pad_$set_scale(ios_$stdout, 1, 1, &Status);
+X	pad_$inq_windows(ios_$stdout, CurrentWindow, 1, &WindowCount, &Status);
+X	height = CurrentWindow[0].height / FontHeight;
+X#else
+X        pad_$set_scale(ios_$stdout, 1, 1, Status);
+X        pad_$inq_windows(ios_$stdout, CurrentWindow, 1, WindowCount, Status);
+X        height = CurrentWindow.height / FontHeight;
+X#endif /* __STDC__ */
+X    } else {
+X	height = 20;
+X    }
+X}
+X
+X#endif /* apollo */
+SHAR_EOF
+chmod 0600 apollo_pad.c || echo "restore of apollo_pad.c fails"
+set `wc -c apollo_pad.c`;Sum=$1
+if test "$Sum" != "2324"
+then echo original size 2324, current size $Sum;fi
+exit 0

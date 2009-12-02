@@ -1,0 +1,6 @@
+Template: mush/oldpop
+Type: note
+_Description: The Post Office Protocol support in Mush did change.
+ Please have a look at the /usr/share/doc/mush/examples/dot.mushrc sample
+ startup file for an example of its use (the variables names used for POP
+ did change).

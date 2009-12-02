@@ -1,0 +1,1202 @@
+/* @(#)cmd_help    10/24/88 (Dan Heller) */
+
+%about%
+Mush, the Mail User's Shell was conceived, written and performed by
+
+Dan Heller                                            Bart Schaefer
+argv@zipcode.com                               schaefer@zipcode.com
+argv@ora.com                                   schaefer@cse.ogi.edu
+argv@monet.berkeley.edu
+argv@uunet.uu.net
+
+Mush is copyright (c) 1986, 1987, 1988, 1989, 1990, 1991 by Dan Heller.
+                     All Rights Reserved.
+
+This software is not in the public domain.  It is freely available
+under the restrictions discussed in the README file accompanying
+this distribution.
+
+Dan Heller is currently working on his second book, The Motif
+Programmer's Manual for O'Reilly && Associates.  Bart Schaefer
+recently completed his Ph.D. in Computer Science and Engineering
+at the Oregon Graduate Institute.  Bart and Dan have co-founded
+Z-Code Software Corporation to produce, among other things, Z-Mail,
+the successor to Mush.  If you like Mush, talk to us about Z-Mail :-).
+
+History:
+    Mush was created as a friendlier and more versatile replacement
+for the commonly available UNIX mail utilities.  It originated in
+1985 as "frankenmail", with strictly a SunWindows interface, but
+soon expanded to line and curses modes under the demands of excited
+users.  Bart climbed aboard on version 6.0 in October 1987.  The
+current version, 7.2, is the culmination of efforts by Dan, Bart,
+and numerous contributors from around UseNet:
+
+    Don Lewis                           Rich Burridge
+    Bill Randle                         Bill Petro
+    Marc Rouleau (MMDF support)         Akkana
+    James Bohem                         Michael Berman
+    Mike O'Carroll (DOS ports)          David St. Pierre
+    Kevin Sheehan
+
+and many others who may have been lost or weren't listed for fear
+of misspelling.
+
+Discussion and support of Mush is available via the newsgroup
+comp.mail.mush or mailing list mush-users@apple.com, which are
+one and the same in content.  If you cannot get the newsgroup
+at your site, you can request to join mush-users by sending such
+a request to mush-users-request@apple.com.
+%%
+
+%?%
+      ? [command]
+
+The `?' command gives you a list of legal commands.  Most commands
+accept -? as an option.  This provides you with specialized help for
+that particular command.
+
+If the optional argument is given, help for that command is shown.
+%%
+
+%ignore%
+      ignore/unignore [headers]
+
+Use this command to set the message headers you would like not
+to be printed when you read a message. If no header specified,
+then a list of all headers currently being ignored is printed.
+You must specify a header for unignore.
+
+You can set the variable $alwaysignore to force normally
+ignored headers to be ignored while saving messages, forwarding
+messages or including messages into message buffers.
+
+See also the variable $show_hdrs.
+%%
+
+%set%
+      set/unset [variable [= value]]
+
+With no parameters, set lists all variables and their values.
+To set a boolean variable (on or off), use:
+        set variable
+To set a variable's value to a string, use:
+        set variable = value
+
+If you want double-quotes or white-space embedded in a string,
+encase the string in single quotes.  If you want single quotes
+in a string, encase the string in double quotes.
+
+For a list of all variables with special meanings, use:
+        set ?all
+For help on a particular one of these variables, use:
+        set ?variable_name
+%%
+
+%readmsg%
+      print [msg_list]
+      type [msg_list]
+      top [msg_list]
+      next [msg_list]
+      previous [msg_list]
+
+You can read messages in different ways.  "type" and "print" display
+the current message.  "top" displays the first N lines of the current
+message where N is the value of the variable "toplines", or "crt" if
+"toplines" is not set.  "next" advances to the next unread message and
+print that.  "previous" moves back to read the first unread message
+before the current message.  "^" displays the first message, "$"
+displays the last.
+
+Any of these commands can be followed by a message list, and each
+message in that list is displayed (or piped to other commands).
+
+See also "help msg_list" and the variable $autoprint.
+%%
+
+%alts%
+      alts [hostnames] [*[user]] [!path!user] [user@host]
+
+The alts command sets a list of hostnames on which you have an
+account.  Normally, when you respond to all recipients of mail,
+your account name is listed as if you wished to send yourself mail.
+If you don't have metoo set, then your name is removed from the
+mailing list if the host specified is in the alternates list.
+Hostnames may be given either as a single name or as a UUCP path
+(separated by `!' characters).
+
+The special parameter `*' instructs alts to match all hostnames;
+in that case, only your login name is tested.  A user name may be
+appended to the `*', in which case that name is tested instead of
+your local login name.  A user name at a specific host machine
+may be specified either with the syntax "user@host" or by beginning
+the UUCP path to the host with a `!' character.  The leading `!'
+is used to differentiate paths that already end in a user name from
+those to which your local login name should be appended.
+%%
+
+%source%
+      source/saveopts [file]
+
+The source/saveopts commands load/save all variable settings,
+options, aliases, cmd's, ignored headers ...  everything you can set,
+it loads or saves.  The file read or written follows these rules:
+
+1) If a filename is given, that file is used
+2) The file described by the environment variable MAILRC
+3) In the user's home directory: .mushrc (if it exists)
+4) In the user's home directory: .mailrc (if it exists)
+
+If saveopts is used and the file exists, confirmation is requested
+before the file is overwritten.
+%%
+
+%help%
+      help [item]
+
+Type "help" with no arguments for a list of valid items.
+%%
+
+%general%
+This is the general help message.  To get help on a specific
+command, try "command -?".  Extended help is given by typing
+"help item" where item is one of:
+    path, msg_list, prompt, hdr_format
+Help with msg_list is highly advisable!
+
+Type "?" to get a list of available commands.  Try "? command"
+to get help on the particular command that you specify.
+
+Use "set ?variable" to get help with specific variables.
+%%
+
+%path%
+Whenever "path" is specified, the following syntax is legal
+besides the normal path addressing scheme used by unix:
+ ~[user]   -- the home directory of specified user (yours by default)
+ %[user]   --/usr/spool/mail/login_name [user_name] (yours by default)
+ +file     --the directory described by `set folder'; file is `file'
+%%
+
+%msg_list%
+A "msg_list" references one or more messages.  The user
+specifies a group of messages according to a special syntax.
+
+ *      All messages.
+ ^      The first message.
+ $      The last message.
+ .      The current message.
+ N-M    A range of messages between N and M, inclusive.
+
+In the last case, N and M may be * ^ $ . or digits referencing
+explicit message numbers.  The range must be in ascending order.
+
+You can also negate messages by placing the message list inside
+braces, `{' `}' -- thus, the expression "2-19 {11-14}"
+references messages 2 through 19 except for those from 11
+through 14.
+
+Commands can be "piped" to one another, because the return value
+of a command is a msg_list, not text.  For example,
+        pick -f fred | lpr
+finds all messages "from fred" and send them to the printer.
+
+Commands dealing with more than one message process them in numeric
+order -- not necessarily the order specified.  Thus, the command
+"save 1-5 9 7 6 file" saves the messages in ascending order, not in
+the order given.
+%%
+
+%hdr_format%
+This variable controls the display of message headers.  Use:
+        set hdr_format="string"
+to change the header display.  The string uses printf style
+formatting and follows these conventions:
+    %a  address of the author
+    %c  number of characters (bytes) in the message
+    %d  entire date of the message (see "date_received" variable)
+    %f  "From" field (author name and address)
+    %i  the message-id (may or may not be present)
+    %l  number of lines in the message
+    %M  month name of the message
+    %N  day of the month (number)
+    %n  name of the author
+    %s  subject of the message
+    %t  "To" field (recipients)
+    %T  time of the message (see "mil_time" variable)
+    %u  user name (login) of the author
+    %W  day of the week (Sun, Mon, etc.)
+    %Y  year of the message 
+    %y  year (last 2 digits only)
+    \n  a newline
+    \t  a tab
+
+A field specifier may be used in any % expansion.  Thus, "%20s"
+displays the first 20 characters of the Subject.  No matter
+what the formatting string, the message number, the status of
+the message and a '>' (if this is the "current" message) is
+before any user defined format is printed.
+%%
+
+%prompt%
+This variable controls the prompt that mush displays.
+        set prompt = "string"
+The "string" follows printf style formatting conventions:
+    %F  full path of the current working folder
+    %f  name (path tail) of the current folder
+    %m  current message number
+    %n  number of new messages
+    %u  number of unread messages
+    %d  number of deleted messages
+    %t  total number of messages
+    %T  current time
+    %N  day of the month (number) (today)
+    %W  weekday name (today)
+    %M  month name (this month)
+    %Y  year (this year)
+    %y  year (last 2 digits only)
+    %$  introduces variable name 
+    \n  newline
+    \t  tab
+
+The special sequence %$ must be followed by the name of a variable.
+The value of that variable is inserted into the prompt at the time
+the prompt is displayed.  When setting a %$variable sequence in your
+prompt, be sure to enclose the string in single quotes ('') to
+prevent the shell from expanding the variable at that time.
+%%
+
+%preserve%
+      preserve [msg_list]
+
+The "preserve" command marks messages to be saved in your system
+mailbox.  Unless explicitly preserved, all mail that you read is
+saved at quit time in ~/mbox (or the file specified by $mbox).
+Deleted messages are preserved only if first undeleted (see
+"delete -?").  When a message is preserved, the `P' status bit
+appears in the header summary display for that message.
+
+The "unpreserve" command reverses the effect of "preserve".
+
+Setting the boolean variable $hold is equivalent to preserving
+each message as you read it, except that no `P' status is set.
+%%
+
+%mark%
+      mark [-[A|B|C|D|E]] [msg_list]
+      unmark [msg_list]
+
+The "mark" command places a tag on messages that you wish to
+reference later.  If no argument or a msg_list only is given, the
+mark is temporary and is not saved when the folder is updated.  
+The command "headers -H:m" (abbreviated as ":m") can be used to
+reference all messages having this temporary mark.
+
+A "priority" may be set on messages by specifying a `-' followed
+by a letter in the range A through E.  The "sort" and "pick" commands
+can be used to order or select messages according to their priorities.
+Message priority is saved across folder updates.
+
+Messages may have both a temporary mark and a priority, but may not
+have more than one priority.  The presence of a temporary mark is
+shown by a `+' character immediately following the message number
+in the "headers" command display, while the priority letter is
+displayed in the same place if the message unmarked but prioritized.
+
+The "unmark" command removes temporary marks only.  To remove the
+priority of a message, do not specify a priority:
+
+    mark - [msg_list]
+
+See also the commands "set", "sort", "pick" and "headers".
+%%
+
+%save%
+      save/write/copy [-s|-S|-a|-A] [-f] [msg_list] [filename]
+
+If no filename is specified, ~/mbox (or the value of the variable
+"mbox") is used.  Save and write append the message to the file if
+it already exists.  Specifying -f overwrites the file (e.g., erasing
+it first).
+
+To save messages to a filename beginning with a digit, escape
+the filename with a backslash (\).
+
+The "write" command writes message without the headers (message
+body only).  Save and write both mark messages for deletion unless
+$keepsave is set.  The "copy" command is identical to "save" except
+that messages are not marked for deletion (identical to having the
+variable "keepsave" set).
+
+The -s and -S options save messages to files named by the
+subject of the message.  If more than one message is specified,
+then the message subject of each message is used.  If -S is
+specified, then the subject of the first message is used for all
+messages.  Spaces and forward slashes (/) are converted to
+underscores (_).
+
+The -a and -A options save messages by author's login name.
+%%
+
+%lpr%
+      lpr [-n] [-h] [msg_list]
+
+Send a message to the printer.  The options are:
+  -n      print body of message only (no headers)
+  -h      do not print ignored headers
+  -Pxx    print on printer xx
+
+The variable $printer can be used to specify a default printer;
+for example, "set printer=lp" is the same as always using "-Plp".
+The variable $print_cmd can be used to specify a program other
+than "lpr" to use for printing.
+
+NOTE:  Some systems require that the printer name be introduced
+by "-d" rather than "-P".  Mush may have been configured so that
+both -P and -d will produce the correct result, but if an error
+occurs, try the other option.
+
+See also the variable $alwaysignore.
+%%
+
+%mail%
+      mail [mail-flags] [recipients]
+
+Compose and send a mail message.  The possible flags are:
+  -b bcc-addrs    set blind-carbon-copy recipients
+  -c cc-addrs     set carbon-copy recipients
+  -e              immediately enter editor (autoedit)
+  -E              edit outgoing headers
+  -f [msg-list]   forward msg-list (not indented)
+  -F              add fortune to the end of message
+  -h file         read file as prepared draft (with headers)
+  -H file         read file as prepared text (without headers)
+  -i [msg-list]   include msg-list in letter
+  -I [msg-list]   include msg-list with headers in letter
+  -s [subject]    prompt for or set subject
+  -u              do not append signatures and fortunes
+  -U              send draft immediately (use with -h or -H)
+  -v              verbose (not available on some systems)
+
+The -f option adds new headers and automatically sends the
+indicated messages to the list of recipients unless -E or -e
+is also given.  The -I and -i options copies the indicated
+messages into the text of your letter, surrounded by the text
+of variables pre_indent_str, indent_str, and post_indent_str.
+
+The -h option reads a draft file, which should already include
+message headers.  The -H option reads a text file, which should
+NOT include headers.  If the -U option is also given, the draft
+is sent immediately.
+
+See also the variables $ask, $askcc, $autoedit, $autoinclude,
+$autosign, $autosign2, $dot, $edit_hdrs, $escape, $fortune,
+$fortunates, $logfile, $record, $no_expand, $no_hdrs, $realname,
+$sendmail, $verbose, $verify, and $wrapcolumn.
+%%
+
+%respond%
+      replysender/replyall [msg-list] [-r path] [mail-flags] [recipients]
+
+The "replysender" command replies only to the sender of a
+message, whereas "replyall" responds to everyone on the To: and
+Cc: lines of the message.
+
+The command "reply" is identical to "replysender".
+
+If a message list is indicated, then each message on the list is
+replied to in the same manner.  If -r is specified with a host or
+path (uucp-style), then each address in the list is routed via
+this path.  This overrides the value of auto_route (see man page).
+
+The address of the author is obtained from certain headers in his
+message to you.  Unless you specify otherwise, mush searches for the
+headers Reply-To: Return-Path: and From:.  You can override these
+values by setting the variable reply_to_hdr.
+
+    set reply_to_hdr = "sender reply-to return-path from_"
+
+This example shows that mush searches (in order) for the headers
+listed in the reply_to_hdr variable.  If one header isn't found, then
+mush looks for the next in the list.  If none of the headers in the
+list are found, the default headers (mentioned above) are searched.
+The last header listed in the example is the special "From " header.
+See the man page for more details.
+
+Type "mail -?" for information on legal mail flags.
+
+See also the variables $auto_route, $domain_route, $in_reply_to,
+$known_hosts, $metoo, $reply_to_hdr, and those listed by "mail -?".
+%%
+
+%sort%
+      sort [-i] [-r|a|d|l|R|s|S]
+
+  -i         ignore case in alphabetical sorts
+  -r         reverse order of next criteria
+
+  -a         by author (alphabetical)
+  -d         according to date
+  -l         by length (size in characters, not lines)
+  -p         by priority (marks)
+  -R         by subject including Re:
+  -s         by subject ignoring Re: (alphabetical)
+  -S         by status
+
+Any combination of the options can be given.  Each comparison
+proceeds from left to right through the list of criteria,
+stopping when an ordering has been determined or no criteria
+remain.  The optional -r flag reverses the order of the next
+comparison specified.  Example:
+
+      sort -i -a -r -d
+
+The above sorts by author first, ignoring case, and then sorts by
+reverse date (most recent first) for each author.  The -r option can
+be given once for each criterion and applies only to the first
+criterion that follows it.  Giving -r twice in succession (-r -r)
+does NOT negate the reversal!  Whatever option follows the rightmost
+-r has its sense reversed.
+
+Unlike -r, the -i option is recognized at most once and applies
+to all alphabetical sorts in the list of criteria.
+
+By default (no parameters), sort orders messages by status:
+New, unread messages are first, followed by preserved messages
+and finally the deleted messages are placed at the end.  If -r
+is the only flag given, the status order is reversed.
+
+If the $date_received variable is set, sorting by date is
+done using the date you received the message.  Otherwise,
+messages are sorted by date sent by the original author.
+
+See also the variable $sort.
+%%
+
+%pick%
+      pick [+<num>] [-<num>] [-r msg_list] [-x] [-i] [-h hdr] [-f|s|t]
+        [-d [-][date]] [-ago [+|-] [n days] [n weeks] [n months]]
+        [-p priority] [[-e] <pat>]
+
+Search for patterns within messages.  Entire messages are
+searched for <pattern> unless -f, -h, -s, or -t is specified.
+Only one of -d, -f, -h, -s, -t and -ago can be specified; no
+pattern is used with -d and -ago; and -x may not be used in
+conjunction with +<num> and/or -<num>.
+
+  +<num>        return only the first <num>ber messages matched
+  -<num>        return only the last <num>ber messages matched
+  -x            return all the messages which do NOT match
+  -e            remaining arguments are the <pat> (`e'xpression)
+  -f            match pattern in the "From:" field (author) only
+  -s            match pattern in the "Subject:" header only
+  -t            match pattern in the "To:" field only
+  -h hdr        match pattern in specified header field only
+  -i            ignore case of letters in when matching
+  -r msg_list   restrict the range of messages search to msg_list
+  -d            select messages sent on [+ after] [- before] date
+        A "date" is of the form:  [+-][month]/[date[/year]]
+        Omitted fields default to today's values.  Examples:
+          pick -d 4/20     messages on Apr 20, this year
+          pick -d -/2/85   on or before the 2nd, this month, 1985
+          pick -d +5/4     on or after May 4, this year
+          pick -d /        finds today's messages only
+        At least one `/' char must be used in a date.  There is
+        no strong date checking; 2/30 would be considered valid.
+  -ago          select messages relative to the current date
+        Date formats for "ago" are more verbose than for -d; see
+        the manual page for details.
+  -p [A-E]      select messages with specified priority
+        Multiple -p flags may be used to search for several
+        priorities at once.
+
+Examples:
+    Find the first 5 messages with the subject "Telephone Message":
+        pick +5 -s Telephone Message
+    Find the first 2 messages of the last 4 that are to "mush-users":
+        pick -4 +2 -t mush-users
+    Find those among messages 1 to 10 that are 2 months or more old:
+        pick -r 1-10 -ago -2m
+    Find messages that are 1 week old or newer:
+        pick -ago +1w
+    Find messages that contain "-request" in the Resent-From field:
+        pick -h resent-from -e -request
+
+A description of the pick operation is printed before the search
+is performed, unless the value of the variable $quiet contains the
+field "pick", or pick is piped to another mush command.
+%%
+
+%alias%
+      alias [name [namelist]]
+
+Options for alias:
+ alias                       print all namelists
+ alias name                  print namelist associated with name
+ alias name namelist         set "name" to the value of namelist
+ unalias namelist            unalias names in namelist
+
+A "namelist" consists of one or more addresses.  An address may
+be a name already set to another list, a valid user, a file or
+a program.  Filenames must be full pathnames, i.e., they must
+begin with a '/' (or with a ~, which expands to some home dir).
+A "program" must start with a pipe symbol and be encased in
+quotes:
+
+    "|program_name"
+
+The command "expand" fully expands addresses (including sublists)
+associated with the given alias.
+
+See also the variable $no_expand.
+%%
+
+%from%
+      from [+|-] [msg-list] [pattern]
+
+With no parameters, "from" displays the current message's header
+line.  If given a message list, "from" displays the headers of the
+listed messages.
+
+The special parameters `-' and `+' can be given to move the
+current message pointer to the previous or next message
+respectively, while also printing that message's header.
+
+If a message list was given in addition to `-' or `+', then
+the current message pointer is set to the first or last
+message, respectively, in the message list given.
+
+If a pattern is given, that pattern is searched for in the From:
+header of the message.  If both a message list and a pattern are
+given, the pattern search is restricted to the listed messages.
+
+Examples:
+
+        from - 10-30 {16}
+displays the headers of messages 10 through 30 except for
+message 16 and set the current message pointer to 10.
+
+        from + Dan
+displays the headers of all messages that contain "Dan" in the
+author's name and set the current message pointer to the last
+one of that kind in the list.
+
+        from +
+displays the header of the message after the current message
+and increment the current message pointer to that message.
+
+See also the "headers" command and "help hdr_format".
+%%
+
+%my_hdr%
+      my_hdr [header[: string]]
+
+This command is used to set, unset or view your personalized
+message headers.  These headers are included in all your
+outgoing mail.
+
+Options for my_hdr:
+  my_hdr                        show all headers
+  my_hdr header                 show value of header
+  my_hdr header: string         set header to string
+  un_hdr header                 unset header
+
+Note that there is no space between the header name and the
+colon in the third form of the command.
+%%
+
+%fkey%
+      fkey [<sequence> [command]]
+      unfkey <sequence>
+
+This command is used to make function key settings in Suntools
+(graphics) mode.  When run as a tool (-t on command line),
+choose the Options item, and the "function key" menu option.
+
+The unfkey command removes the setting for a given string.
+%%
+
+%cmd%
+      cmd [name [value]]
+
+This function is used to establish command aliases; cmd's are
+just like aliases in the C-shell.  Options are:
+  cmd                       view all commands
+  cmd command               show value of command
+  cmd command value         set command to value
+  uncmd command             unset command
+
+The value must be quoted if it is to contain command separators
+such as `;' or `|'.
+
+If you want to reference history commands within a cmd,
+escape the ! with a backslash.  For example:
+
+        cmd r 'replysender \!* ; delete -t'
+
+causes "r" to reply using whatever parameters you have given on
+the command line and then delete that message and print the next
+message (-t parameter to "delete").
+%%
+
+%headers%
+      headers [+|-|N] [[-H]:c]
+  +     print the next screenful (or use the 'z' command).
+  -     print the previous screenful (or use 'z-' ).
+  N     print a screenful starting at message number N.
+  -H:c  where `c' is one of
+     a  all messages (mostly for the mush startup option -H:c)
+     d  deleted messages
+     m  marked messages
+     n  new messages
+     o  old messages
+     p  preserved messages
+     r  replied-to messages
+     s  saved messages
+     u  unread messages
+
+The "headers" command prints out a screenful of headers.
+Deleted messages are not normally shown; set "show_deleted" to
+include deleted messages.
+
+The command ":c" is equivalent to "headers -H:c".  The -H can be
+omitted, i.e., "headers :c" also works.
+
+See also "help hdr_format".
+%%
+
+%folder%
+      folder [-N] [-n] [-r] [%[user]|#|&|file]
+
+  -N       do not display the list of headers
+  -n       do not update the current folder before changing
+  -r       read only mode (cannot write changes to new folder)
+  %[user]  change to /usr/spool/mail/[user] (you by default)
+  #        change to folder accessed previous to current folder
+  &        change to "mbox" -- default is $mbox or ~/mbox
+
+The "folder" command changes the current folder; with no parameters,
+it prints the name of the current folder.  For compatibility with
+older versions, the single character `!' is equivalent to -n.
+
+"Folder" treats the characters `+' and `~' as metacharacters when
+they are the first character of a file name.  `~' is expanded to the
+name of the user's home directory, or to another user's home if it
+is given as "~username" (no `/' between the `~' and the name).  `+'
+is expanded to the user's folder directory ("~/Mail" or the value of
+$folder); no `/' is required between `+' and the file name, so both
+"+file" and "+/file" refer to the same file.
+
+The "update" command updates the current folder.  In this case, only
+the -N and -r options are recognized; "update -r" changes the current
+folder to read only mode AFTER updating it.
+
+See also the variable $folder.
+%%
+
+%quit%
+      quit/exit
+
+These commands end a mush session.  "quit" updates your mailbox; if
+new mail has come in, you are told so and given an option whether to
+really quit or not.  "exit" terminates mush neither updating your
+mailbox nor checking for new mail.
+%%
+
+%ls%
+      ls [options]
+
+The "ls" command is exactly like the UNIX command "ls".  All
+parameters are the same.  The "folders" command is equivalent
+to doing "ls -FR $folder" from the Mush prompt.
+%%
+
+%shell%
+      sh [command]
+
+If a "command" is given, that UNIX command is executed under the
+Bourne shell.  If no command is specified, then an interactive shell
+is started. The environment variable SHELL or the local mail shell
+variable $shell describes the shell to invoke.  If none is set, then
+the default shell is defined by the system administrator (currently
+set to csh).
+
+Users on systems with job control probably have little use for the
+sh command.
+%%
+
+%stop%
+      stop
+
+The stop command sends a stop signal to the mail shell.  It is
+equivalent to your tty job-control stop character (often ^Z).
+Since the mush shell never needs to be exited, the command 'q'
+may be "cmd"ed to "stop;await" and csh users may have
+        alias mail %mush
+to bring mush into the foreground rather than having to invoke
+it again.  New mail is then read into the shell automatically
+and much time and energy is saved.
+%%
+
+%curses%
+      curses
+
+The curses-based interface for Mush does not require a graphics
+display, but does require a terminal which can handle upline
+cursor movement capabilities.  All commands are one or two
+keystroke commands and are executed as soon as the key is typed.
+
+For a list of current key-to-command bindings, use the "bind"
+command (defaults to 'b' in curses mode).
+
+See also the variable $curses_help.
+%%
+
+%bind%
+      bind [<sequence> <curses-command> [<parameters>]]
+      unbind <sequence>
+
+Binding is done for the curses interface only.  It allows the
+user to bind keystrokes or key sequences to curses-interface
+commands.  You cannot bind keystrokes to regular mush commands
+using bind.
+
+A bound key-sequence (input by the user) is converted into
+the curses command it is bound to.  For a list of all curses
+commands, issue the "bind" command and follow the instructions
+to get a list.  Currently, parameters are ignored for all curses
+commands except the special command "macro".
+
+When specifying sequences, you may enter almost anything at the
+keyboard that you want to type.  This includes most control
+characters.  A special syntax is provided to specify control
+characters if you wish to set up default key bindings in your
+initialization file without using real control characters.
+
+To bind keystrokes that are control characters in the
+initialization file, you must use the notation "\CX" where "X"
+is an upper-case letter representing the control key you want to
+use. "\CN" would be control-N; "\n" is carriage return.  You may
+not bind keyboard generated signals; for most users, those key
+sequences are control-C and control-\.  For users with job
+control, the suspend characters (usually control-Z and
+control-Y) are also ignored.
+
+Trying to bind a key sequence which prefixes another sequence is
+an error and the user is warned that the longer binding does not
+work.  The binding does take place, however, because it is
+possible to unbind the shorter sequence, thus validating the
+longer sequence.
+
+The special curses command "macro" allows a string to be
+executed just as if the user typed it directly.  Issue the
+"bind-macro" command for more details.
+
+Bindings are removed with the "unbind" command.
+%%
+
+%msg_flags%
+      flags [[+|-] [flag-bits]] [msg-list]
+
+Any sensible combination of these flag-bits may be used:
+  D    deleted
+  f    forwarded
+  N    new
+  O    old
+  P    preserved
+  p    printed
+  R    read
+  r    replied-to
+  S    saved
+  U    unread
+
+This command displays the status of messages by default.  If a
+msg-list is specified, it tells which bits of the message are set.
+If any (one or more) of the bits are given and no + or - modifier is
+specified, then the status of each message in the list is set to that
+status absolutely (other status flags are lost).  However, if a +
+or - is specified, then the status is modified for that bit to on (+)
+or off (-).
+
+If no list is given, the current message is used.
+%%
+
+%setenv%
+      setenv VARIABLE [value]
+
+Variable names may be any string, but traditionally environment
+variables are all upper case.  If no "value" is specified, then
+the variable name is set to an empty string.  If the value contains
+spaces, you should enclose the string in quotation marks.  Use
+printenv to print a list of all your environment variables.
+%%
+
+%unsetenv%
+      unsetenv VARIABLE
+
+You must specify one and only one variable to unset in your
+environment variable settings.  Use printenv to print a list of
+all your environment variables.
+%%
+
+%printenv%
+      printenv [VARIABLE]
+
+Display the entire current environment, or the value of the
+specified environment variable.
+
+Also see "setenv" and "unsetenv".
+%%
+
+%edit_msg%
+      edit [msg_list]
+
+The "edit" command lets you edit messages in your folder.  The
+editor used is determined by the variable $editor, the environment
+variable EDITOR, the variable $visual and the environment variable
+VISUAL in that order.  If none of those variables are set, the
+default visual editor is used.  The "v" command is the same as "edit"
+but tests only $visual and VISUAL.
+
+When editing messages, be careful not to remove certain message
+headers such as Date:, From:, or any others that look important.
+If you remove or change something you shouldn't have, you are
+notified and the temporary file used to edit the message is
+not removed.
+%%
+
+%bind-macro%
+      bind-macro [<sequence> [<expansion>]]
+
+The "bind-macro" command allows you to set macros in curses
+mode, so that one keystroke (or a few) acts as though you
+had typed a longer sequence.  Using "bind-macro" is equivalent
+to specifying the "macro" special command as a parameter to
+the "bind" command.
+
+Given no parameters, "bind-macro" lists all current curses
+mode macros.  Given only a <sequence>, it shows the current
+binding for that sequence.  Given both a <sequence> and an
+<expansion>, it creates a macro such that, when the
+<sequence> is typed in curses mode, the effect is the same
+as if the <expansion> had been typed instead.
+
+The same format for control characters that is used for the
+"bind" command may be used in both the <sequence> and the
+<expansion>, i.e.,
+    \Cx     control-x (where x is a capital letter)
+    \E      the escape character (\C[ does NOT work!)
+    \n      a newline (other C-style escapes also work)
+
+Example:
+    bind-macro F [folder]+record\n
+
+If you are in curses mode and hit the F key, then the curses
+mode command "folder" executes and +record (followed by
+a carriage return) is entered as if you typed it.
+
+Macros are removed with the "unbind" command, see "bind -?".
+
+Also see the "map" and "map!" commands.
+%%
+
+%map%
+      map [<sequence> [<expansion>]]
+      unmap <sequence>
+
+The "map" command allows you to use one keystroke (or a few) and
+have it act as though you had typed a longer sequence.
+
+Given no parameters, "map" lists all current line mode
+macros.  Given only a <sequence>, it shows the current
+binding for that sequence.  Given both a <sequence> and an
+<expansion>, it creates a macro such that, when the
+<sequence> is typed in line mode, the effect is the same
+as if the <expansion> had been typed instead.
+
+The same format for control characters that is used for the
+"bind" command may be used in both the <sequence> and the
+<expansion>, i.e.,
+    \Cx     control-x (where x is a capital letter)
+    \E      the escape character (\C[ does NOT work!)
+    \n      a newline (other C-style escapes also work)
+
+Example:
+    map & print\n
+
+If you are not in curses mode and hit the & key, then mush acts
+as if you typed the word "print" and hit carriage return.
+
+To type a character without having the mapping expanded, precede
+the character with a backslash (\).
+
+Mappings are removed with the "unmap" command.
+
+Also see the "map!" and "bind" commands.
+%%
+
+%map!%
+      map! [<sequence> [<expansion>]]
+      unmap! <sequence>
+
+The "map!" command allows you to set macros in message
+composition mode, so that one keystroke (or a few) acts
+as though you had typed a longer sequence.  map!'s take
+effect regardless of whether you started the letter from
+curses mode or line mode.
+
+Given no parameters, "map!" lists all composition mode
+macros.  Given only a <sequence>, it shows the current
+binding for that sequence.  Given both a <sequence> and an
+<expansion>, it creates a macro such that, when the
+<sequence> is typed in message composition mode, the effect
+is the same as if the <expansion> had been typed instead.
+
+The same format for control characters that is used for the
+"bind" command may be used in both the <sequence> and the
+<expansion>, i.e.,
+    \Cx     control-x (where x is a capital letter)
+    \E      the escape character (\C[ does NOT work!)
+    \n      a newline (other C-style escapes also work)
+
+Example:
+    map! ! <BANG>
+
+If you are typing in a letter regardless of which interface you
+use and you hit the ! key, then mush reacts as if you typed the
+keys "<BANG>".
+
+To type a character without having the mapping expanded, precede
+the character with a backslash (\).
+
+Mappings are removed with the "unmap!" command.
+
+Also see the "bind" and "map" commands.
+%%
+
+%eval%
+      eval [-h|-p] args ...
+
+This command causes its arguments to be re-parsed and then
+executed as a mush command.  Example:
+
+    set initprompt='"$hostname:$cwd "'
+    eval set prompt=$initprompt
+
+If the -h flag is given, then eval looks for formatting parameters
+as defined for the variable $hdr_format, and expands the formats
+for the "current" message before executing the command.  Example:
+
+    eval -h pick -f %f
+
+finds all messages from the same author as the current message.
+
+If the -p flag is given, then eval expands formatting parameters as
+as defined for the variable $prompt.  The -h and -p flags may not be
+used together in the same eval.
+%%
+
+%pipe_msg%
+      pipe [-p pattern] [msg-list] [unix-command] [cmd-args]
+
+This command is used to send a message to a unix command.  The
+command takes its input from the message(s) passed to the pipe
+command.  By default, the entire message (including headers) is
+sent.  Ignored headers (see "ignore -?" and "set ?show_hdrs") can
+be suppressed by setting the variable $alwaysignore.
+
+You can pipe (|) messages to this command rather than give a
+msg-list, but if no msg-list is given and there is no pipe, the
+current message is used.  The unix-command is executed via "sh",
+so csh aliases may not be used.
+
+If invoked with a capital letter (Pipe), only the bodies of the
+messages are fed to the unix-command -- all headers are omitted.
+
+A pattern can be specified to indicate which line should start
+the lines that are sent to the unix command.  The pattern must
+match literally (no regular-expressions) at the beginning of a
+line.  Once the pattern is found, that line and all succeeding
+lines are sent to the unix command.
+
+If the unix-command is omitted, then /bin/sh is used and the 
+pattern searched for is "#!".  Therefore, "pipe" with no arguments
+can be used to treat a message as a shell script.
+
+Examples:
+    pipe patch         -- send the current message to "patch"
+    pipe -p %! lpr     -- send the message to a postscript printer
+    pipe 2 7 more      -- send messages 2 and 7 through "more"
+    1 | Pipe nroff     -- send the body of message 1 to "nroff"
+%%
+
+%merge%
+      merge [-N] folder-name
+
+The contents of the specified folder are read into the current
+folder.  If -N is not specified, a header summary is printed
+for each message read (see "headers -?").
+
+A list of all the merged messages is returned for use in pipes.
+%%
+
+%echo%
+    echo [-n] [-h | -p] args
+
+Echo simply echoes the parameters to the command back to the user.
+
+If the -n flag is given, then no newline is appended.
+If the -h flag is given, then echo looks for formatting parameters
+as if the "from" command were given on the "current" message.
+If the -p flag is given, then echo looks for formatting parameters
+as if your prompt were changed temporarily.
+
+Examples:
+    echo -h This message is from %a and is dated %d
+might produce:
+    This message is from island!argv and is dated Dec 14, 1988.
+
+    echo -p There are %n new messages to read in %f.
+might produce:
+    There are 5 new messages to read in /usr/spool/mail/argv.
+
+Note that -h and -p cannot be specified together.
+%%
+
+%undigest%
+    undigest [-m] [-p pattern] [msg_list] [filename]
+
+A "digest" is a mail message which is a collection of other mail messages
+mailed to a "moderator" by other users.  The moderator compiles all the
+messages into a folder and sends the result to all the subscribers of the
+mailing list.  The undigest command disassembles the entries into the set
+of messages which comprises the digest.
+
+The -m option merges these messages into the current folder.  Otherwise,
+if a filename is specified, a new folder is created and the user can change
+folders to read the messages separately.
+
+The -p option specifies an alternate pattern to use as the digest article
+separator.  The pattern must match literally at the beginning of a line.
+The default pattern is "--------" (eight hyphens).
+
+If a message list is specified, each digest is disassembled to the same
+filename (if given).  If no filename is given and the user did not request
+a merge, then a folder is created based on the subject of the digest.
+%%
+
+%await%
+    await [-T delay]
+
+Instructs the shell to wait for new mail to arrive.  New mail is checked
+every 30 seconds by default; a different delay can be specified by using
+the -T option.
+
+If this command is used in a pipe, its output is its input plus the list
+of new messages that have arrived.  For example, to show the headers of
+all new messages, and set the current message to the first new message:
+
+    await | from -
+
+The await command terminates only when new mail arrives or a keyboard
+interrupt is generated.
+%%
+
+%cd%
+      cd [directory]
+
+Change the current working directory to the specified directory,
+or to the user's home directory if none was given.
+
+If the variable $cdpath is set to a list of directory names, and the
+argument directory is not an absolute path, mush searches the cdpath
+directories in the order given for the new directory and changes to
+the first one found.  NOTE:  The current directory "." is always
+searched first, before any directory in $cdpath.
+%%
+
+%pwd%
+      pwd
+
+Prints the current working directory.  The variable $cwd also
+holds the current working directory unless reset by the user.
+%%
+
+%delete%
+      delete/undelete [msg-list]
+
+The "delete" command marks the listed messages as deleted.  If
+no message list is given, the current message is deleted.
+
+Deleted messages are not shown in the header summary display
+except in curses mode and when the variable $show_deleted is set.
+Deleted messages are ignored by the "pipe" command and by the
+commands that display messages (see "print -?"), but most other
+commands include all messages whether deleted or not.
+
+Deleted messages are lost forever when the folder is updated (by
+the "update" command, by changing folders without the "!" flag,
+or by exiting with "quit").  Messages can be recovered by the
+"undelete" command at any time BEFORE the folder is updated.
+
+See also the variable $show_deleted.
+%%
+
+%history%
+      history [-h] [-r] [number]
+
+Display the command history that mush has recorded, as in csh.
+Option -h suppresses the history numbers, and option -r shows
+the history in reverse order (most recent first).  If a number
+is given, that many commands of history are displayed.
+
+The number of commands that mush records is controlled by the
+variable $history.  If $history is not set, mush saves only
+the previous command (equivalent to history=1).
+
+The basic forms of history reference are (N is a number and
+str is any string):
+
+  !str      most recent command beginning with str
+  !?str?    most recent command containing str
+  !N        command N from the history list
+  !-N       command N previous to the current one
+  !!        previous command (same as !-1)
+  !$        last word of previous command
+  !*        all arguments of previous command
+
+Modifiers (H can be str, ?str?, N or -N, n is a number or $):
+
+  !H:$      last word of referenced command
+  !H:n      n'th word of referenced command
+  !H:n-m    n'th through m'th words of command
+  !H:-n     word 0 (command name) through n of command
+  !H:*      all arguments of command (same as !H:1-$)
+  !H:n-     word n through next-to-last word
+  !H:p      print but don't execute command
+
+  !{R}str   append str to reference R (R is any form above)
+
+It is not currently possible to combine :p with any of the
+other modifiers.
+
+Also see the variable $nonobang.
+%%
+
+%folders%
+      folders
+
+List the files in the directory described by the variable $folder.
+These files are assumed to be folders of mail messages that can
+be read in by the "folder" command (see "folder -?").
+
+Also see the "ls" command.
+%%
+
+%stty%
+      stty [options]
+
+The "stty" command is equivalent to the UNIX command "stty".  All
+options are the same.  Some settings are temporarily changed
+while mush is running, but are restored when mush exits.
+%%

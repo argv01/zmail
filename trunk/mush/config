@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+# Type messages if necessary...
+case "$2" in
+ *unoff1*)
+  db_input medium mush/oldpop || true
+  ;;
+ *)
+  ;;
+esac
+
+db_go

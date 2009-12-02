@@ -1,0 +1,53 @@
+#
+#    Translators, if you are not familiar with the PO format, gettext
+#    documentation is worth reading, especially sections dedicated to
+#    this format, e.g. by running:
+#         info -n '(gettext)PO Files'
+#         info -n '(gettext)Header Entry'
+#
+#    Some information specific to po-debconf are available at
+#            /usr/share/doc/po-debconf/README-trans
+#         or http://www.debian.org/intl/l10n/po-debconf/README-trans
+#
+#    Developers do not need to manually edit POT or PO files.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: mush\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2004-03-08 09:47-0800\n"
+"PO-Revision-Date: 2004-03-28 14:42:00+0200\n"
+"Last-Translator: Morten Brix Pedersen <morten@wtf.dk>\n"
+"Language-Team: Danish <dansk@klid.dk>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: note
+#. Description
+#: ../templates:3
+msgid "The Post Office Protocol support in Mush did change."
+msgstr "POP-understøttelse i Mush er blevet ændret."
+
+#. Type: note
+#. Description
+#: ../templates:3
+msgid ""
+"Please have a look at the /usr/share/doc/mush/examples/dot.mushrc sample "
+"startup file for an example of its use (the variables names used for POP did "
+"change)."
+msgstr ""
+"Du bør tage et kig i /usr/share/doc/mush/examples/dot.mushrc eksempelsfilen "
+"for at se et eksempel på dens brug (variabel-navnene for POP har ændret sig)"
+
+#. Type: note
+#. Description
+#: ../mush-src.templates:3
+msgid "To build mush binary package, you have to run"
+msgstr ""
+
+#. Type: note
+#. Description
+#: ../mush-src.templates:3
+msgid "        build-mush"
+msgstr ""

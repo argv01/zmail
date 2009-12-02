@@ -1,0 +1,39 @@
+.TH DIGESTIFY 1 "July 16, 1996"
+.SH NAME
+.B digestify
+\- create mail digests with mush
+.SH SYNOPSYS
+.B digestify
+.BI -f mailbox
+.SH DESCRIPTION
+.B digestify
+reads a mailbox and creates a digest of mail messages, i.e. a file
+which has a single header and contains all mail messages separated
+by a line of eight dashes.
+.PP
+.B mush
+is able to convert such digests back to a set of messages with the
+.B undigest
+command.
+.SH OPTIONS
+.TP
+.BI \-f " mailbox"
+Create a digest of the given mailbox.
+.SH CAVEATS AND BUGS
+Because
+.B digestify
+is interpreted by
+.BR mush ,
+it does not check that it is correctly called, and if the
+.B \-f
+flag is not given
+.B mush
+will think that
+.I mailbox
+is an email address and will ask for the contents of a message to
+send to this address.
+.SH DOCUMENTATION
+Yves Arrouye <arrouye@debian.org>
+.SH SEE ALSO
+.BR mush (1)
+

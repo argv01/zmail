@@ -1,0 +1,38 @@
+.TH DOTLOCK 1 "July 16, 1996"
+.SH NAME
+.B dotlock
+\- manage .lock locking of a file
+.SH SYNOPSYS
+.B dotlock
+.BI "\-\-lock\fP, \fB\-l" " filename"
+.br
+.B dotlock
+.BI "\-\-unlock\fP, \fB\-u" " filename"
+.SH DESCRIPTION
+.B dotlock
+can be used to lock or unlock a given
+.I filename
+by creating or removing a
+.IB filename .lock
+file which, if present, indicates that
+.I filename
+is locked.
+.PP
+When trying to lock a file,
+.B dotlock
+will wait for an existing lock to be removed before creating
+its own lock and exiting.
+.SH OPTIONS
+.TP
+.BI "\-\-lock\fP, \fB\-l" " filename"
+Lock the given
+.IR filename .
+.TP
+.BI "\-\-unlock\fP, \fB\-u" " filename"
+Unlock the given
+.IR filename .
+.SH DOCUMENTATION
+Yves Arrouye <arrouye@debian.org>
+.SH SEE ALSO
+.BR mush (1)
+

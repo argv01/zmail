@@ -1,0 +1,57 @@
+.TH MAILLOCK 1 "July 16, 1996"
+.SH NAME
+.B maillock
+\- lock or unlock a mailbox
+.SH SYNOPSYS
+.B maillock
+.BI "\-\-lock\fP, \fB\-l"
+[
+.BI \-f " mailbox"
+]
+.br
+.B dotlock
+.BI "\-\-unlock\fP, \fB\-u"
+[
+.BI \-f " mailbox"
+]
+.SH DESCRIPTION
+.B maillock
+can be used to lock or unlock the user mailbox
+(or the
+.I mailbox
+argument specified on the command line)
+by creating or removing a
+.B .lock
+file which, if present, indicates that
+the mailbox is locked.
+.PP
+When trying to lock a file,
+.B maillock
+will wait for an existing lock to be removed before creating
+its own lock and exiting.
+.SH OPTIONS
+.TP
+.BI "\-\-lock\fP, \fB\-l"
+Lock the user mailbox.
+.BI "\-\-unlock\fP, \fB\-u"
+Unlock the user mailbox.
+.BI \-f " mailbox"
+Lock or unlock the given
+.I mailbox
+file instead of the user mailbox in
+.BR /var/mail .
+.SH ENVIRONMENT
+.TP 20
+.B USER
+The login name of the user, used to determine where its system mailbox
+is.
+.TP 20
+.B LOGNAME
+An alternate login name used if the
+.B USER
+environment variable is not set.
+.SH AUTHOR
+Yves Arrouye <arrouye@debian.org>
+.SH SEE ALSO
+.BR dotlock (1)
+

@@ -1,0 +1,136 @@
+# Mushrc -- suggested /usr/lib/Mushrc init file for Mush
+# Copyright (c) 1989 by Bart Schaefer and Dan Heller
+#
+# Set these variables as they are set in config.h
+# (assumes that this file is DEFAULT_RC from config.h)
+set \
+	MAILRC =	".mushrc" \
+	ALTERNATE_RC =	".mailrc" \
+	ALT_DEF_RC =	"/usr/lib/Mail.rc"
+
+# Set up the display early to allow quick exit in headers-only mode.
+# The hdrs_only flag is true if the command line was: "mush -H".
+# The variable hdr_format is set to change the format of the header
+# summaries that are displayed.
+if hdrs_only
+    set hdr_format='%22a %M %-2N %5T  %.33s'
+    exit	# Quits reading this file
+else
+    set hdr_format='%22a %M %-2N %5T (%3.5l li) %.25s'
+endif
+
+# Set the prompt to show current time, name of the current folder,
+# current message number, and count of total messages.
+set prompt="(%T) %f: #%m of %t> "
+
+# Hitting <CR> should do nothing (helps make mush more shell-like).  If
+# newline is not set, hitting <CR> prints the next message (like Mail).
+# This variable could be set to any mush command.
+set newline
+
+# When reading messages, don't bother looking at lengthy, boring headers.
+ignore message-id received via status priority
+
+# Since mush has csh-like history, you might find it annoying to type
+# things like "mail host\!host1\!host2\!user" from within the mush shell.
+# Setting nonobang will prevent the "unknown event" and allow the !'s to
+# be typed without having to be preceded by backslashes.
+set nonobang
+
+# By default, mush's history is set to the last command only.  Set it to
+# remember the last 100 commands.
+set history = 100
+
+# If the variable "unix" is set, then any command that isn't a mush command
+# will execute the command as if you typed it from the shell.  Note, such
+# commands will not go through another shell -- this is it.  This may be
+# considered confusing for new users, so it is commented out by default.
+# set unix
+
+# When you use the -i option to reply, or use the ~i tilde escape in a letter
+# when in compose mode, the current message will be included in your text.
+# Put a nice wrapper around those included messages.  Here, show the author's
+# name and the subject of his letter, label the end, and add a trailing blank
+# to separate each inclusion and make finding the end easier.
+set pre_indent_str='On %M %N, %T, %.50n wrote:\n} Subject: %.65s'
+set indent_str='} '	# actual message text is preceded by a "}"
+set post_indent_str='}-- End of excerpt from %.50n\n'
+
+# Label replies with a header showing the who, what, and when of the
+# message being replied-to.
+set in_reply_to='%f\n\t"%s" (%d)'
+
+# Mail routing and address-fixing conveniences.  If auto_route is set, then
+# replies to messages take a closer look at the addresses of the recipients.
+# If any redundant paths are present, they are pruned.  Also, the path that
+# precedes any hosts listed in the "known_hosts" list is truncated.  This is
+# useful for uucp sites only, and is therefore commented out by default.
+# set auto_route known_hosts="sun ucbcad well unicom"
+
+# The curses mode allows the screen to be set up like a full screen editor.
+# There are basic "curses commands" which are bound to keyboard key-sequences
+# (usually one character).  The user can rebind these keys to suit his tastes.
+# Note that the binding for R below removes the binding of reply-all.
+#
+set curses_help		# Unset this to remove help message in curses.
+bind \n display		# Hit return to display the next message.
+bind e macro "[line-mode]edit\n"	# Quick edit from curses.
+bind P macro "[line-mode]Print\n"	# Show me all the headers.
+
+# "cmd" is used to set command line aliases similar to the way "csh"
+# does it.  The only difference is that "alias" is a reserved word in
+# Mush and Mail, so cmd is used.
+#
+cmd dq 'd \!*; q'		# Delete a message list, then quit.
+cmd unread 'flags \!* U O'	# Mark messages unread.
+cmd : curses			# Colon now "toggles" curses mode.
+
+# Read the alternate system init file in addition to this file
+source $ALT_DEF_RC
+unset ALT_DEF_RC
+
+# Mush tries to read ~/.mushrc first, then it tries ~/.mailrc.  If .mushrc
+# is found, .mailrc is normally not read.  Source the contents of .mailrc
+# as well in case there are Mail aliases that are set there.
+if -e $HOME/$MAILRC
+    if -e $HOME/$ALTERNATE_RC
+	source $HOME/$ALTERNATE_RC
+    endif
+endif
+unset ALTERNATE_RC
+
+# The rest of this file demonstrates how sysadmins with novice users
+# might want to set things up.
+
+if -e $HOME/.mushexpert
+    set quiet
+    exit
+endif
+if ! -e $HOME/.mushuser
+    echo "I see you've never used the Mush program before."
+    echo "I'll set some special flags to help you out."
+    echo "After you've used Mush a few times, you can type the command:"
+    echo ""
+    echo "	expert"
+    echo ""
+    echo "and the flags will no longer be set unless you put them"
+    echo "in your $HOME/$MAILRC file."
+    echo ""
+    sh touch $HOME/.mushuser	# Use sh in case $unix is not set.
+    if $?quiet
+	unset quiet		# Show the help message on startup.
+    endif
+endif
+# At this point some helpful variables should be set.  See the list above,
+# marked as "helpful for new users", for suggestions.
+#
+# Create the "expert" command mentioned in the message above.
+cmd expert 'sh touch $HOME/.mushexpert'
+
+# These variables are helpful for new users:
+#	ask		-- always prompt for Subject: of mail
+#	ignoreeof	-- ignore end-of-file from keyboard
+#	verify		-- query that all is well before sending mail
+#	warning		-- report miscellaneous possible problems
+set ask verify warning
+set ignoreeof="echo 'Use "'"'quit'"'" to quit.'"

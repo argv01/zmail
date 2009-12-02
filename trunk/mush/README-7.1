@@ -1,0 +1,207 @@
+This is release 7.1.0 of the SunView implementation of mush.
+
+Version 7.1.0 differs from 7.0.4 mostly in the appearance of the screen
+and the additional functionality that is allowed to show through to the
+tool from the underlying interpreter.  This is a significant enough change
+in "look and feel" that the revision number was increased from 0 to 1.
+
+Thanks to Bill Randle <billr@saab.cna.tek.com> for extensive SunOS 3.5
+testing, and to Bill and also Don Lewis <del@mlb.semi.harris.com> for
+their contributions to the new toolmode composition features and function
+key handling.
+
+Tool mode changes include:
+    * Compilation now keys on definitions of SUN_4_1, SUN_4_0 or SUN_3_5
+      in makefile.sun, rather than assuming SunOS4.0 when SIGRET=void.
+      You still have to define SUNTOOL to get the tool mode capability.
+      If you define SUNTOOL but not the others, SUN_4_0 is assumed.
+    * The header summary display window has a scrollbar; the <Prev> and
+      <Next> buttons for scrolling are gone.
+    * The placement of buttons and items has changed a lot.  Buttons and
+      items dealing with folders and general setup have moved to the top
+      of the frame, and items dealing with individual messages and with
+      composition have been placed in a single row between the headers
+      and messsage display subwindows.
+    * The <Folders> and <Save> buttons each have a text entry item.
+      Furthermore, file completion with the ESC key works in those items.
+    * The <Sort> menu has been unscrambled, so you actually get the sort
+      criteria that you select.  (Don't ask.)
+    * The <Aliases> and <Headers> buttons have moved into a menu under
+      the <Options> button.  This clears up some confusion about exactly
+      what it was that <Headers> meant, and provides a hook for future
+      addition of a window for defining your own outgoing message headers.
+    * The <Display> button is gone; its operations are now handled by
+      opening the <Options> frame and toggling show_deleted or no_reverse.
+    * The small one-line print window is gone; messages previously shown
+      there now go to the scrollable status window.  There may be some
+      remaining bugs with missing newlines here.  This frees up some more
+      file descriptors in SunOS 3.5, to keep other things working longer.
+    * Function keys are recognized in most parts of the main frame.  In
+      anticipation of the day when window manager function keys can be
+      redefined, the messages about "L7 not defined" etc. are still shown
+      unless suppressed through $quiet (see below).
+    * The composition frame has more control buttons, providing more of
+      the functions of line and curses mode message composition.  Some
+      of the "chattiness" of message composition has gone away.  In fact,
+      the whole chatty subwindow in the compose frame has gone away,
+      possibly to return in a later patch when a better way to decide
+      what frame a message should go to has been worked out.  In the
+      meantime, all messages go to the main frame.
+    * Tilde escapes are supported in the tool mode composition textsw,
+      with a few minor exceptions accessible from the control buttons.
+    * Typing a <return> while entering header field text in tool mode
+      will move automatically to the next header when this is sensible.
+      The cursor becomes a bent arrow to indicate that this will happen.
+    * User-definable icons can be installed through the $mail_icon and
+      $newmail_icon variables, and $quiet has a field to suppress the
+      message-number label so your pretty pictures won't be trashed.
+    * Files that are not readable as folders are left out of the menus
+      for the <Folder> and <Save> items.
+
+General changes include:
+
+    * There is a new defined constant, DIRECTORY, which indicates whether
+      your system has BSD-compatible directory-access routines.  It turns
+      out to be much too hard to figure this out on an OS-by-OS basis.  
+      DIRECTORY is automatically defined when BSD is defined, and is in
+      the default CFLAGS in makefile.hpux; you others are on your own.
+    * Some compilers were confused by "/*" appearing in the META string
+      defined in glob.h.  The characters in META have been rearranged.
+    * Using "exit" in a nested "if" in a source/init file no longer
+      causes error messages about "missing endif".
+    * Redefining "folder" via a "cmd" in .mushrc no longer causes the
+      initial folder load to bomb.  Similarly with "sort".
+    * Date parsing and sorting now understand timezones.  There may
+      still be some rough edges in date parsing on some of the less
+      common date formats, but RFC-822 and ctime (From_ line) dates
+      are handled correctly.  If the dates mush displays are really
+      off the wall, the order of the sscanf's in parse_date() may need
+      to be changed, or we may need to add some cases rather than
+      using partial matches to skip missing timezone fields.  There
+      are also some strange nonstandard abbreviations out there (what,
+      for example, is ECT?) which will all be treated as GMT unless
+      you hack them into the tables in dates.c.  Missing timezones are
+      treated as the local zone to get the date-received right (the
+      From_ line ctime-date almost never has a timezone).
+    * Mush now warns you if a file you attempt to load does not "look
+      like" a folder (i.e. no messages can be read).  If you are already
+      in the shell, this leaves you in an empty folder as it did before.
+      If you are just starting up (e.g. with "mush -f"), mush will exit.
+    * Additional checking is now done when collecting new mail and when
+      updating folders to detect corruptions, warn the user, and allow
+      a chance to recover.  Mush still reinitializes the spool folder if
+      it shrinks, but if this is detected at update time (as opposed to
+      new-mail-check time), the user is allowed to abort the update and
+      salvage the current folder contents.
+    * Curses mode now respects the user's presetting of $crt, unless the
+      user's value is larger than the actual screen size.  This allows
+      "set crt=2" to be used to force use of $pager.
+
+Changes in commands:
+
+mush -h -
+    The -h (-draft) option will now accept "-" as a filename indicating
+    standard input.  Note that this causes the input message to be sent
+    immediately; interactive use cannot be combined with redirected input.
+    The internal "mail -h" command will NOT interpret "-" as standard in.
+
+alts *user
+    This syntax, analogous to the $autosign2 syntax, allows you to specify
+    any user name anywhere as "you" for purposes of $metoo, etc.
+
+folder -n
+    This command changes folders without updating; it replaces the old
+    "folder !" notation, though the old form is still supported.  See
+    also the general notes above for behavior on attempts to load files
+    that are not folders.
+
+from pattern
+    Given an argument that is not parseable as a message list, "from" will
+    automatically invoke "pick -f pattern".  Mixing message lists and
+    patterns is slightly counter-intuitive; if the message list precedes
+    the pattern, it will restrict the pattern search to that list, e.g.
+    "from 3-7 johnsmith" will show those messages in the range 3-7 that
+    are from johnsmith.  If the message list follows the pattern, it will
+    not be detected at all, but will be considered part of the pattern.
+    Also, "from jim bob sally" will treat the entire "jim bob sally" list
+    as a single pattern, as "pick" would; this may change in the future.
+
+pipe -p /pat1/,/pat2/
+    The pattern supplied may now have the form /pat1/,/pat2/ to indicate
+    that extraction should begin at pat1 and end at pat2, inclusive.
+    Patterns are still matched literally at beginning-of-line (no regex
+    matching), and there is not currently any way to imbed a slash in
+    patterns of this form.  To allow searching for file paths, slashes
+    are significant only if the second slash is followed by a comma.
+
+save/copy
+    Unless told to clobber the file (-f), these commands now check that
+    the file to which they are appending "looks like" a folder.  If the
+    file seems to be something else, the user is prompted to confirm the
+    save or copy.
+
+set
+    Several minor fixes.  Piping to "set" now clears the variable if the
+    input message list is empty, rather than leaving the old value.  For
+    backwards compatibility, however, an unset variable does not become
+    set when an empty message list is piped to it.  Also, some of the
+    more esoteric abuses of the variable=value syntax have either been
+    made legal (`set var=' is the same as `set var') or made illegal
+    (`set var=value = value' won't create a variable named "var=value").
+
+sort
+    Sorting by multiple criteria at once is now supported.  The flags to
+    sort have changed; "-" to reverse sorting is now obsolete, replaced
+    by "-r", and all the sort criteria should now be prefixed with a "-"
+    (-a,-d,-l,-R,-s,-S) like options to any other command.  A significant
+    subset of the old syntax is still recognized as a special case.
+
+New/changed variables:
+
+    $cmd_help
+	(Also $tool_help)  The path given for this variable may contain
+	the usual filename metacharacters (~+).
+
+    $hangup
+	When set, mush updates the folder on SIGHUP instead of saving
+	the tempfile.  This is a bit dangerous -- in rare circumstances
+	(mainly when two or more MUAs are modifying the same folder)
+	some new mail could be lost.  Old mail should never be lost.
+
+    $hdr_format
+	The format spec %Z returns the time zone part of the date.
+
+    $mail_icon
+	Names an icon file to be used in the normal case, when no new
+	mail is present.  This icon will replace the mailbox with the
+	flag down.
+
+    $newmail_icon
+	Names an icon file to be used when new mail is present, replacing
+	the mailbox with the flag up.
+
+    $output
+	The message-list output of the last successful command is stored
+	in this variable.  This allows easy recovery from broken pipes
+	etc.  Note that any successful command that does not produce a
+	message list will clear $output (e.g. "echo").
+
+    $quiet
+	If the field "newmail" is present in the multi-value, the usual
+	"New mail (#X): ..." messages are not displayed.  The new mail
+	is still automatically incorporated into the mailbox.  In tool
+	mode, this shuts off the new mail bell (the "tool" field still
+	silences ALL tool mode bells).
+
+	If the field "fkey" is present in tool mode, warning messages
+	about unbound keys are not printed.
+
+	If the field "iconlabel" is present in tool mode, the current
+	number of messages is not displayed in the mush icon.
+    
+    $status
+	This is set to the success (0) or failure (-1) status of the
+	previously executed command.  Note that some curses-mode commands
+	return a failure status to indicate that the display has been
+	corrupted even if the command itself succeeded, so this variable
+	is mostly useful in scripts.

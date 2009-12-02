@@ -1,0 +1,21 @@
+Source: mush
+Section: non-free/mail
+Priority: extra
+Maintainer: Pawel Wiecek <coven@debian.org>
+Build-Depends-Indep: debhelper (>= 4.1.16), perl, po-debconf
+Build-Depends: debhelper (>= 4.1.16), libncurses5-dev, libreadline5-dev, perl, po-debconf
+Standards-Version: 3.6.2
+
+Package: mush-src
+Architecture: all
+Depends: dpkg-dev (>= 1.4.0.20), patch (>= 2.5-0bo1), gcc, make, fakeroot | sudo, groff-base, debconf|debconf-2.0 , perl, po-debconf
+Description: The mail user shell -- source only package
+ Mush is a powerful yet simple mail user agent, nearly fully compatible with
+ mailx and Mail, which features an optional curses interface. Mush also
+ provides powerful macro and key binding facilities to the user, and a
+ scripting language.
+ .
+ Since mush's licence doesn't permit redistribution in modified form (this
+ includes .debs) this package will install sources necessary to easily build a
+ binary package for installation on your own computer. They should not be
+ redistributed.

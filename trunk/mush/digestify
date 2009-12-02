@@ -1,0 +1,145 @@
+#! /bin/csh -f
+#
+# Mush digestifier.  Makes a folder or a list of messages into a digest.
+#
+if ! $?thisfolder then
+    exec mush -F! $0 $* </dev/null
+endif
+#
+# A "digest" is a collection of E-mail messages bundled together into a
+# single message for ease of redistribution.  The individual messages
+# in the digest are called "articles".  Each article has a small set of
+# essential headers (usually From:, Date:, and Subject:) and is divided
+# from the preceding and following articles by an "article separator"
+# string (usually eight hyphens, "--------").  The Mush built-in command
+# "undigest" unpacks most digests, including those made by this script.
+#
+# Usage:
+#  From your shell:		digestify -f mailbox
+#  From within mush:	
+#	First:		cmd digest "set digest = '\!*' ; source digestify"
+#	Then:		digest [msg-list]
+#	Or:		message-selection-command | digest
+#
+# Note that by default it makes a digest of the ENTIRE folder!
+#
+
+#
+# Rudimentary sanity checks
+#
+if ! $?version
+    echo "You must have Mush version 7.0 or higher to run this script"
+    exit
+endif
+if ! $?thisfolder
+    echo "You can't use this script as an init file; try using -F"
+    exit
+endif
+
+#
+# Set up defaults
+#
+if ! $?digest
+    set digest = *
+    if $?interact
+	unset interact		# Assume non-interactive if no input list
+    endif
+else
+    set interact		# Note that this is interactive
+    if "X$digest" == X
+        set digest = *		# Default to all messages for empty input
+    else
+	$digest | set digest	# Pre-expand message numbers
+    endif
+endif
+
+#
+# Suppress any "that isn't set" messages from "unset"
+#
+if $?warning
+    set savewarn
+endif
+unset warning oldpre oldpost oldindent oldign oldshow
+
+#
+# Save everything in case the user wants it back.
+# Could wrap all this with "if $?interact" but this script
+# might be read by "mush -F", in which case we need this.
+#
+if $?pre_indent_str
+    set oldpre = "$pre_indent_str"
+endif
+if $?post_indent_str
+    set oldpost = "$post_indent_str"
+endif
+if $?indent_str
+    set oldindent = "$indent_str"
+endif
+if $?alwaysignore
+    set oldign = "$alwaysignore"
+endif
+if $?show_hdrs
+    set oldshow = "$show_hdrs"
+endif
+if $?quiet
+    set oldquiet = "$quiet"
+endif
+if $?no_expand
+    set savenoex
+endif
+
+#
+# Prepare to form the digest.
+#
+set indent_str no_expand alwaysignore=include quiet=await,newmail
+unset post_indent_str
+alias DIGEST $thisfolder		# Any target in place of $thisfolder
+set pre_indent_str="--------"		# Insert your digest separator here
+set show_hdrs=from,date,subject		# Add any other headers you want
+
+#
+# Now do it.  All that work for a two-line operation ....
+# NOTE: If you change DIGEST above, remove the "await" command here!
+# Backslashes prevent any cmd expansion from confusing us.
+#
+\delete $digest
+\mail -UH /dev/null -I $digest -s "Digest of $thisfolder" DIGEST; \await -T 1
+
+#
+# Clean out the deleted stuff if not interactive
+#
+if ! $?interact
+    \update
+endif
+
+#
+# Be neat and put everything back the way it was.
+#
+unset indent_str no_expand alwaysignore quiet pre_indent_str show_hdrs
+unalias DIGEST
+if $?savenoex
+    set no_expand
+endif
+if $?oldquiet
+    set quiet = "$oldquiet"
+endif
+if $?oldpre
+    set pre_indent_str = "$oldpre"
+endif
+if $?oldpost
+    set post_indent_str = "$oldpost"
+endif
+if $?oldindent
+    set indent_str = "$oldindent"
+endif
+if $?oldign
+    set alwaysignore = "$oldign"
+endif
+if $?oldshow
+    set show_hdrs = "$oldshow"
+endif
+unset oldpre oldpost oldindent oldign oldshow oldquiet nonoex digest
+if $?savewarn
+    unset savewarn
+    set warning
+endif

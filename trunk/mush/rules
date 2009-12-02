@@ -1,0 +1,140 @@
+#!/usr/bin/make -f
+# Sample debian/rules that uses debhelper.
+# GNU copyright 1997 to 1999 by Joey Hess.
+
+PACKAGE   = $(shell perl -e 'print <> =~ /(\S*)\s/' debian/changelog)
+PKG_VER   = $(shell perl -e 'print <> =~ /\((.*)\)/' debian/changelog)
+PKG_UPVER = $(shell perl -e 'print <> =~ /\((.*)-[^-]*\)/' debian/changelog)
+INSTALL   = '/usr/bin/install'
+
+TMPSRC = debian/tmp-src
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+# This is the debhelper compatability version to use.
+export DH_COMPAT=4
+
+configure: configure-stamp
+configure-stamp:
+	dh_testdir
+	# Add here commands to configure the package.
+
+
+	touch configure-stamp
+
+build: configure-stamp build-stamp
+build-stamp:
+	dh_testdir
+
+	
+	# Add here commands to compile the package.
+	$(MAKE) -f makefile.linux OPT_CFLAGS=-O2 LDFLAGS= OTHER_CFLAGS=-DDEBIAN
+
+	touch build-stamp
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp configure-stamp
+
+	# Add here commands to clean up after the build process.
+	-$(MAKE) -f makefile.linux -i distclean
+	-rm -rf debian/$(PACKAGE) $(TMPSRC) debian/$(PACKAGE)-src
+
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+
+	# Add here commands to install the package into debian/tmp.
+#	$(MAKE) install DESTDIR=`pwd`/debian/tmp
+	$(MAKE) -f makefile.linux CFLAGS=-O2 LDFLAGS=-s \
+	    MRCDIR=debian/mush/etc MUSHRC=mush.rc \
+	    BINDIR=debian/mush/usr/bin SBINDIR=debian/mush/usr/sbin \
+	    LIBDIR=debian/mush/usr/lib/mush \
+	    MANDIR=debian/mush/usr/share/man/man1 MANEXT=1 \
+	    OTHER_CFLAGS=-DDEBIAN install
+
+
+# Build architecture-independent files here.
+binary-indep: build install
+# We have nothing to do by default.
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installdebconf
+	dh_installdocs
+	dh_installexamples
+	dh_installmenu
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installinit
+#	dh_installcron
+	dh_installman
+#	dh_installinfo
+#	dh_undocumented
+	dh_installchangelogs 
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+#	dh_makeshlibs
+	dh_installdeb
+#	dh_perl
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary-src: debian/control ../$(PACKAGE)_$(PKG_UPVER).orig.tar.gz \
+	../$(PACKAGE)_$(PKG_VER).dsc ../$(PACKAGE)_$(PKG_VER).diff.gz
+	-rm -rf $(TMPSRC) debian/files
+
+	$(INSTALL) -d $(TMPSRC)/DEBIAN \
+		$(TMPSRC)/usr/bin \
+		$(TMPSRC)/usr/src/$(PACKAGE)-src \
+		$(TMPSRC)/usr/share/doc/$(PACKAGE)-src
+	$(INSTALL) -m 755 debian/build-PACKAGE $(TMPSRC)/usr/bin/build-$(PACKAGE)
+	$(INSTALL) -m 0644 ../$(PACKAGE)_$(PKG_UPVER).orig.tar.gz \
+			../$(PACKAGE)_$(PKG_VER).dsc \
+			../$(PACKAGE)_$(PKG_VER).diff.gz \
+			$(TMPSRC)/usr/src/$(PACKAGE)-src/
+	sed -e "s/#PACKAGE#/$(PACKAGE)/" debian/src.postinst > $(TMPSRC)/DEBIAN/postinst
+	chmod 755 $(TMPSRC)/DEBIAN/postinst
+	sed -e "s/#PACKAGE#/$(PACKAGE)/" debian/src.prerm > $(TMPSRC)/DEBIAN/prerm
+	chmod 755 $(TMPSRC)/DEBIAN/prerm
+	cp debian/src.postrm $(TMPSRC)/DEBIAN/postrm
+	chmod 755 $(TMPSRC)/DEBIAN/postrm
+
+	sed -e "s/#PACKAGE#/$(PACKAGE)/" debian/README-src > $(TMPSRC)/usr/share/doc/$(PACKAGE)-src/README.Debian
+	$(INSTALL) -m 0644 debian/changelog $(TMPSRC)/usr/share/doc/$(PACKAGE)-src/changelog.Debian
+	chmod 644 $(TMPSRC)/usr/share/doc/$(PACKAGE)-src/changelog.Debian
+	gzip -9fr $(TMPSRC)/usr/share/doc/
+	$(INSTALL) -m 0644 debian/copyright $(TMPSRC)/usr/share/doc/$(PACKAGE)-src/
+	# Install debconf files
+	cp debian/$(PACKAGE)-src.config $(TMPSRC)/DEBIAN/config
+	po2debconf -o $(TMPSRC)/DEBIAN/templates debian/$(PACKAGE)-src.templates
+	chmod 644 $(TMPSRC)/DEBIAN/templates
+
+	dpkg-gencontrol -isp -p$(PACKAGE)-src -P$(TMPSRC)
+	chown -R root.root $(TMPSRC)
+	dpkg --build $(TMPSRC) ..
+
+debian/control: debian/control.real
+	test -f debian/control.real && sed -e "/^Package: $(PACKAGE)-src$$/b" -e "/^Package: /,/^$$/d" debian/control.real > debian/control
+
+../$(PACKAGE)_$(PKG_UPVER).orig.tar.gz:
+	@{ echo "Error: $@ missing"; exit 1; }
+
+../$(PACKAGE)_$(PKG_VER).dsc ../$(PACKAGE)_$(PKG_VER).diff.gz: debian/rules
+	debian/rules clean
+	cd ..; dpkg-source -b $(PACKAGE)-$(PKG_UPVER)
+
+binary: binary-indep binary-arch binary-src
+.PHONY: build clean binary-indep binary-arch binary-arch binary install configure

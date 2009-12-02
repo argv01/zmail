@@ -1,0 +1,242 @@
+--- makefile.linux-dist	2008-12-20 16:57:58.000000000 -0800
++++ makefile.linux	2008-12-21 10:24:54.000000000 -0800
+@@ -1,5 +1,4 @@
+-# Mush makefile for system V.  Note: SIGRET should return void for normal
+-# sys-v, but Att PC users should *not* have it defined.  See the README!!
++# Mush makefile for Linux.
+ #
+ HDRS1= mush.h config.h
+ HDRS2= strings.h options.h
+@@ -36,9 +35,9 @@
+ #  should replace -lPW with -lgen
+ 
+ CC =gcc
+-OPT_CFLAGS = -O6 -fomit-frame-pointer
+-#OPT_CFLAGS = -g
+-SYS_CFLAGS = -DSYSV -DUSG
++#OPT_CFLAGS = -O3 -fomit-frame-pointer
++OPT_CFLAGS = -g
++SYS_CFLAGS = -DSYSV -DUSG -DLINUX
+ CFLAGS= $(OPT_CFLAGS) $(SYS_CFLAGS) -DCURSES -DNO_COMMAS \
+ 	$(OTHER_CFLAGS)
+ # NO_COMMAS included because it's needed by Qmail (which is used by damn many
+@@ -114,7 +113,7 @@
+ 	chmod 0644 $(MRCDIR)/$(MUSHRC)
+ 
+ clean:
+-	$(RM) *.o
++	$(RM) *.o core mush
+ 
+ distclean: clean
+ 	$(RM) mush dotlock *~ $(OUTFILES)
+--- config.h-dist	2008-12-20 16:57:58.000000000 -0800
++++ config.h	2008-12-20 19:50:17.000000000 -0800
+@@ -146,7 +146,7 @@
+  * periodically calling the server on the machine described by the
+  * environment variable MAILHOST to pick up new mail.
+  */
+-#define POP3_SUPPORT /**/
++/*#define POP3_SUPPORT */
+ #ifdef POP3_SUPPORT
+ #ifndef DEBIAN
+ #define HOMEMAIL
+@@ -238,10 +238,14 @@
+ #ifdef HAVE_PATHS_H
+ #define MAILDIR		_PATH_MAILDIR
+ #else /* HAVE_PATHS_H */
++#ifdef LINUX
++#define MAILDIR		"/var/mail"
++#else
+ #if defined(SYSV) && !defined(SVR4)
+ #define MAILDIR		"/usr/mail"
+ #else /* BSD || SVR4 */
+ #define MAILDIR		"/usr/spool/mail"
++#endif /* LINUX */
+ #endif /* SYSV && !SVR4 */
+ #endif /* FSSTND */
+ #endif /* MAILDIR */
+--- mush.h-dist	2008-12-20 20:00:25.000000000 -0800
++++ mush.h	2008-12-21 09:26:37.000000000 -0800
+@@ -291,8 +291,9 @@
+ 
+ #ifdef strdup
+ # undef strdup
+-# define strdup(dst, src) (xfree (dst), dst = savestr(src))
+ #endif
++#define strdup(dst, src) (xfree (dst), dst = savestr(src))
++
+ #define Debug		if (debug == 0) {;} else (void) wprint
+ 
+ #ifdef SYSV
+@@ -689,8 +690,8 @@
+ extern void popgetmail();
+ #ifdef USE_ALARM
+ extern SIGRET popnewmail(int);
+-#endif
+-#else
++#endif /* USE_ALARM */
++#else /* POP3_SUPPORT */
+ #define MIN_TIME_OUT	30		/* 30 sec. checks */
+ #define MIN_ROOT_TIME_OUT	(15)	/* 15 sec. checks */
+ #define DEF_TIME_OUT	60
+--- command2.c-dist	2008-12-20 19:53:29.000000000 -0800
++++ command2.c	2008-12-20 20:15:27.000000000 -0800
+@@ -543,8 +543,10 @@
+ 
+     if (!check) Debug("snoozing %d\n", snooze);
+ 
++#if defined(SUNTOOL) || defined(POP3_SUPPORT)
+     old_time_out = time_out;
+     time_out = 0;
++#endif /* SUNTOOL || POP3_SUPPORT */
+ 
+     do {
+ 	done = do_check_new_mail(interact);
+@@ -553,7 +555,9 @@
+ 	    sleep((unsigned) snooze);
+     } while (!done);
+ 
++#if defined(SUNTOOL) || defined(POP3_SUPPORT)
+     time_out = old_time_out;
++#endif /* SUNTOOL || POP3_SUPPORT */
+ 
+     /* Known to be safe to pass NULL to chk_two_lists() */
+     if (done && !chk_option("quiet", me))
+--- file.c-dist	2008-12-20 19:38:58.000000000 -0800
++++ file.c	2008-12-20 19:40:16.000000000 -0800
+@@ -114,7 +114,11 @@
+ 	    return buf; /* it may be wanted for creating */
+ 	}
+ 	*isdir = -1;
++#ifdef LINUX
++        return strerror(errno);
++#else
+ 	return sys_errlist[errno];
++#endif
+     }
+     *isdir = ((stat_buf.st_mode & S_IFMT) == S_IFDIR);
+     return buf;
+@@ -189,7 +193,11 @@
+ 	    wprint("is a directory.\n");
+ 	    return -1;
+ 	} else if (!(tmp_fp = fopen(file, mode))) {
++#ifdef LINUX
++            wprint("%s\n", strerror(errno));
++#else
+ 	    wprint("%s\n", sys_errlist[errno]);
++#endif
+ 	    return -1;
+ 	}
+     }
+--- init.c-dist	2008-12-20 18:57:08.000000000 -0800
++++ init.c	2008-12-20 18:56:41.000000000 -0800
+@@ -15,7 +15,7 @@
+ extern void init_host();
+ 
+ void
+-init_spoolfile() {
++init_spoolfile(char* home) {
+     char		buf[MAXPATHLEN];
+     register char 	*p;
+ 
+@@ -130,7 +130,7 @@
+ 	(void) add_option(&set_options, argv);
+     }
+ 
+-    init_spoolfile();
++    init_spoolfile(home);
+     mailfile = "";
+ 
+     crt = 24;
+--- lock.c-dist	2008-12-20 19:18:03.000000000 -0800
++++ lock.c	2008-12-20 19:17:40.000000000 -0800
+@@ -537,7 +537,9 @@
+ 	    return NULL_FILE;
+ 	}
+ 	(void) fflush(stdout);
++#ifdef DOT_LOCK_SLEEP
+ 	sleep(DOT_LOCK_SLEEP);
++#endif
+     }
+ #ifndef SILENT_LOCKWAIT
+     if (cnt)
+--- main.c-dist	2008-12-21 10:22:44.000000000 -0800
++++ main.c	2008-12-21 10:20:59.000000000 -0800
+@@ -49,6 +49,9 @@
+     stackbottom = (char *) &argc;
+ #endif /* INTERNAL_MALLOC */
+ 
++    sysspoolfile = 0;
++    spoolfile = 0;
++
+ #ifdef AUX
+     set42sig();		/* Use 4.2 BSD signal handling conventions */
+ #endif /* AUX */
+@@ -78,8 +81,6 @@
+     else
+ 	(void) setbuf(stdin, NULL);
+ 
+-    sysspoolfile = 0;
+-
+     n = preparse_opts(&argc,argv);
+ 
+     init(); /* must be done before checking mail since "login" is set here */
+@@ -100,7 +101,6 @@
+     setgid(rgid);
+ #endif /* BSD */
+ 
+-    spoolfile = 0;
+     parse_options(&argv, &Flags);
+ 
+ #ifdef POP3_SUPPORT
+--- util.c-dist	2008-12-20 19:24:07.000000000 -0800
++++ util.c	2008-12-20 19:24:15.000000000 -0800
+@@ -2,6 +2,8 @@
+ 
+ #include "mush.h"
+ 
++#include <pwd.h>
++
+ /* Return 1 if we think file is someone's sysspooldir, 0 otherwise. */
+ 
+ issysspoolfile(file)
+--- print.c-dist	2008-12-20 19:38:48.000000000 -0800
++++ print.c	2008-12-20 19:39:13.000000000 -0800
+@@ -17,7 +17,11 @@
+     (void) sprintf(buf, fmt, arg1, arg2, arg3, arg4);
+     if (buf[strlen(buf) - 1] != '\n') {
+         if (errno)
++#ifdef LINUX
++            strcat(buf, strerror(errno));
++#else
+ 	    sprintf(buf+strlen(buf), ": %s\n", sys_errlist[errno]);
++#endif
+ 	else
+ 	    strcat(buf, "\n");
+     } 
+--- config.h-dist-dist	2008-12-21 10:36:11.000000000 -0800
++++ config.h-dist	2008-12-21 10:36:17.000000000 -0800
+@@ -146,7 +146,7 @@
+  * periodically calling the server on the machine described by the
+  * environment variable MAILHOST to pick up new mail.
+  */
+-#define POP3_SUPPORT /**/
++/*#define POP3_SUPPORT */
+ #ifdef POP3_SUPPORT
+ #ifndef DEBIAN
+ #define HOMEMAIL
+@@ -238,10 +238,14 @@
+ #ifdef HAVE_PATHS_H
+ #define MAILDIR		_PATH_MAILDIR
+ #else /* HAVE_PATHS_H */
++#ifdef LINUX
++#define MAILDIR		"/var/mail"
++#else
+ #if defined(SYSV) && !defined(SVR4)
+ #define MAILDIR		"/usr/mail"
+ #else /* BSD || SVR4 */
+ #define MAILDIR		"/usr/spool/mail"
++#endif /* LINUX */
+ #endif /* SYSV && !SVR4 */
+ #endif /* FSSTND */
+ #endif /* MAILDIR */
