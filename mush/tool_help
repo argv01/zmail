@@ -1,0 +1,439 @@
+@(#)tool_help	(c) copyright 10/18/86 (Dan Heller)
+
+%general%
+
+      IF ALL ELSE FAILS, READ THE DIRECTIONS!
+
+This famous  quote applies here more  than ever. If
+you are unfamiliar with Mushview, you should get
+yourself acquainted with it by choosing HELP options
+in menu items. If you get frustrated or confused
+about how to use or run a command, or if you want to
+know how something works or get to know quick shortcuts
+in achieving tasks, it is advisable to look at the
+Help option available with some items.
+%%
+
+%help%
+Help was designed for users to get help from all commands
+and options.  The last item in many menus is a "help"
+choice.  You will get an appropriate help message describing
+what you can do at the position you are in on the Mushview
+window.
+
+If a help message isn't much help, it may be more helpful to
+reference a different help item which describes in more detail
+what you want to know.  For example, reading the help for
+"folder" will help you better understand the method in which
+mail messages are stored than it would if you had read the help
+message for "save" first.
+%%
+
+%mouse%
+The mouse is an image (cursor) which moves across the screen. Its
+position indicates which window is to receive input when you type
+or click a mouse button.
+
+The mouse may take upon different images which indicate various
+things. When the image looks like a "coffee cup", Mushview is in
+the process of doing something, like sending mail, or reading in
+new mail.  In this event, you should wait till the cursor returns
+to its normal state before attempting to do anything else. Go get
+some coffee.
+
+When in the Header Window, the cursor will look like the mouse
+device that you hold with the buttons flashing on and off.  This
+is to remind you that you can use each button to do different tasks.
+Using the RIGHT mouse button gives you a menu of options to do for
+the message under the mouse.
+%%
+
+%respond%
+This item responds to mail in 4 ways.
+In all cases, at least one recipient of your message will be the
+sender of the message you are responding to. If a subject was in
+the author's letter, then it will be used as your subject.
+
+The first and most used method of response is to the author of the
+message only.  Selecting this item with the LEFT mouse button will
+use this method for responding to mail.
+
+If you want to include a copy of the author's message, then choose
+the menu item which  says to include the message.  If you wish for
+all the recipients of the message to receive a copy of your reply,
+then choosing the third item will include them.
+
+The fourth menu item will mail to the author and everyone listed on
+the To and Cc lines of the message, and include the message you are
+responding to in your text.
+
+In such cases where you include the message you are responding to,
+the included message will be indented by "> " to identify it from
+your message. If you would like to have a string other than the
+default used, then set the appropriate option to whatever you would
+prefer by selecting the "Opts" item, moving the mouse on top of the
+string, "indent-str", selecting the LEFT mouse button and typing the
+desired string.
+%%
+
+%delete%
+You may  delete or undelete  messages with this item.
+When using the LEFT mouse button, you will delete the
+current message (HIGHLIGHTED in the headers' window).
+Otherwise, you may select the menu item for undelete.
+
+You may  delete or undelete a  "range" of messages by
+typing the range in the Header Window.
+
+For help on valid  message ranges, select the menu in
+the area  marked "range" in the  Header Panel Window.
+%%
+
+%folder%
+Your "folder" is a place to keep all your individual messages. Usually,
+if you are a heavy mail user, you would organize your mail in such a
+way in which related mail would be saved together in one folder.   You
+create folders simply by saving mail to a filename.  Additional mail
+can  be saved to those files in the same way.  To manipulate messages
+in folders,  you "change folders" to the folder you wish to access
+using the folder item.   Since it may occur that you switch  back and
+forth  between two folders, you may use the previous  folder menu item
+which updates changes  made to the current folder and  changes your
+folder to the one previous to  the current.
+
+You may also select  the exact name of the  folder you wish to access
+by selecting  the left  mouse button on the "folder"  item and TYPING
+the exact  name of the folder  you wish to access.  The "pathname" to
+the folder may start with a tilde (~) indicating your home directory.
+Or, it may  contain a plus sign before the  name indicating your Mail
+directory (+reports, for example).  Alternatively, you  can type  '%'
+to access your system Mailbox, the place where all your mail is first
+delivered.  And finally, you can type '#' to indicate  the previously
+accessed folder.
+%%
+
+%save%
+You may save messages in  two ways. The most commonly used method is to
+save messages to  your mailbox folder  ("mbox") in your home directory.
+If you use mail very frequently and save large amounts of mail, you can
+save messages to other folders for better organization.
+
+Usually, when messages are saved, mushtool  marks them for deletion for
+the next update.  If you don't want to have saved messages deleted, you
+must undelete them or set the variable "keepsave" in the options screen.
+
+There is a text item  in the Main Panel Window which allows you to type
+the  name of the file to save a message.  Type the filename and then
+select the LEFT mouse button over the "Save" item.  If there is no
+filename specified, then messages are saved to your mbox file.
+
+You may also choose a folder name by selecting the RIGHT mouse button
+over the "Save" item and choosing from the menu of files displayed.
+
+You can specify a range, or group of messages to save by typing a range
+in the  Header Panel Window.  If there is a  message list in that panel
+item, then the range of messages specified there will be saved. If not,
+the current message will be saved.
+
+For additional information, see the help option for Folders.
+%%
+
+%quit%
+There are various ways in which you may be finished with Mushview.
+The most commonly used method  is to simply "close" the tool to an
+iconic form. This means that you haven't really quit, but you have
+merely put it on "hold" till later.  It will become an icon on the
+side or corner of the screen and appear to sit and do nothing.  To
+close the tool to icon form, there are two methods which have will
+have two different effects.
+
+The first method is to select  this panel item with the left mouse
+button.  This  will update your current  folder (deleting messages
+marked for deletion) and close the tool.  The second method  is to
+use the tool manager around the perimeter of the window and select
+"close".  This will close the tool without updating your mailfile.
+
+Whenever Mushview is  in the "closed"  state, it  periodically
+checks your mail and updates your folder with the  new mail. While
+Mushview is in iconic form, it will display the number of messages
+you have in the current folder.
+
+There are two equally similar methods of exiting  Mushview, rather
+than just closing to an icon:  you may select the second menu item
+in the menu given by this panel item or you may use the tool mana-
+ger "quit" item.
+
+Using the tool manager's quit will exit the tool without updating
+your folder whereas the panel item's menu selection will have the
+Mushview prompt you whether to update the current folder or not.
+%%
+
+%update%
+This item will update the current folder you are using.  Changes are
+updated to the folder; that is, deleted mail is removed and all other
+mail is copied back to the folder unless otherwise specified. See the
+help in "folder" for more information on folders.
+
+If new mail has arrived, it will incorporate it. Otherwise, new mail
+is incorporated every two minutes or so, if some comes in.
+%%
+
+%headers%
+The message headers are displayed in their own separate window.
+The "current" message is usually displayed in either BOLD or
+REVERSE text. This "highlighted" message is the one which is
+displayed at the bottom, larger window. In the message window,
+each message is displayed in the following format:
+the message number is displayed first; if it is the "current"
+message, then there is a '>' sign.
+The next character is the 'status' character:
+    'N' -- New (and unread)
+    'U' -- not new, but still Unread
+    '*' -- delete messages (set show_deleted)
+    'P' -- preserve in spoolfile.
+    'O' -- Old message which has also been Read.
+If there is just a space (no character), the message is new, but
+you've already read it. You should explicitly save or delete these.
+
+Following that is the Author of the message and/or all or part of
+his network address and login name.  Following that is the number
+of lines the message is. In quotes is all or part of the "Subject"
+(if one was specified).
+
+To read a message, select either the READ item in the main panel
+subwindow or move the mouse over the message header you want to read
+and press the LEFT mouse button. Or, the MIDDLE mouse button will
+delete that message. Choosing the RIGHT mouse button will give you
+a menu of things to do then. Included in the menu, is a help item
+which describes the selections in the menu.
+%%
+
+%Menu Read%
+When pointing at a message header in the header subwindow, hold down
+the RIGHT mouse button and select "Read" from the menu.  A new window
+will open containing the text of the message.  In this way, you can
+display more than one message at a time.
+
+This operation sometimes fails on SunOS 3.5 systems due to limitations
+on the number of windows Mush can open at once.  When all the available
+windows are in use, the selected message is displayed in the message
+subwindow at the bottom of the main window.
+%%
+
+%preserve%
+Usually, after you read mail and you "update" or quit  Mushview, unread
+messages are copied back into your system mailbox, deleted messages are
+removed, and messages which have been read but not deleted are saved in
+your "mbox" file.  Specifying "hold" prevents this from ever happening,
+but you can mark specific messages to be held in your system mailbox by
+preserving them.
+%%
+
+%compose%
+When you start to compose a letter for mailing, you will be prompted
+for a recipient (To:) and other optional mail headers.  The cursor for
+the text subwindow will look like a bent arrow to indicate that when
+you hit RETURN, the cursor will automatically forward to the next
+header (the Subject: line, for example).
+
+When the cursor resumes its original shape, the RETURN key enters new
+lines as normal.
+
+There must be a recipient specified in order to send a message.  The
+recipient may be a user or a file or program name.
+%%
+
+%next%
+You can page through all your messages by selecting  "Next" after reading
+each message. The same effect is gotten when you select the "Delete" item
+when the option,  "autoprint" is set to be true  (see "opts") except that
+the current message is deleted before the next one is displayed. Deleting
+mail which is  not important  helps the  efficiency of Mushview and reduces
+unnecessary use of system resources.
+
+In the Header Window, you will notice the cursor looks like the mouse you
+use.  The blinking buttons on the mouse image remind you that you can use
+any of the  three buttons  at any  time.  When you  move the mouse over a
+message and choose a button, the message under the  mouse is going to be
+the one affected.  Choosing left button will read the message, the middle
+button will delete it, and the right button will give you a menu.
+%%
+
+%aliases%
+Aliases are used as a method of mailing to users with long addresses using
+short names. For example, if you wanted to mail to
+    argv@sun.com
+but didn't want to type that all the time, then you could make an alias by
+selecting the alias menu item that specifies "adding alias" and then TYPE:
+    Dan argv@sun.com
+If you want to mail to a list of people and do so frequently enough to want
+an alias name for the whole list, then  you would type something like this:
+    project-group fred mary bob@foo-bar herb sly@baz.bitnet
+
+To mail to an "alias" you would compose a letter and address the letter:
+
+To: Dan
+Subject: Alias example
+Cc: project-group
+(rest of letter)
+%%
+
+%alts%
+"Alternates" are alternate names for YOU.  In messages you receive,
+your account will appear on the "To" or "Cc" list.  When you REPLY to
+those messages, Mushview will construct a message header for your
+letter which will contain the To and Cc lists of recipients from the
+original message. You would probably want your name taken off the list
+so you do not mail yourself a copy of your own message. If you have
+other account names or accounts on other machines, you can let Mushview
+know what those mail addresses are so they can be removed from the
+lists as well.
+
+Note, that if YOU add your name MANUALLY (type it yourself) to either
+of the lists, it will not be removed.
+
+You can set such a list in your .mailrc file in your home directory by
+adding the line:
+
+alts hostname1 hostname2 ...
+
+If you prefer to not have your name removed from lists when responding
+to mail, set the option "metoo"; this prevents the need for alternates
+and your name will never be removed.
+%%
+
+%options%
+To set or unset options and their values, move the mouse over the
+option of your choice and select the LEFT button to toggle true/false
+values. If an option requires a string value, you must type the value,
+so select the LEFT button to reference the option, and then type away.
+
+NOTE: You must use a Carriage Return to enter the final value for the
+option or the value will not change.
+%%
+
+%ignore%
+When reading mail, the message "headers" may clutter up the
+window with information you are not interested in.  For
+example, you may not be interested in the "Received" or
+"Message-Id" field of the mail message. You would find that
+in time, it will become annoying to see these uninteresting
+message headers.
+
+You can specify which message headers should not be shown,
+thus shortening the appearance of the length of the message.
+
+Typical settings:
+    Received
+    Message-Id
+    Status
+%%
+
+%printer%
+This item will send the current message, or the message specified on
+the range item, to the printer.  The printer used is given by the
+variable $printer.  To specify a different printer, change the printer
+option by selecting the item "Options" in the Main Panel Window, moving
+the mouse over the "printer" option, selecting the LEFT mouse button
+and typing the name of the printer which you'd like to use.
+
+Be sure to set this option before printing because the DEFAULT option
+may not be what you want.
+
+You can print messages that are NOT the current message by moving the
+mouse into the Header Window and selecting the RIGHT mouse button on
+top of the message you want to print and selecting the PRINT menu
+option.
+%%
+
+%windows%
+"Windows" are the boxes which contain items, text, or graphic
+images.  There are two "panel" windows. A panel window is one
+which contains items,  which are the little boxes  with words
+that you can place the mouse over and click the left or mouse
+button.
+
+Each  window has a separate  function for different purposes.
+Starting at the top of the main "tool" (contains all windows)
+we have the "header panel." Everything in this panel pertains
+to the message headers, only.  The panel in the middle of the
+tool is the "mail panel" which is more general and applies to
+just about everything. For a description of each of the items
+within any panel, select the  "Help"  option  from  the  menu
+you get by selecting the RIGHT mouse button.
+%%
+
+%message range%
+You can specify a large group of messages using a combination of special
+symbols in addition to numbers.  For example, if you wish to save all of
+the messages, then you can use `*' to represent them all. If you were to
+type the  "star" and select the Save  menu option for "save range", then
+you would save ALL the messages you have (including deleted ones).
+
+If you would like to save messages 4 through 9, then you would specify:
+      4-9
+If you want to specify the messages between 2 and 32 except for messages
+6, 8 and message 12-14, you would type:
+      2-32 {6,8,12-14}
+Commas or spaces can be used to separate numbers.
+
+Note that you cannot specify negated messages without first specifying
+normal messages; e.g. {2-5} 1-11   doesn't make sense.
+%%
+
+%sort%
+Sorting messages can   be accomplished by  selecting one  of the
+menu items in this panel item.  By default (using the LEFT mouse
+button),  sorting is  done by  message status.  New messages are
+first, followed  by unread messages,  old/read messages, replied
+to  messages,  and  finally deleted messages.  You may also sort
+messages by author, date, or subject by selecting the menu item.
+%%
+
+%include%
+To include a message in your letter, first enter the number of the
+message you wish to include in the  Range:  item of the main  mush
+frame.  Then select  Include  from the composition window panel by
+pressing the LEFT mouse button.    If you do not specify a message
+in the  Range:  item, the current message will be included.
+
+To forward a message, choose the message to be forwarded as above,
+use the RIGHT mouse button on the  Include item and select Forward
+Message from the menu.
+%%
+
+%mark%
+Marks can be used to tag messages for later reference.  They are
+temporary and will not be saved when the folder is updated.  A
+priority setting beteween A and E may also be set on message(s).
+Priorities are saved across updated folders.  Sorting by marks
+and priorities is also available (marks having highest priority,
+followed by A, B, etc.).
+
+Marks are set on the current message only while priorities are set
+(or unset) on the message list specified in the Range: text field.
+
+Messages may have both a temporary mark and a priority, but may not
+have more than one priority.  The presence of a mark or a priority
+setting is shown by a `+' character immediately following the message
+number in the "headers" command display.
+%%
+
+%close%
+There  are various  ways in which  you  may be  finished with  the
+compose window. The most commonly used method is to simply "close"
+the window to an iconic form.  This means that you  haven't really
+quit,  but you  have merely put  it on "hold" till later.  It will
+become an icon on the  side or corner of the  screen and appear to
+sit  and do  nothing.  To close the window to icon form, there are
+two methods. Both methods will have the same effect.
+
+The first method is to select  this panel item with the left mouse
+button. The second method is to use the tool manager around the
+perimeter of the window and select "close".
+
+There are two equally similar methods of removing the compose win-
+dow rather than just closing to an icon: you may select the second
+menu item in  the menu given by this panel item or you may use the
+tool manager "quit" item.
+%%

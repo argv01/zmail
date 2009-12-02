@@ -1,0 +1,7 @@
+
+Mush locks files by using the .lock file convention. It may happen that
+a lock file has been created but not removed, in which case you should
+use the `maillock -u' command to unlock your mailbox.
+
+Yves Arrouye <arrouye@debian.org>
+

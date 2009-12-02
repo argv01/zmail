@@ -1,0 +1,134 @@
+# advanced.mushrc
+# by Bart Schaefer
+# with special thanks to Phil Lapsley <phil@east.Berkeley.EDU>, who
+# provided the original files on which this example is based.  Most of
+# Phil's stuff is still here -- just reorganized and updated to use
+# mush 6.4 features that were unavailable when Phil did the originals.
+#
+# This file is intended to demonstrate helpful ways to use the
+# .mushrc, not advanced mush commands.
+
+# The variable $thisfolder is always set EXCEPT when the .mushrc file
+# is read the first time.  A test for non-existance of $thisfolder
+# allows the same .mushrc file to be sourced repeatedly without
+# redundant execution of the initialization commands.
+#
+if ! $?thisfolder
+    # Ignore the usual stuff
+    ignore	received via message-id status priority
+    # Hide folders in ~/.mail and save read mail in spool
+    set		folder=~/.mail hold
+    # Remember a few commands, set up editors, act like a shell
+    set		history=20 editor=ex visual=vi unix
+    # Prompt has folder name, message number, history number
+    set		prompt="%f %m (!) & "
+    # Header summaries show name, date, and subject
+    set		hdr_format="%25n %-15d  %27s"
+    # Initialize the cmds below (see later comments)
+    set		first_time=1
+
+    # These two commands are used for automated "bursting" of the spool
+    # mailbox.  This means that the messages are reorganized into new
+    # folders to be read in a prearranged order.  See comments below.
+    #
+    # n brings up the next folder, not the next message
+    cmd		n	'source ~/.mushrc'
+    # N gets the next folder without "bursting"
+    cmd		N	'set first_time=0; source ~/.mushrc'
+
+    # Delete messages by pattern-matching.  Examples:
+    #  del f mailer-daemon		Delete mail from mailer-daemon
+    #  del t mush-users			Delete mail to mush-users
+    cmd		del	'pick -i -\!* | delete'
+    # Forwarding
+    cmd		for	'mail -f'
+    # Quick folder change
+    cmd		F	'folder'
+
+    # Some useful aliases
+    alias	dheller	'The Mush God <argv@sun.com>'
+    alias	barts	'Archangel Mushael <schaefer@cse.ogi.edu>'
+
+    # On init, don't source beyond this point
+    exit
+endif	# End of init section -- read on startup only
+
+# This part of the file handles "bursting".  A burst is done when the
+# n cmd is used the first time.  This is most useful if you habitually
+# have lots of mail when you first log in each morning; unwanted mail
+# can be deleted, and other mail organized for you.
+#
+# The folders in this example bursting scheme are:
+#	mush-users	anything to or cc'ed to mush-users
+#	stats		daily stats
+#	root		root mail other than daily stats
+# Mail not falling into one of these categories is left in the system
+# mailbox to be dealt with first.
+#
+if $first_time
+    # Kill off some uucp garbage
+    pick -i -s "file c.* delete" | delete
+    pick -i -s "file .* can.t access" | delete
+    pick -i -s "remote access to path/file denied" | delete
+    # Nuke the boring usenet stuff
+    pick -i -f usenet | pick -i -s "uucp map for" | delete
+    pick -i -t usenet | pick -i -s "returned mail" | delete
+    pick -i -t usenet | pick -i -s "automatic test echo" | delete
+    pick -i -t "owner-post" | pick -i -s "unknown mailer" | delete
+    pick -i -s "usenet disk space report" | delete
+    pick -i -s "very old news articles" | delete
+    pick -i -s "uucp map for" | delete
+    # Wipe out some uninteresting daily stats
+    pick -i -s "the maid was here." | delete
+    pick -i -s "daily accounting" | delete
+    pick -i -t netsurvey | delete
+    # Get rid of these things for good.  This isn't essential, but
+    # avoids complexity in the later "pick" commands.
+    update
+    # Save anything "to" or "cc" to mush-users in that folder.
+    pick -i -t mush-users | save +mush-users
+    pick -i -h cc mush-users | save +mush-users
+    # Also save interesting daily stat mail and generic root mail
+    pick -i -f root | pick -i -s stats | save +stats
+    pick -i -f root | pick -i -s report | save +stats
+    pick -i -f uucp | pick -i -s report | save +stats
+    pick -i -f root | pick -i -s summary | save +stats
+    pick -i -f root | pick -i -s munge | save +stats
+    pick -i -t root | save +root
+    # Again, make the changes permanent.  Saved mail gets deleted.
+    # This won't work if you have $keepsave set.
+    update
+
+    # Make sure we don't burst again needlessly.
+    set first_time=0
+
+    # Stop sourcing here.  Otherwise, we'd change folders without
+    # handling the mail left in the system mailbox.
+    exit
+endif
+
+# Finally, handle stepping through the folders one by one.  This has been
+# set up for sendmail, where the system mailbox is /usr/spool/mail/$USER,
+# but could easily be modified for other mailers.
+#
+# $thisfolder:t returns the tail only of the folder name.
+
+if $thisfolder:t == $USER
+	folder +stats
+	exit
+endif
+
+if $thisfolder:t == stats
+	folder +mush-users
+	exit
+endif
+
+if $thisfolder:t == mush-users
+	folder +root
+	exit
+endif
+
+# Default back to the system mailbox
+folder %
+
+# End of advanced.mushrc

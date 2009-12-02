@@ -1,0 +1,109 @@
+
+This is release 7.2.2 of the Mail User's Shell (mush).
+
+Mush has not been posted as a complete package since 7.1.1.  Before that,
+the last complete posting was 6.5.6.  If your version of mush is older
+than 7.1, refer to README-7.0 and README-7.1 for lists of other changes.
+Some of the changes discussed here were available in 7.2.1, but no summary
+was ever compiled for that version.  See README-7.2.0 for changes from
+7.1.1 to 7.2.  The summary here covers changes since 7.2.0.
+
+Changes in compilation:
+
+  * config.h-dist has been reorganized to bring the most-frquently-
+    changed definitions to the top.
+
+  * SCO UNIX 3.2 users should now define DIRECTORY and SELECT, and should
+    _not_ link with the -lx library.
+
+  * The preprocessor definition PRINTER_OPT can now be used to specify
+    the option used by your lpr to specify the target printer.  Formerly,
+    defining SYSV forced "lpr -dprinter" and otherwise "lpr -Pprinter"
+    was used.  Defining PRINTER_OPT forces use of the option defined
+    there; leaving PRINTER_OPT undefined passes through whichever of -d
+    or -P is given to mush's "lpr" command.
+
+  * The default version of SunOS that mush assumes when SUNTOOL is defined
+    has changed from 4.0 to 4.1.  If you have an older version of SunOS,
+    you must explictly define SUN_3_5 or SUN_4_0.
+
+New/changed commands:
+
+    Amazingly, there aren't any.
+
+New/changed variables:
+
+    complete
+	If both characters of the value of complete are the same, e.g.
+	set complete='\E\E', then mush will complete unique filename
+	matches, but non-unique matches will produce a listing before
+	completing the match as far as possible.  This has no effect
+	in tool mode.
+
+    compose_icon
+	In tool mode, setting this variable permits the compose window
+	to be separately iconified, and optionally specifies the icon
+	to be used for the compose window's iconic form.
+
+    hdr_format
+	The new format %u returns the user name part of the sender's
+	address.
+
+    indent_str
+	This string can now contain hdr_format references, just as
+	pre_indent_str and post_indent_str always have.
+
+Details of general changes:
+
+  * A simple comparison against the file names of all currently locked
+    files is performed before attempting to get a new lock.  This helps
+    prevent deadlock when the the same file is given more than once as
+    a target for a copy of an outgoing message.  Note that deadlock will
+    still occur if the same file is referenced twice under two different
+    names, i.e. one of the names is a link.
+
+Bugs fixed:
+
+  * The tool mode header display repaints properly when all messages in
+    the folder have been deleted.
+  * The tool mode Options (Variables) window no longer gets out of sync
+    with the actual values of the variables.  Thanks to Bill Randle.
+  * Using mush pipes in tool mode fkey functions doesn't improperly
+    attempt to redraw the header display, and hence doesn't core dump.
+  * Setting $tool_help in the Mushrc or .mushrc actually works now.
+  * Curses mode won't let you scroll into negative message numbers when
+    all messages in the folder have been deleted.
+  * Some obscure date formats are handled better.
+  * Using "folder -N" in curses mode works sensibly.
+  * File locking on folders blocks properly on SYSV machines.  This is
+    especially important for SCO UNIX, because of MMDF.
+  * The last (we hope) of the overlapping strcpy's has been purged.
+  * INTERNAL_MALLOC should be a little more robust.
+  * Warnings (as in "set warning") are now properly turned on and off
+    around "folder" commands.
+  * Sending a SIGHUP to a suspended mush no longer triggers a SIGTTOU.
+    Instead, mush exits relatively nicely, but without printing the
+    usual error messages.
+
+Tool mode changes:
+
+  * The compose frame may optionally be separately iconified.  See the
+    remarks under the compose_icon variable.  Thanks to Bill Randle.
+
+NOTE:
+
+    Some copies of 7.2.2 dated 3/26/91 or earlier have a bug in malloc.c.
+    If you are not using INTERNAL_MALLOC this will have no effect on the
+    behavior of the program, so the patchelevel was not changed.  The bug
+    will cause mush to allocate memory continuously as it runs (free() is
+    effectively disabled).  If you have such a copy, line 230 of malloc.c
+    will look like this:
+
+    230:	if (cp == NULL || debug < 5)
+
+    It should read:
+
+    230:	if (cp == NULL || debug > 4)
+
+    Correct versions can be obtained as usual from cse.ogi.edu, and have
+    the date 4/12/91 in version.h.

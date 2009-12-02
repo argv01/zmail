@@ -1,0 +1,195 @@
+
+This is release 7.2.0 of the SunView implementation of mush.
+
+Version 7.2.0 differs from 7.1.2 in additions to general functionality
+and in bug fixes.  There are no significant changes to the appearance
+of any of the interfaces.  The changes to add certain enhancements were
+significant enough that the revision number was increased from 1 to 2.
+
+New/changed commands:
+
+    about
+	This command produces an informational message about the program
+	and its authors.  It is available as a help menu selection in
+	tool mode.
+
+    alts user@host
+	This new alternates syntax is provided to make the behavior a
+	little more intuitive.  It is equivalent to
+	    alts !host!user
+	and will be displayed in that form in the alternates list or
+	in "saveopts" option dumps.
+
+    headers -H:m
+	The :m modifier (which can be used as a standalone command, as
+	with other such modifiers) selects messages having a temporary
+	mark.  See below.
+
+    mark
+    mark -[priority]
+    unmark
+	The "mark" command sets user-defined flag bits on messages.
+	With no arguments (or only a message list), it attaches a
+	temporary mark, not saved across updates.  With a -priority
+	argument, where priority is a letter A through E, a permanent
+	priority is assigned.  Priorities are removed by "mark -".
+	Temporary marks are removed by "unmark".
+
+	For the curses interface, the `*' key is now bound by default
+	to the new curses-command "mark".  This command toggles the
+	temporary mark on the current message.
+
+    pick -p priority
+	The -p option selects messages with priority specified by an
+	integer A through E.  Multiple -p options may be used, e.g.
+	    pick -p B -p D
+	will select messages having either priority B or priority D.
+
+	An additional change to the pick command is that some option
+	or pattern must be specified.  Using "pick" with no arguments
+	to repeat the last pattern search is no longer supported.  It
+	was never supported completely (only the pattern was retained,
+	not other information about where to look for it) and has been
+	eliminated to prevent confusion.
+
+    sort -p
+	The -p option orders messages by priority, A first, E last.
+	Marked messages (having the temporary mark) are treated as
+	highest priority for purposes of this ordering.  The ordering
+	can be reversed by using "sort -rp".  Also, the default status
+	sort now uses priority when status is otherwise the same.
+
+New/changed variables:
+
+    $cdpath
+	It is no longer necessary to include "." in $cdpath.
+
+    $prompt
+	The values of variables can now be included in the prompt at
+	the time it is displayed.  The format syntax "%$variable",
+	where "variable" is some variable name, will insert the value
+	into the prompt.  Remember to use single quotes when setting
+	prompt strings to protect such variable references.
+
+Details of general changes:
+
+    * The "preserve" command is now closer in behavior to UCB Mail and
+      Sun Mailtool, and mush now properly retains preserved status set
+      by either of those mailers.  Preserving a message no longer causes
+      it to be marked "U" (unread) when the folder is reloaded.
+
+    * In addition to the usual set of status bits, six user-defined bits
+      have been added.  The first is a `mark' bit, which shows up as a
+      `+' following the message number in the header display.  This bit
+      is not retained across folder update.  The other five bits are
+      `priority' bits A through E, displayed in the same spot if the mark
+      is not present.  These bits are retained across update in a Priority:
+      header placed just above the Status: header.  Priorities can be used
+      to select messages by using the "pick -p" command.  Marked messages
+      can be selected by the ":m" command.  The "sort -p" command orders
+      messages by priority (A highest, E lowest).  Marks and priorities
+      are attached to messages via the "mark" command.
+
+    * The "update" command now retains the "N" (new) status of messages
+      across the write-back to the folder.  The "quit" command still
+      changes the status to "U" (unread) on write-back, but new status
+      can be retained even across exit/restart by using "update;quit"
+      to exit from mush.
+
+    * Systems in European time zones using the /etc/timezone database
+      report daylight savings time in a two-word format, e.g. "MET DST".
+      The date parser has been fixed to recognize those formats in both
+      RFC822-compatible and ctime(3)-compatible date lines.  If you find
+      that you receive two-word time zones in one of the more exotic
+      date line styles that mush attempts to recognize, you'll have to
+      fix dates.c yourself.
+
+    * The cmd_help file now contains an entry with information of general
+      interest about the program and its authors.  This information is
+      accessed via a new command, "about", or via "help about".
+
+Bugs fixed:
+
+    * The header display for mixed-format addresses now works as it has
+      been advertised to work since 7.1.2.
+    * Lock files are now properly removed for DOT_LOCK systems.
+    * History keyword searches now work properly for SysV systems.
+    * User-supplied From: lines for outgoing mail (via "my_hdr From:") 
+      are now properly inserted regardless of the value of $edit_hdrs.
+    * When composing mail, the escape character (normally tilde, `~')
+      is not treated as an escape if line wrap ($wrapcolumn) causes it
+      to become the first character on a line.
+    * If the .signature file does not have a terminating newline, mush
+      will provide one.
+    * Sending mail from the tool no longer leaves <defunct> processes
+      to accumulate in the process table.
+    * When changing directories, the current directories is always
+      searched first; "." in $cdpath is ignored.
+    * MIPS and other BSD-SYSV hybrid systems that use the getwd() call
+      instead of the usual SysV getcwd() can define GETWD in config.h
+      to select the correct call.
+
+Tool mode changes:
+
+    * The new mail flag in the mush mailbox icon now goes up whenever
+      new mail arrives in the spool mailbox, even if the current folder
+      is not the spool mailbox.  Also, if the current folder is not the
+      spool but the size of the spool shrinks -- that is, the spool is
+      updated from another mush or mail session -- the flag will go up
+      to notify the user that "someone else" has modified his spool.
+
+    * When mushtool is started up or changed to a new folder, the first
+      new/unread message in the folder is automatically displayed.  In
+      previous versions, this would cause the message to be marked as
+      read, so that message would be saved to the user's mbox on the
+      next update, even if that message had previously been "preserved"
+      for storage in the spool file.  In 7.2, the message is still
+      displayed, but its preserved status is not changed unless it is
+      explicitly read by the user at a later time.
+
+    * There is a new panel button in the header panel to toggle marks
+      and set priorities.
+
+===========================================================================
+
+Information on the compose frame when the variable "compose_icon"
+is set.
+
+The compose frame is created as its own base frame, rather than a
+child frame of the tool frame. The advantage of this is that the
+compose window can be closed to an icon, rather than closed to
+invisibleness.
+
+The compose frame is opened by clicking on the "Compose" or "Reply"
+buttons in the main mushtool panel or by clicking on or opening the
+compose window icon (if it is visible). The very first the time
+compose window is opened it must be done with the Compose or Reply
+buttons in order to create the frame.
+
+The compose frame can be closed by using the SunView frame popup
+menu or by clicking on the "Close" button in the compose frame
+panel.  It may be destroyed by choosing "Quit Compose Frame" from
+the "Close" button menu or the "Quit" selection from the SunView
+frame popup menu.
+
+Repeated sequences of creating and destroying compose frames will
+use up file descriptors in Sun OS 3.5, due to a bug where a destroyed
+ttysw does not free up its fd's.  This appears to have been fixed
+in later versions of SunOS.
+
+The compose frame icon may be changed via the options menu and
+mushrc files in the same manner that the tool icons are changable.
+
+Closing the base tool with the "Done" button will also close the
+compose frame (if it is open). The compose frame may be opened by
+itself if all the user needs to do is compose/send a message.
+Quiting mushtool also destroys the compose frame.
+
+The default compose icon is the "textedit" icon with a label of
+"mush" added to it.  To use your own custom icon, set "compose_icon"
+to the path of the icon file.
+
+
+	-Bill Randle
+	billr@saab.CNA.TEK.COM
+	4 December 1990

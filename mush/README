@@ -1,0 +1,689 @@
+/* @(#)README		(c) copyright 2/1/92	(Dan Heller) */
+
+Authors:
+    Dan Heller
+    Bart Schaefer
+
+Network addresses:
+    argv@z-code.com		argv@sun.com		argv@ora.com
+    schaefer@zigzag.z-code.com			schaefer@cse.ogi.edu
+
+When sending mail, mail to the addresses in the order given.
+
+Contained is the source for "Mail User's Shell" (MUSH), a "Mail User
+Agent" (MUA) that is designed to manage electronic mail on most UNIX
+systems.  That is, mush is used by users to read mail, sort it, edit
+it, delete it, or use it to act as an interface to send mail to others.
+A Mail Transport Agent (MTA) is the program which mush communicates with
+that actually -delivers- mail.
+
+Mush is copyright (c) 1986, 1987, 1988, 1989, 1990, 1991 by Dan Heller.
+All Rights Reserved.   This software is not in the public domain.
+
+Redistribution of the unmodified source code is permitted as long as all
+copyright notices remain intact and all other identifying notices remain
+in the code and in the binary.  This includes message headers on outgoing
+mail and the startup message.  Future releases may extract the release
+version from the message headers of mush-originated messages to aid in
+implementing features and providing backwards compatibility with previous
+versions.  Modification of the source for personal use is permitted.
+Modifications sent to the authors are humbly accepted and it is their
+prerogative to make the mods official.  Only the "official" sources may be
+redistributed and no sale of the code or any part thereof is permitted
+without written consent from the authors.  Further, no part of the code
+may be used in any other product, free or otherwise, without consent from
+the authors.  Distribution of sources containing adaptations of the SunView
+interface to XView or to any X11-based interface is expressly prohibited.
+
+MUSH IS PROVIDED AS IS, WITHOUT WARRANTY.  AUTHORS HEREBY DISCLAIM
+ALL WARRANTIES INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES
+OF FITNESS FOR A PARTICULAR PURPOSE.
+
+With that out of the way...
+
+Mush runs on various flavors of unix.  To build mush, you should identify
+which unix you are running:
+
+    SunOS (all versions from 3.5 and higher).
+    BSD (versions 4.2 and up, or SunOS earlier than 3.5)
+    System-V / Version 7 / System III (Bell Labs)
+    Xenix (this might be tricky)
+    Hybrids including HP-UX and IRIX (Version 4.0 and up is best)
+
+You will need to copy "config.h-dist" to config.h and edit it to reflect
+the system dependencies described there.  These consist of "compile-time
+definitions and macros."
+
+When it comes to "compile-time definitions", you may use one of two methods:
+
+    #define DEFINITION	/* in the config.h file */
+    -DDEFINITION	/* in your makefile */
+
+If the definition is of the form MACRO="string", then use:
+
+    #define MACRO string
+    -DMACRO=string
+
+Note that if you use definitions in the makefile, you should remove the
+corresponding definitions from config.h -- if you do not, the config.h
+definitions will override the -D definitions.  The compiler will usually
+print a warning message if this happens, but the result will still be wrong.
+
+---------------
+Which makefile to use:
+
+If you are on a Sun Workstation:
+
+    makefile.sun applies only to suns and creates a binary called "mush."
+    If the binary ends in "tool", then the graphics (suntools) mode will be
+    used by default on invocation.  Otherwise, you must specify -t for
+    toolmode on sun workstations.  The SUNTOOL define is used in the
+    makefile.sun in order to compile the suntools version.  You DO need
+    to be running SunView; old SunWindows (2.0+) no longer works.  Be sure
+    to follow the notes in the makefile.sun for SunOS-4.0 machines.
+
+    If you know that you're not going to use the suntools mode then you
+    should use makefile.bsd so that SUNTOOL won't be defined and unnecessary
+    files will not be compiled so the binary will be smaller.
+
+    Whether or not you define SUNTOOL, you should define one of SUN_3_5,
+    SUN_4_0, or SUN_4_1 depending on your SunOS version.  If SUNTOOL is
+    the only thing defined, SUN_4_1 will be used.  If your version of
+    SunOS is older than 3.5, you can't use SUNTOOL, so go to makefile.bsd.
+    NOTE: Even though SUN_4_1 is the default, NO_COMMAS is not defined
+    unless you explicitly define SUN_4_1 or (NO_COMMAS itself).
+
+    You may also choose to define NO_WALK_MENUS to disable walking menus
+    for file names selectable from the "folder" and "save" command items.
+
+If you are on a BSD UNIX machine:
+
+    You should use the makefile.bsd makefile.
+
+If you are using XENIX:
+
+    There is one makefile for xenix: makefile.xenix.  However, SCO-xenix
+    runs on either 80286 or 80386 architectures.  This makefile has been
+    tuned for SCO's version of xenix.  This does not mean that it won't
+    work under other xenix versions -- however, some changes may have to
+    be made by hand.  If your xenix release is sco-xenix 2.2 or higher
+    then you must define USG. The libraries to use may be -ltinfo instead
+    of -lcurses -ltermlib.  This is because the curses package may use
+    termio instead of the sgtty data structure.  If you want to use termio
+    anyway, even if you're on an older xenix system (that supports termio),
+    then you may define USG anyway.
+
+    Follow the hints in the makefile.xenix for compiling for 286 systems
+    or 386 systems.  It is *very likely* that the CFLAGS will have to be
+    modified -- specifically, the model size and the stack size options.
+    You should be very familiar with your xenix to know how to tune this
+    properly.
+
+If you are on a System-V Bell labs machine:
+
+    makefile.sys.v is for unix machines that are not running any flavor of
+    BSD and probably running a system-v flavor of unix -- this defines USG
+    so that termio will be used.
+
+    True System V Release 2 systems should define SVR2 to get full support
+    for dot-locking (see DOT_LOCK below).  The default for SYSV is SVR3.
+    See below for SVR4.  Some SVR3 machines (e.g. Motorola SysV/88) are
+    close enough to SVR4 that you may need to use the libraries described
+    below.  However, this does not normally mean you should define SVR4.
+
+    SCO UNIX V.2.0 users should add -lx to OTHERLIBS in makefile.sys.v.
+    It may also be desirable to change MANDIR to /usr/man/man.C and
+    MANEXT to C in the makefile.  SCO UNIX V.3.2 users should avoid -lx
+    like the plague, and should define DIRECTORY and SELECT instead.
+
+    MicroPort sys-v users should probably remove the -O compiler option
+    from the makefile, and may have trouble with the msg_bit() macro
+    defined in mush.h.  It should be fairly trivial to generate an
+    equivalent function.
+
+If you have System V Release 4:
+
+    Use makefile.sys.v as above, but define SVR4 and DIRECTORY.  You
+    should also change
+	LIBS= 		-lcurses -lPW
+    to
+	LIBS= 		-lcurses -lgen
+
+If you are using Ultrix:
+
+    Start with makefile.bsd.
+
+    For Ultrix 2.2, change LIBS in makefile.bsd from
+	LIBS= -lcurses -ltermlib
+    to 
+	LIBS= -lcurses -ltermcap
+
+    For Ultrix V3.0, use the standard makefile.bsd LIBS, but add
+	-DSIGRET=void
+    to the CFLAGS, or add
+	#define SIGRET void
+    to config.h (see discussion below).
+
+    Ultrix V4.0 is generally the same as 3.0 but may exhibit problems with
+    alignment errors in the environment of forked children (e.g. the MTA).
+    The only workaround is to replace the popen(3) function with one of
+    your own that passes the environment explicitly via execve().  If you
+    never use mush's "setenv" command you'll probably never see this.
+
+If you are using HP-UX:
+
+    Use makefile.hpux.
+
+    Versions 6.5 and 7.0 of HP-UX (not to be confused with the same
+    version numbers of Mush) have the Berkeley-style directory access
+    libraries.  Those using older versions should omit -DDIRECTORY
+    from the CFLAGS.  This will cause the portable directory access
+    routines in that file to be compiled.
+
+If you are using Apollo Domain/OS:
+
+    Good luck.
+
+    Actually, there is some hope for you, but best if you have Domain/OS
+    version 10.3.x with the 4.3 BSD environment installed.  Included with
+    the distribution as of version 7.2.4 is apollo.shar, which contains
+    patches, auxiliary files, and makefile.apollo to put them all together.  
+    Run "sh apollo.shar" and "patch -N -p1 apollo.patch" (or patch by hand)
+    then make using makefile.apollo.  You *should* be able to make this
+    procedure work under the System V environment, but ....
+
+If you are using Apple A/UX:
+
+    Use makefile.sys.v, and add -DAUX -DDIRECTORY to CFLAGS.
+
+    Mush uses 4.2-BSD compatible signal handling when AUX is defined.
+
+If you have SGI Iris or Indigo workstations:
+
+    Silicon Graphics IRIX workstations should use makefile.sys.v.  If you
+    have IRIX version 3.x, you're pretty much on your own.
+
+    Add -DDIRECTORY to prevent the portable directory routines from being
+    compiled in.  You may optionally add -DSELECT if you want to use the BSD
+    style select() function.  If you do this, you must also add -lbsd to the
+    OTHERLIBS macro definition in the Makefile.
+    
+    For IRIX 4.x you should add -DIRIX4 to CFLAGS and use:
+	CC= cc -signed -cckr
+	OTHERLIBS= -lsun -lmalloc
+    Note that -lsun is used in place of -lbsd here.  This provides network
+    compatibility with sun workstations, or something like that.  You may
+    be able to get by with -lbsd.
+
+If you are using a hybrid BSD/SysV system:
+
+    You may have to use a combination of many of the defines listed
+    throughout this file.  You may also have to add additional libraries
+    to the LIBS= in the appropriate makefile.  For example, to use the
+    bsd system calls such as select(), getwd(), the directory reading
+    routines ...  you may have to define additional parameters such as
+    -DSELECT, -DGETWD, -DDIRECTORY, ... and possibly add -lbsd.
+
+    MIPS workstations:
+
+    These are also hybrid systems that may require additional hand-
+    configuration in order to work properly.  There seem to be
+    major differences between the last several releases, so your
+    milage may vary.  Before RISC/OS 3.2, there are numerous curses
+    library bugs, and lock.c should be compiled with BSD defined, but
+    everything else should be SYSV.  -DGETWD should be used and -lbsd
+    must be added to OTHERLIBS in the Makefile.
+
+    For RISC/OS 3.2 and later, start with makefile.bsd, add -DDIRECTORY
+    to CFLAGS, and use:
+	CC= cc -Wf,-XNd5000 -std0 -systype bsd43
+	OTHERLIBS= -lbsd
+
+When you decide on an appropriate makefile, _copy_ it to a new file called
+Makefile _before_ making any of local changes.  Please read the following
+sections for addtional configuration information.  In addition to changing
+compilation options as appropriate, you should examine the rules for the
+"install:" target.  Running "make" will NOT use this target by default;
+it is provided for your convenience only.
+---------------
+
+Your Mail Transport Agent:
+Sendmail:
+    Mush was originally designed to use sendmail as the Mail Transport Agent.
+    However, other MTA's will work.  The MTA you use should be defined in
+    config.h under the MAIL_DELIVERY macro define. By default,
+		/usr/lib/sendmail -i
+    is used -- the option, -i, tells sendmail not to accept "." on a line
+    by itself as an end-of-file marker.  This has been obsleted by "-oi",
+    but "-i" still works and is backwards compatible with older sendmails.
+
+    If you are compiling on a machine that has the Rand MH mail system as
+    its native user agent (machines at Rand Corp. and Tektronix boxes
+    running Utek 3.x or 4.x, among others) your system mailbox may be in
+    MMDF format even though your MTA is sendmail.  Define MMDF to parse
+    the mailbox, but also define M_EXECMAIL to use sendmail-style protocol
+    for talking to the MTA.  However, do NOT use /usr/lib/mail/execmail
+    as the MAIL_DELIVERY.  Make sure MAIL_DELIVERY is /usr/lib/sendmail
+    as usual, and that the VERBOSE_ARG, METOO_ARG, and MTA_EXIT macros
+    are the ones associated with the sendmail MAIL_DELIVERY.
+
+Delivermail:
+    Some mailers such as delivermail and MMDF use special strings to separate
+    messages stored in a folder.  Older delivermail versions would use "^C".
+    Whatever your system uses, if it is NOT "From " (just the first 5 chars
+    on a line matching "From "), then this string should be defined in
+    config.h with the MSG_SEPARATOR macro.
+
+MMDF:
+    NOTE: MMDF sites can define MMDF and not worry about MSG_SEPARATOR.  See
+    config.h-dist if you run MMDF.
+
+    Since MMDF can deliver users' mail in their home directories, there is
+    a define to specify this option: -DHOMEMAIL
+
+    Since MMDF uses its own libraries to do file locking, you should add the
+    appropriate library to the LIBS list in your makefile.
+
+    MMDF sites should probably NOT define PICKY_MAILER (see below).
+
+    If you are using SCO UNIX 3.2 and the MMDF "submit" program gives you
+    trouble because of file permissions, define M_EXECMAIL to use the
+    execmail program instead.
+    
+    Another reason you may need execmail is that under MMDF, the system
+    knows itself only by its hostname; other names, including the fully-
+    qualified domain name, have to be specified in the local channel file.
+    If this is not done, mail From: user@host.domain will be returned with
+    a "no valid author spec" message.  However, it won't fail if the mail
+    is submitted by root; /usr/lib/mail/execmail is setuid root, so mail
+    submitted that way will succeed.  You should only resort to M_EXECMAIL
+    if you are unable to change the MMDF permissions or cannot edit the
+    channel file.
+
+Smail:
+    If you are using smail-2.x you need to define NO_COMMAS and PICKY_MAILER.
+    On a SYSV system, define MAIL_DELIVERY as /bin/rmail.
+
+POP:
+    Define POP3_SUPPORT.  You may also need to define HOMEMAIL; see config.h
+    for additional configuration of HOMEMAIL.
+
+    You will still need to define other macros appropriately for the
+    transport agent that is used to *send* mail from your machine.
+
+All others:
+    Chances are, your MTA uses the "From " format to separate messges in
+    a folder.  This includes, /bin/mail, rmail, smail, execmail, and so on.
+    Unless you *know* otherwise, assume this to be the case with your MTA.
+
+    If no MSG_SEPARATOR is specified, what mush looks for is a pattern of
+	From <string> <date format>
+    The "string" is usually the return address of the sender and the date
+    format is supposed to be in ctime(3) format.  Even still, some MTAs
+    don't conform completely to this standard and vary slightly in
+    implementation.  The function load_folder() (which reads in messages)
+    contains a scanf which looks for this format to verify that this is
+    indeed a new message being scanned.  If you install mush and find that
+    you are entering a shell, but mush indicates there are no messages in
+    the folder, it could be that you have a weird "From " line format and
+    the scanf() call needs to be either modified or removed.
+
+    Machines that use mail transfer agents that *do not* use a colon-less
+    "From " line as a message separator should #define in config.h the string
+    MSG_SEPARATOR.  Since this string is usually control characters, you
+    need to specify actual ascii values for those characters.  Users of MMDF,
+    for example, may use "\001\001\001\001" since some mmdf versions use four
+    control-A's to separate messages.  This message separator assumes that
+    there is a carriage return at the end of the string.  Systems that use
+    sendmail need not concern themselves with this define.  MSG_SEPARATOR
+    should not contain a newline, except for MMDF.  The MSG_SEPARATOR must
+    match a complete line; a prefix will not work.
+
+#defines specifically for your MTA:
+
+MSG_SEPARATOR
+    See the discussion above.
+
+MAILDIR
+    This is automatically defined as /usr/mail for SYSV prior to SVR4 and
+    as /usr/spool/mail for BSD and SVR4.  However, some systems are unusual,
+    so you may need to define this explicitly.
+
+MAIL_DELIVERY
+    This is the program that mush invokes to send your messages off to your
+    list of recipients.  It defaults to "sendmail" (or "submit" for MMDF).
+    See notes below on modifying this via M_EXECMAIL for misconfigured MMDFs.
+    For vanilla SYSV, redefine MAIL_DELIVERY as /bin/mail or /bin/rmail.
+
+UUCP
+    This should be defined if your MTA does not automatically create a
+    From: header *and* your machine talks to other computers via uucp.
+    If defined, the From: line created specifies the user's address in
+    UUCP format (host!user).  Otherwise, arpa format is used (user@host).
+    Also, return addresses generated from RFC822 route specs will be put
+    in UUCP format with a complete path.
+
+MTA_EXIT
+    The exit code of a successful delivery of a message by your MTA.
+    This is typically 0, but MMDF sites should define 9 (see config.h-dist).
+
+NO_COMMAS
+    If your mailer does *NOT* like commas between addresses (smail sites,
+    xenix and sys-v machines), then you should define NO_COMMAS.  Otherwise,
+    you will get mailer-daemon [type] messages back when trying to send mail
+    to multiple users.  Sendmail should not normally need this, but early
+    versions of SunOS 4.1 were shipped with a broken sendmail configuration
+    and require NO_COMMAS anyway.
+
+VERBOSE_ARG
+    If your mailer does NOT have a verbose option, then you should not have
+    VERBOSE_ARG defined.  Otherwise, define it to be whatever the verbose
+    argument is for your mailer.  The default is -v.
+
+METOO_ARG
+    Sendmail uses the -m argument to say, "metoo" -- when sending to sendmail
+    aliases (e.g. mailing lists), sendmail will expand the alias, but if your
+    address appears in the expansion, you are excluded from getting your own
+    mail.  However, if you have the variable metoo set with your variables,
+    then the metoo argument is passed to sendmail to say, "I know I'm on this
+    mailing list, but send me a copy of my message even tho I sent it."  For
+    sendmail, this is -m.  If your mailer uses something else, then define
+    METOO_ARG in the config.h file.  If you don't have it (sys-v), then this
+    should not be defined.
+
+PICKY_MAILER
+    Most RFC822 compliant mailers (sendmail) will add the headers From:
+    and Date: on outgoing mail.  If the user or UA sends these headers,
+    most MTAs will not append them automatically.  However, there are
+    certain MTAs which will not allow this -- these "picky mailers" will
+    precede such headers with a '>' and make the headers very ugly and
+    somewhat redundant or contradictory.  It's hard to determine whether
+    or not your MTA will do this without actually sending mail to yourself.
+    However, it is advised to set this *unless* your mailer is not RFC822-
+    compliant (used to be defined by OLD_MAILER in previous mush releases).
+
+    PICKY_MAILER should NOT normally be defined when MMDF is defined.
+
+DOT_LOCK
+    Different systems use different locking mechanisms.  By default,
+    mush uses one of flock(), locking(), or lockf() (depending on your
+    system).  Some  systems use a file called the same name as the file
+    you're locking with an appended ".lock" at the end (some Xenix's use
+    /tmp/$USER.mlk).  If you define DOT_LOCK, mush will first check for the
+    .lock file.  If it exists, mush loops until it goes away and then mush
+    creates it mode 600.  Regardless of whether you use dot-locking, mush
+    will continue to try to use flock(), or whatever.
+
+    If your MTA is smail-2.x, you should define DOT_LOCK regardless of
+    your operating system type.  DOT_LOCK may also be helpful in preventing
+    corruption of NFS-mounted mail spools, but only if the MTA can be made
+    to also use this protocol.
+
+    Dot-locking requires mush to have write access to the directory where
+    your mailbox exists.  Normally, this directory isn't writable by the
+    average user, so to do this you may have to sgid mush to the group id
+    of the owner of that directory.  Mush will get the effective gid at the
+    beginning of the program and immediately reset it to your real gid until
+    the time it needs to lock the file occurs.  It changes back to the sgid,
+    locks, then returns to normal.  There shouldn't be a security problem.
+
+    If you don't know what any of this means, ignore DOT_LOCK.
+
+    Another warning is that some MTA's don't even follow their own protocol.
+    System V, it has been reported, creates the .lock file without checking
+    to see if it exists (therefore ruining someone else's lock).
+
+---------------
+Signals:
+
+SIGRET
+    When signals occur in unix, the program can identify a function to be
+    called whenever a specific signal interrupts the process.  That function
+    returns one of two types in unix: int and void.  Because the return value
+    of this function is always ignored, many unix systems are converting
+    their definition of this function from int to void.  Mush has a define:
+    SIGRET which defines what the function should return.
+
+    By default, SIGRET is defined to be "int", except for SunOS4.0, where
+    it is defined to be "void".
+
+    Some System-V, some Ultrix and some Xenix machines should also define
+    SIGRET to be void.  If you don't know, leave it alone.  If you guess
+    wrong, you will get compiler "warnings" on lines that read:
+	on_intr();
+	off_intr();
+---------------
+Memory allocation:
+
+INTERNAL_MALLOC
+    Mush depends on the xfree() function to detect invalid pointers, so
+    that they will not be incorrectly passed to free().  Some system
+    organizations make this very difficult, if not impossible.  80286-based
+    machines in certain memory models, AT&T 3b2s and 3b15s, and others have
+    these difficulties; VAX, Sun, Sequent, Apollo, and most 680x0 and many
+    80386-based machines do not.  Changes have been made to xfree() to
+    handle the AT&T machines, but if you aren't sure about your machine,
+    or if you get unexpected segmentation faults, define INTERNAL_MALLOC.
+    SysV users may want to define this anyway, because the internal malloc
+    may be faster than the default malloc(3).
+
+    By default, INTERNAL_MALLOC is undefined.
+
+---------------
+Miscellaneous defines:
+
+TIMEZONE
+    If this is defined, the string it is defined to is used as your timezone
+    regardless of what the system thinks your timezone is.  This is intended
+    for systems which have no functions for determining the timezone.  On
+    newer Gould BSD 4.3 systems, it is safe to use
+	    #define TIMEZONE T->tm_zone
+    On other systems, it is better to define TIMEZONE as a string, e.g.
+	    #define TIMEZONE "PST"	/* Or "-0800" for international */
+
+DAYLITETZ
+    This should be defined to your Daylight Savings Time timezone string if
+    and only if you also define TIMEZONE (above).  Do not define this if you
+    use the Gould tm_zone.
+
+USA
+    If you are in the United States of America or nearby parts of North
+    America and you want your timezones to be generated as three-letter
+    acronyms (EST, CDT, etc.) you can define USA.  Otherwise, generated
+    timezones will be expressed as offsets from Universal Time (GMT).
+    It is recommended that you avoid defining USA.  Mush will do its best
+    to comprehend TLA timezones on incoming mail, regardless of USA.
+
+VPRINTF
+    This should be defined if your system has the vprintf functions. You
+    *have* these functions if you are running:
+	o system V
+	o xenix
+	o Sun release 3.0 or higher.
+	o BSD 4.3-tahoe, 4.3-reno, or 4.4.
+    If you are still not sure, try the following command from your shell:
+
+    % ar t /lib/libc.a | grep 'v.*printf'
+
+    If you have it, you'll probably get something like
+	vprintf.o
+	vsprintf.o
+    as output.  If you don't have it, you won't have any output.  If your
+    main C-libraries are not in /lib/libc.a, then find where they are and
+    try the same command using that file.  BSD machines before 4.3-tahoe
+    do not have vprintf().
+
+GETWD
+    This should be defined if your system uses the getwd() system call, as
+    opposed to getcwd(), and your system is not a BSD system (e.g. MIPS).
+
+---------------
+The sprintf() function:
+    If you *know* your system's sprintf returns a char *, you can remove the
+	#define sprintf Sprintf
+    in strings.h.  Careful, not all BSD4.3 machines are alike!  If you don't
+    know for sure, don't change this define.
+
+---------------
+Regular expression defines:
+    Some systems have regcmp/regex as their regular expression matching
+    routines while others have re_comp/re_exec -- If you have regcmp,
+    you should define REGCMP so that you will use the routines regcmp()
+    and regex() as the regular expression composer/parser.  REGCMP should
+    normally be defined for xenix and System-V Unix.  If you don't have
+    REGCMP defined, then the routines re_comp() and re_exec() are used
+    (this is the default for mush).
+
+    Note that some systems do not have either set of routines in the default
+    libraries.  You must find the library to use and add it to the list of
+    libraries to use.  If this is the case, your link will fail with the
+    errors that regex and re_comp are undefined functions.  Read your man
+    page for regex(3) to find where to locate those libraries.
+
+---------------
+The Berkeley directory(3) routines:
+    If your system has directory access routines compatible with BSD Unix
+    (opendir, readdir, closedir) you should define DIRECTORY in either the
+    makefile or config.h.  This is already reflected in the makefile.hpux.
+    See the notes above for other Sys-V-ish systems that may require this.
+    If DIRECTORY is not defined, replacement routines in glob.c are used.
+
+---------------
+The select() function call:
+    Mush uses select() to implement macros, mappings and bindings.  If your
+    system is a BSD system, then this is defined for you.  However, with the
+    advent of hybrid bsd/sys-v systems, you may not be able to set BSD, but
+    you know you still have select() --for such systems, define SELECT in
+    your makefile or in config.h.  For example, SGI systems require this.
+
+    Newer xenix machines have this as so some system-v machines.  If you don't
+    define one of BSD or SELECT, mush will use another function although not
+    as optimal as select().
+
+---------------
+The default Mushrc startup file:
+    A default mushrc should be installed, containing local configuration
+    information (aliases or variable settings).  This can also provide
+    first-time users with a more friendly interface.  UCB mail's default
+    Mail.rc works, but no default file works also.  The location of the
+    default file should be defined in config.h.  To have no default Mushrc,
+    set the default to /dev/null.
+
+    The Mushrc file supplied with the mush distribution is heavily commented
+    and uses several of mush's features in setting up the interface.  THIS
+    FILE IS NOT INTENDED TO BE USED WITHOUT LOCAL MODIFICATIONS!  If you
+    use this file, you should modify it so settings of the variables MAILRC,
+    ALTERNATE_RC, and ALT_DEF_RC correspond to the definitions in your
+    config.h file.  You should also examine and possibly delete the help
+    section for new users (creates the .mushuser/.mushexpert files), which is
+    included mainly as an example.  The Mushrc is designed to source the
+    ALT_DEF_RC, which is usually equivalent to the UCB mail Mail.rc.  This
+    eases the transition to mush for UCB sites, and allows aliases and
+    settings that should apply to both mush and mail to reside in a single
+    file.  UUCP sites may also want to uncomment the line which sets the
+    auto_route and known_hosts variables; be sure to modify known_hosts to be
+    an accurate list of your UUCP mail neighbors.
+
+    Important Note to sys-v'ers who can't get their hostname from utsname(2)
+    (xenix, more?), the hostname should probably be set in the default Mushrc
+    defined in config.h.    set hostname=whatever
+
+    If your system has a LAN or UUCP name returned by gethostname(3) and
+    an additional network mail (domain) name, you probably want to add the
+    domain name to the value of hostname.   set hostname="domain $hostname"
+    (where "domain" is your local domain name).  Sometimes, the domain name
+    is listed among the alternate names for the machine, which mush is able
+    to look up, but will not be the first name mush finds.  Since mush uses
+    the first name listed in $hostname when constructing From: lines and
+    the like, you may need to use a "set" in Mushrc to rearrange the list.
+
+    For sun systems, the sun Mail Mailrc (/usr/lib/Mailrc) does not work
+    very well because sun's Mail is not standard /usr/ucb/Mail.  For this
+    reason, sun for many years did not change the default Mail.rc, which
+    still resides in /usr/lib/Mail.rc (note this has the "." whereas the
+    other file does not).  The default config.h-dist reflects this.  In
+    recent versions of SunOS, things like "if t" and "set |=" have begun
+    to creep into Mail.rc, which may cause mush to behave oddly.  Avoid
+    sourcing $ALT_DEF_RC in Mushrc if this is the case, and consider
+    changing the definition of ALT_DEF_RC in config.h.
+
+    There is a supplied Mailrc file with mush, but this is only intended to
+    be used as an example of how to make mush look like ucbMail.  This is a
+    _reduction_ in functionality and its usage is not encouraged.  It is
+    provided for those who wish to "invisibly" replace UCB mail with mush.
+
+    There is a Gnurc file, also supplied as an example, which can aid in
+    making mush's curses mode appear similar to gnu-emacs (NOT Rmail).
+
+    The files sample.mushrc and advanced.mushrc are intended as samples of
+    individual users' ~/.mushrc files.  There is some overlap from Mushrc
+    in sample.mushrc; in particular, if you use Mushrc as the default file,
+    the sample.mushrc need not source ~/.mailrc.
+
+---------------
+Help files:
+    The help files should be placed somewhere which is readable and accessible
+    by all.  Failing to do so removes virtually the entire help facility's
+    ability to help anyone.  There is a help file (cmd_help) for command help
+    (e.g. "command -?"), and the file tool_help is for the graphics mode (Sun
+    workstations only).  You should define where you want these files in
+    config.h so at runtime, they can be accessed without error.  If for some
+    reason you can't define a location at run-time, you can change Mushrc
+    to set the variables $cmd_help and $tool_help to the correct locations.
+
+---------------
+
+You should now be able to run make.  You may wish to use the target "install"
+to put the mush binary and the help and init files in their proper places; be
+sure to correct the destination directories in the Makefile you have selected,
+and to doublecheck file path names in the init files.
+
+---------------
+Maintenance:
+
+If you want to use dbx or any other debugger, or to use your default tty
+driver, -e should be used as command line argument when you run the program.
+What this flag does is prevents your echo from being turned off and leaving
+cbreak off, thus, keeping your tty in a sane state.  This prevents the use
+of mappings and macros (map and map!).  However, curses mode will automatic-
+ally disable that mode.  The -e flag is highly discouraged.
+
+If you have memory allocation checking and validation (sun 3.0+ ?) then
+define M_DEBUG in the makefile (main.c) and add the library
+/usr/lib/debug/malloc.o to the library list. Do this only if you
+find bugs in the program and suspect memory allocation errors. main.c
+has the code which sets the debugging level according to the value of
+an environment variable.  Because malloc-debugging is so cpu intensive,
+the tool mode program may get a SIGXCPU (cpu time limit exceeded)
+because of the large amount of opening and closing large pixrects and
+devices.  For this reason, SIGXPCPU is is caught in main.c.
+
+The "warning" variable may be set (at runtime in your .mushrc or as
+a command: "set warning") to aid in finding runtime errors that aren't
+fatal.  You can also use the "debug" command:
+    debug 1	--	general trace messages
+    debug 3	--	verbose messages, MTA disabled
+    debug 4	--	really verbose messages
+    debug 5	--	free() disabled
+
+If you ever get "Message N has bad date: <date string>" then note
+the FORMAT of that date and edit dates.c.  There are a number of
+"sscanf"s which you can see match known date formats.  Use them as
+examples and insert the new date format you have.
+
+If Mush ever coredumps and you are suspicious about whether or not
+your folder (or spool directory) was removed, or if you were editing
+a letter, you should check for the files .mushXXXXXX and .edXXXXXXX.
+Unless something incredibly awful has happened, Mush won't die without
+asking if you want to save the .mushXXXXX file and if you actually want
+it to dump core.  Note that if you run mush from .suntools and there is
+a core dump, it probably wants to do some IO with the console and may
+hang (not exit) because it doesn't know it can't talk to you.  If mush
+is killed by SIGHUP, it won't remove the .mushXXXXXX file, but it won't
+tell you about it either (unfortunately).
+
+Bare-bones line-mode mush (no CURSES) and tool mode (SUNTOOL) pass lint
+with a small number of errors, mostly about long assignments losing accuracy.
+The SysV code has not been linted as thoroughly as the rest.  Curses doesn't
+lint very well, but even when you lint mush with CURSES defined, it mainly
+complains about the unused curses globals in curses.h.

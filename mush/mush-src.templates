@@ -1,0 +1,4 @@
+Template: mush-src/build
+Type: note
+_Description: To build mush binary package, you have to run
+         build-mush

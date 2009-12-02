@@ -1,0 +1,15 @@
+#include "config.h"
+
+s,@mailrc@,MAILRC,g
+s,@alternate_rc@,ALTERNATE_RC,g
+s,@default_rc@,DEFAULT_RC,g
+s,@alt_def_rc@,ALT_DEF_RC,g
+s,@alt_def_rc@,ALT_DEG_RC,g
+s,@maildir@,MAILDIR,g
+s,@bindir@,BINDIR,g
+s,@def_folder@,DEF_FOLDER,g
+s,@def_mbox@,DEF_MBOX,g
+s,@edfile@,EDFILE,g
+s,@fortune@,FORTUNE,g
+s,@alternate_home,ALTERNATE_HOME,g
+

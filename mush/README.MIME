@@ -1,0 +1,47 @@
+MIME support for Mush
+
+(C) 1996 by Pawel Wiecek
+coven@pwr.wroc.pl
+
+Here's a brief list of changed things:
+
+1. Added support for sending MIME complaint messages (uses external
+   message formatting utility, preferably metasend)
+
+Extended MIME support is put into one file, sendmime.c. Additional changes
+were made in few other files (mail.c, viewopts.c).
+
+MIME sending support uses two new tilde escapes:
+  ~m - setting MIME content type and encoding for message body
+  ~* - adding an attachment
+And four new variables:
+  alwaysmime - set if MIME should always be used. Otherwise it's used only
+               when ~m or ~* was used
+  defaultbodytype - default content type for message body (if not set
+               text/plain is used)
+  metasend - similarly to metamail contains path to MIME formatting program.
+               It should point to real metasend, or something compatible, as
+               my routines expect it to understand metasend's switches (at
+               least -b -D -e -f -m and -o). Options are always passed in the
+               same order, so it would be nice to write some wrapper script
+               if you have something else.
+  mimetypes - path to mime.types file to use. My routines check ~/.mimetypes
+               first, then file pointed by this option (if any) and finally
+               /etc/mime.types.
+
+Some nice guesses are made both for content types and encodings.
+You can use pipes' output as an attachment - just use program name and options,
+preceded by a '|'.
+Legal encodings are 7bit, quoted-printable, base64 and x-uue - just like for
+metasend.
+
+When preparing those changes I didn't care about debug or tools mode - if
+there's anything that should be added, feel free to inform me.
+
+2. Additional changes were made to MIME support for received mail.
+
+I corrected msgs.c to do case insensitive comparison when checking for
+Content-Type header - with previous case sensitive comparison we couldn't
+recognize headers we send for ourselves!
+Also I put short description of metamail variable in viewopts.c.
+

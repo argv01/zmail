@@ -1,0 +1,217 @@
+#!/bin/bash -e
+#
+# build-<package>
+#
+# $Id: build-PACKAGE,v 1.5 1998/05/01 08:35:36 phil Exp $
+#
+# Written by Philip Hands <phil@hands.com>
+# Copyright (C) 1998 Free Software Foundation, Inc.
+# Copying: GPL
+
+# ask_user ---  function prompts the user with y/n style prompt
+#
+# It's behaviour is controlled via the parameters:
+#  1  -  the initial prompt
+#  2  -  default return value (set to 0, 1 or "none")
+#  3  -  the patern match for acceptable Yes responses
+#  4  -  the patern match for acceptable No responses
+#  5  -  the error prompt, displayed when the user fails to provide valid input
+#
+# e.g.  ask_user  "Foo, or Bar [fb] " none '[fF]*' '[bB]*' "try again"
+
+ask_user() {
+  P=${1:-'Should I do this ? [yN] '}
+  D=${2:-1}
+  Y=${3:-'[yY]*'}
+  N=${4:-'[nN]*'}
+  E=${5:-'\nPlease enter either y)es or n)o, followed by <RETURN>\n'}
+
+  while true ; do
+    echo -ne "$P"
+    read response
+    case "$response" in
+      ${Y} ) return 0 ;;
+      ${N} ) return 1 ;;
+      "" ) [ "$D" = 0 -o "$D" = 1 ] && return $D ;;
+    esac
+    echo -e $E
+  done
+}
+
+package=${0##*build-}
+NEWDIR=/tmp/$package
+
+cat <<!END!
+
+This script unpacks the ${package} source into a directory, and
+compiles it to produce a binary ${package}*.deb file.
+
+The directory where this is done will end up containing the source
+and package files for the $package binary package, along with a
+directory containing the unpacked source.
+
+!* WARNING *!
+There have been reports of undesired behavior when attempting to
+build qmail in a directory on a tmpfs based filesystem.  Please do
+not try to build on an tmpfs filesystem.
+
+!END!
+
+line=kjfdsh
+read  -e -p "Enter a directory where you would like to do this [$NEWDIR] " line
+NEWDIR="${line:-$NEWDIR}"
+
+if test -d $NEWDIR
+then
+  ask_user "$NEWDIR already exists, should I use it anyway ? [yN] " || {
+    echo -e "\nPlease fix it and run $0 again\n"
+    exit 1
+  }
+else
+  mkdir $NEWDIR
+fi
+
+cd $NEWDIR
+NEWDIR=`pwd`
+dpkg-source -x /usr/src/${package}-src/${package}_*.dsc
+cd ${package}-*
+
+CANBEROOT=no
+SU=""
+if [ 0 = `id -u` ]
+then
+  BUILDROOT=""
+  CANBEROOT=yes
+else
+  hash fakeroot 2>/dev/null && HAVE_FAKEROOT=fakeroot || HAVE_FAKEROOT=""
+  hash sudo     2>/dev/null && HAVE_SUDO=sudo         || HAVE_SUDO=""
+  if [ -n "$HAVE_FAKEROOT" -a -n "$HAVE_SUDO" ]
+  then
+    echo ""
+    if ask_user "Should I use sudo or fakeroot to build the package ? [sF] " 1 '[sS]*' '[fF]*' "\nPlease enter either s)udo or f)akeroot, followed by <RETURN>\n"
+    then
+      BUILDROOT=sudo
+    else
+      BUILDROOT=fakeroot
+    fi
+  elif [ -n "$HAVE_FAKEROOT" -o -n "$HAVE_SUDO" ]
+  then
+    BUILDROOT="${HAVE_FAKEROOT:-$HAVE_SUDO}"
+  else
+    # sanity check, dependencies should provide one of them
+    echo ""
+    echo 'oops! you have not installed fakeroot or sudo!'
+    echo ""
+    exit 1
+  fi
+  
+  if [ -n "$HAVE_SUDO" ]
+  then
+    cat<<!END!
+
+In addition to building the package, there are certain other actions that
+you may want me to do (i.e. installing the new package) that need real root
+access.  If you want, I can a achieve this by use of sudo.
+
+In each case, you will be prompted before I attempt one of these actions
+
+!END!
+    if ask_user "Should I use sudo to gain real root access when required ? [Yn] " 0
+    then
+      SU=sudo
+      CANBEROOT=yes
+    fi
+  fi
+fi
+
+echo ""
+cd $NEWDIR
+dpkg-source -x /usr/src/${package}-src/${package}*.dsc
+cd ${package}-*
+
+echo ""
+echo "Binary package $package will be compiled now"
+echo "If you want to apply a custom patch, switch to another console and do it now"
+echo ""
+echo "The following patches have been applied for you automagically:"
+echo "netscape-progress - Fixes compatibility bug in POP3 daemon"
+echo "pop3-supplementarygroups - Update to checkpasswd to allow multiple groups"
+echo "qmail-link-sync - Filesystem performance patch"
+echo "qmailqueue - Allows use of external qmail-queue programs"
+echo "qregex - Allows use of regular expressions for anti-relay / spam control"
+echo "errno - Fixes glibc compatibility error"
+echo "qmail_local - Fixes memory corruption in certain .qmail files"
+echo ""
+echo "Patches already applied can be found in the patches/ directory where the"
+echo "qmail-src package was extracted."
+echo ""
+echo "This can take long time, depending on your machine"
+echo ""
+echo -n "Press ENTER to continue..."
+read blah
+
+$BUILDROOT debian/rules binary-arch
+
+cd ..
+
+if [ -f ${package}*.deb ]
+then
+  echo ""
+  echo "It seems that all went ok"
+  echo ""
+else
+  echo ""
+  echo "Some error happened, stopping here."
+  echo ""
+  exit 1
+fi
+
+if ask_user "Do you want to remove all files in $NEWDIR,\nexcept `echo ${package}*.deb` now? [Yn] " 0
+then
+  [ "$BUILDROOT" = sudo ] && ROOT4RM=sudo
+  echo -n "Removing files... "
+  $ROOT4RM rm -rf ./${package}-*/
+  $ROOT4RM rm -f ./${package}*{.dsc,.diff.gz,.orig.tar.gz}
+  echo "done"
+fi
+
+echo ""
+
+if [ "$CANBEROOT" = yes ] 
+then
+  if ask_user "Do you want to install `echo ${package}*.deb` now? [Yn] " 0
+  then
+    $SU dpkg --install ${package}*.deb || true
+  fi
+else
+  echo "`echo ${package}*.deb` is in $NEWDIR"
+  echo "You have to execute the following to install it, being root:"
+  echo ""
+  echo "        dpkg --install `echo ${package}*.deb`"
+fi
+
+echo ""
+
+if [ "$CANBEROOT" = yes ]
+then
+  if ask_user "Do you want to purge ${package}-src now? [yN] " 1
+  then
+    $SU dpkg --purge ${package}-src || true
+  fi
+else
+  echo ""
+  echo "You can now remove package ${package}-src running as root"
+  echo ""
+  echo "        dpkg --remove ${package}-src"
+fi
+
+echo ""
+echo "Remember that you can install `echo ${package}*.deb`"
+echo "on other computers so you don't need to compile it again."
+echo ""
+echo "Don't forget to setup a /etc/qmail/rcpthosts file to prevent open relaying!"
+echo ""
+echo 'Good luck!'
+echo ""
+
+exit 0

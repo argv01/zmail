@@ -1,0 +1,6072 @@
+.\" Mush Man Page: Copyright (c) 1987, 1989, 1990 Dan Heller
+.\" Cleaned up January 1988 by Bart Schaefer <schaefer@cse.ogc.edu>
+.\" Patched again December 1989 by Bart Schaefer <schaefer@cse.ogi.edu>
+.\" 1990 updates by Bart Schaefer and Bill Randle <billr@saab.cna.tek.com>
+.\"
+.if n .ds Q \&"
+.if n .ds U \&"
+.if t .ds Q \&``
+.if t .ds U \&''
+.if n .ds - --
+.if t .ds - \(em
+.nh
+.TH MUSH 1 "Oct 14, 1992" "Version 7.2.5"
+.SH NAME
+The Mail User's Shell \- Shell for electronic mail.
+.SH SYNOPSIS
+.B mush
+[
+.B \-n
+]
+[
+.B \-v
+]
+[
+.B \-s
+subject
+]
+[
+.B \-c
+cc-list
+]
+[
+.B \-b
+bcc-list
+]
+[
+address-list
+]
+.br
+.B mush
+[
+.B \-n
+]
+[
+.B \-v
+]
+[
+.BR \-U [ ! ]
+]
+.B \-h
+draft-file
+.br
+.B mush
+[
+mode-options
+]
+[
+file-options
+]
+.SH INTRODUCTION
+The Mail User's Shell (Mush) is an interface for sending and manipulating
+a database of electronic mail messages under the
+.IR UNIX (TM)
+environment.
+There are three user interfaces that allow the user to interact with
+.I Mush.
+The default interface is the conventional tty-based line mode
+similar to command line interpreters such as
+.I csh
+as well as other mailers, such as University of California, Berkeley's
+.I Mail
+and Bell Lab's System V
+.I mailx
+interface.
+This mode requires nothing from the terminal in terms of screen
+capability and may be run on many different versions of the
+.IR UNIX (TM)
+operating system.
+.PP
+The text-graphics
+.RI ( curses )
+interface is reminiscent of the
+.I vi
+visual editor, but is user-configurable to simulate other editors.
+This interface does not require graphics capabilities of
+the computer or the terminal on which it is run, but the terminal must
+have the minimum capabilities required by any visual screen editor.
+.PP
+The
+.I window
+interface for the Sun Workstation utilizes the icon and
+menu based (mouse selectable) windowing system.
+This
+.I tool
+(graphics) mode is highly subject to the version of operating system
+your Sun may be running.
+It is intended to be run on Sun versions 3.5 and higher (those that have the
+SunView window system).
+.PP
+See the corresponding sections for more information on the user
+interface desired.
+Most of this manual deals with commands, variables
+and actions that are common to all three interfaces although
+some attention is paid to individual characteristics of each interface.
+.PP
+The following command line arguments are understood by
+.I Mush
+(full word forms in parentheses):
+.TP
+\-b bcc-list
+(\-blindcarbon, \-blind)
+The list of Blind Carbon Copy recipients is set on the command line.
+If more than one address or an address containing spaces is specified, the
+entire list should be enclosed in quotes.
+This option applies when sending mail only.
+If you are entering the shell, curses mode, or the tool mode, this option is
+ignored.
+.TP
+\-C
+(\-curses)
+Enter the mailer in curses mode upon startup.
+.TP
+\-c cc-list
+(\-carbon, \-copy)
+The list of Carbon Copy recipients is set on the command line.
+If more than one address or an address containing spaces is specified, the
+entire list should be enclosed in quotes.
+This option applies when sending mail only.
+If you are entering the shell, curses mode, or the tool mode, this option is
+ignored.
+.TP
+\-d
+(\-debug)
+Turns on the debugging level to 1.
+You can change debugging levels from within the shell using the
+.B debug
+command.
+.TP
+\-e
+(\-echo)
+Normally, the program runs with the local echo off and each character
+typed is processed individually so as to process certain macros and
+keyboard mappings.
+This option suppresses this from taking place
+and the program only processes input after a carriage return has
+been hit.
+Under normal circumstances, this action is transparent to
+the user and the use of this option is discouraged except when using
+a debugger with the program.
+Note that if this option is specified,
+any key sequences set by map or map! do not substitute their expansions.
+This option is ignored for curses mode.
+.TP
+\-F[!] filename
+(\-source)
+This file is the same type as the initialization file read on startup
+(see INITIALIZATION) with the exception that commands that manipulate
+or search messages may be given.
+Normally, such commands may not appear in the initialization file since
+that file is read before the folder is scanned.
+The file specified by \-F is read after the folder is scanned, so
+commands that affect messages are allowed.
+The optional `!' prevents the shell from running after the
+file has been sourced.
+Otherwise,
+.I Mush
+continues into whatever interface has been specified.
+.TP
+\-f [ filename ]
+(\-folder)
+The optional filename argument specifies a folder containing mail messages.
+With no argument,
+.B mbox
+in the current directory (or the variable
+.BR mbox )
+is used.
+If no filename is given, this option must be last on the command line.
+.TP
+\-H[:c]
+(\-headers)
+Have
+.I Mush
+display mail headers without entering the shell.
+See the
+.B headers
+command for information on the
+.B :c
+argument.
+No colon modifier is equivalent to \*Q\-H:a\*U.
+This option prevents the shell from running, so this option turns off the
+\-S and \-C flags.
+This option is ignored if the tool mode is in effect.
+.TP
+\-h draft-file
+(-draft)
+This option specifies a previously prepared message file (called a draft)
+which is read in as a new message to be sent.
+The current implementation requires that the draft file must contain all the
+message headers;
+.I Mush
+adds only a new \*QDate:\*U and a \*QFrom:\*U header if there is none.
+If there is no \*QTo:\*U header, the draft is not sent.
+See the
+.B mail
+command and the section on \*QSending mail\*U for more information.
+.TP
+\-I[!] filename
+(\-init)
+This option specifies an initialization file to be read
+.I before
+any of the other
+.I Mush
+initialization is done.
+The file specified by \-I is read before the default system initialization
+file is read (see the INITIALIZATION section for details).
+The optional `!' argument prevents
+.I Mush
+from reading the default system file, so \-I! can be used to specify a
+substitute default file.
+The user's personal initialization file is read normally.
+.TP
+\-i
+(\-interact)
+Forces interactive mode even if input has been redirected to the program.
+This is intended for remote host mail sessions (with -e) but also allows
+the user to redirect input from a \*Qscript\*U of
+.I Mush
+commands.
+See the INITIALIZATION and MUSH SCRIPTS sections for information on how to
+write scripts that deal with mail.
+Note that this flag is different from the \*Qignore\*U flag of UCB Mail.
+.TP
+\-m mailbox-path
+(\-mailbox)
+The mailbox specified is interpreted as if it is the user's main
+(system) mailbox in place of /usr/spool/mail/$USER (or whatever path is
+applicable for your system and Mail Transport Agent).
+.TP
+\-N
+(\-noheaders)
+Enter
+.I Mush
+without displaying any message headers.
+This argument is passed to the
+.B folder
+command.
+.TP
+\-n[!]
+(\-noinit)
+No initialization is done on start up.
+That is, do not source the default system initialization files.
+If the `!' argument is given, reading of the user's personal
+.I .mushrc
+or
+.I .mailrc
+files is also suppressed.
+See the INITIALIZATION section for more information on
+startup and the significance of these files.
+.TP
+\-r
+(\-readonly)
+Initialize the folder in Read-Only mode; no modification of the folder is
+permitted.
+This argument is passed on to the
+.B folder
+command.
+.TP
+\-S
+(\-shell)
+This flag allows the user to enter the shell even if the system
+mailbox or specified folder is empty or doesn't exist.
+.TP
+\-s subject
+(\-subject)
+The subject is set on the command line using this flag.
+If the subject has
+any spaces or tabs, the entire subject should be enclosed in quotes.
+This applies when sending mail only.
+If you are entering the shell,
+curses mode, or the tool mode, this option is ignored.
+.TP
+\-T timeout
+(\-timeout)
+In the tool mode (Sun only),
+.I timeout
+specifies the length of time (seconds) to wait between each check for new mail.
+30 seconds is the smallest time allowed for performance reasons;
+60 seconds is the default value.
+This option should be used either in place of \-t or immediately after it.
+.TP
+\-t
+(\-tool)
+Use the graphics tool mode (Sun only).
+This option must be the first one on the command line, before any Sun window
+system flags or other \fIMush\fR options.
+.sp
+.I
+NOTE:  The \-t option is obsolete and may be eliminated in future revisions.
+The preferred way to run the tool mode of \fIMush\fR is to use the command
+.BR mushtool ,
+which is a link to
+.BR mush .
+.TP
+\-u [ user ]
+(\-user)
+The mailbox to use is /usr/spool/mail/\fBuser\fR.
+If the login name for user is not specified, then root is used.
+.TP
+\-U[!]
+(-send)
+This option may be used only with \-h (\-draft).
+It causes the draft file to be sent immediately without further editing
+(\*Qunedited\*U, hence \-U).
+If the optional `!' is appended, signatures and fortunes are suppressed.
+See the
+.B mail
+command and the section on \*QSending mail\*U for more information.
+.TP
+\-v
+(\-verbose)
+Verbose mode is turned on.
+This option is passed to the actual mail delivery
+subsystem internal to your version of
+.IR UNIX (TM).
+Some mailers do not have a verbose option, so this flag may not apply
+to your system (System V, for example).
+This applies when sending mail only.
+If you are entering the shell,
+curses mode, or the tool mode, this option is ignored.
+.SH "GENERAL USAGE"
+Because there are three different interfaces available to the user,
+the tty characteristics (backspace, kill-word, kill-line, redraw line)
+are simulated identically in all interfaces.
+When the user has to type something, the 4.2BSD style of tty driver interface
+is simulated whether you're in the window system, the curses mode, or
+the tty-line mode, and even on System-V machines.
+This means that backspacing causes a
+backspace-space-backspace effect (erasing the character backspaced over).
+The user may reset his tty characteristics using the
+.B stty
+command.
+.PP
+.IR "New mail" .
+.PP
+If during a
+.I Mush
+session, new mail arrives for you, it is automatically incorporated into
+your system mailbox and you are told that new mail has arrived.
+.PP
+In the default line mode, new mail is checked after each command
+issued.
+In the curses mode, new mail is checked on each
+command and is displayed in the bottom line of the screen.
+In the tool based graphics mode, new mail is checked approximately
+every minute or the number of seconds specified by the
+.B -T
+option on the command line.
+.PP
+If you are using your system mailbox as your \*Qcurrent folder,\*U then the
+new mail is added immediately to your current
+list of messages and information similar to the following example is
+displayed, to tell you whom the mail is from:
+.sp
+.ti +2
+New mail (#15) argv@zipcode.com (Dan Heller)
+.sp
+If you are not in your system mailbox, then the new mail is not added
+to your list of messages, but you are instead informed of the new arrival.
+.sp
+If you are using the tool based mode and
+.I Mush
+is closed to an iconic state, then the number of messages in the current
+folder is displayed on the mailbox icon and the flag on the mailbox goes up.
+.PP
+.IR "Displaying messages" .
+.PP
+Depending on the interface you use, you can display any message in your
+list of messages as long as the message is not marked for deletion.
+If the message is marked as deleted, then use the 
+.B undelete
+command supplied by the interface you are using.
+To display a message in line mode, specify the message using
+.BR print ,
+.BR type ,
+.BR p ,
+.BR t ,
+or type a message number to display that message on the screen.
+.PP
+In curses mode, move the cursor over the message you want and type
+a `t' or `p' to read the message.
+You may \*Qbind\*U other keys to call
+the function that displays messages if `t' and `p' are uncomfortable.
+.PP
+In the tool mode, move the cursor over the header summary of the
+message you wish to be displayed and select the LEFT mouse button.
+The MIDDLE mouse button deletes the message, and the RIGHT button
+brings up a menu of additional options, including help.
+If the message you want is not visible (in the header subwindow), you may type
+the number of the message in the \*QRange:\*U item, and press return.
+That message number is displayed.
+Finally, the \*QNext\*U item in the panel below the header display
+can be used to step through the folder, one message at a time.
+.PP
+In the line or curses mode, if the message has more lines than the variable
+.BR crt ,
+then a
+.I pager
+is invoked to allow the user to page through the message without
+having it scroll off the screen.
+The pager used is determined by the variable
+.BR pager .
+If that variable is unset, then a default pager is used.
+Note that if pager is set, but not to a value, or is set to the value
+of \*Qinternal\*U, then the internal pager is used.
+The internal pager
+is very simple; the spacebar displays the next
+.B crt
+lines, carriage return prints the next line, and \*Qq\*U quits the pager.
+.PP
+In the tool mode, if a message is larger than the size of the message
+subwindow, the scrollbar at the left side of the window may be used to
+page the message forwards and backwards.
+The variable
+.B crt_win
+may be set in an initialization file to preset the size of the
+message display subwindow.
+.PP
+An alternative to displaying messages is the
+.B top
+command.
+This command prints just the top few lines of a message.
+The number of lines is determined by the variable
+.BR toplines .
+If this variable isn't set,
+.B top
+prints a number of lines equal to the value of the variable
+.BR crt .
+.PP
+.IR "Sorting mail" .
+.PP
+.I Mush
+allows you to sort your mail according to various constraints such
+as time, size, status (new, unread, deleted, etc.), author and subject.
+See the
+.B sort
+command in the COMMANDS section for more information on sorting.
+Sorting has a panel item in the tool mode, and is bound by default
+to the `o' (sort) and `O' (sort reverse) keys in curses mode.
+.PP
+.IR "Picking specific messages" .
+.PP
+You can select messages that contain unique information, or from
+messages that have special attributes.
+You have the option of restricting your search to messages between dates,
+message numbers, author names and other constraints.
+See the
+.B pick
+command in the COMMANDS section for complete details.
+This feature is not directly accessible from the tool mode, and is
+available only as a search action in curses mode (see, however, the
+CURSES INTERFACE section for temporary escapes to line mode).
+.PP
+.IR "Sending mail" .
+.PP
+You can send mail by listing addresses on the command line when
+.I Mush
+is started, by using the
+.B mail
+command from within
+.IR Mush ,
+or by responding to other mail.
+In curses mode, the `m' key invokes mail, and the `r' key begins a response.
+In the tool mode, selecting the \*QCompose\*U or \*QReply\*U items on the main
+panel opens a separate frame for message composition.
+The message replied-to is either the current message or one specified in
+the \*QRange:\*U item.
+.PP
+When you are sending mail, you are in a mode where everything
+you type is added to the contents of the message.
+When you are done typing your message in line or curses modes,
+you can type `^D' (control-D) to signify the end of the message.
+If you have the variable
+.B dot
+set, then you can end a message with a `.' on a line by itself.
+In the tool mode, select the \*QSend\*U item in the composition frame
+to finish and send the message.
+.PP
+While you are composing a message,
+.I Mush
+treats lines beginning with the character `~' specially.
+This is called a
+.BR "tilde escape" .
+For instance, typing \*Q~i\*U (alone on a line) places a copy
+of the \*Qcurrent message\*U into your message body.
+It does not include the message headers of the message, just the body of
+text that comprises the message.
+A subset of these escapes are available in the tool mode, and others are
+provided as panel items or as menu selections from the \*QInclude\*U item.
+Tilde escapes which alter message headers are not usable when the variable
+.B edit_hdrs
+is set or when the \-E option was passed to the
+.B mail
+command.
+.PP
+The tool mode composition window uses header editing at all times, but
+provides some of these escapes anyway; see the descriptions below, and the
+description of the
+.B edit_hdrs
+variable, for complete details.
+.PP
+Available
+.BR "tilde escapes" :
+[OPTIONAL arguments in square brackets]
+.TP
+~a file
+Append message buffer to file name.
+Accessed via the \*QExport\*U panel item in tool mode.
+.TP
+~b [bcc-list]
+Modify blind carbon recipients; otherwise identical to ~t.
+In tool mode, moves the cursor to the Bcc: header, adding one if necessary.
+.TP
+~c [cc-list]
+Modify carbon copy recipients; otherwise identical to ~t.
+In tool mode, moves the cursor to the Cc: header, adding one if necessary.
+.TP
+~E[!]
+Erase message buffer; not available in tool mode.
+Saves the contents of the letter to \*Qdead.letter\*U
+(unless the `!' is specified) and then clears the message buffer; the user
+remains in editing mode.
+If the variable
+.B nosave
+is set, then `!' need not be specified.
+.TP
+~e [editor]
+Enter the editor.
+Defaults to variable
+.BR editor ,
+environment EDITOR, or
+.IR vi ,
+except in tool mode, where ~e is equivalent to ~v.
+.TP
+~F[!]
+Add a fortune [don't add] at end of message.
+Accessed via the \*QFortune\*U panel item in tool mode.
+.TP
+~f [msg-list]
+Forward mail.
+The included messages are not indented,
+but are marked as \*Qforwarded mail\*U.
+Accessed via the \*QInclude\*U panel item in tool mode.
+.TP
+~h
+Modify all message headers.
+Each header is displayed one by one and each may be edited.
+In tool mode, moves to the To: header; typing a carriage return 
+advances the input cursor to each of the other headers in turn.
+The mouse cursor changes to a \*Qbent arrow\*U when automatic
+input cursor advance is active.
+.TP
+~I [msg-list]
+Same as ~i, but also include the message headers.
+Accessed via the \*QInclude\*U panel item in tool mode.
+.TP
+~i [msg-list]
+Include the body of the current message (or listed messages).
+Accessed via the \*QInclude\*U panel item in tool mode.
+See the descriptions of the variables
+.BR indent_str ,
+.BR pre_indent_str ,
+and
+.BR post_indent_str .
+.TP
+~p [pager]
+Page the message body; not available in tool mode.
+Defaults to variable
+.BR pager ,
+environment PAGER, or the default pager set up by the system administrator.
+This may be the internal pager.
+To completely disable paging, set pager to \*QNONE\*U.
+.TP
+~q
+Quit message; save in ~/dead.letter if
+.B nosave
+is not set.
+Not available in tool mode.
+.TP
+~r file
+Read filename into message buffer.
+Accessed via the \*QImport\*U panel item in tool mode.
+.TP
+~S[!]
+Include [don't include] signature at end of message.
+The variables
+.B autosign
+and
+.B autosign2
+describe the file or string to append to the message.
+See the VARIABLES section for more information on these variables.
+Accessed via the \*QAutosign\*U panel item in tool mode.
+.TP
+~s [subject]
+Modify the subject header.
+In tool mode, moves to the Subject: header, adding one if necessary.
+In other modes,
+if an argument is given (a new subject), then the subject line is
+.I replaced
+by the new subject line.
+If none is given, then the subject line is
+displayed for editing just as in the ~t command.
+.TP
+~t [list]
+Change list of recipients (\*QTo\*U list).
+In tool mode, moves the cursor to the To: header.
+In other modes,
+if a list is given, this list is
+.B appended
+to the current list.
+If no list is given, then the current list
+is displayed and the cursor placed at the end of the list.
+You can backspace over the stuff in the list or you can append more
+addresses onto the end of the list as desired.
+.TP
+~u
+Up one line; not available in tool mode.
+If the user made a mistake typing a letter and he
+has already hit carriage return, he may avoid entering the editor
+and edit the previous line using ~u.
+The line is retyped and
+the cursor is placed at the end allowing the user to backspace
+over it and retype the line.
+System-V users should note that if
+the new line is shorter than it was before the ~u command, the
+line is padded with blanks to the previous length of the file.
+.TP
+~v [editor]
+Enter the visual editor; works in tool mode.
+Also accessible through the \*QEdit\*U button in tool mode.
+Defaults to variable
+.BR visual ,
+environment VISUAL, or
+.IR vi .
+.TP
+~w file
+Write message buffer to the indicated file.
+Accessible in tool mode via the \*QExport\*U panel item.
+When the header editing is in use (the variable
+.B edit_hdrs
+or the \-E option of
+.BR mail ),
+this tilde-command can be used to create a \fIdraft file\fR.
+Draft files are partially completed letters that you wish to save for
+editing and eventually sending later.
+See the
+.B mail
+command for a description of rereading and sending drafts.
+.TP
+~x
+Exit message; don't save in dead.letter.
+Accessible in tool mode via the \*QAbort\*U panel item.
+.TP
+~$variable
+Insert the string value for variable into message; not available in tool mode.
+If a boolean variable is listed, nothing is appended regardless of its value.
+.TP
+~:command
+Run the
+.I Mush
+command specified by \*Qcommand\*U; not available in tool mode.
+You may not run any command that sends mail.
+It is inadvisable to change folders at this time
+since the current message list may be corrupted, but the action is
+allowed nonetheless to provide flexibility for experienced users.
+.TP
+~~
+A line beginning with two escape characters is unaffected by
+.I Mush
+except that only a single tilde is inserted into the letter.
+.PP
+The variable
+.B escape
+may be set to describe a character other than `~' to be used as the
+escape character.
+However,
+.I "tilde escapes are normally NOT interpreted when"
+Mush
+.IR "is started with redirected input" .
+If tilde-interpretation is desired, use the \-i option when starting
+.IR mush .
+.PP
+.IR "Mail Aliases" .
+.PP
+Mail aliases are shorthand names for long mail addresses.
+These are supported in the same manner as UCB Mail supports them.
+Because
+.I Mush
+has command line history reminiscent of
+.IR csh ,
+commands that use UUCP's `!' character for user-host and host-host
+separation should be escaped (preceded by a backslash).
+This is not necessary in the initialization file (.mushrc) because history
+referencing is ignored while these files are being sourced.
+See the INITIALIZATION and LINE-MODE INTERFACE sections for more
+information on initialization file format and the history mechanism.
+.PP
+Aliases reference normal mailing addresses as well as other aliases.
+If a loop is detected, then the user is notified and the message is forced
+into the file
+.B dead.letter
+in the user's home directory.
+The
+.B unalias
+command is used to reverse the effects of the
+.B alias
+command.
+From the tool mode, aliases can be set and unset in an
+.IR "aliases subwindow" .
+Press the RIGHT mouse button on the \*QOptions\*U item in the main
+frame, and select \*QAliases\*U from the menu.
+.PP
+.IR Help .
+.PP
+.I Mush
+was designed so that each command or action should not be a mystery.
+Helping the user understand what to do and how to do whatever he wishes
+is the goal behind the help facility.
+For this reason, the
+.B help
+command gives information on both general usage and a few specific help
+categories.
+.PP
+In text mode, most help is obtained by typing \-? as an argument to a
+command.
+Almost every command has the \-? option.
+When this option is specified, most commands attempt to read from
+a help file a brief explanation of the functionality of the command.
+If necessary, a pointer to other sources of information is
+given to fully explain a concept.
+.PP
+In line mode, typing `?' as a command displays a list of possible commands.
+In the curses mode, the `?' key displays help message, which explains
+how to obtain a list of the current key-to-command bindings; a keystroke
+or set of keystrokes correspond directly to a command.
+.PP
+In the tool mode, this is
+also available, but more extensive help is provided in the pop-up menus.
+Press the RIGHT mouse button (the \*Qmenu button\*U) when pointing to any
+panel button and a number of items appear in a menu.
+The last command in the menu list is often one labeled \*Qhelp\*U.
+If a button does not have a menu or has no help item, check the
+menu of the \*QHelp\*U button for related topics.
+Selecting any help item opens a new scrollable window with help text.
+.I "Note:  The limited number of file descriptors in SunOS 3.5 forces"
+Mush
+.I "to display help information in the"
+.IR "message window in the main frame" .
+.\" Some nroffs can't handle long .IR arguments
+.SH INITIALIZATION
+After the command line arguments have been interpreted
+.I Mush
+reads commands from one or more
+.B "initialization files"
+that (typically) set variable values, aliases, command line aliases,
+and so forth.
+Any file specified by the \-I option is read first.
+Next, if neither \-I! nor \-n was given, a default system initialization
+file is read.
+The system default file
+is set up by the system administrator and may contain commands that
+should be set system-wide.
+Finally, if \-n! was not given,
+.I Mush
+reads the user's personal initialization file.
+.PP
+The user's file is determined by first looking for the environment variables
+.I MUSHRC
+or
+.IR MAILRC .
+If neither of those environment variables is set, then the file
+.I .mushrc
+is searched for in the home directory of the user.
+If that file cannot be found,
+.I Mush
+attempts to read the file
+.I .mailrc
+from the same directory.
+Finally, if that file cannot be read, no initialization is done
+and the default values are in effect.
+.PP
+If the user has no home directory, or permissions prevent read/write access
+to $HOME, /tmp is used as the home directory.
+See the
+.B home
+variable under the VARIABLES section.
+.PP
+Once in the shell, the
+.B source
+command may be used to specify a file if you want to read commands
+from a file other than the default.
+The command
+.B saveopts
+saves all variable settings, aliases, and all other
+.I Mush
+settable attributes, to aid in creating an initialization file.
+If no filename is given on the command line,
+the
+.B source
+and
+.B saveopts
+commands choose a file in the manner described above.
+.B Saveopts
+does not overwrite the file if it exists.
+In such cases, you are prompted to confirm overwrite.
+If you confirm overwriting the existing file, remember that existing \*Qif\*U
+expressions or other manually entered comments or non variable-setting type
+commands that previously existed in the file are lost.
+.PP
+No interactive commands should be called from any initialization file.
+These commands are not prevented because it is impossible to trace which
+commands are actually
+.IR UNIX (TM)
+commands that are interactive.
+The responsibility of not running interactive commands is left to the user.
+Because the initialization file is read
+.I before
+any messages are read into the program,
+message filtering commands should not be placed in this file unless you know
+you're going to
+.IB re- source
+the file later as a command.
+.PP
+.IR "Initialization File Format" .
+When reading the initialization file,
+.I Mush
+recognizes the `#' character as a comment character.
+It may be anywhere on a line in the file.
+When that character is encountered,
+processing of that line is discontinued to the end of the line.
+If the `#' is enclosed in quotes (single or double), then it is not
+considered a comment.
+Examples:
+.sp
+.ti +2
+set shell = /bin/csh  # set the shell variable
+.ti +2
+# this entire line has been commented out.
+.ti +2
+set prompt = "Message #%m: "  # The `#' is within quotes
+.PP
+The
+.B exit
+command has special meaning in the initialization file.
+If the command is found,
+.I Mush
+does not exit, but rather, discontinues reading from the file immediately.
+.PP
+There may be \*Qif\*U expressions within the initialization file to determine
+certain runtime states of
+.IR Mush .
+No parentheses are allowed and only one boolean expression may be
+evaluated per line; that is, no \*Q&&\*U or \*Q|\||\*U may be used in
+expressions.
+An \*Qelse\*U on a line by itself may precede alternative
+actions.
+\&\*QIf\*U expressions may be nested to any reasonable depth, but
+there must always be an \*Qendif\*U matching each \*Qif\*U expression.
+The statements associated with an \*Qif\*U expression are never on the
+same line with the conditional expression.
+.PP
+Conditional expressions understood include the internal variables
+.IR istool ,
+.IR iscurses ,
+.IR is_shell ,
+.IR hdrs_only ,
+.IR is_sending ,
+and
+.IR redirect .
+These are internal variables whose values cannot be referenced using the
+\*Q$variable\*U method of variable expansion.
+If
+.I istool
+is true, the program is going to run in the tool mode.
+If
+.I iscurses
+is true, the program is in or is going to run in the curses mode even
+though the screen package may not yet have been started.
+If
+.I is_shell
+is true, then
+.I Mush
+has entered the shell;
+.I is_shell
+is always false at startup when initialization files are read,
+and is always true when files are sourced after initialization with the
+.B source
+command or the \-F option.
+.PP
+If
+.I hdrs_only
+is true, then the -H flag on the command line has been given.
+If
+.I is_sending
+is true, then the user is sending mail to another user.
+This does not imply
+that the user is not going to be running a shell after the mail is sent.
+If
+.I redirect
+is true, then input to the program is redirected.
+The test for redirection tells whether input, not output, has been
+redirected to the program.
+The
+.B \-i
+option on the command line is required to run the shell if redirect is on.
+If \-i is specified, the value for
+.I redirect
+is set to false.
+Note that any time
+.I Mush
+runs when not connected to a terminal, it
+believes that input has been redirected.
+See the MUSH SCRIPTS section for more details.
+.PP
+The `!' operator may be used to negate expressions, thus,
+.sp
+.nf
+.in +2
+if !istool
+.ti +4
+exit
+else
+.ti +4
+set autoprint
+endif
+.in -2
+.fi
+.sp
+means that if you are not running as a tool, stop reading commands from this
+file.
+Otherwise, set the autoprint variable.
+.sp
+.in +2
+.nf
+set hdr_format = "%25f %7d (%l/%c) %25s"
+if hdrs_only
+.ti +4
+exit
+endif
+.in -2
+.fi
+.sp
+This tells the program to set the hdr_format variable and check to see if
+we're running the program to read headers only.
+If so, stop reading this file (exit) and continue on with the program.
+This speeds up runtime quite a bit for those who have lengthy initialization
+files, because no other shell variables are necessary.
+.sp
+.in +2
+.nf
+if !iscurses
+.ti +4
+set crt = 24 screen = 18
+endif
+.in -2
+.fi
+.sp
+This segment checks to see that we're not running in curses mode, and if not
+it sets our crt and screen sizes.
+This is mostly because the curses mode sets those values for us by looking
+at the size of the screen.
+See the CURSES INTERFACE section for configuring your
+environment so you enter curses mode each time you run the shell.
+.PP
+String evaluation is allowed in \*Qif\*U expressions, and the operators
+\*Q==\*U and \*Q!=\*U may be used to determine equality or inequality,
+and \*Q=~\*U and \*Q!~\*U may be used for pattern-matching.
+Usually, variables are compared with constants for evaluation.
+.PP
+Note that it is not possible to compare variables to an empty string, and
+variables that evaluate to an empty string may cause errors.
+It is possible to test whether a variable is set by using the syntax
+\*Q$?variable\*U (as in
+.IR csh )
+but there is not currently any way to test for an empty string value.
+.sp
+.in +2
+.nf
+if $TERM == adm3a
+.ti +4
+set pager = more
+else
+.ti +4
+set pager = less
+endif
+.in -2
+.fi
+.sp
+This segment tests to see if the user's terminal type is \*Qadm3a\*U.
+If it is, then it sets the pager variable to be the 
+.I more
+program.
+Note that the variable TERM is obtained from the user's environment if a
+shell variable is not set already.
+Otherwise, the pager variable is set to \*Qless\*U.
+This exemplifies the fact that
+.I less
+frequently fails to function correctly
+for the terminal type \*Qadm3a\*U so we don't use it.
+.sp
+Also supported in \*Qif\*U expressions are the test flags \*Q-e\*U
+and \*Q-z\*U.  These flags test to see if a file exists (\*Q-e\*U) or
+if it is zero-length (\*Q-z\*U).
+These are most useful in command files that are to be read after the
+shell has started; see the examples in the MUSH SCRIPTS section.
+.PP
+After sourcing the initialization file,
+.I Mush
+reads all the mail out of the specified folder (the system spool directory
+if no folder is given) and creates a list of messages.
+The current maximum number of messages the user
+can load is set to 1000 by default.
+The system administrator who configures the program can reset this
+value higher or lower if you ask nicely.
+If the user has the
+.B sort
+variable set, then when the current folder's messages have all been read,
+the messages are sorted according to the value of the
+variable (see the
+.B sort
+entry under the VARIABLES heading for more information).
+Each message has a number of message header lines that contain information
+about whom the mail is from, the subject of the message, the date it was
+received, and other information about the letter.
+This information is then compiled into a one-line summary for
+each message and is printed out in an appropriate manner
+depending on the interface you're using.
+.PP
+At this point, commands may be input by the user.
+Lengthy or complex commands can be placed in a file and then executed via the
+.B source
+command.
+Such files use the same format as the initialization files and may use all
+the same tests in \*Qif\*U expressions.
+Sourcing of a file of filter commands such as those in the example above
+can be automated by using the \-F option when \fIMush\fR is started.
+Also see the MUSH SCRIPTS section for other uses.
+.SH "LINE-MODE INTERFACE"
+In the line-mode, the user is given a prompt to which commands are issued
+and arguments are passed to commands.
+When the user types at the prompt, each line is parsed and words (or
+arguments) are separated into an array of strings.
+This array, also called an
+.IR "argument vector" ,
+is then modified by expanding history references, command line aliases,
+and variable references.
+A command line ends when the end of the line is encountered or a pipe (|)
+or semicolon (;) character is encountered, separating discrete commands.
+.PP
+When a command line has been parsed and placed in an argument vector, the
+first argument in the vector (the \*Qcommand\*U) is searched for in a list
+of legal
+.I Mush
+commands.
+If found, the function associated with that command is called and
+the rest of the line is passed to that function as
+.IR "command line arguments" .
+.PP
+Before commands are called, however, the input the user gives is preprocessed
+in a style reminiscent of the C-shell
+.RI ( csh ).
+.I Mush
+also supports a subset from each of the following aspects of
+.IR csh :
+.in +2
+\(bu Command history.
+.br
+\(bu Command line aliasing.
+.br
+\(bu \*QPiping\*U mechanism to
+redirect \*Qinput\*U and \*Qoutput\*U of commands.
+.br
+\(bu Filename metacharacters.
+.in -2
+.PP
+.BR "Command history" .
+.PP
+.I Mush
+supports a history mechanism similar to that supplied by
+.IR csh .
+A subset of
+.I csh
+history modifiers are supported to reference previously
+issued commands and to extract specified arguments from these commands.
+.PP
+The history mechanism remembers a list of past commands whose length is
+bounded by the value of the
+.B history
+variable.
+If this variable is not set, only the most recent command is remembered.
+To reference previously typed commands, the `!' character
+is used in the same manner as in
+.IR csh .
+There is a limited implementation of history modification;
+supported are the argument selectors that reference
+command line arguments and \*Q:p\*U (echo, but don't execute the command).
+.sp
+Examples:
+.nf
+.in +2
+.ta 1i
+!-2:$	two commands ago, last argument.
+!3:2-4	the third command, arguments two through four.
+!!:p	print the last command in its entirety.
+.in -2
+.fi
+.PP
+During the sourcing of initialization files (.mushrc), history is not
+in effect and therefore the `!' character does not cause history expansion.
+This includes startup of the program and when the command
+.I source
+is issued.
+UUCP style addresses that contain the `!' character may be given in the
+initialization file without the need to be preceded by a backslash.
+However, `!' does need to be escaped if
+.BR cmd 's
+are used to reference command line arguments.
+.PP
+.BR "Command line aliasing" .
+.PP
+Command aliases are different from mail aliases in that they are used
+to expand to commands.
+This feature enables command substitution similar to
+.IR csh .
+To be backwards compatible with UCB Mail, the
+.B alias
+command is used for address aliasing.
+Thus, the command
+.B cmd
+is introduced in place of
+.BR alias .
+.PP
+Examples:
+.nf
+.in +2
+cmd d delete
+cmd t type
+cmd dt 'd ; t'
+cmd - previous
+cmd r 'reply \\!* -e -i'
+.in -2
+.fi
+.sp
+In the last example, if the user types \*Qr 5\*U,
+.I Mush
+replies to sender of the fifth message and pass all the other
+arguments along to the
+.B reply
+command.
+Note the escaping of the `!' character.
+This must also be done if set in the initialization file (.mushrc).
+Had the user not specified a message number on the `r' command line,
+.B reply
+would respond to the \*Qcurrent message\*U rather than the fifth message.
+.PP
+.BR "Piping commands" .
+.PP
+.I Mush
+commands can be \*Qpiped\*U to one another so as to provide output of
+one command to be used as input to the next command in the pipeline.
+However, the output of commands is not the \*Qtext\*U that is returned
+(as it is in
+.I sh
+and
+.IR csh ),
+but instead is a
+.B "message list"
+of the messages that were affected.  A
+.B "message list"
+is defined as the set of messages that the user specifies in a command or
+the messages a command affects after it is through executing.
+When one command is piped to another, the effect is that the second command
+considers only those messages affected by the first command.
+In most cases,
+.I Mush
+is smart enough to know when piping is occurring and may suppress text output
+that a command might produce.
+.PP
+Examples:
+.sp
+.ti +2
+pick -f fred | save fred_mail
+.sp
+This finds all the messages from \*Qfred\*U
+and saves them all in the file named fred_mail.
+.sp
+.ti +2
+lpr 4-8 | delete
+.sp
+This sends messages 4, 5, 6, 7, and 8 to the printer and then deletes them.
+.sp
+.ti +2
+headers :o | delete
+.sp
+Deletes all old (already read) mail.
+.PP
+Because action is taken on mail messages, not files,
+metacharacters such as `*' and `?' are not expanded to file names as
+.I csh
+does.
+Instead,
+.I Mush
+commands take
+.I "message lists"
+as arguments (a list references one or messages) to take action upon.
+When referencing message numbers,
+.I Mush
+understands the following special syntax:
+.sp
+.in +2
+.nf
+.ta 1.0i
+*	All messages
+^	The first message
+$	The last message
+\&.	The current message
+N\-M	A range of messages between N and M, inclusive
+.sp
+.fi
+.in -2
+In the last case, N and M may be * ^ $ . or digits referencing
+explicit message numbers.
+The range must be in ascending order.
+.sp
+You can also negate messages by placing the message list inside
+braces, `{' `}' \*- thus, the expression \*Q2-19 {11-14}\*U references
+messages 2 through 19 except for messages 11 through 14.
+.sp
+Note that message lists are parsed left to right.
+Negated messages may be reset by turning them on
+again later in the argument list.
+A common error new users make is to specify a negated list without
+specifying any beginning messages.
+.sp
+.ti +2
+delete { 6 }
+.sp
+In this example, the user attempted to delete all messages
+except for number 6.
+He should have specified `*' beforehand.
+A correct example:
+.sp
+.ti +2
+preserve ^-. { 3 }
+.sp
+Here, the user specifies a valid message list and causes
+.I Mush
+to preserve all messages from the beginning of the list (message 1)
+to the current message, excluding message 3.
+.PP
+As discussed, after the command line is parsed, the command given is
+called and the rest of the arguments on the command line are passed to it.
+If no
+.I Mush
+command has been found that matches the one given, then the variable
+.B unix
+is checked.
+If it is set,
+.I Mush
+attempts to run the command line as a
+.IR UNIX (TM)
+command.
+.PP
+If
+.B unix
+is not set, or if the command could not be found in the user's PATH
+environment, a message is printed indicating that the command was
+not found.
+.PP
+Since no \*Qmessages\*U are affected by \fIUNIX\fR
+commands, those that appear within \fIMush\fR
+pipelines are executed by the \fBpipe\fR command.
+A \fIUNIX\fR command may never be the first command in a pipeline
+unless the \fBpipe\fR command is used explicitly.
+If the user wishes to execute \fIUNIX\fR
+commands that are to be piped to one another (or use any sort of redirection),
+the command \fBsh\fR is provided for such purposes.
+Since \fIMush\fR parses the entire command line, caution should be
+taken to enclose questionable shell variables or metacharacters with
+quotes to prevent \fIMush\fR from expanding them.
+See the COMMANDS heading below for more detail.
+.PP
+This shell-like quality is for the convenience of the user and is not
+intended to replace the functionality of
+.IR sh ,
+.IR csh ,
+or any other command interpreter.
+.PP
+.BR "Filename metacharacters" .
+.PP
+.IR Mush "'s"
+command interpreter does not normally pre-expand metacharacters in the
+manner of other shells, because the metacharacters may refer to either
+messages or files.
+Instead, those commands that deal with file names do any necessary
+metacharacter expansion.
+Two metacharacters are nearly always recognized:  `~' refers to the user's
+home directory, and `+' refers to the user's folder directory (\*Q~/Mail\*U
+or the value of the variable
+.BR folder ).
+Another user's home directory can also be referenced as \*Q~username\*U,
+and for this reason files in the user's home directory must be referenced
+as \*Q~/filename\*U.
+However, the `/' character is optional when referring to folders;
+that is, \*Q+filename\*U and \*Q+/filename\*U both refer
+to the same file in the folder directory.
+.PP
+If filename completion is enabled by setting the variable
+.BR complete ,
+the command interpreter expands
+.IR csh -style
+metacharacters when completing filenames.
+A completion containing metacharacters expands to all the files matching
+the pattern when the completion key is pressed (defaults to ESC, `^[').
+See the description of
+.B complete
+for limitations of this facility.
+.SH "CURSES INTERFACE"
+The curses interface utilizes the curses routines intrinsic to most
+.I UNIX
+systems.
+This interface is screen oriented rather
+than line oriented and allows the user to access commands and messages
+more quickly at the cost of history, piping, and a few commands.
+.PP
+Many users who prefer the curses interface might want to always start
+all their mail sessions in the curses interface.
+Putting the
+.B curses
+command in your initialization file is allowed, but you can also create
+an alias or function in your login shell to always use the -C option.
+.I Mush
+attempts to know not to run a shell if you're just sending mail to
+someone, so the
+.I csh
+command sequences:
+.sp
+.ti +2
+% alias mail 'mush -C'
+.ti +2
+% mail fred
+.sp
+sends mail to fred but does not enter the shell.
+However, if you just said \*Qmail\*U
+with no arguments, you enter the shell in curses mode if you have mail.
+If you have no mail, you are told so, and the shell does not start.
+If you want to enter curses mode even if
+you don't have mail, use the \-S option on the command line.
+.PP
+In curses mode, the user's terminal has its \*Qecho\*U turned off so commands
+that are issued are not echoed on the screen.
+Certain commands cause the mode
+to return to normal for typing purposes (sending mail, for example).
+In normal operation, the screen displays the current set of message
+headers, the current message number is in the top left corner, the
+mail status on the top line, and the cursor is placed on the current
+message.
+The number of message headers displayed is set by the variable
+.BR screen .
+If the user does not have that variable set, the baud rate is checked and
+the size of the screen is set according to optimal refresh time.
+Usually, 300 baud gives 7 lines, 1200 gives 14, 2400 gives 22 lines, and all
+higher baud rates give the size of the screen, whatever that may be.
+Note that the top line is reserved for \*Qstatus\*U and the bottom line is
+for user interaction should it be required.
+.PP
+The user may now type commands via key sequences that are not echoed
+to the screen.
+Thus, function keys may be bound to \*Qcommands\*U by using the 
+.B bind
+command.
+A list of key-to-command bindings can be found at runtime by typing `?'
+in curses mode or by using the
+.B bind
+command in line mode.
+.PP
+The commands to which you can map sequences are intended to be as self
+explanatory as possible, but admittedly, it might be easier to figure out
+via trial and error than to try to wade through this documentation.
+A list of the legal curses commands can be obtained when executing the
+bind command.
+Regular tty line-mode commands are not issued from
+the curses interface; only special curses mode commands are understood.
+The current list of valid curses commands is:
+.sp
+.ta 2i 4i
+.in +4
+.nf
+alias	last-msg	saveopts	
+back-msg	line-mode	screen-back	
+bind	lpr	screen-next	
+bind-macro	mail	search-again	
+bottom-page	mail-flags	search-back	
+chdir	map	search-next	
+copy	map!	shell-escape	
+copy-list	mark	sort	
+delete	my-hdrs	sort-reverse	
+delete-list	next-msg	source	
+display	preserve	top	
+display-next	quit	top-page	
+exit	quit!	unbind	
+exit!	redraw	undelete	
+first-msg	reply	undelete-list	
+folder	reply-all	update	
+goto-msg	reverse-video	variable	
+help	save	write	
+ignore	save-list	write-list	
+.fi
+.in -4
+.sp
+.PP
+The following is a list of default key-command bindings.
+If you specify bind commands in your initialization file that conflict with
+these defaults, your settings override the defaults.
+The default settings given in this manual
+use the ^-character method to indicate control characters
+(mostly because nroff makes printing the backslash
+character so amazingly difficult).
+Thus, `^X' means control-X even
+though you have to type \*Q\\CX\*U to set
+the binding and actually use the control key and the `X' key simultaneously
+to really
+.I do
+a Control-X.
+.TP
+\&., t, p, T=top, n=next
+Display (type/print) message.
+Top displays the first
+.B crt
+lines of a message.
+Next prints the next message.
+If the current message is deleted, the next undeleted message is found.
+You might notice this is different from the line mode, which returns
+an error message that the current message is marked as deleted.
+.TP
++, j, J, RETURN
+Go to next message.
+.TP
+-, k, K, ^K
+Go to previous message.
+.TP
+^, $
+Go to first/last message.
+.TP
+{, }
+Go to top/bottom of screen.
+.TP
+a
+Set aliases.
+.TP
+b, B
+Set/unset bindings.
+.TP
+d, D, u, U
+Delete/undelete messages (capitals prompt for message list).
+.TP
+f
+Change folder.
+If current folder has changed, verification for update is requested.
+.TP
+g, 0-9
+Go directly to a specified message.
+When the \*Qgoto\*U command
+is selected, a prompt at the bottom of the window prompts for a
+.BR "message list" .
+Anything that describes a message list may be used.
+Since
+.I Mush
+commands return message lists, a legal
+.I Mush
+command enclosed in backquotes may be used to go to a particular message.
+The new current message pointer points to the next
+message, returned by the command, that is below the old current message.
+An example:
+.sp
+.ti +2
+goto msg: `pick \-f argv`
+.sp
+This causes the current message to move to the first message
+in the current folder from the user \*Qargv\*U that comes after the
+message pointed to when the \*Qgoto\*U was issued.
+So, if messages 1 and 5
+are from the user \*Qargv\*U and the current message the user was on
+was message 3, then the new current message is message 5, since it
+is the first message found after message 3 that is from \*Qargv\*U.
+If none of the messages are found after the current message, the new
+current message is the first one returned by the command.
+.TP
+h
+Set personal headers.
+.TP
+i
+Set ignored headers.
+.TP
+m, M
+Send mail (capital prompts for mail flags).
+.TP
+o, O
+Order messages (sort; capital reverses order).
+A prompt requests the sort constraints.
+.TP
+q, Q, x, X
+Quit/exit.
+\&`q' tests to see if the current folder has been updated and prompt
+the user to verify updating.
+\&`x' does not update mail, but quits the program.
+\&`Q' does not prompt for update verification; if changes were
+made, updating is automatic.
+\&`Q' (quit!) and `X' (exit!) works even when typed at the
+\*Q...continue...\*U prompt, whereas `q' and `x' do not.
+.TP
+r, R
+Reply/reply all.
+.TP
+s, S, c, C, w, W
+Save, copy, or write messages (capitals prompt for message lists).
+.TP
+v
+Set regular variables (as opposed to environment variables).
+.TP
+V
+Print version number.
+.TP
+z, Z
+Print next/previous screenful of message headers.
+.TP
+^L
+Redraw the screen.
+.TP
+^P
+Preserve current message (toggle).
+.TP
+^U
+Update folder.
+A prompt requests confirmation.
+.TP
+^R
+Toggle reverse video mode (current message is in reverse video).
+.TP
+*
+Toggle mark for this message (see the \*Qmark\*U command).
+.TP
+|
+Send message to printer
+.TP
+!
+Shell Escape.
+Prompts for command; RETURN invokes a shell.
+.TP
+%
+Change directory.
+.TP
+(, )
+Source/saveopts.
+Prompts for file name.
+.TP
+/, ^/, ^N
+Forward, backward, continue search for patterns.
+Entire messages are not searched for here.
+Only the text available on the screen is searched for.
+Note that some terminals use `^_' (control-underscore) for `^/',
+so you may wish to re-bind this key.
+.TP
+&&
+Create a curses mode macro.
+.TP
+&:
+Create a line mode macro.
+.TP
+&!
+Create a composition mode macro.
+.TP
+:[cmd]
+Enter line mode for one command.
+History is not recorded for this escape,
+and line mode macros are not available.
+If no command is given, curses mode
+is exited and the session continues in line mode
+(in which case history and macros become available).
+.PP
+When setting new key sequences to be bound to commands, the user may
+use control keys and the ESCAPE character for extended commands.
+Exceptions are control-C, control-\\, and possibly other control characters
+depending on your system's configuration or your current tty mode settings.
+.PP
+When assigning key sequences to commands, the user enters the
+.B bind
+command and prompting is done.
+If the
+user wishes to have control characters or the escape character in a key
+sequence while still using ASCII format, a special notation for control
+characters is provided.
+This sequence is used primarily for the use of
+binding control character sequences in the initialization file.
+This format
+is also used to display the current key-command mappings by the program.
+.PP
+To specify control characters in ASCII format for the bind command, the
+sequence \*Q\\Cc\*U is used where `c' is the
+character that the control key translates to and must be in upper case.
+The sequence \*Q\\CP\*U maps to control-P.
+If the user wishes to indicate the RETURN key, this is specified
+with the string \*Q\\n\*U and
+the tab key is specified by the string \*Q\\t\*U.
+As a more complex example, on a Wyse-50 terminal, the 8th function key
+outputs the three characters: control-A, H, line-feed.
+To map this function key to a command, the
+user must enter the sequence \*Q\\CAH\\n\*U as the key sequence,
+then follow up with a valid curses command.  From then on, if the user
+presses that function key,
+the command mapped to it is executed.
+.PP
+The ESCAPE key is signified by the sequence, \*Q\\E\*U.
+On a Sun-3 workstation,
+the R1 key outputs the character sequence: ESC, [, 2, 0, 8, z.
+The corresponding
+.B bind
+key sequence is \*Q\\E[208z\*U.
+Restrictions are that key sequences may not contain the space character
+unless bound in line mode, and can never begin with a digit.
+.PP
+Whenever a command is entered, other than `^L'
+.RB ( redraw ),
+which causes the screen to scroll or be refreshed in any way,
+.I Mush
+is left in the
+.I continue
+mode.
+When in this mode, the user is given his line-mode prompt followed
+by \*Q...continue...\*U indicating that he may issue a new command or
+return to the top level where the current message headers are displayed
+on the screen.
+Remember that this is still the curses mode, but much time
+is saved by avoiding redrawing the screen after each command.
+The user may move up and down messages using the appropriate commands
+(j/k by default) or anything else the curses mode allows.
+Only the exit and quit commands return to the top level.
+Because of this, there are 2 additional
+ways to \*Qquit\*U from curses mode and return to the login shell.
+The \*Qexit\*U and \*Qquit\*U commands quit from the top level, but
+the commands
+.B exit!
+and 
+.B quit!
+are used to exit from the \*Qcontinue\*U level in the curses interface as well
+as from the top level.
+.PP
+Note that the best way to understand the curses interface is to just use it.
+In line mode, the command \*Qcurses\*U puts you into curses mode.
+.SH "GRAPHICS TOOL INTERFACE"
+When running the window-based tool interface, there are be five
+subwindows:
+a panel for folder-related commands and general options,
+a scrollable display of message header summaries,
+another panel of message manipulation commands,
+a four-line scrollable window for warnings and output from certain commands,
+and a larger window which is used for displaying messages.
+The message display and command output windows can be scrolled with
+the up and down cursor keys (function keys R8 and R14 by default),
+and also recognize \*Qvi\*U movements (j, k, ^U, ^D, etc.),
+in addition to having scrollbars.
+.PP
+In the header summary window, pressing the LEFT mouse button while pointing
+at a message header displays that message in the large message window at the
+bottom of the frame.
+Pressing the middle button deletes the message, and pressing the RIGHT mouse
+button displays a menu of actions that affect the message.
+Possible actions are to display the message, delete or undelete it, reply to
+it, save it, preserve it
+(see the
+.B preserve
+command), or print it (hardcopy).
+.PP
+All panel items in the frame have labels describing their functionality.
+Selecting
+a panel item with the LEFT mouse button causes the action to be executed.
+The RIGHT mouse button displays a menu of options that the command may
+branch to.
+For example, the
+.B Save
+panel item by default saves messages to the file \*Qmbox\*U, but the
+RIGHT mouse button causes a menu to be displayed, and the choices of
+where to save the message increase to include the items in the menu.
+These typically include the files in the user's folder directory (see the
+.B folder
+variable below).
+.PP
+At the end of most lists of menu entries for panel items is an item
+labeled \*Qhelp\*U.
+When this item is chosen, an new window is opened where help for that
+command is displayed.
+The help windows can be scrolled in the same ways as the message
+display window.
+.I "Note:  The limited number of file descriptors in SunOS 3.5 forces"
+Mush
+.I "to display help information in the"
+.IR "message window in the main frame" .
+.\" Some nroffs can't handle long .IR arguments
+.PP
+When composing letters,
+a separate frame is created which includes a panel of command items,
+a four-line scrollable window,
+and a large window for editing the letter.
+Panel items for including messages, editing (via your usual text editor),
+sending, aborting the message, and various other manipulations are supplied.
+See the section on \*QSending mail\*U, under the summary of tilde escapes,
+for more details of composition frame command items.
+As long as the composition frame is open, all
+.I Mush
+command output is
+redirected from the small window in the main frame to the small window here.
+\fINote:  This subwindow is not present in SunOS 3.5 due
+to the limited number of file descriptors; command output stays in the
+main frame in that case\fR.
+The SunView
+.I textsw
+interface is used by default in the large window for paging and editing.
+Cursor movement with the function keys (R8, R10, R12, and R14 by default)
+is supported.
+.SH COMMANDS
+Described below are legal commands understood by
+.I Mush
+that you can type at the line mode prompt.
+Most commands have abbreviations
+(given in parentheses) and can be followed by message lists.
+In most cases,
+whitespace is not necessary to separate commands from message lists.
+For example, \*Qd*\*U deletes all messages, and \*Qu1-7 {4}\*U undeletes
+messages 1 through 7 except for message number 4.
+.B NOTE:
+\fIThis \*Qtoken splitting\*U may have unexpected side effects, especially
+for \fRUNIX\fI commands whose names contain digits.\fR
+.PP
+The ability to customize commands using the
+.B cmd
+facility allows users to customize
+.I Mush
+to resemble other mailers.
+However, efforts have already been made to include commands that are backwards
+compatible with other line-mode mailers.
+Users of the graphics tool mode of
+.I Mush
+may have little need for the command line mode because the icon based
+interface allows interaction with many commands.
+The tool mode is much more restrictive in favor of a simpler, user
+friendly interface, but most useful commands may be achieved anyway.
+.PP
+The following is a list of all recognized commands.
+Since most commands accept a
+.I "message list"
+as an argument, arguments are noted only when they differ from a message list.
+.TP
+.B about
+Gives information about the authors of this wonderful software.
+.TP
+.BR alias " [name] [address-list]"
+.ns
+.TP
+.BR unalias " name"
+The
+.B alias
+command defines a name to stand for a list of addresses.
+The defined name can then be substituted for the entire list when
+sending mail.
+For example,
+.sp
+.nf
+.ti +2
+alias dan dheller@cory.berkeley.edu argv@zipcode.com
+.fi
+.sp
+This defines the name \*Qdan\*U to be shorthand for two addresses,
+both of which happen to be Dan Heller.
+.sp
+The command
+.B unalias
+can be used to remove an alias definition.
+.sp
+With no arguments,
+.B alias
+prints out all the current aliases.
+With one argument, it prints the list associated with that name,
+and with more than one argument, it creates a new alias.
+.\" Note: .TP may use @ as delimiter for some computations.
+.\" Can't have "user@host" in the line, so use "address".  Bleah.
+.TP
+.BR alternates " [host-list] [*[user]] [address] [!path!user]"
+.RB ( alts )
+This command
+is useful if you have accounts on several machines.
+It can be used to inform
+.I Mush
+that your login name at each of the listed hosts is really you.
+When you
+.B reply
+to messages,
+.I Mush
+does not send a copy of the message to your login name at any of the
+hosts listed on the
+.B alternates
+list.  If the special symbol \*Q*\*U is used, then your login name is
+matched against all pathnames and local addresses.
+A user name may be appended to the \*Q*\*U, in which case that name is
+matched instead of your login name.
+.sp
+If you have another login name on the local or remote machine, then
+that login may be specified either as \*Quser@machine\*U or
+by preceding the login name or a UUCP path to the login name by a `!'
+character.
+.sp
+For example,
+.sp
+.nf
+.ti +2
+alts zipcode maui1 dheller@cory.berkeley.edu !root
+.fi
+.sp
+are all either hostnames or pathnames to accounts owned by the same user.
+The last item, \*Q!root\*U matches mail to \*Qroot\*U only if it is
+destined for the local machine, e.g. a workstation.
+Root accounts elsewhere are not considered to be equivalent.
+The address \*Qdheller@cory.berkeley.edu\*U indicates that at the machine
+\*Qcory.berkeley.edu\*U the user \*Qdheller\*U is the same person as the
+current user at the local machine.
+This could also have been specified in UUCP format:
+.sp
+.nf
+.ti +2
+alts !cory.berkeley.edu!dheller
+.fi
+.sp
+The leading `!' character is required to differentiate paths ending in a
+login name from those to which the user's login name should be appended.
+.sp
+If the
+.B alternates
+command is given with no arguments, the current set of alternate
+names is displayed.
+Names entered in \*Quser@machine\*U form are displayed in UUCP format.
+Note that
+.B alternates
+is not cumulative; any arguments given to the
+.B alternates
+command removes the current list and replace it.
+.TP
+.BR await " [\-T timeout]"
+Directs the shell to wait for the arrival of new mail.
+New mail is checked approximately every 30 seconds, or every
+.I timeout
+seconds as specified by the \-T option.
+This command does not return until new mail arrives
+or until a keyboard interrupt (^C) is typed.
+Unless the string \*Qawait\*U appears in the value of the variable
+.BR quiet ,
+the terminal bell rings when
+.B await
+reads in a new message (see the VARIABLES section for details).
+.TP
+.BR bind " [string [command [parameters]]]"
+.ns
+.TP
+.BR unbind " string"
+.rs
+Bind the sequence of keystrokes specified by
+.I string
+to the curses-mode function,
+.IR command .
+The
+.I string
+is usually one or two characters, or a sequence sent by
+one of the \*Qfunction keys\*U of a particular terminal.
+See the CURSES INTERFACE section for a complete list of curses-mode
+functions; this interface is not available on all systems.
+The
+.I parameters
+are currently recognized only for the special
+.B macro
+function; see the
+.B bind-macro
+command for details.
+.sp
+If no arguments are given to
+.BR bind ,
+the current set of curses bindings are listed;
+if only a
+.I string
+argument is given, the binding for that string is listed;
+and if both a
+.I string
+and a
+.I command
+are given, a curses binding is created such that when the
+.I string
+is typed in curses mode, the function specified by
+.I command
+is executed.
+.sp
+Bindings can be removed by using the
+.B unbind
+command.
+.TP
+.BR bind-macro " [string [expansion]]"
+This command is an abbreviation, which invokes the
+.B bind
+command with the special function
+.B macro
+as the second argument.
+The effect of binding a curses macro is that whenever the
+.I string
+is typed in curses mode, the effect is the same as if the
+.I expansion
+had been typed instead.
+A special syntax is provided for including non-printing (control)
+characters in both the
+.I string
+and the
+.IR expansion ;
+see the CURSES INTERFACE section and the MACROS section for details.
+.sp
+If no arguments are given,
+.B bind-macro
+lists the current curses mode macros.
+It is otherwise identical to
+.in +4
+.B bind
+.I string
+.B macro
+.IR expansion .
+.in -4
+.TP
+.B cd
+Change the working directory to that specified, if given.
+If no directory is given, then changes to the user's home directory.
+.TP
+.BR cmd " [name [command]]"
+.ns
+.TP
+.BR uncmd " name"
+.rs
+Command line aliases are set and unset using these commands.
+More extensive information is given in the LINE-MODE INTERFACE section.
+.B Uncmd
+may take `*' as an argument to uncmd everything set.
+.TP
+.BR curses " [off]"
+The
+.B curses
+command causes
+.I Mush
+to change from the line-oriented mode to the screen-oriented (curses)
+mode, as described above in the CURSES INTERFACE section.
+This command may not be given when curses mode is already active.
+When used in an initialization file (such as
+.IR .mushrc )
+this command is the same as giving the \-C (\-curses) switch on the
+.B mush
+command line.
+.sp
+The argument
+.I off
+may be used
+.I only
+in initialization files, including those read with \-I (\-init),
+and has the effect of turning off the \-C switch.
+.I Off
+is ignored at all other times, even in files read with \-F (\-source).
+.TP
+.BR debug " [N]"
+Set debugging level to N (1 by default).
+When in debug mode, the user can see some of the flow of
+control the program makes while executing.
+The intent of the debug level is for tracking down
+bugs with the program at specific locations.
+Occasionally, the program may segmentation fault and core dump.
+When this happens, the user can reenter the program,
+set the debugging level and recreate the problem.
+.sp
+If the user suspects memory allocation problems, a debugging
+level of 5 or higher prevents memory from being freed so that
+memory bounds won't get overwritten.
+.sp
+If the user suspects Mail Transport Agent errors,
+a debugging level of 3 or higher prevents the MTA from starting
+and outgoing mail is directed to the standard output instead of actually
+being sent.
+.TP
+.BR delete / undelete
+.RB ( d / u )
+Takes a message list as argument and marks them all as deleted.
+Deleted messages are not saved in
+.IR mbox ,
+nor are they be available for most other commands.
+If the folder has not been updated, deleted messages can be recovered
+with
+.BR undelete .
+.TP
+.B dp
+(also
+.BR dt )
+Deletes the current message and prints (types) the next message.
+.TP
+.BR echo " [-n] [-h | -p] arguments"
+Echoes all the arguments given on the command line, expanding variables
+and history references.  If the -n flag is given, then no newline is appended.
+If the -h flag is given, then echo looks for formatting parameters
+as if the "from" command were given on the "current" message.
+If the -p flag is given, then echo looks for formatting parameters
+as if your prompt were changed temporarily.
+.sp
+Examples:
+.sp
+.nf
+.ti +2
+echo -h This message is from %a and is dated %d.
+.br
+might produce:
+.ti +2
+This message is from zipcode!argv and is dated Dec 14, 1988.
+.sp
+.ti +2
+echo -p There are %n new messages to read in %F.
+.br
+might produce:
+.ti +2
+There are 5 new messages to read in /usr/spool/mail/argv.
+.fi
+.sp
+Note that -h and -p cannot be specified together.
+.TP
+.B edit\ \ 
+.RB ( e ,
+.BR v )
+This function lets you edit messages in your folder.  When editing messages,
+be careful not to remove certain message headers such as Date or From or
+any others that looks important.  If you remove or change something you
+shouldn't have, you are notified and the temporary file used to edit
+the message is not removed.
+.TP
+.BR eval " [\-h | \-p] arg ..."
+As in most shells, the list of arguments to
+.B eval
+is re-parsed and then executed as a command.
+This is useful primarily for causing multiple levels of variable expansion.
+.sp
+If the \-h option is given,
+.B eval
+expands header format strings in the argument list before executing the
+command.
+Similarly, the \-p option expands prompt format strings in the argument
+list before executing.
+These formats are expanded \fIlast\fR, after all history and variable
+expansion is completed, and are implicitly quoted, so embedded quotes,
+spaces, tabs, `!'s, etc. are handled correctly.
+Header formats are expanded using the 
+.I current
+message.
+For example,
+.sp
+.ti +2
+eval \-h pick \-f %a
+.sp
+finds all messages from the same author as the current message.
+See the the entries for
+.I hdr_format
+and
+.I prompt
+in the VARIABLES section for more details.
+.sp
+Note that -h and -p cannot be specified together.
+.TP
+.B exit\ \ 
+.RB ( x )
+Terminates
+.I Mush
+immediately without modifying the current folder or system spool directory.
+In scripts and initialization files,
+.B exit
+is handled specially and discontinues the file without leaving the program.
+However,
+.I x
+terminates the program as usual.
+.TP
+.BR expand " alias-list"
+Aliases, given as arguments, are expanded as they are when you
+send mail to each.
+Nested alias references are fully expanded.
+.TP
+.BR flags " [ [ + | \- ] [ D f N O P p R r S U ] ] [msg-list]"
+This command modifies the flag bits set on the listed messages.
+It should not normally be needed, but is provided to allow users, through
+the
+.B cmd
+facility, to alter the ways that certain conditions are recorded.
+Multiple flag bits may be set or modified at once.
+The modifiable flag bits are:
+.sp
+.nf
+.ta 2i
+.in +4
+D	deleted
+f	forwarded
+N	new
+O	old
+P	preserved
+p	printed
+R	read
+r	replied-to
+S	saved
+U	unread
+.in -4
+.fi
+.sp
+If a `+' or `\-' is included in the list of bits, the specified bits are
+turned on or off respectively, without modifying other bits.
+If no `+' or `\-' is given, then the list of bits is set explicitly and
+all other bits are lost.
+The `\-' modifier can be escaped with a backslash (i.e., \*Q\\\-\*U) to
+prevent its interpretation as part of a message range, or it may be given
+\fIafter\fR the list of bits for the same reason.
+.sp
+Message lists can be piped to or from the
+.B flags
+command; for example, you may use
+.sp
+.nf
+.ti +4
+cmd r 'flags \\!* + r | reply'
+.fi
+.sp
+to mark as
+.I replied-to
+all messages included in a reply.
+.TP
+.BR folder " [\-N] [-n] [\-r] [ %[user] | # | & | file ]"
+.RB ( fo )
+Change current folder.
+With no arguments, prints the name of the current folder.
+The arguments are:
+.nf
+.ta 1i
+.in +2
+\-N	No headers are displayed upon entering new folder
+\-n	The current folder is not updated
+\-r	Set Read-Only mode (can't alter new folder)
+%[user]	Change to /usr/spool/mail/[user] (default is yours)
+#	Switch back to the previous folder
+&	Change folder to $mbox (default is ~/mbox)
+.in -2
+.fi
+.sp
+File names that do not begin with `/' are interpreted relative to the current
+directory unless they begin with one of the metacharacters `+' or `~'.
+As in
+.IR csh ,
+the character `~' expands to the user's home directory (or to some other
+user's home directory if used as \*Q~username\*U).
+The character `+' is expanded to the name of the user's
+.I folder
+directory (defaults to \*Q~/Mail\*U or the value of the variable
+.BR folder ).
+For compatibility with other mailers, no `/' character needs to appear
+between the `+' and the name of the folder (see \*QFilename metacharacters\*U
+in the LINE-MODE INTERFACE section).
+.sp
+This command can only appear in a pipeline if it is the first command;
+it returns a list of all the messages in the new folder.
+This command cannot be used in initialization files before the shell
+has started.
+.sp
+For compatibility with older versions, the argument `!' with
+no leading `\-' is interpreted as \-n.
+.TP
+.B folders
+List the names of the folders in your folder directory.
+Your folder directory is the directory
+.I Mail
+in your home directory.
+Or, you can set the variable
+.B folder
+to specify another folder directory.
+.br
+.TP
+.BR from " [ + | \- ] [msg-list] [pattern]"
+.RB ( f )
+With no arguments,
+.B from
+prints the current message's header summary (see the variable
+.BR hdr_format ).
+If given a pattern,
+.B from
+prints the headers of those messages whose \*QFrom:\ \*U lines
+match the pattern.
+When a message list precedes the pattern, or when a message list is
+supplied by a pipeline, the search is restricted to that list.
+If only a message list is given (or piped),
+.B from
+prints the headers of the listed messages.
+.sp
+The special arguments `\-' and `+' can be given to move the
+current message pointer to the previous or next message,
+respectively, while also printing that message's header.
+If a message list was given in addition to `\-' or `+', then
+the current message pointer is set to the first or last
+message, respectively, in the message list given.
+Examples:
+.sp
+.ti +2
+from + Dan
+.sp
+prints the headers of all messages that contain \*QDan\*U in
+in the author's name and set the current message pointer to
+the last one of that kind in the list.
+.sp
+.ti +2
+from \- 10-30 {16}
+.sp
+prints the headers of messages 10 through 30 except for
+message 16 and set the current message pointer to 10.
+.sp
+.ti +2
+from +
+.sp
+prints the header of the message after the current message
+and increments the current message pointer to the next message.
+.sp
+.ti +2
+from $
+.sp
+prints the last message's header but does not move the current
+message pointer.
+.TP
+.BR headers " [ [\-H][:c] ] [ + | \- ]"
+.RB ( h ,
+.BR z )
+Prints a screenful of message headers listed in the
+current folder.
+If a message number is given on the command line,
+the first message of the screenful of messages is
+that message number.
+The `z' command is identical to the \*Qh +\*U
+command and remains for compatibility reasons.
+The variable
+.B screen
+may be set to tell how many headers are in a screenful.
+In the graphics tool mode, the variable
+.B screen_win
+contains the number of headers used in the headers subwindow.
+.sp
+A typical header may look like:
+.sp
+.ti +2
+\&>  5  N  argv@spam.istc.sri.com Feb 19, (10/278) Test
+.sp
+This line indicates that it is message number 5 and the `>'
+indicates that the \*Qcurrent message pointer\*U is pointing to this
+message.
+The next two positions indicate the message status.
+The first
+may be one of, \*QN\*U (new and unread), \*QU\*U (old, but still
+unread), \*Q*\*U (deleted), \*QS\*U (saved), \*QP\*U (preserved),
+or \*Q \*U (read).
+The second position may have an \*Qr\*U if the message
+has been replied to, an \*Qf\*U if it has been forwarded,
+or a \*Qp\*U if it has been printed.
+.sp
+The author of the example message header is
+.IR argv@spam.istc.sri.com ,
+the date is
+.IR "Feb 19" ,
+the number of lines in the message is
+.IR 10 ,
+the number of characters is
+.I 278
+and the subject of the message is
+.IR Test .
+The format of the message header shown here is described by
+the string variable
+.BR hdr_format .
+The example given above has a hdr_format of
+.sp
+.ti +2
+set hdr_format = "%25f %7d (%l/%c) %25s"
+.sp
+See the description of
+.B hdr_format
+in the VARIABLES section for more information on header formats.
+.sp
+You can print a special subset of message headers by using the
+.I \-H:c
+option, where `c' is one of:
+.nf
+.in +2
+.ta 1i
+.if t .ta 1.5i
+a	all messages
+d	deleted messages
+f	forwarded messages
+m	marked messages
+n	new messages
+o	old messages
+p	preserved messages
+r	replied to messages
+s	saved messages
+u	unread messages
+.fi
+.in -2
+Note that the \-H is not required; \*Qheaders :c\*U is valid.
+.sp
+More options to the
+.B headers
+command include
+.RI ` + '
+and
+.RI ` \- '.
+Each prints the next or previous screenful of message headers.
+The
+.B z
+command can also be used; `z' alone prints the next
+screenful (thus, the `+' is optional)
+and \*Qz \-\*U is equivalent to \*Qh \-\*U.
+.sp
+Headers affects all the messages it displays, so piping may be done
+from the headers command.
+Piping to the headers command causes the
+message headers affected by the previous command to be printed.
+This action is identical to piping to the
+.B from
+command.
+.TP
+.BR help " [topic]"
+Help is provided on a per topic basis and on a general basis.
+For general help, just typing
+.I help
+provides some general information as to how to get further help
+and a list of topics suggested for more specific help.
+There is also help provided for each command by using the \-?
+option to most commands.
+This option provides command line usage information as well as a
+description of what the command does and how to use it.
+.sp
+If no help file is found, an error message is printed.
+The location of the help files may be reset by setting the variables
+.B cmd_help
+and
+.B tool_help
+to the paths of the new help files.
+.sp
+The
+.B tool_help
+variable is recognized only by versions capable of using suntool mode
+(tool mode need not be active).
+.TP
+.BR history " [\-h] [\-r] [N]"
+This command displays the command history in chronological order; early
+commands are printed first followed by more recent commands displayed last.
+Option
+.I \-h
+suppresses printing of history event numbers with each history command.
+Option
+.I \-r
+reverses the order of the history events displayed.
+.sp
+If a number
+.I N
+is given, then that number of previous commands is
+echoed rather than the number set by the variable
+.BR history .
+.sp
+See the LINE-MODE INTERFACE section for a description of referencing the
+history in commands.
+.TP
+.BR ignore " [header-list]"
+.ns
+.TP
+.BR unignore " [header-list]"
+.rs
+Display or set a list of headers to be ignored when displaying messages.
+When reading messages, all the message headers are displayed with the text
+body of the message.
+Since these message identifier fields are cumbersome and uninteresting
+in many cases, you can filter out unwanted headers by using this command.
+For example,
+.sp
+.ti +2
+ignore Received Date Message-Id
+.sp
+ignores the three specified fields.
+Additional
+.B ignore
+commands are cumulative.
+The command
+.B unignore
+is used to reverse the effects of
+.BR ignore .
+.sp
+For another way to control this, see the variable
+.BR show_hdrs .
+.TP
+.BR lpr " [-h] [-n] [\-Pname] [msg-list]"
+Takes a message list and sends those messages, one by one, to the printer,
+each separated by page feeds.
+The \-h option suppresses printing of ignored headers (see the
+.B ignore
+command and the variables
+.B show_hdrs
+and
+.BR alwaysignore ),
+and the \-n option suppresses all headers.
+A default printer name is supplied if one is not specified on the
+command line
+.RI (\-P printer-name ).
+If you have the variable
+.B printer
+set, that printer name is used.
+.sp
+If the variable
+.B print_cmd
+is set, the command described by that variable is used instead
+of the default system command.
+In such cases, the -P option and the
+.B printer
+variable are ignored and the command is simply executed as is.
+.sp
+The \*Qprinted\*U status bit is set for each message printed by this command.
+.sp
+.IR Note \|:
+If \*Qlpr \-Pprinter\*U produces an error message, your system administrator
+may have configured
+.I Mush
+to require \-d in place of \-P.
+.TP
+.BR ls " [flags]"
+This command duplicates the
+.IR UNIX (TM)
+command
+.I /bin/ls.
+By default,
+.I ls
+always uses the -C flag (columnate output).
+.TP
+.BR mail " [flags] [recipient ...]"
+.RB ( m )
+Send mail to a list of users.
+If no recipient list is specified on the
+.I Mush
+command line, then a \*QTo: \*U prompt requests one.
+A list of recipients must be supplied at some time before the message is
+sent, but is not required to begin composing a letter.
+This implementation of
+.I Mush
+supports mailing to files and programs as recipients.
+Filenames must be full pathnames; thus, they must start with a `/' or there
+is no way to know whether a recipient is a pathname or a user name.
+The special characters `+' and `~' may precede pathnames since they are
+expanded first to the user's folder directory (+), as described by the variable
+.BR folder ,
+and the user's home directory (~).
+Mailing to programs is indicated by the pipe `|' character preceding the
+program name.
+Since the user's path is searched, full pathnames are not required for
+programs that lie in the user's PATH environment variable.
+.sp
+Example:
+.sp
+.ti +2
+mail username, /path/to/filename, "|program_name", +folder_name, ~user/mbox
+.sp
+Options are:
+.nf
+.in +2
+.if n .ta 1.5i
+.if t .ta 1.8i
+\-b addr-list	set list of blind carbon recipients
+\-c addr-list	set list of carbon copy recipients
+\-E	edit outgoing message headers
+\-e	immediately enter editor (autoedit)
+\-F	add random fortune to the end of message
+\-f [msg-list]	forward messages (not indented)
+\-H file	read file as prepared text (no headers)
+\-h file	read file as a draft (text and headers)
+\-I [msg-list]	include messages with headers (indented)
+\-i [msg-list]	include messages in letter (indented)
+\-s [subject]	prompt for subject [set subject explicitly]
+\-U	send draft immediately (use only with \-h)
+\-u	unsigned: no signatures or fortunes added
+\-v	verbose (passed to mail delivery program)
+.in -2
+.fi
+.sp
+The verbose option may not be available depending on the mail transport
+agent on your system.
+.sp
+The \-e flag causes you to enter the editor described by the variable
+.BR visual .
+.sp
+The \-E flag causes
+.I Mush
+to place the headers of the outgoing message in
+the editor file so they can be changed.
+See the description of the variable
+.B edit_hdrs
+for details.
+.sp
+The \-i flag includes the current message into the body of the
+message you are about to send.
+The included message is indented by
+the string \*Q> \*U or by the string described by the variables
+.BR indent_str ,
+.BR pre_indent_str ,
+and
+.BR post_indent_str .
+See the VARIABLES section for more information on these string values.
+If a message list is given after the \-i option, then the messages
+described by that list are included.
+The \-I option is identical to the \-i option except that the headers of
+the message are also included.
+.sp
+The \-s flag looks at the next argument and sets the subject to that
+string.
+If the string is to contain spaces, enclose the entire subject
+in quotes.
+If there is no following argument, then the subject is prompted for.
+This flag is useful if the user:
+.sp
+.in +2
+.nf
+\(bu does not have the variable \fBask\fR set, or
+\(bu wishes to change the subject used with \fBreply\fR
+.in -2
+.fi
+.sp
+The subject is not prompted for and is ignored completely if the \-f flag
+is specified (see below).
+.sp
+The \-f flag is for message forwarding only.
+An optional message list can be given just as the -i option has.
+The forward option does not allow you to edit the message(s) being forwarded
+unless the -e flag is also specified.
+The subject of the message (if available) is the same as the
+.I current
+message; it is not necessarily the subject of the message being forwarded.
+The subject of forwarded mail cannot be changed.
+However, using the \-e flag
+allows the user to change the subject once in editing mode either by
+using the escape sequence, \*Q~s\*U, or by editing the \*QSubject:\*U header.
+.sp
+Forwarded mail that has not been edited by the user contains special
+headers such as
+.sp
+.ti +2
+Resent-To:
+.ti +2
+Resent-From:
+.sp
+and perhaps others, depending on your mail transport agent.
+Sendmail, for example, may add a number of other \*QResent-*\*U headers.
+.sp
+The \-u option, meaning \*Qunsigned\*U, prevents signatures and fortunes
+from being appended to the message.
+It overrides the variables
+.B autosign
+and 
+.BR fortune ,
+but affects the \-F option only if given after it on the command line.
+.sp
+The \-h option indicates that the given file is a previously prepared
+message, possibly a partial one saved with \*Q~w\*U.
+Such a file is called a \fIdraft\fR.
+The file argument must be given, and
+in the current implementation
+all message headers must either be
+present in the file or must be added manually by the user.
+At minimum, there must be a \*QTo:\*U header;
+.I Mush
+adds \*QFrom:\*U and \*QDate:\*U headers when sending, if necessary.
+To read a prepared text file that does not contain headers, use \-H.
+If the \-U option is also given, then the letter is sent immediately without
+further editing.
+.sp
+.TP
+.BR map [ ! "] [string [expansion]]"
+.ns
+.TP
+.BR unmap [ ! "] string"
+.rs
+The
+.B map
+command creates or lists macros for the line mode interface, and the
+.B map!
+command creates or lists macros for the message composition mode.
+In either mode, macros act in such a way that, when
+.I string
+is typed, the effect is the same as if
+.I expansion
+had been typed instead.
+The
+.I string
+is usually one or two control characters, or a sequence sent by
+one of the \*Qfunction keys\*U of a particular terminal.
+See the MACROS section for the syntax used to specify the
+.I string
+and the
+.IR expansion ,
+and for comments on the interactions of macros in the same and in
+different modes.
+.sp
+If no arguments are given, these commands display the list of
+macros and expansions for the appropriate mode.
+If only a
+.I string
+is given, they display the
+.I expansion
+associated with that string for the appropriate mode.
+Otherwise, they create a macro, associating the given
+.I expansion
+with the specified
+.IR string .
+.sp
+Line mode macros are unset with the
+.B unmap
+command, and composition mode macros are unset with the
+.B unmap!
+command.
+.TP
+.BR mark " [\-[A|B|C|D|E]]"
+.ns
+.TP
+.B unmark
+This command places a tag on messages that you wish to reference later.
+If a priority A through E is specified, that priority is assigned to the
+message.
+Message priorities are saved when the folder is updated.
+The
+.B sort
+and 
+.B pick
+commands can then be used to order or select messages based on their
+priorities.
+.sp
+If no pririty is specified, the message is given a temporary mark.
+Messages may have both a temporary mark and a priority,
+but may not have more than one priority.
+Priorities are shown by the appropriate letter code immediately following the
+message number in the header display.
+The presence of a temporary mark is shown by a `+' character.
+Temporary marks are considered to have the highest priority for sorting and
+are shown in place of the regular priority if both are set on a given message.
+However, temporary marks are not saved when the folder is updated.
+.sp
+The command
+.ti +4
+headers \-H:m
+(abbreviated as \*Q:m\*U) can be used to generate the list of messages
+with temprary marks.
+.sp
+For example:
+.sp
+.ti +4
+mark -C 7
+.sp
+assigns priority C to message 7.  You can clear the priority of a message
+by specifying a lone `\-' argument:
+.sp
+.ti +4
+mark -
+.sp
+This does not remove temporary marks, only priorities.
+The command
+.B unmark
+is used to remove temporary marks.
+.TP
+.BR merge " [\-N] folder-name"
+Messages from the named folder are read into the current folder.
+The header summaries of the merged messages are printed unless the \-N
+option is given (see the
+.B folder
+command, above).
+This command can only appear in a pipeline if it is the first command;
+it returns a list of all the messages from the merged-in folder.
+This command cannot be used in initialization files before the shell
+has started.
+.TP
+.BR my_hdr " [header[: text]]"
+.ns
+.TP
+.BR un_hdr " [header:]"
+.rs
+You can create personalized headers in your outgoing mail using this command.
+.sp
+.nf
+Command usage:
+.in +2
+.ta 2.5i
+my_hdr	print all your headers
+my_hdr header	print value of header
+my_hdr header: string	set header to string
+un_hdr header:	unset header
+.in -2
+.sp
+.fi
+To set a header, the first argument must be a string
+that contains no whitespace (spaces or tabs) and must end with
+a colon (:).
+The rest of the command line is taken to be the
+text associated with the mail header specified.
+If any quotes are used in the header and the header itself is not set in
+quotes, then quotes should be escaped (preceded) by a backslash.
+This holds true for semicolons, pipe characters
+or any other metacharacter that
+.I Mush
+might interpret as a command line modifier.
+.sp
+If the variable
+.B no_hdrs
+is set, then your headers are not added to outgoing messages,
+but no headers are unset.
+The
+.B un_hdr
+command may take `*' as an argument to un_hdr everything set.
+.sp
+Example:
+.sp
+.ti +2
+my_hdr Phone-Number: (415) 499-8649
+.sp
+.I Mush
+treats the the header \*QFrom:\*U as a special case.
+If you have set your own From:, a simple test is performed to determine
+whether the address given is valid.
+Any UUCP or domain address that directs mail to your login at the local
+machine should be acceptable, but certain configurations may prevent some
+combinations from being recognized.
+If the address is valid, your From: header is used; otherwise, an
+address known to be valid is generated and used instead.
+Some mail transport agents are \*Qpicky\*U and do not allow
+.I Mush
+to supply a From: header; in these cases, your From: header is silently
+removed at send time, and replaced with one generated by the MTA.
+.sp
+Note:  You cannot set the \*QDate:\*U.
+Attempting to do so does not result in any
+error messages; your date is simply overwritten
+by the system when your mail is sent.
+.TP
+.BR pick " [flags] [<pattern>]"
+Allows the user to select particular messages from a folder.
+The <pattern> is a \*Qregular expression\*U as described by
+.IR ed .
+You can search for messages from a user, for a particular subject line,
+between certain dates, and limit searches to a range of messages.
+You can also find all messages that do not
+match the same arguments mentioned above.
+.sp
+.nf
+Options:
+.ta 1.5i
+.in +2
++<num>	keep only the first <num> messages matched (head).
+\-<num>	keep only the last <num> messages matched (tail).
+\-ago <format>	search for messages relative to today's date.
+\-d [+|\-]date	messages sent on or [+ after] [`\-' before] date.
+\-e	take all remaining arguments to be the pattern.
+\-f	search for pattern in \*QFrom\*U field only.
+\-h header	search for pattern in specified header only.
+\-i	ignore case of letters when searching.
+\-p priority	select messages with given priority (A,B,C,...)
+\-r msg-list	search only the listed messages.
+\-s	search for pattern in \*QSubject\*U field only.
+\-t	search for pattern in \*QTo\*U field only.
+\-x	select messages that do \fInot\fR match the pattern.
+.in -2
+.fi
+.sp
+The
+.I \-ago
+option can be abbreviated as
+.IR \-a .
+Only one of \-a, \-d, \-f, \-h, \-p, \-s and \-t can be specified at once,
+but multiple \-p options may be specified to select several priorities.
+Entire messages are scanned for the <pattern>
+unless \-a, \-d, \-f, \-h, \-p, \-s or \-t is specified.
+Messages marked for deletion are also searched.
+No patterns can be specified with the \-a or \-d options.
+The \-x option may not be used in conjunction with
+.IR + n
+(head) and
+.IR \- n
+(tail).
+.sp
+For the \-d option, \*Qdate\*U is of the form:
+.sp
+.ti +2
+month/day/year
+.sp
+with an optional `\-' to specify that the messages of interest are those
+older than that date.
+Omitted fields of the date default to today's values.
+Examples of selecting on date:
+.nf
+.in +2
+.ta 2.0i
+.sp
+pick \-d 4/20	on April 20, this year.
+pick \-d \-/2/85	on or before the 2nd, this month, 1985.
+pick \-d +5/4	on or after May 4 of this year.
+pick \-d /	today only.
+.fi
+.in -2
+.sp
+At least one `/' char must be used in a date.
+There is no strong date checking; 2/30 is considered a valid date.
+.sp
+For the \-ago option, the format is very simple.  Specify the number of
+days followed by the word \*Qdays\*U, or the number of weeks followed by
+the word \*Qweeks\*U, and so on with months and years.  Truncation is allowed,
+since only the first character is examined, so all of the following are
+equivalent:
+.sp
+.in +2
+.nf
+pick \-ago 1 day, 2 weeks
+pick \-ago 2Weeks 1Day
+pick \-ago 2w,1day
+pick \-a 2w1d
+.fi
+.in -2
+.sp
+These examples find all messages that are exactly 2 weeks and 1 day
+old.  All \*Qago\*U dates collapse into \*Qday\*U time segments.  This
+means that months are 30.5 days long.  If more precise date selection is
+required, use the \-d option and specify specific dates.
+.sp
+Also note that the \-ago option allows
+the \*Qbefore\*U (\-) and \*Qafter\*U (+)
+arguments.  Thus, you may pick all messages older than 1 week with:
+.sp
+.ti +2
+pick \-ago \-1 week
+.sp
+Other examples of
+.B pick:
+.sp
+.nf
+.ti +2
+pick \-d 2/5/86 | pick \-d \-2/5/87 | pick \-s "mail stuff" | lpr
+.fi
+.sp
+Will find all the messages between the dates February 5, 1986, and
+February 5, 1987, that contain the subject "mail stuff" and send them
+to the printer.
+.sp
+.ti +2
+pick -s Re: | delete
+.sp
+Deletes messages that have \*QRe:\*U in the Subject header.
+.sp
+.ti +2
+folder +project | pick \-f frank
+.sp
+Finds all messages from frank in the folder described by +project.
+.sp
+.ti +2
+pick \-h return-path ucbvax
+.sp
+Searches all messages that have the header "Return-Path:" and determines
+if the string \*Qucbvax\*U is in the header.
+Note that case sensitivity
+applies only to the pattern searched, not the header itself.
+.sp
+.ti +2
+pick \-ago +1w | save +current
+.sp
+This finds all messages that are a week or less old and saves them in the file
+called \fIcurrent\fR, which is found in the user's \fIfolder\fR variable.
+.sp
+.ti +2
+pick +3 mush-users
+.sp
+Finds the first three messages containing the string \*Qmush-users\*U.
+.sp
+.ti +2
+eval -h "pick +2 \-r .-$ \-s %s" | pick \-1
+.sp
+Finds the next message with the same subject as the current message.
+.TP
+.BR pipe " [\-p pattern] [msg-list] unix-command"
+Allows the user to send the texts of a list of messages to a
+.IR UNIX (TM)
+command.
+The list of messages may either be given explicitly or may come from a
+.I Mush
+pipeline (see \*QPiping commands\*U under the LINE-MODE INTERFACE section).
+If a list is neither given nor piped, the current message is used.
+All headers are considered part of the message text for purposes of this
+command unless the value of the variable
+.B alwaysignore
+includes the word \*Qpipe\*U (see
+.B alwaysignore
+in the VARIABLES section for more information).
+For example,
+.sp
+.in +4
+.nf
+pipe 3 5 7 patch
+.fi
+.in -4
+.sp
+sends the text and headers of messages 3, 5 and 7 to the
+.I patch
+utility.
+.sp
+If a
+.I pattern
+is specified with the \-p option, \fIMush\fR searches
+the message for a line beginning with that string.
+The matching line and all succeeding lines are sent to the
+.IR unix-command .
+If \-p is not given, and the
+.I unix-command
+is omitted, \fIMush\fR searches for a line beginning with \*Q#!\*U
+and feeds that line and all succeeding lines to \*Q/bin/sh\*U.
+Thus,
+.B pipe
+with no arguments treats the current message as a shell script.
+.sp
+The pattern may also be of the form
+.ti +4
+.I /pattern1/,/pattern2/
+.br
+in which case printing begins with the line containing
+.I pattern1
+and end with the line containing
+.I pattern2
+(inclusive).
+Patterns of this form must still match at beginning of line, and
+regular expressions are not currently allowed.
+.sp
+The
+.B pipe
+command can also be invoked as
+.B Pipe
+(note capitalization), in which case only the body of the messages,
+and none of the message headers, are sent to the unix command.
+.sp
+When the variable
+.B unix
+is set,
+.IR UNIX (TM)
+commands can appear anywhere
+.I except as the first command
+in a 
+.I Mush
+pipeline without explicitly using
+.BR pipe .
+However, it is still necessary to specify
+.B Pipe
+in order to exclude all headers.
+.sp
+.IR Note :
+All messages listed as arguments to
+.B pipe
+or
+.B Pipe
+are sent to the standard input of the
+.I same
+process as a continuous stream, in message number order!  This is probably
+not desirable when extracting shell scripts in particular, so take care.
+.TP
+.B preserve
+.RB ( pre )
+When the system folder is updated, preserved messages are saved in that
+folder rather than in your mbox folder.
+The
+.B preserve
+command sets this preserved status on the listed messages unless they have
+been explicitly deleted.
+The variable
+.B hold
+causes all messages (except those saved or deleted) to be held in your
+system folder automatically.
+.TP
+.B print
+.RB ( p ,
+.BR type ,
+.BR t )
+Takes a message list and displays each message on the user's terminal.
+If the first letter of the command is a capital letter (`P' or `T')
+then \*Qignored\*U headers are not ignored
+.I provided
+that the variable
+.B alwaysignore
+is either not set or is set to one of its possible values.
+If this variable is set with no value, the ignored headers are
+ignored regardless of the command used to display the message.
+See the
+.B ignore
+command for more information about ignored message headers.
+.sp
+The `+' and the `\-' keys can be used to display the \*Qnext\*U
+and \*Qprevious\*U messages respectively.
+The `+' key has the caveat that the
+message is not paged at all and none of the messages headers are displayed.
+.TP
+.B pwd
+Prints the current working directory.
+.TP
+.B quit\ \ 
+.RB ( q )
+Updates the current folder and exits from
+.IR Mush .
+If the current folder is your system folder and the variable \*Qhold\*U is
+set, all messages not marked for deletion are left in your system folder.
+Otherwise, messages that have been read are saved to
+.I ~/mbox
+or to the file described by the string variable
+.BR mbox .
+Messages marked for deletion are discarded.
+Unread messages are copied back to the current folder in all cases.
+.TP
+.BR reply / replyall " [msg-list] [-r path] [flags] [users]"
+.RB ( r / R )
+Messages are replied to by sending mail to the sender of each message
+in the given message list.
+The command
+.B replysender
+is equivalent to
+.BR reply .
+.B Replyall
+responds to all the recipients as well as the sender of the message.
+These commands understand all the same flags as the
+.B mail
+command.
+.sp
+When constructing a return mail address to the author of a message,
+.B reply
+searches for special mail headers in the author's message that
+indicate the most efficient mail path for return mail.
+.I Mush
+searches for the \*QReply-To:\*U,
+\*QFrom:\*U, and \*QReturn-Path:\*U headers, in that order, by default.
+.sp
+If none of these fields are found in the message, the first line of the
+message is parsed if possible;
+this \*QFrom\ \*U line is different from the \*QFrom:\ \*U line.
+If the user wishes to change the order or the actual fields to search for
+return paths, then the variable
+.B reply_to_hdr
+may be set to a list of headers to be used (in the order specified).
+If it is set, but has no value, the first \*QFrom\ \*U line is used
+regardless of what headers the author's message contains.
+The \*QFrom\ \*U line may be specified explicitly as an item in the
+list of reply-to headers by specifying the header \*Q\fBFrom_\fR\*U.
+See the VARIABLES section for more information about
+.B reply_to_hdr.
+.sp
+When replying to all recipients of the message using the
+.B replyall
+.RB ( R )
+command, only the original author's address can be obtained from
+the message headers.
+There is no way to determine the best path to the
+other recipients of the message from message headers aside from taking
+their addresses directly from the \*QTo:\*U and \*QCc:\*U lines.
+.sp
+Example:
+.sp
+.ti +2
+replyall 3,4,5 -i 4,5 7 -s response mail-group
+.sp
+Here, messages 3, 4 and 5 are replied to (all the authors are obtained
+from each of those messages as well as the recipients from those messages)
+and the text from messages 4, 5 and 7 are included in the body of the reply.
+The subject is set to "response" and the alias mail-group is appended to
+the list of recipients for this message.
+.sp
+The -r flag prefixes the address of each recipient in the address list
+with the indicated path.  This overrides the value of \fBauto_route\fR,
+but has the exact same functionality.  See the explanation of the variable
+in the VARIABLES section.  Also see the MAIL ADDRESSES section for more
+information concerning replying to messages.
+.nf
+.TP
+.BR save / write / copy " [\-f] [\-s | \-a] [msg-list] [filename / directory]"
+.fi
+.RB ( s / w )
+With no arguments,
+.B save
+and
+.B write
+saves the current message to the file
+.I mbox
+in the user's home directory (or the file specified by the
+.B mbox
+variable).
+If a message list is given, then the messages specified by
+the list are saved.
+If a filename is given, then that filename is used instead of mbox.
+The \-s option forces the filename used to be that of the subject of
+the message.  Similarly, the \-a option causes the filename used to be
+that of the author of the message being saved.  If more than one message
+is being saved, the subject or author name used is that of the smallest
+message number.  With these two options, a directory name may be given
+to specify a directory other than the current directory where the files
+are to be created.
+.sp
+If the file exists and is writable, the specified command
+appends each message to the end of the file.
+If \-f is given, then the file is overwritten causing whatever contents it
+contains to be lost.
+For compatibility with older versions, the character `!' may be substituted
+for \-f (no `\-' is used with `!').
+Note that \-f has no effect when used with \-a or \-s.
+.sp
+If the current folder is the system mailbox, then saved messages are
+marked for deletion when the user exits using the
+.B quit
+command.
+If the variable
+.I keepsave
+is set or the current folder is not the system mailbox, then messages are
+not marked for deletion.
+.sp
+The
+.B write
+command differs from
+.B save
+and
+.B copy
+in that the message headers are
+.I not
+saved in the file along with the body of text.
+The
+.B copy
+command is is like
+.B save
+except that messages are never marked for deletion, whether or not
+.B keepsave
+is set.
+.sp
+.IR Note :
+The permission mode of files created by these commands allow read and
+write only by the owner of the file.
+The permissions of existing files are not changed when messages are
+saved or written to those files.
+.TP
+.BR saveopts " [file]"
+The complement of
+.BR source ,
+.BR saveopts ,
+saves all settable variables, aliases
+and cmd's in the initialization file.
+(See the INITIALIZATION
+section for more information on initialization files.)
+If an argument is given, that file is used.
+Beware that this overwrites files, so any \*Qif\*U expressions
+are lost, as are settings that have changed since entering
+.IR Mush .
+Using saveopts is highly discouraged
+and is intended for the naive user only.
+.TP
+.BR set " [[?]variable [= value]]"
+.ns
+.TP
+.BR unset " variable"
+.rs
+With no arguments,
+.B set
+prints all variable values.
+Otherwise, it sets the named
+.IR variable .
+Arguments are of the form \*Qvariable=value\*U (whitespace is allowed).
+Boolean options such as
+.I autoedit
+need not have \*Q=value\*U associated in the command.
+Multivalued variables are set in the same way as other variables, and
+the list of values should be enclosed in quotes if whitespace is used
+to separate the items.
+See the VARIABLES section for details of the format of each type of variable.
+.sp
+The special command
+.sp
+.ti +2
+set ?all
+.sp
+prints all known variables utilized by the program and a brief
+description of what they do.
+The user may set and manipulate his own set of variables, but internal
+variables that are utilized by the program are the only ones displayed.
+.sp
+The command
+.sp
+.ti +2
+set ?variable_name
+.sp
+prints the same information for one variable instead of all variables.
+You may unset everything by issuing the command \*Qunset *\*U.
+Note that some variables are essential to the operation of the program
+and are restored to a default value even when they are explicitly unset.
+.sp
+It is possible to set a variable to a list of messages returned by another
+command by using the piping mechanism.  For example,
+.sp
+.ti +2
+pick \-s Status Reports | set reports
+.sp
+The variable
+.I reports
+now contains a message list which can be used
+as the message list argument to any command which accepts a list.
+.sp
+.ti +2
+mail \-i $reports boss
+.sp
+This command sends mail to \*Qboss\*U and includes the text of all the
+messages held in the \fIreports\fR variable.
+.TP
+.BR sh " [command]"
+Invokes an interactive version of the shell.
+The shell spawned is described by the variable
+.BR shell .
+If the optional argument
+.I command
+is given, then that command is executed under the Bourne Shell (/bin/sh).
+If the special character `&' is at the end of any shell command,
+then the command is executed in background.
+.TP
+.BR source " [file]"
+Read
+.I Mush
+commands from a file.
+If no filename is specified, the files searched
+for are .mushrc or .mailrc in the user's home directory.
+If the environment variable
+.I MUSHRC
+or
+.I MAILRC
+is set, then the file named by the variable is sourced instead.
+If a filename is given on the command line, that file is sourced.
+See the INITIALIZATION heading and the
+.B home
+variable descriptions for more information.
+.TP
+.BR sort " [\-i] [[\-r] \-a | \-d | \-l | \-p | \-R | \-s | \-S]"
+This command sorts messages according to author, date, status or subject
+(with or without considering the \*QRe:\ \*U, in replied messages).
+In addition, the messages can be sorted in reverse order (same arguments).
+.sp
+.nf
+Options:
+.in +2
+.ta 1i
+\-i	ignore case in alphabetical sorts
+\-r	reverse sort order of next option
+\-a	sort by author (alphabetical)
+\-d	sort by date
+\-l	sort by length of message
+\-p	sort by message priority
+\-R	sort by subject including \*QRe:\*U
+\-s	sort by subject (alphabetical)
+\-S	sort by message status
+.in -2
+.fi
+.sp
+By default (no arguments),
+.B sort
+sorts messages by
+.IR status .
+New, unread messages are first, followed by preserved messages,
+and finally deleted messages are placed at the end of the list.
+If status is otherwise the same, priority is used to order the messages.
+If \-r is the only option given, the status ordering is reversed.
+.sp
+Sorting by priority orders marked messages first, followed by messages
+having a priority setting (A having higher precedence than B, and so on),
+and finally messages having neither a mark nor a priority.
+See the
+.B mark
+command for information on attaching marks and priorities to messages.
+.sp
+When sorting by date, the boolean variable
+.B date_received
+is checked.  If it is set, then sorting goes by date received.
+Otherwise (default), sorting is by date sent by the original author.
+.sp
+If more than one sort option is specified, they are applied in
+left-to-right sequence to each comparison.
+Thus:
+.sp
+.ti +2
+sort \-a \-d
+.sp
+sorts messages by author and, if the author of any set of messages
+is the same, sorts within that set by date.
+Note that the \-r option applies to only one other option at a time;
+to reverse the sort of both author and date requires:
+.sp
+.ti +2
+sort \-r \-a \-r \-d
+.sp
+The options can also be grouped:
+.sp
+.ti +2
+sort \-ra \-rd
+.ti +2
+sort \-rard
+.sp
+Currently, only the line mode interface supports multiple sort criteria,
+but the other interfaces allow subsorting indirectly
+when appropriate actions are taken, as discussed below.
+.sp
+It is also possible to sort a consecutive sublist of messages by using pipes.
+If the mailbox is already sorted by author,
+.sp
+.ti +2
+pick \-f argv@zipcode.com | sort \-s
+.sp
+finds all messages from the user \*Qargv@zipcode.com\*U
+and sort them by subject.
+You may specify the exact message list by specifying
+that message list on the command line and using a pipe:
+.sp
+.ti +2
+10\-. | sort d
+.sp
+This command means to sort the messages from 10 to the current message
+according to the date.
+.sp
+To specify subsorting from with the curses interface, the temporary
+curses escape key must be used (the colon `:') and the command issued
+at the `:' prompt (as if giving an \*Qex\*U command to \*Qvi\*U).
+When the command is finished, the \*Q...continue...\*U prompt is given and
+the user may continue or return to the top level of the curses mode.
+.sp
+In the tool mode, subsorting can be specified only by typing message numbers
+in the \*QRange:\*U item at the top of the main frame, before selecting the
+\*QSort\*U item.
+The sort range must consist of consecutive messages.
+Reversed sorting is not currently available in tool mode.
+.sp
+If the variable
+.I sort
+is set, messages are sorted each time the user's system mailbox is
+read as the current folder.
+The
+.I sort
+variable can be set either to nothing or to legal "sort" arguments.
+.sp
+\fINote\fR:  For compatibility with older versions, sort options are
+recognized even if they are not preceded by a `\-'.
+Also, if a `\-' is given by itself (separated by spaces from any following
+arguments) it is interpreted as \-r.
+.TP
+.B stop\ \ 
+For systems with job control, stop causes
+.I Mush
+to send a SIGTSTP to itself.
+The command was introduced to facilitate
+the stop-job action from a complex command line alias rather than the user
+having to type his stop character explicitly.
+.TP
+.B top
+Takes a message list and prints the top few lines of each.
+The number of lines printed is controlled by the variable
+.B toplines
+and defaults to the size of the value of the variable
+.B crt.
+This command is ignored in the tool mode.
+.TP
+.BR undigest " [-m] [-p pattern] [msg-list] [filename]"
+A \*Qdigest\*U is a mail message which is a collection of other mail messages
+mailed to a \*Qmoderator\*U by other users.  The moderator compiles all the
+messages into a folder and sends the result to all the subscribers of the
+mailing list.  The
+.B undigest
+command disassembles the entries into the set of messages which comprises
+the digest.
+.sp
+The -m option merges these messages into the current folder.  Otherwise,
+if a filename is specified, a new folder is created and the user can change
+folders to read the messages separately.
+.sp
+The -p option specifies an alternate pattern to be used as the digest
+article separator.
+This pattern must match literally at the beginning of the line.
+The default pattern is \*Q\-\|\-\|\-\|\-\|\-\|\-\|\-\|\-\*U (eight hyphens).
+This is the defacto USENET standard digest article separator and should
+work for most digests, but some use another separator.
+The -p option is also useful for \*Qbursting\*U forwarded messages out
+of a wrapper message; for example:
+.sp
+.ti +4
+undigest -m -p "--- Forward"
+.sp
+bursts out messages forwarded by another user of
+.I Mush
+and merges them into the current folder.
+.sp
+If a message list is specified, each digest in the list is disassembled to
+the same filename (if given).
+If no filename is given and the user did not request
+a merge, then a temporary file is made.
+The name of the temporary file is generated from the subject of the digest.
+.TP
+.BR update " [-r]"
+Updates your current folder, writing back changes just as if you had
+.BR quit ,
+except that the `N'ew status does not change to `U'nread.
+Headers are not listed when the folder is read back in.
+The \-r option puts the folder into read-only mode
+.I after
+updating it.
+.sp
+See the
+.BR folder
+command for complete information.
+.sp
+.SH VARIABLES
+Shell variables are controlled via the
+.B set
+and
+.B unset
+commands.
+Options may be either boolean, in which case it is only
+significant to see whether or not they are set;
+string, in which case the actual value is of interest;
+numerical, in which case the numerical value is important;
+or multivalued, in which case they may be set to a list of values.
+Some variables may have attributes
+of boolean and string or multivalued at the same time.
+.PP
+If you or the program references a variable that is not explicitly set,
+then the environment variables are checked and that data is returned.
+A few variables (notably
+.BR prompt ,
+.BR cmd_help ,
+and
+.BR tool_help )
+do not check the environment.
+.PP
+Variable values can be modified by one of four variable modifiers, or by a
+numeric string.
+The modifiers `:h', `:t', `:l' and `:u' may be applied to the variable names.
+The current implementation allows only one `:' modifier on each `$' expansion.
+.TP
+:t
+The variable is treated as a file path name, and the name of the file
+(the \*Qtail\*U of the path) is substituted for the variable.
+That is, everything to the right of the last `/'
+is returned.
+.TP
+:h
+The variable is treated as a path name, and the \*Qhead\*U of the pathname
+is substituted for the variable.
+That is, everything up to, but not including, the last `/' is returned.
+.TP
+:l
+All alphabetic characters in the variable's value are converted to lower case.
+.TP
+:u
+All alphabetic characters in the variable's value are converted to upper case.
+.TP
+.RI : number
+The value of the variable is converted to a list of space-separated words,
+which are numbered from one (1), and the word described by
+.I number
+is selected and returned.
+It is not an error for
+.I number
+to be greater than the actual number of words; an empty string is returned
+in this case.
+.PP
+Following is a list of all variables with predefined meanings.
+.TP
+.B alwaysignore
+(Boolean/Multivalued)
+If set with no value, the mail headers set by the
+.B ignore
+command are always ignored.
+Normally, ignored headers are not ignored when sending messages to
+the printer, when interpolating messages into letters with ~f or ~I,
+when the `P' or `T' command is given (see the \fBprint\fR command),
+or with the \-I flag to the
+.B mail
+or
+.B reply
+commands.
+Setting
+.B alwaysignore
+ignores those headers even in the situations mentioned here.
+No headers can be ignored during updates and when using the
+.B save
+command since the user may ignore headers that are required by
+.I Mush
+or any other mail system to read those folders.
+.sp
+This variable can also be set to a list of words
+separated by commas or spaces.
+Currently recognized words, and their meanings, are:
+.nf
+.ta 1.5i
+.in +4
+.\" \& escapes are to make obvious the tab after each word
+forward\&	Ignore headers when forwarding messages (~f).
+include\&	Ignore headers when including messages (~I).
+pipe\&\&	The \fBpipe\fR command ignores headers.
+printer\&	The \fBlpr\fR command ignores headers.
+.in -4
+.fi
+.sp
+Also see the
+.B ignore
+command and the
+.B show_hdrs
+variable for more information.
+.TP
+.B ask
+(Boolean)
+If set, you are prompted for a subject header for outgoing mail.
+Use the tilde escape \*Q~s\*U to set the header once in the message
+or specify the \-s option on the
+.B mail
+command line at the
+.I Mush
+prompt.
+.TP
+.B askcc
+(Boolean)
+If set, you are prompted for a Cc (carbon copy) list when you are
+finished editing a letter to be sent.
+If the variable
+.B edit_hdrs
+is set, prompting does not occur, but a Cc: line is added to the
+edit file.
+This also applies to the tool mode.
+.TP
+.B autodelete
+(Boolean)
+When exiting mail, all messages that have been read
+.I "regardless of whether they have been marked for deletion"
+are removed.
+Only messages that haven't been read or that have been marked as
+.B preserved
+are not removed.
+.TP
+.B autoedit
+(Boolean)
+If set, you are automatically put into your editor whenever you
+send or reply to mail.
+.TP
+.B autoinclude
+(Boolean)
+When replying to any mail, a copy of the message being replied to
+is automatically inserted into your message body indented by
+the string described by the variable
+.BR indent_str .
+.TP
+.B autoprint
+(Boolean)
+After you delete a message, the next message is printed automatically.
+.TP
+.B auto_route
+(Boolean/String)
+If set boolean (not to a string), all the recipients in a message that
+is being replied to (via \fBreplyall\fR), is routed through the path
+back to the original author.
+.sp
+For example, if the original sender of a message came from the remote host
+.B c3p0
+and the list of recipients looked like
+.sp
+.nf
+.in +2
+From: c3p0!user1
+To: yourhost!you
+Cc: r2d2!user2, r2d2!user3
+.in -2
+.fi
+.sp
+then clearly, \*Quser1\*U on the machine c3p0 can talk to your machine
+and the machine named r2d2.
+However, you would not be able to respond to those users if your machine
+did not exchange UUCP mail with the host r2d2.
+.sp
+.I Mush
+attempts to solve this problem by reconstructing the addresses
+for \*Quser2\*U and \*Quser3\*U according to the address of the original
+sender, \*Qc3p0\*U.
+The new addresses for \*Quser2\*U and \*Quser3\*U should therefore become
+.sp
+.ti +2
+c3p0!r2d2!user2, c3p0!r2d2!user3.
+.sp
+If your machine not only talks to c3p0,
+but talks to r2d2 as well, it becomes unnecessary to route the mail
+through both c3p0 and r2d2.
+So, the variable
+.B known_hosts
+may be set to a list of hosts which you know your machine to have
+UUCP mail connections with.
+This list is checked when constructing mail addresses for replies only and
+the shortest path is made by removing from the UUCP path those hosts
+that do not need to be called or are redundant.
+See the entry for
+.B known_hosts
+for more information.
+.sp
+If
+.B auto_route
+is set to a specific \fBpathname\fR (host names separated by !'s),
+all addresses in the reply have this route prepended to their addresses.
+This ignores the original path of the author.  This is quite useful for
+hosts which talk uucp to a node which is connected to the internet or uunet
+since both of those machines tend to be one-hop away from all other hosts
+(or reroute accordingly).  For example, if a message was addressed like so:
+.sp
+.in +2
+.nf
+To: root@ucbvax.berkeley.edu, argv@zipcode.uucp
+Cc: ucbcad!foo!bar
+.sp
+.fi
+.in -2
+If auto_route is set to "ucbcad", then replies to this address are
+directed addressed like so:
+.sp
+.in +2
+.nf
+To: ucbcad!ucbvax.berkeley.edu!root, ucbcad!zipcode.uucp!argv
+Cc: ucbcad!foo!bar
+.sp
+.fi
+.in -2
+.sp
+This assumes that the host in question talks uucp with ucbcad.  This example
+demonstrates several things.  First, notice that all addresses are converted
+to uucp-style format.  Whenever routing is changed, the format is converted
+like this.  Secondly, note that the Cc: line did not change.  This is because
+all redundant hostnames from UUCP pathnames are removed
+to avoid unnecessary UUCP connections and speed up mail delivery.
+.sp
+Another example of how auto_route truncates UUCP paths:
+.sp
+.ti +2
+pixar!island!sun!island!argv
+.sp
+Here, mail was probably originally sent to users at pixar and sun from
+somewhere undetermined now.
+Since sun and pixar do not talk to each other, the users on those machines may
+have responded to mail creating the type of addresses stated above.
+Here, it can be seen that we can reduce the path to the host
+.IR island :
+.sp
+.ti +2
+pixar!island!argv
+.sp
+See the MAIL ADDRESSES section for more detailed information
+about legal mail addresses.
+.sp
+Note that the -r flag to \fBreply\fR and \fBreplyall\fR overrides the
+value of \fBauto_route\fR.
+.TP
+.B autosign
+(Boolean/string)
+Append a signature to outgoing mail.
+If this variable is set, but not to a string (e.g., boolean-true)
+then the file ~/.signature is used.
+.sp
+Otherwise, the variable is interpreted in one of four ways.
+By default, the string is interpreted as a pathname relative to the
+.I current
+directory.
+For this reason, it is advisable to use full pathnames here.
+As usual, the special characters `~' and `+' are expanded.
+If a file is found, it is opened and its contents are read into the
+message buffer.
+.sp
+If the variable is set to a string that begins with `$', then that string
+is interpreted as a user-definable variable and is expanded and appended
+to the letter.
+.sp
+If the variable is set to a string that begins with a backslash (\\)
+then the string itself (minus the `\\' character) is used; no expansion
+is done and no files are read.
+.sp
+Finally, if the variable is set to a string that begins with a vertical
+bar (or \*Qpipe\*U) character (|), the rest of the string is interpreted
+as a command whose output is used as the signature.
+The special characters `~' and `+' are NOT expanded in the command name,
+but the command is run via /bin/sh so $PATH is searched and redirection
+can be specified.
+The list of addresses to which the letter is sent is passed to
+the command as its arguments, in the same form that they are passed
+to the Mail Transport Agent (MTA).
+Depending on your MTA, each address may be followed by a comma.
+.sp
+In the latter three cases, it is advisable to set the variable using single
+quotes to protect the `$', `\\' and `|' characters from being interpreted.
+Examples:
+.sp
+.nf
+.ti +2
+set autosign = '$foo'
+.ti +2
+set autosign = '\\  Dan Heller zipcode!argv@ucbcad.berkeley.edu'
+.\" Need a pipe example?
+.fi
+.sp
+.BR Warning :
+if redirection from the calling shell is used,
+no signature or fortune is added to outgoing mail.
+For example,
+.sp
+.ti +2
+% mush \-s report manager < report_file
+.sp
+In this command, mail is being sent to the user \*Qmanager\*U and the
+subject is set to \*Qreport\*U and the file \*Qreport_file\*U is being
+redirected as input.
+In this case, \fIno\fR signature is appended.
+.sp
+.IR Note :
+The `|' syntax for calling a program to sign the letter is a little
+counterintuitive and may change in future releases.
+.TP
+.B autosign2
+(String)
+This alternate signature is available for special cases where the default
+signature is not desired or if no signature is desired for special addresses
+or if only special addresses require a signature.
+The format for this variable is:
+.sp
+.ti +2
+autosign2 = \*Qaddress1, address2, ... : <signature>\*U
+.sp
+Each address can be one of these types:
+.RS
+.TP
+1)  address
+Legal mailing addresses that do not contain comment
+fields (see the sections MAIL ADDRESSES for more information on legitimate
+mail addresses) match literally.
+.TP
+2)  *username
+If the username is present on the recipient list, regardless of what
+remote site the user may reside on (including locally), the pattern matches.
+.TP
+3)  !hostname !host1!host2...
+Any user who appears as a recipient matches the pattern provided he
+resides on the specified hostname.
+If a path of hosts is specified, then the user must reside on the last
+host of the specified path.
+.\" Nroff note: there is a problem with the @sub.domain line,
+.\" because .TP uses @ as a delimiter for width computations.
+.\" The .br manages to deal with this in this special case.
+.TP
+4)  @sub.domain
+.br
+The user must reside on any host within the domain specified.
+Neither the user or the hostname needs to match; only the domain name must
+be required to match.
+.RE
+.\" Nroff note: RE takes us all the way out of TP, so step back in again.
+.RS
+.sp
+Example:
+.sp
+.nf
+.ti +2
+set autosign2 = \*Q!zipcode @sun.com @mit.edu *schaefer root: \--dan\*U
+.fi
+.sp
+This means that any mail sent to 1) anyone at zipcode, 2) anyone within
+the sun domain, 3) anyone within the mit domain, 4) Bart Schaefer
+(at any host anywhere -- even locally),
+and 4) root on the local machine only (or, root@local-machine-name)
+is signed with the \*Qalternate\*U signature.
+If any address on the
+recipient list fails to satisfy these four matches, the mail is
+signed by my regular signature.
+.sp
+One can have a local signature and a remote signature by specifying
+the autosign2 to include the hostname of the home machine the user
+is logged into.  Note the \*Qzipcode\*U example above.
+.sp
+The list of recipients, after alias expansion and comment removal, is
+then scanned and the following patterns are matched against those addresses
+specified in the autosign2 or fortunates variable according to these rules.
+.sp
+The signature description is the same as described by
+.B autosign
+variable.  The colon (:) separates the list of addresses from the signature
+description.  If there is no colon or the address list is missing, the
+entire string is considered the signature (except for the colon).
+.sp
+If
+.B autosign
+is not set, then autosign2 works ONLY if the tilde command \*Q~S\*U
+is specified.  In this way, a user may never have autosign set and just
+set autosign2 to be some signature value.  The user may then issue the
+tilde command to automatically sign the letter.
+If a list of addresses is given (terminated by a colon), then all
+recipients of the message must be in the list of addresses in autosign2;
+otherwise, the signature in \fBautosign\fR (if set) is used instead.
+A null signature in autosign2 does not sign the letter.
+.sp
+Example:
+.sp
+.nf
+.ti +2
+set autosign2 = "fred, barney, wilma, betty: ~/flintstone.sig"
+.fi
+.sp
+If a message is sent to:
+.sp
+.ti +2
+To: fred, wilma
+.sp
+Then the file ~/flintstone.sig is used.
+However, if the address are:
+.sp
+.ti +2
+To: barney, betty, bambam
+.sp
+Then autosign2 is not used because bambam is not in the list.
+.sp
+Note that mail sent via redirection from the calling shell does not
+sign letters or append fortunes.
+.RE
+.TP
+.B cdpath
+(String)
+Set to a string of pathnames separated by spaces to use when searching
+for a directory when the
+.B cd
+command is issued.
+The current directory is always checked before any directory in 
+.BR cdpath .
+.TP
+.B cmd_help
+(String)
+This variable gives the path name of the general help file, which is read
+by the
+.B help
+command.
+This variable is normally reset only in the system initialization files,
+when the default location of the help file has changed.
+.TP
+.B complete
+(String)
+Setting this variable enables word completion.
+The first character of the value of
+.B complete
+is used as the
+.IR "completion character" ;
+if
+.B complete
+is set, but not to a value, the escape character is used as the default.
+When the completion character is typed at the end of a word prefix,
+.I Mush
+interactively completes that word.
+If the prefix is not unique, the word is completed as far as possible
+and a bell sounds (see, however, the variable
+.BR quiet ).
+If the word contains filename metacharacters,
+.IR "all possible matches are completed" .
+If the list overflows the command line buffer, it gets truncated, so
+this feature should be used with care.
+Metacharacters recognized are the same as in
+.IR csh .
+.sp
+The second character of the value of
+.B complete
+is used as the completion listing character.
+When this character is typed, the possible completions are printed, and
+.I Mush
+prompts again with the original prefix.
+If
+.B complete
+is set to only a single character, completion listing is disabled;
+if it is set with no value, control-D (^D) is used as the default
+listing character.
+.sp
+If the first and second characters of
+.B complete
+are the same character, then
+.I Mush
+completes unique matches as usual
+However, partial matches produce a listing
+of the possible completions before completing as far as possible.
+This can become rather verbose.
+See the description of the variable
+.B fignore
+for ways to exclude filenames from completions.
+.sp
+Word completion is currently supported only for file names.
+Command name and alias completion may be added in a future version.
+Completion is not possible if the \-e (\-echo) flag was given.
+Tool mode does not check the value of
+.BR complete ,
+but instead provides simple completion only, using the ESC key.
+.TP
+.B compose_icon
+(Boolean/String)
+Set to a pathname for an alternate icon pixmap to use when the
+.I Mush
+message composition window is closed.
+If this variable is set but does not have a value, a default icon is used.
+If this variable is not set, the composition window is hidden when it
+is not open, and no icon appears.
+The \*QCompose\*U button is used to re-open the window in this case.
+.TP
+.B crt
+(Numeric)
+Set to a value that describes the number of lines a message
+must have before invoking the
+.B pager
+to view a message.
+.TP
+.B crt_win
+(Numeric)
+Set to the height (in lines) of the message display window in tool mode.
+Resetting this variable after the program is running will not change
+the height of the display, and may confuse other operations.
+.TP
+.B curses_help
+(String)
+This variable may be set to a space-separated list of curses mode command
+names (see the CURSES section for the possible choices).
+If set but without a value, a default list established by your
+.I Mush
+maintainer is used.
+When it is set, a display of the current bindings for the listed commands
+appears at the bottom of the screen in curses mode.
+This help display normally shortens the display of headers, but the
+user may explicitly scroll over the help display if he wishes to see
+more headers.
+.TP
+.B cwd
+(String)
+The
+.B "current working directory"
+string is automatically set upon startup of
+.I Mush
+and is reset each time the commands
+.B cd
+and
+.B pwd
+are called.
+It may be changed like any other shell variable, but this is not recommended.
+.TP
+.B date_received
+(Boolean)
+When message headers are printed, the date normally shown is
+the time and date the sender sent the message.  If this variable
+is set, then the date displayed is the date received.
+.sp
+When sorting messages by date, this variable is queried to determine
+whether the messages should be sorted by date sent or date received.
+.sp
+\fBWarning:\fR For mailers that store messages \fIwithout\fR a line
+that starts with \*QFrom \*U, this option does nothing.
+.TP
+.B dead\ \ 
+(String)
+File to use instead of dead.letter when interrupted mail is saved.
+May be set to a \fIunix\fR command by prefixing the value with `|'.
+For more information, see the variable
+.B nosave.
+.TP
+.B domain_route
+(Boolean/String)
+In combination with
+.BR auto_route ,
+this variable specifies that addresses containing a fully-qualified domain
+should be short-circuited to mail directly to the rightmost fully-qualified
+domain.
+If set boolean (not to a string), only short-circuiting is done.
+If set to a string, the address is rewritten to UUCP form and the value
+of the variable is prepended.
+Domain short-circuiting applies \fIonly\fR to addresses containing a
+fully-qualified domain, but short-circuits in spite of any path specified
+with the \-r flag of
+.B reply
+or through the string value of
+.B auto_route
+(thus possibly omitting the auto_route or \-r paths altogether).
+See
+.B auto_route
+for more information.
+.TP
+.B dot
+(Boolean)
+Causes
+.I Mush
+to accept a `.' on a line by itself,
+in addition to `^D', to terminate messages.
+.TP
+.B editor
+(String)
+Specifies the editor to use when the \*Q~e\*U escape or the
+.B edit
+command is used.
+Default is the value of the environment string EDITOR or the variable
+.BR visual .
+.TP
+.B edit_hdrs
+(Boolean)
+When in letter-composition mode (via \fBmail\fR or \fBreply\fR, etc),
+the headers of the outgoing message are stored in the same buffer as
+the text of the letter.
+So, if the editor is called to edit the message
+buffer, the headers of the message can be edited as well.
+However, there are some restrictions.
+.sp
+There must be a To: header.
+Without this, 
+.I Mush
+does not deliver the letter.
+Instead, the editor must be reentered and a To: header with
+a valid recipient must be inserted.
+A valid Cc: header does not remove this restriction.
+You may have as many To: and Cc: headers as you like.
+.sp
+The From: header normally should not be changed.
+If you change this header to an address that
+.I Mush
+is unable to identify as
+authentic, the original From: header is silently put back.
+.sp
+The Date: header is always replaced by one with a more accurate
+time and date stamp.
+Therefore, changing or removing this header has no effect.
+.sp
+You cannot add a Status: header, and blank headers are dropped.
+For example, if an empty Cc: header exists, the header does
+not show up in the outgoing message.
+Therefore, leaving empty headers has no effect.
+.sp
+Aliases specified on the command line are expanded and put into the
+message buffer in their expanded form regardless of the value of
+.B no_expand.
+However, if the user changes the headers using the editor and specifies
+aliases, those aliases are not expanded if
+.B no_expand
+is set.
+Otherwise, they are expanded as usual.
+.sp
+The headers Bcc: and Fcc: are removed as expected.
+.sp
+One added side effect of
+.B edit_hdrs
+is that you can add an Fcc: header to specify a \*QFile Carbon Copy\*U.
+This must be a pathname to a file or program.
+For programs, the pathname must be preceded by a pipe character (|).
+Note that \fIall\fR addresses on the Fcc: line that do not begin with `|'
+are interpreted as file names; don't put other kinds of addresses there.
+.sp
+When using
+.B edit_hdrs,
+certain tilde escapes don't work.
+Specifically, any tilde escape that allows you to add or set headers or to
+empty the file are inactive.
+These functions are to be done in the editor only.
+.sp
+Once a letter is being edited,
+.B edit_hdrs
+cannot be set or unset; the user must end the letter (either
+by sending it or forcefully terminating it) first.
+.sp
+Header editing is required (and happens automatically) when using the
+\*QCompose\*U tool mode item.
+.TP
+.B escape
+(Character)
+When composing a mail message (not in an editor), and the
+.B escape
+character is the first character on the line, the next character
+is examined and a corresponding function associated with that
+.I "escape command"
+is executed.
+See
+.B "tilde escapes"
+for more information.
+.TP
+.B fignore
+(String)
+This variable is tested when filename completion is used (see the variable
+.B complete
+for details).
+The value of
+.B fignore
+may be a list of filename extensions (\*Q.c\*U, \*Q.o\*Q, etc.), a list
+of filename patterns containing metacharacters (*?{}[]), or a mixture of
+the two.
+Each element in the list must be separated from the others by a space.
+When a filename completion occurs, any filenames with the extensions
+listed in
+.BR fignore ,
+or matching the patterns given there, are omitted from the completion.
+.sp
+For example,
+.sp
+.ti +4
+set fignore = ".o .s [Mm]ake*"
+.sp
+causes any filename ending in \*Q.o\*U or \*Q.s\*U, and any filename
+beginning with \*QMake\*U or \*Qmake\*U, to be excluded from completions.
+.sp
+If all files in the current directory match the extensions or patterns,
+.B fignore
+is disabled and completion occurs.
+For this reason, it is usually not a good idea to include \*Q*\*U in the list.
+.TP
+.B folder
+(String)
+The folder variable is set to the path of a directory where folders are kept.
+This path is used by various commands to expand the `+' metacharacter (see
+the
+.B folder
+command for details).
+\*Q~/Mail\*U is the default expansion of `+'.
+.TP
+.B fortune
+(Boolean/string)
+If fortune is set, a random fortune is appended to the end of
+all outgoing mail using the
+.IR UNIX (TM)
+command
+.B /usr/games/fortune
+(may vary from system to system).
+If fortune is set to something that starts with
+a `\-', then it is interpreted as a flag to fortune (e.g., \*Q\-o\*U).
+If
+.B fortune
+starts with a `/', then the program described by
+the string is executed (thus not doing fortune at all, if you want).
+By default,
+.I "fortune \-s"
+(short fortunes) is used.
+.TP
+.B fortunates
+(String)
+When fortunes are added to messages, sometimes it is desirable to
+make sure that only a selected group of people get a fortune since
+certain people may not understand the messages at the end of your
+mail.  Therefore, you can set a list of addresses (either pure addresses
+or aliases that are expanded to addresses) to be the only people who
+receive fortunes if one is to be appended.  Therefore,
+if the To: and Cc: lines contain only address listed in this string
+variable, then a fortune is appended to the message.
+If those lists contain names that are not on the fortunates
+list, then no fortune is added.
+This cannot be overridden; using the
+tilde command \*Q~F\*U does not force a fortune to be added unless the
+individuals on the recipient list are all included in the fortunates
+list.  The list is made up of addresses or aliases separated by spaces or
+commas.
+.I "NOTE: fortune must be set in order for fortunates to work."
+.TP
+.B hangup
+(Boolean)
+If this variable is set,
+.I Mush
+updates your folder before exiting when it receives a SIGHUP signal.
+This is useful if you frequently read mail when dialed in over a noisy phone
+line that often drops carrier.
+.sp
+.IR WARNING \|:
+Certain errors are ignored during this update, because it is presumed to be
+impossible to query the user for instructions.
+Except in the event of a write error, the folder is forced to contain
+exactly those messages that were not deleted at the time of the hangup.
+In particular, this means that if an error occurs when loading new mail before
+the update, the new mail is lost.
+Write errors still cause both the working tempfile and as much of the
+folder as possible to be preserved.
+.TP
+.B hdr_format
+(String)
+This variable controls the format of the headers displayed by the
+.B headers
+command and in the curses and tool modes.
+The format style of this variable string is similar to printf in C.
+When printing the information, the variable is evaluated and each
+character in the string is echoed unless a `%' character is
+encountered.
+If one is found, the following string substitutions are made:
+.sp
+.in +2
+.nf
+.ta 0.5i
+%a	address of the author
+%c	number of characters (bytes) in the message
+%f	entire \*QFrom:\*U field (author)
+%l	number of lines in the message
+%i	the message-id (may not be present)
+%n	name of the author
+%s	subject of the message
+%t	\*QTo:\*U field (recipients)
+%u	user name (login) of the author
+%d	date and time of the message
+%T	time only of the message
+%N	day number of the month of the message
+%W	day of the week (Sun, Mon, etc.)
+%M	month name of the message
+%Y	year of the message
+%y	last two digits of %Y
+%Z	time zone of the message
+\\n	a newline
+\\t	a tab
+.fi
+.in -2
+.sp
+A field width specifier may be used in all options.
+Thus, \*Q%20f\*U prints the first 20 characters of the from line.
+No matter what the formatting string, the message number is printed,
+possibly preceded by a `>' (for current message).
+.sp
+The \*Qaddress\*U and \*Qname\*U of the author
+are extracted from the \*QFrom:\*U field of the message.
+The name may be given in parentheses and
+the rest of the line is the address, or the address is given in angle
+brackets (`<' and `>') and the rest of the line is the name.
+Sometimes the address is the only thing on the line,
+in which case the name and address are the same.
+.sp
+A special format is also provided to obtain the contents of any header
+not listed above.
+If a format of the form \*Q%?header-name?\*U (both leading and following `?'
+characters are required) appears in the value of 
+.BR hdr_format ,
+the named header is looked up.
+For example,
+.sp
+.ti +4
+set hdr_format = "%a %n %?phone?"
+.sp
+causes the electronic address, name, and (if a \*QPhone:\*U header is present)
+phone number of the sender to be displayed.
+.TP
+.B history
+(Numeric)
+This variable is set to the number of commands the shell interface
+remembers.  It is just like the history variable used in
+.I csh.
+If unset, the last command can always be referenced, but none other.
+.TP
+.B hold\ \ 
+(Boolean)
+Normally, when updating the system folder, read messages are saved in
+your mbox (except those marked as preserved).
+Setting
+.B hold
+prevents this from happening, and messages remain in the sytem folder
+(usually /usr/spool/mail/username or /usr/mail/username).
+This does not apply to folders other than the system folder, obviously.
+.TP
+.B home\ \ 
+(String)
+This variable describes the user's home directory.
+The variable is initialized to the value of the environment variable HOME,
+but can be modified at any time during the
+.I Mush
+session.
+The home directory is the same directory where temporary
+files are kept for editing and so forth.
+If the home directory cannot be found or read/write access is denied, an
+alternate directory, typically /tmp, is used.
+.TP
+.B hostname
+(String)
+This is the name of your computer.
+It is used to compose a correct \*QFrom:\*U line for use with Mail Transport
+Agents that do not create this header automatically.
+This aids the recipients of your mail in replying to your messages.
+The hostname is also used in auto-routing.
+.sp
+Note: the user should not have to set
+this variable since it should be set automatically by the system.  However,
+it may happen that the system's hostname cannot be queried and the user may
+have to set this variable manually.
+.TP
+.B ignore_bang
+(Boolean)
+If set,
+.I Mush
+ignores the `!' character as a history reference.
+Note that this severely limits use of the
+.B cmd
+facility, which depends upon history references for argument substitutions.
+.TP
+.B ignoreeof
+(Boolean/string)
+If set, `^D' does not cause an exit from
+.IR Mush .
+If set to a string, that string is executed as a command
+when `^D' is typed.
+This does not effect termination of messages under the
+.B mail
+and
+.B reply
+commands.
+.TP
+.B indent_str
+(String)
+When including messages into the text of a letter you are editing,
+each line of the messages is preceded by the value of
+.BR indent_str .
+The value may contain formatting characters as described for
+.BR hdr_format ,
+which are expanded from the headers of the message that is being indented.
+If it is unset, the message body is indented by the string \*Q> \*U.
+See also the variables
+.B pre_indent_str
+and
+.BR post_indent_str .
+.TP
+.B in_reply_to
+(String)
+This variable may be set to a string that completes the
+header \*QIn-Reply-To:\*U.
+The format of this string is identical to the options for the variable
+.BR hdr_format .
+.sp
+For example, if the user responds to a message
+from Dan Heller that was sent on October 21, 1987, at 10:39pm, with
+.B in_reply_to
+set to the string
+.nf
+.in +2
+.sp
+%n's message as of %d.
+.sp
+.ti -2
+the header line
+.sp
+In-Reply-To: Dan Heller's message as of Oct 21, 1987, 10:39pm.
+.in-2
+.fi
+.sp
+is added to the message.
+.TP
+.B keepsave
+(Boolean)
+If set, the commands
+.B save
+and
+.B write
+do
+.I not
+mark messages for deletion.
+.TP
+.B known_hosts
+(String)
+Used in conjunction with the variable
+.BR auto_route ,
+this variable is set to a list of hosts, separated by spaces, tabs,
+and/or commas, and describes
+the hosts with whom you know your machine shares UUCP connections.
+When replying to mail, the return path constructed will often have hostnames
+that your site could contact directly, but instead
+the mail is routed through a number of different machines first.
+.sp
+For example, if you respond to mail that contains the path
+.sp
+.ti +2
+unicom!pixar!root
+.sp
+but your know your machine already calls pixar, then sending the mail
+to unicom first is unnecessary.
+If you have set your known_hosts string to include pixar in its list,
+the resulting address looks like
+.sp
+.ti +2
+pixar!root
+.sp
+Also see the command
+.B replyall
+for more information on constructing correct return addresses.
+.TP
+.B logfile
+(String)
+Set to a filename which logs the headers of outgoing messages.  The message
+body of the message is not logged, unlike the copy stored in the
+.B record
+filename.
+The logfile can be read as a folder to scan for the fact that
+messages have been sent.
+If \fBlogfile\fR and \fBrecord\fR are both set,
+then the logfile and the record files match closely.
+In this case, the record file can be quickly scanned by scanning the log
+file instead.
+.sp
+If set, but not to a string, the log file defaults to ~/mail.log.
+.TP
+.B mail_icon
+(String)
+Set to a pathname for an alternate icon pixmap to use when the
+.I Mush
+tool is closed.
+The number of messages in the mailbox is displayed as an icon label unless
+the string
+.I iconlabel
+appears as one of the values of the variable
+.BR quiet .
+See also the variable
+.B newmail_icon
+for the icon displayed when new mail arrives or is present.
+.TP
+.B mbox\ \ 
+(String)
+Set to the pathname of a file
+.I Mush
+should use as the default folder for read mail.
+When
+.B mbox
+is not set, \*Q~/mbox\*U is used.
+.TP
+.B metamail
+(String)
+This variable should be set to the name of a program that displays
+multimedia messages encapsulated in MIME format
+.RI ( e.g. ,
+Nathaniel Borenstein's
+.I metamail
+program).
+When this variable is set, any message that contains a Content-Type: header
+will be passed to the indicated program for display (by any of the commands
+.BR print ,
+.BR type ,
+.BR next ,
+.IR etc. ).
+This overrides truncation by the
+.B top
+command, disregards the value of
+.BR crt ,
+and forces all headers to be passed to the display program.
+.IR NOTE :
+If
+.B alwaysignore
+is boolean true (set but with no value), ignored headers are omitted and
+blank lines are stripped as specified by the value of
+.BR squeeze ,
+.IR "even when sending to the metamail pager" .
+If you set
+.BR metamail ,
+you should either not set
+.B alwaysignore
+or set it to one or more of its possible values.
+.sp
+The program specified by
+.B metamail
+is invoked in tool mode as well, instead of paging the message in the
+message subwindow.
+This program is therefore expected to be able to determine for itself
+.RI ( e.g. ,
+via the
+.I mailcap
+configuration file) that SunView is running, and to
+create appropriate windows as needed.
+.TP
+.B metoo
+(Boolean)
+When replying to mail, you are normally deleted from the list of
+recipients.
+If metoo is set, you remain on the list.
+See the 
+.B alternates
+command for information on how
+.I Mush
+determines whether you are on the list.
+.TP
+.B mil_time
+(Boolean)
+Whenever the time is displayed in a message header or in the prompt,
+it can be displayed in either 12-hour am/pm format, or in 24 hour
+military time format.
+The default is the 12 hour format, but can be
+reset to use the 24 hour format by setting this variable.
+.TP
+.B msg_win
+(Numeric)
+Set to the height (in lines) of the message composition (editing) window in
+tool mode.
+.TP
+.B newline
+(Boolean/string)
+When set, an empty command (carriage return with no text) typed at the
+line-mode prompt is ignored.
+If set to a string, that string is executed as a command when a
+carriage return is typed.
+Otherwise, carriage return acts as an implicit
+.B next
+command, and prints the next undeleted message.
+.TP
+.B newmail_icon
+(String)
+Set to a pathname for an alternate icon pixmap to use
+when new mail is available.
+.TP
+.B no_expand
+(Boolean)
+When a
+.I Mush
+alias is used to reference a list of addresses, the list is expanded on
+the To: and Cc: lines to indicate the complete list of all the recipients of
+the message.
+When no_expand is set, aliases are not expanded and the headers
+reflect the same information as typed by the user.
+.TP
+.B no_hdrs
+(Boolean)
+If set, this variable tells 
+.I Mush
+not to include your personalized mail headers in messages.
+This does not unset your headers, it just disables them.
+.TP
+.B no_reverse
+(Boolean)
+In curses mode and in the tool mode, reverse video is not used to indicate the 
+.I "current message"
+if this variable is set.
+In the tool mode, if reverse video is not in use,
+text is displayed in \*Qbold\*U.
+.TP
+.B nonobang
+(Boolean)
+If this variable is set, history references that don't match anything
+are left unexpanded, rather than generating error messages.
+This is useful if you want argument referencing in
+.B cmd
+expansions, but do
+not want to remember to escape every `!' you type in UUCP addresses.
+It is also recommended for use with curses mode, because history is not
+kept for line mode escapes from that interface.
+.TP
+.B nosave
+(Boolean)
+When composing a letter, the user can terminate the letter without sending
+it by using the tilde escape \*Q~q\*U or by sending two \*Qinterrupt\*U
+signals.
+When the message is terminated, a copy of it is saved to the
+file \*Qdead.letter\*U in the user's home directory or to the file described
+by the variable
+.BR dead .
+If the variable
+.B nosave
+is set, then a backup copy of the message is not saved.
+.TP
+.B output
+(Read-only string)
+This variable holds a message list representing the output of the last
+successful command.
+This is useful for recovering from broken pipes or to capture the output
+of a command without affecting the information it displays (some commands
+limit or suppress output when used in a pipeline).
+Commands which return an error status (see the variable
+.BR status )
+do not affect the value of
+.BR output ,
+but successful commands that return no message list clear it.
+Also, many curses mode commands return an error status to indicate that
+the display has been altered, even if no actual error occurred.
+This variable is thus most useful in line mode and in scripts.
+.TP
+.B pager
+(String)
+If a message is longer than the number of lines that the variable
+.B crt
+is set to, then this program is executed to view a message.
+If the user does not have this variable set, the user's environment PAGER
+is checked.
+If this isn't set, then the default value for pager (set up
+by the system manager) is used.
+This may or may not be the internal pager.
+To use the internal pager, you may set the variable pager
+to \*Q\fIinternal\fR\*U or to a null string.
+.TP
+.B pre_indent_str
+(String)
+If this variable is set, when including the body of a message into an outgoing
+mail message (using the \-i option to
+.I reply
+or
+.IR mail ,
+or when using the \*Q~i\*U escape),
+a line preceding the first line of
+included text is printed using the string value of the variable.
+This string uses the same printf style formatting characters as the
+.B hdr_format
+variable.
+For example, you could set
+.B pre_indent_str
+as follows:
+.sp
+.ti +2
+set pre_indent_str = '[In the message entitled "%s", on %7d\\n %n writes:]'
+.sp
+You can then include a message body using \*Q~i\*U, and you might
+get something like this:
+.sp
+.in +2
+.nf
+[In the message entitled "This is a test.", on Jan 19,
+ Dan Heller writes:]
+> This is a test message to show how
+> pre_indent_str might be used.
+.ti -2
+.sp
+.fi
+This example assumes that the string value of
+.B indent_str
+is not set.
+.TP
+.B post_indent_str
+(String)
+This variable has the same function as
+.B pre_indent_str
+except that the string is inserted into the message body
+.I after
+the text of the included message rather than before.
+The purpose of this variable is to complement the string described by
+the variables
+.B pre_indent_str
+and
+.BR indent_str .
+For example,
+.sp
+.in +2
+.nf
+set pre_indent_str = "/*"
+set indent_str = " * "
+set post_indent_str = " */"
+.sp
+.ti -2
+An included message might look something like this:
+.sp
+/*
+ * This is a test message to show how
+ * post_indent_str and pre_indent_str
+ * can work together with indent_str.
+ */
+.fi
+.in -2
+.TP
+.B printer
+(String)
+Used to set the default printer for the lpr command.
+.TP
+.B print_cmd
+(String)
+This string should describe a
+.IR UNIX (TM)
+command other than "lpr" for sending
+messages to the line printer.
+Some people may choose to use a device independent
+troff style program, but virtually any UNIX command suffices.
+Common usage might include:
+.sp
+.ti +2
+set print_cmd = 'ptroff \-ms \-Plp'
+.ti +2
+lpr .\-$
+.sp
+This command sends all messages from the current message to the last
+message through the ptroff command, supplying the appropriate arguments.
+.TP
+.B prompt
+(String)
+You can set your prompt to tell you many different pieces of information.
+By default, the prompt is set to the string
+.sp
+.ti +2
+\*QMsg %m of %t: \*U
+.sp
+If you have 10 messages and your current message is 5, then your prompt
+looks like:
+.sp
+.ti +2
+Msg 5 of 10:
+.sp
+The string value that prompt is set to is printed as your prompt.
+If the string contains a `%', then that character is
+ignored, the next character is evaluated and an appropriate
+value is printed in its place:
+.sp
+.nf
+.in +2
+.ta 0.5i
+%F	full path name of the current folder
+%f	name of the current folder (tail of %F)
+%m	\*Qcurrent message\*U number
+%t	total number of messages
+%n	number of \*Qnew\*U messages
+%u	number of unread messages
+%d	number of deleted messages
+%T	current time (hours and seconds)
+%N	today's date (Number of the day in the month)
+%W	weekday name (Sun, Mon, Tue, ...)
+%M	current month
+%Y	this year
+%y	last two digits of %Y
+\\n	a newline
+\\t	a tab
+.fi
+.in -2
+.sp
+To include the values of variables in the prompt string, the format
+\*Q%$variable\*U can be used, where
+.I variable
+is the name of any variable.
+If the `$' character is
+.I not
+preceded by a `%', it is included literally,
+rather than introducing a variable name.
+Thus, two equivalent ways of including the name of the current folder
+in your prompt are:
+.nf
+.in +4
+set prompt = '%F> '
+set prompt = '%$thisfolder> '
+.in -4
+.fi
+.sp
+Note the use of single quotes to prevent the value of
+.B thisfolder
+from being expanded at the time the prompt is set.
+The only difference between these settings is that \*Q%F\*U adds the
+string \*Q[read-only]\*U if the folder was loaded in read-only mode.
+.TP
+.B quiet
+(Boolean/Multivalued)
+This variable tells
+.I Mush
+to be quiet in various circumstances.
+If set, but not to any values, the currently running version of
+.I Mush
+is not printed on startup.
+Otherwise,
+.B quiet
+may be set to one or more words separated by spaces or commas.
+Currently recognized words are:
+.sp
+.nf
+.ta 1.5i
+.in +4
+.\" \& escapes are to make obvious the tab after each word
+autosign	Suppress messages when appending signature.
+await\&\&	Suppress \fBawait\fR's bell for new mail.
+complete	Suppress word completion error bells.
+fkey\&\&	Suppress warnings about unset function keys.
+fortune\&	Suppress messages when appending fortune.
+iconlabel	Suppress showing message count as icon label.
+newmail\&	Suppress new mail notification messages.
+pick\&\&	Suppress descriptions of pick searches.
+startup\&	Suppress the startup message.
+tool\&\&	Suppress tool mode bell for new mail.
+.in -4
+.fi
+.sp
+Error conditions for signatures and fortunes are still reported.
+See the variables
+.BR autosign ,
+.BR complete ,
+and
+.B fortune
+for more details.
+The
+.I newmail
+setting does not prevent automatic inclusion of new mail, it only
+suppresses the announcement of its arrival, including tool mode bells.
+The
+.I fkey
+setting applies only to tool mode.
+.TP
+.B realname
+(String)
+Set to the name of the user.
+The name is initialized to the value of the environment variable
+.B NAME
+upon invocation of the program.
+If that isn't set, then the name is obtained from the password file if
+available.
+If this variable wants to be reset or changed after the
+program has started, the user should issue the command:
+.sp
+.ti +2
+set realname = "Your name here"
+.TP
+.B record
+(String)
+Set to the name of a file to record all outgoing mail.
+This should be a full pathname or the current directory is searched.
+The pathname may begin with `+' (indicating the user's ~/Mail directory
+or the value of the 
+.B folder
+variable) or with a `~' (or \*Q~user\*U)
+indicating the user's home directory.
+.TP
+.B reply_to_hdr
+(String)
+When replying to mail,
+.I Mush
+searches for return paths from the message by searching for
+the message headings \*QReply-to\*U, \*QFrom:\*U, and \*QReturn-path\*U,
+in that order.
+If none are found, then the first line of the
+message created by the delivery system is parsed and the address
+given there is used.  This special message header is created by most
+mail delivery programs, but not all of them (MMDF, for one).  This line
+is called the
+.B From_
+header because it is a colon-less header, but contains the return address
+of the author of the message.
+If the variable
+.B reply_to_hdr
+is set to a list of headers (delimited by spaces or commas), then that list
+is searched.  If none of the headers listed in the variable exist
+in the message, then a warning message is printed and the default
+headers are used.  The special case From_ header can be specified
+as one of the headers to search for.
+.sp
+.nf
+.ti +2
+set reply_to_hdr = "sender reply-to return-path from_"
+.fi
+.sp
+This example shows that 
+.I Mush
+searches (in order) the headers listed in the reply_to_hdr variable.
+If one header isn't found, then
+.I Mush
+looks for the next in the list.
+If none of the headers in the list are found, the default headers (mentioned
+above) are searched.
+The last header listed in the example is the special \*QFrom \*U header.
+Also see the
+.B reply
+command.
+.TP
+.B save_empty
+(Boolean)
+Normally, when all messages in a folder are deleted and the user updates
+the folder or changes to a new folder, the empty folder is deleted.
+.B save_empty
+prevents the folder from being deleted and it is left zero length.
+Note: the main system mailbox is never deleted, even when empty.
+.TP
+.B screen
+(Numeric)
+May be set to the number of message headers to display at a time in the
+line and curses modes.
+.TP
+.B screen_win
+(Numeric)
+May be set to the number of message headers to display in the tool mode.
+A subwindow is created for message headers, and its size is large
+enough to hold $screen_win headers.
+Resetting this variable after the program is running will not change
+the height of the display, and may confuse other operations.
+.TP
+.B sendmail
+(String)
+If set, the program and arguments described by this variable
+are executed to actually deliver mail sent by
+.I Mush.
+.TP
+.B show_deleted
+(Boolean)
+If true, deleted message headers are displayed along with
+other messages (`*' indicates a deleted message) for the \fBheaders\fR
+command.  Also, deleted messages can be displayed using any command which
+displays a message.
+In curses mode, this variable is ignored and deleted messages are always
+displayed with other messages to facilitate undeleting messages.
+.TP
+.B show_hdrs
+(Multivalued)
+Set to a list (space and/or comma separated) of headers that are to be the
+only headers displayed when viewing a message.
+This variable disables the headers suppressed by the
+.B ignore
+command.
+For example,
+.sp
+.ti +2
+set show_hdrs = \*Qfrom date subject to cc\*U
+.sp
+only displays the headers
+.B From: Date: Subject: To: Cc:
+in their entirety.
+.TP
+.B sort\ \ 
+(Boolean/string)
+The value of this variable is the same as the arguments to the
+.B sort
+command.
+This variable is used for the initialization file to presort
+mail in the system mailbox upon entering
+.IR Mush .
+See the COMMANDS section for more information.
+.TP
+.B squeeze
+(Boolean)
+Whenever messages are read, piped, or saved, if this variable is set,
+all consecutive blank lines are squeezed into one blank line.
+.TP
+.B status
+(Read-only numeric)
+This variable records the success or failure status of the most recently
+executed command.
+All line-mode commands return 0 (zero) for success and a negative value for
+error.
+Some curses mode commands return an error status to indicate that the
+display has been corrupted, even when no actual error has occurred.
+This variable is most useful in scripts to test the success of an operation
+before proceeding.
+.TP
+.B tmpdir
+(String)
+This variable describes the path to use as the directory
+for all tempfiles that
+.I Mush
+uses.  By default, the user's home directory is used.  If that
+cannot be accessed, a directory writable by all is used (typically, /tmp).
+If \fBtmpdir\fR is set, then it is used first.
+.TP
+.B thisfolder
+(Read-only string)
+The full path name of the current mailbox.
+This variable cannot be modified or displayed by the
+.B set
+command; its value changes whenever a new folder is entered with the
+.B folder
+command.
+During sourcing of the initialization files,
+.B thisfolder
+is not set, because the current folder has not yet been read.
+If you refer to \*Q$thisfolder\*U in an initialization file
+.RI ( e.g. ,
+.IR .mushrc ),
+be sure to do so inside an \*Qif $?thisfolder\*U test.
+.TP
+.B toplines
+(Numeric)
+The number of lines of a message to print when the
+.B top
+command is issued.  If unset, the value of
+.B crt
+determines the number of lines printed.
+Note that the message body only is printed when using the
+.B top
+command; message headers are not counted as lines since they are not displayed.
+.TP
+.B unix\ \ 
+(Boolean)
+If set, commands that are not
+.I Mush
+commands are considered to be
+.IR UNIX (TM)
+commands.
+This removes the inconvenience of requiring the user to do
+shell escapes to do quick
+.I UNIX
+commands.
+For systems that support job control, SIGTSTP stops the entire
+.I Mush
+shell as well as the process being executed.
+When SIGCONT is delivered, both receive the
+signal and
+.I Mush
+continues to wait for the job to finish.
+.sp
+Due to the lack of real job control, input/output redirection and UNIX command
+piping, this mode of
+.I Mush
+is not intended to be used as a login shell.
+.sp
+If a
+.I Mush
+command name conflicts with a
+.I UNIX
+command, use the command
+.B sh
+to force execution as a shell command or use the full pathname of the command
+(e.g. starting with a '/').
+.sp
+.BR Warning :
+.I "Be aware that Mush pipes transmit message lists, NOT TEXT."
+You cannot pipe the output of
+.I UNIX
+commands to or from
+.I Mush
+commands or other
+.I UNIX
+commands with the
+.I Mush
+pipe mechanism.  You can, however, pipe
+.I Mush
+commands to a final UNIX
+command (see the \fBpipe\fR command for more information).
+UNIX commands should be simple commands without pipes or metacharacters.
+.sp
+This feature is not available for the tool mode.
+.TP
+.B verbose
+(Boolean)
+Passes verbose flag to mail delivery systems when sending mail, and
+causes
+.I Mush
+to print additional information about the sending process.
+.TP
+.B verify
+(Boolean/Multivalued)
+This variable causes mush to request confirmation of certain actions.
+If set only as a boolean (no string value), 
+.B verify
+asks just before sending mail whether you want to send, continue
+editing, or abort the message altogether.
+Otherwise,
+.B verify
+can be set to one or more of these words:
+.sp
+.nf
+.ta 1.25i
+.in +4
+.\" \& escapes are to make obvious the tab after each word
+mail\&\&	Confirm sending of mail (as above).
+save\&\&	Confirm save-item selections (tool only).
+.in -4
+.fi
+.sp
+Appending of messages to files that are not folders is verified regardless
+of the setting of this variable.
+.TP
+.B version
+(Read-only String)
+The value of this variable is the version string, printed by
+.I Mush
+at startup (unless
+.B quiet
+is set) and included in the \*QX-Mailer:\*U header in messages.
+.TP
+.B visual
+(String)
+May be set to the visual editor to use when ~v is specified.
+Default is vi or the environment string VISUAL.
+The visual editor is invoked by the \-e arguments to the
+commands, 
+.B respond
+and
+.BR mail .
+.TP
+.B warning
+(Boolean)
+If set, warning messages are printed when:
+.in +4
+.ti -2
+\(bu A command line alias (\*Qcmd\*U) looks like a command.
+.br
+For example,
+.ti +2
+cmd mail 'set fortune; \\mail'
+.ti +2
+cmd respond 'unset fortune; \\respond;'
+.ti -2
+\(bu The date format of a message is unknown.
+.br
+The date of a message is taken from the \*QDate:\*U header.
+If the date on that header is unknown, other headers are searched for a
+valid date format until a legal one is found.
+This date may not be
+correct in that it was the date the message was received, not sent.
+.ti -2
+\(bu A variable is unset without first being set.
+.br
+For example, if you give the command
+.ti +2
+unset metoo
+and the variable
+.B metoo
+is not set, you are notified that the variable is not defined.
+.ti -2
+\(bu No header can be found for a digest article.
+.br
+This occurs when the
+.B undigest
+command encounters what appears to be an article separator but cannot
+find a \*QFrom:\*U or \*QDate:\*U header in the following text.
+.in -4
+.sp
+The intent is so that users who are used to their own environments
+become aware of changes in other environments should they be forced
+to use them.
+There may also be warning messages of failed routines
+or assertions that are not fatal enough to interrupt normal running
+of the program.
+.TP
+.B wrap\ \ 
+(Boolean)
+Normally, when the last message is deleted, the current message
+pointer remains pointing to the last message and the user is done
+reviewing his mail.
+If the
+.B wrap
+variable is set, the current message pointer wraps around to the
+beginning of the user's messages again to the next undeleted message.
+This also applies to the
+.B next
+command.
+.TP
+.B wrapcolumn
+(Numeric)
+May be set to a column number at which line wrap occurs when
+composing messages.
+If set, but given no value, column 78 is assumed.
+When
+.I Mush
+is able to determine the number of columns on your screen, it
+enforces a maximum value for
+.B wrapcolumn
+of two less than that number of columns.
+Line wrapping can be disabled either by unsetting
+.B wrapcolumn
+or by setting it with the explicit value of 0 (zero).
+.sp
+Line wrapping occurs only at whitespace (spaces or tabs).
+Lines containing no whitespace to the left of the specified column
+are not wrapped.
+If \fIMush\fR was started with the \-e (echo mode) option, or is in tool mode,
+line wrapping cannot be done due to I/O incompatibilities.
+.PP
+In addition to the named variables described above, three special
+variable forms are recognized.
+.TP
+.B $$
+This string returns the process id (PID) of the current
+.I mush
+process.
+Colon modifiers are not recognized for this special variable.
+.TP
+.BI $[ %fmt ]
+The string \fI%fmt\fR is interpreted as a header formatting string
+(as in the
+.B hdr_format
+variable) and is expanded using the headers from the current message.
+Colon modifiers are allowed to follow the format.
+For example,
+.sp
+.ti +4
+save $[%4n]:l
+.sp
+saves the current message in a file whose name is the first four
+characters of the name of the author, converted to lower case.
+.TP
+.BI $( %c )
+The string `\fI%c\fR' is interpreted as a prompt format
+(as in the
+.B prompt
+variable) and is expanded.
+Colon modifiers are allowed.
+For example,
+.sp
+.ti +4
+echo $(%T)
+.sp
+prints the current time.
+Note that \*Q$(%F)\*U is equivalent to \*Q$thisfolder\*U.
+.PP
+NOTE:  Evaluation of many \*Q$[%...]\*U or \*Q$(%...)\*U values in a single
+command is inefficient.
+If expansion of several formats is desired, it is better to use the \-h
+and \-p options of
+.B echo
+or
+.BR eval ,
+which also provide better quoting of the interpolated strings.
+.SH "MUSH SCRIPTS"
+One of the most useful features of
+.I Mush
+is the ability to write scripts of
+commands, which can be read by the
+.B source
+command from within
+.IR Mush ,
+or by redirecting input from the script and using the \-i option.
+If your operating system supports the \*Q#!\*U interpreter mechanism,
+a script can be even be executed as a program.
+Script files can use all the usual
+.I Mush
+commands; the only restriction is
+that the `!' history notation for referencing arguments of
+.B cmd
+aliases is disabled in scripts, so only very simple
+.BR cmd s
+work.
+.PP
+For example, a filtering file, \*Qfilter\*U, might contain:
+.sp
+.nf
+.in +2
+set newfolder = /usr/spool/mail/$USER
+if is_shell
+.in +4
+if -z $newfolder
+.ti +4
+set newfolder = $mbox	# mbox must be set!
+endif
+if -e $newfolder
+.ti +4
+folder $newfolder
+else
+.ti +4
+quit
+endif
+.in -4
+endif
+.sp
+pick -f Mailer-Daemon | save mail_errors
+pick -f yukko | delete
+pick -s -i thesis | save +thesis_mail
+pick -t unix-wizards | +wizmail
+update
+sort d
+.in -2
+.fi
+.sp
+Then the first command the user types when beginning a
+.I Mush
+session might be \*Qsource filter\*U, and the following happens:
+.sp
+.in +2
+First, a new variable called \fBnewfolder\fR is set to the user's spool
+mailbox (the system mailbox).
+A test is made to see if the shell is running, because the \fBfolder\fR
+command can only be used from the shell.
+Then a test is done to see if the spool mailbox is zero length, and if it is,
+the variable is reset to the value of the user's \fBmbox\fR variable
+(mbox must already be set by this time or this fails).
+A final test assures that the new folder exists.
+If it does, \fIMush\fR changes folders to the new folder.
+If it doesn't exist, the program exits (via \fBquit\fR).
+.sp
+Once the correct folder has been loaded, all messages that have
+\*QMailer-Daemon\*U in the From header are saved in the file mail_errors.
+Then, all mail from the user \*Qyukko\*U is simply deleted.
+Next, all mail that has in the Subject field, \*Qthesis\*U
+(case ignored, so \*QThesis\*U would also match) are
+saved in the file $folder/thesis.
+The next command finds all messages that are addressed to
+the group \*Qunix-wizards\*U (of which the user is an elite
+member) and saves them in the file $folder/wizmail.
+Last, the folder is updated, removing all deleted mail
+(saved mail may be marked as deleted)
+and the folder is reread and sorted according to the date of the messages.
+.in -2
+.PP
+If the \*Q#!\*U mechanism is supported, the \*Qfilter\*U script can be
+made into a program by adding as the first line:
+.sp
+.ti +4
+#! /usr/local/bin/mush -F
+.sp
+(The actual location of
+.I mush
+may vary from system to system; /usr/local/bin is used as an example.)  Then
+make the file executable:
+.sp
+.ti +4
+chmod +x filter
+.sp
+Now, when the command \*Qfilter\*U is typed at the user's regular shell
+prompt, the
+.I mush 
+program is invoked by the operating system.
+.I Mush
+first reads the commands from the \*Qfilter\*U file and performs them,
+exactly as described above, and then continues into the usual interface.
+If it is preferable for
+.I mush
+to exit after reading the script, the first line can be changed to:
+.sp
+.ti +4
+#! /usr/local/bin/mush -F!
+.sp
+The \-F! option should also be used when running
+scripts in the background or in other circumstances where the standard
+input cannot be a terminal, and the only commands to be executed are those
+in the script itself.
+.PP
+Note that any additional arguments passed to a \*Q#!\*U script are
+interpreted by
+.IR mush ;
+they are not passed along in any way that makes them accessible to the script.
+Thus,
+.sp
+.ti +4
+% filter \-f mbox
+.sp
+applies the commands in the \*Qfilter\*U script to the \*Qmbox\*U folder.
+.SH MACROS
+Macros are available in several different modes in
+.IR Mush .
+.I "Curses mode macros"
+are created by using the
+.B bind
+command with the special function
+.B macro
+(or by using
+.BR bind-macro ,
+which is synonymous).
+These macros are effective only when the curses interface is active.
+.I "Line mode macros"
+are created with the
+.B map
+command, and are effective only in the line-oriented command interface.
+Finally,
+.I "composition mode macros"
+are created with the
+.B map!
+command, and are effective only when composing mail messages.
+Macros are not available in the
+.I tool
+mode, nor when composing messages from the tool mode.
+Line and composition mode macros are also nonfunctional when
+.I Mush
+is started with the \-e (echo) option.
+.PP
+In general, macros consist of two parts:  a
+.I "key sequence"
+and an
+.IR expansion .
+The
+.B "key sequence"
+is the character or string of characters which, when typed in the
+appropriate mode, is recognized by
+.I Mush
+as a reference to a macro.
+The
+.B expansion
+part of a macro is the string that is actually \*Qseen\*U by
+.I Mush
+when the key sequence is recognized.
+Macros are like an interactive search-and-replace function;
+if a key sequence appears in the input, the associated expansion is
+substituted in its place.
+Thus, if you create a macro whose key sequence is \*Q^X^W\*U (control-X
+control-W) and whose expansion is \*Qsave\*U, then when you hold down the
+control key and type the two characters `x' and `w', the effect is
+as if you had actually typed the four characters `s', `a', `v' and `e'.
+This is called \*Qexpanding\*U the macro.
+More detailed examples of macros are presented in the subsections
+for each mode in which macros can be used.
+.PP
+Key sequences are usually made up of control characters or special
+strings of characters generated by \*Qfunction keys,\*U
+but may in fact be almost any string the user desires.
+Keys that generate a signal or an end-of-file from the keyboard
+(for example, on BSD systems, control-Z generates a TSTP signal and
+control-D generates an end-of-file) can never appear
+in key sequences, and macros in line or composition modes cannot
+.I begin
+with a newline, control-D, or any of the editing keys
+(erase, word-erase, line-erase, etc.).
+Otherwise, there are no restrictions.
+It should be kept in mind, however, that for the line and composition
+modes, key sequences should be unusual characters or combinations of
+characters, not individual lower-case letters.
+If common characters or strings are used for key sequences, much
+confusion can result when typing commands or messages.
+This is not important in the curses mode.
+.PP
+In the line and composition modes, a
+.I timeout
+is used for key recognition; that is, once the first character of the
+key sequence has been typed, the succeeding characters must be typed
+after it relatively quickly, or
+.I Mush
+fails to recognize them as a continuous sequence.
+It is for this reason that key sequences are usually either very short,
+or are strings that are automatically generated by pressing a special
+key on the terminal.
+On the other hand, the timeout can be used intentionally to prevent a
+macro from being expanded; simply type the first character of the macro,
+then wait for it to echo before typing the next.
+This does not work in curses mode, because curses macros
+never \*Qtime out.\*U
+.PP
+In any mode, macros are
+.IR recursive ;
+that is, if the
+.I "key sequence"
+of one macro appears in the
+.I expansion
+of another macro (or even of the same macro), the second key sequence
+is recognized when the first macro is expanded, and this new key
+sequence is also expanded.
+Great care should be taken when creating macros to be certain that
+recursive expansions do not happen unintentionally.
+Expansion can be prevented in line or composition modes by using a
+.I literal-next
+character.
+.PP
+Literal-next characters may be used from the keyboard or embedded
+in expansions.
+In either case, they prevent the next character
+from being interpreted as part of a key sequence.
+.I Mush
+recognizes the literal-next character from the tty settings of the
+terminal, if the \*Qnew\*U BSD-style device driver is available;
+otherwise, `^V' (control-V) is recognized as a literal-next.
+Note that, if you have a tty literal-next character,
+then when typing you need to type
+.I two
+of them in order to send one to \fIMush\fR; this is because the tty
+driver consumes the first one.
+It is not necessary to use two literal-nexts in macro expansions
+unless you wish to cause the second literal-next to be literal.
+.PP
+Backslash can be used as a literal-next when typing, and can
+sometimes be used as a literal-next in expansions; but use it
+with caution, because it also introduces escape sequences
+(see \*QMacro syntax,\*U below).
+There is no literal-next mechanism for curses mode.
+.PP
+A macro always aborts whenever
+.I any
+command called by the macro returns an error.
+This includes recursive expansions, so no matter how often a macro has
+recurred, it is terminated completely.
+Errors in curses mode include illegal cursor movements, such as up from
+the top of the screen or down from the last message.
+.PP
+.BR "Macro syntax" .
+.PP
+A special syntax is provided for specifying control characters and other
+non-printing characters in macro key sequences and expansions.
+This syntax is the same as that for bindings, discussed in the
+CURSES INTERFACE section; it can be summarized as:
+.ta 1.25i
+.in +2
+.nf
+\\CX	control-X (where X is any capital letter)
+\\E	the escape character
+\\n	a newline (other C-style escapes also work)
+.fi
+.in -2
+.sp
+Thus, to create a line mode macro for control-X control-W, as in the
+example above, the command is
+.sp
+.ti +4
+map '\\CX\\CW' save
+.PP
+Also provided is a syntax for executing functions from within macros.
+There are two special functions that are effective in all modes;
+these are
+.I getstr
+and
+.IR getline .
+Both of these functions interrupt expansion of the current macro,
+and wait for a newline-terminated string to be entered from the
+standard input.
+This input string is inserted into the macro expansion.
+The functions differ in that
+.B getline
+retains the newline character (carriage-return) at the end of the
+input string, whereas
+.B getstr
+strips off the newline (one must still be typed to terminate input).
+These functions can be executed by surrounding their name with
+square brackets
+.RB ( [ ,
+.BR ] );
+for example,
+.sp
+.ti +4
+map '\\CX\\CW' save [getline]
+.sp
+creates a line mode macro, which is expanded when control-X control-W is
+typed, and which displays \*Qsave\*U followed by a space and then waits
+for the user to type a line of input; the input line is used as the
+arguments to the save command.
+.PP
+Additional functions are currently available only in the curses mode.
+However, the syntax of enclosing the function name in square brackets
+applies to all functions, regardless of mode.
+Note that
+.I ONLY
+the function name can appear in the brackets; no whitespace is allowed.
+.PP
+.BR "Curses mode macros" .
+.PP
+Macros in curses mode are the most versatile, because they can access the
+full range of curses commands quickly and easily.
+Every character that appears in the expansion part of a curses mode macro
+can reference a curses command or another macro.
+Like other curses functions, curses mode macros are created with the
+.B bind
+command.
+For example, to sort your messages by date and then send the most recent
+one to the printer, you could use
+.sp
+.ti +4
+bind @ macro 'od$|'
+.sp
+When the `@' key is typed, this macro first invokes sort
+(`o' from the default bindings) and instructs it to use date (d)
+for sorting; it then moves the current-message pointer to the last
+message ($) and prints that message (|).
+.PP
+Admittedly, the above macro is somewhat cryptic, and is dependent upon
+the bindings for sort, last-msg, and lpr being set to the defaults.
+It is better, and possibly more understandable, to refer to the
+desired curses functions without using their key bindings.
+To allow this, the \*Q[function]\*U syntax described above may be used
+in curses mode macros to reference curses functions.
+The only function that is prohibited from appearing in the \*Q[\|]\*U
+is the special
+.I macro
+function, which cannot be called when it has no binding.
+The example macro can therefore be rewritten as
+.sp
+.ti +4
+bind @ macro [sort]d[last-msg][lpr]
+.sp
+Such references to curses functions may be made only in curses mode
+macros, and are effective only when \fIMush\fR is actually in curses mode.
+That may sound strange, but the most common use of curses macros is
+to quickly perform functions that require an escape to the line mode.
+For example, although there is a variation of the curses mode
+.I mail
+function that prompts for additional flags, there is no function
+to prompt for flags to be passed to
+.IR reply .
+A macro can easily be created to provide this:
+.sp
+.ti +4
+bind R macro '[line-mode]reply '
+.sp
+This macro binds `R' to perform an escape to line mode and type
+the string \*Qreply\*U followed by a space.
+Macro expansion then ends, leaving it up to the user to supply
+flags to the command or to backspace over it if a different command
+(or none) is desired.
+Of course, the macro could also have provided some default arguments:
+.sp
+.ti +4
+bind R macro '[line-mode]reply \-ei '
+.PP
+Note that, if the
+.B getline
+or
+.B getstr
+function is used in a line-mode escape, it is not possible to
+erase the text that is typed before the
+.IR get ;
+that is, if the macro is
+.sp
+.ti +4
+bind R macro '[line-mode]reply \-ei [getline]'
+.sp
+then the user is forced to use the \-ei flags.
+.PP
+.BR "Line mode macros" .
+.PP
+Line mode macros combine some of the convenience of single-keystroke
+commands with the versatility of the line-oriented text interface.
+As has been noted, the choice of characters for line mode key sequences
+should be made carefully, so as not to interfere with normal typing.
+Line mode macros are created with the
+.B map
+command; for example, suppose you frequently forward messages to a
+friend named \*Qfred.\*U  You could create a macro to do this:
+.sp
+.ti +4
+map '\\CF' 'mail \-f . fred\\n'
+.sp
+This macro causes the single keystroke `^F' (control-F) to forward
+the current message to \*Qfred.\*U  Note the newline
+character \*Q\\n\*U at the end of the expansion;
+this causes the command to be executed immediately,
+without you having to type a carriage-return.
+.PP
+The expansion part of a line mode macro echoes to the screen when
+it is expanded, so you can see what the macro is doing.
+You can therefore use parts of the expansion as a \*Qprompt.\*U  In
+the above example, suppose you wished to enter a message list rather
+than always forwarding the current message.
+Change the macro to:
+.sp
+.ti +4
+map '\\CF' 'mail \-f [getstr] fred\\n'
+.sp
+This version of the macro prints \*Qmail \-f\*U and a space, then waits
+for a newline-terminated string from the standard input.
+The newline is stripped, and the string is used as the message list
+passed to the \*Qmail \-f\*U command.
+The address \*Qfred\*U is also passed to
+.BR mail ,
+so the messages in the list are forwarded to fred.
+.PP
+If you want to be able to \*Qchange your mind\*U after starting a
+line mode macro, you must leave the \*Q\\n\*U out of the expansion.
+Without the newline, the macro is not executed immediately, so
+you have a chance erase the line (or part of it) and type
+something different.
+Remember that the
+.B getline
+function keeps the newline in the string it gets, so if you don't
+want a newline to appear, you must use
+.BR getstr .
+When using the
+.I get
+functions, you should also remember that you can
+.I never
+backspace past the \*Qbeginning\*U of a
+.BR getline ,
+and you can backspace past the beginning of a
+.B getstr
+only after the get has been completed.
+.PP
+When the
+.B getstr
+function is used in line mode macros,
+.I Mush
+reprints the current input line so you can see what the whole
+thing looks like, but does not redisplay the line mode prompt
+(see the entry for
+.B prompt
+in the VARIABLES section for information on what the
+prompt looks like).
+Don't let this worry you.
+The input line is also reprinted when
+.B getline
+is used, but the newline in the input string usually results in a
+new prompt being displayed.
+.PP
+.IR NOTE :
+Line mode macros are not available when using the line-mode escape
+function in curses mode.
+It is necessary to escape all the way to line mode (that is, leave
+curses mode by typing carriage-return at the `:' prompt) in order
+to access line mode macros.
+This is to prevent possible confusion when similar macros exist
+in both line and curses modes.
+.PP
+.BR "Composition mode macros" .
+.PP
+Composition mode macros are very similar to line mode macros, and
+provide a \*Qpower typing\*U function when composing messages.
+For example, you might want to have the word \*Qpercent\*U inserted
+into your message whenever you hit the `%' key:
+.sp
+.ti +4
+map! % percent
+.sp
+Another use is to simulate the indentation features of editors.
+For example, you might
+.sp
+.ti +4
+map! '\\CT' '\ \ \ \ '
+.sp
+(where the expansion is four spaces, enclosed in single quotes).
+This macro causes four spaces to be inserted into the message whenever
+control-T is typed.
+.PP
+Composition mode macros can also be used to execute
+.I tilde-escapes
+(see the GENERAL USAGE section for a list of these).
+For example, you could create a macro to invoke the editor:
+.sp
+.ti +4
+map! '\\CE' '\\n~v\\n'
+.sp
+When control-E is typed, this macro prints a newline (to be sure that
+the tilde-escape is the first thing on a line), then types \*Q~v\*U
+followed by another newline, to start the editor.
+Similar macros can be created for other tilde-escapes.
+.PP
+.BR "Mixed mode macros" .
+.PP
+It is not normally possible to mix macros among the different modes.
+However, once expansion has begun, it is interrupted only by an error
+or by the appearance of one of the special
+.I get
+functions.
+It is therefore possible to have a macro expansion which causes
+the mode to change before the expansion has completed.
+In this case, recursive expansions apply to the new mode.
+Suppose we are using a variation of the editor-starting macro shown
+above for composition mode:
+.sp
+.ti +4
+map! '\\CE' '\\n~v emacs\\n'
+.sp
+This macro causes the \*Qemacs\*U editor to be started when control-E
+is typed in composition mode.
+We can now create a line mode macro that makes use of this
+composition mode macro:
+.sp
+.ti +4
+map '#' 'reply \-i [getline]~t[getline]\\CE'
+.sp
+When the `#' key is pressed in line mode, this macro
+prints \*Qreply \-i\*U and waits for a message list, then enters
+composition mode (by executing the
+.B reply
+command).
+In composition mode, it displays the To: line
+(the \*Q~t\*U escape) and waits for other addresses to be added.
+Finally, it recursively expands the control-E macro, to
+start editing the message with emacs.
+.PP
+As can be seen from this example, the
+.I Mush
+macro facility is very powerful.
+Be very careful not to accidentally expand recursive macros,
+especially when using macros that change modes.
+When testing new macros, it is a good idea to start
+.I Mush
+in
+.I read-only
+mode (the \-r command line flag) to be sure that messages are
+not lost or altered.
+.PP
+.BR "Getting rid of macros" .
+.PP
+It is not necessary to delete a macro in order to redefine it.
+New expansions for existing key sequences automatically replace
+the old expansions.
+If it is necessary to remove a macro completely, the commands
+.BR unbind ,
+.B unmap
+and
+.B unmap!
+can be used to remove curses mode, line mode, and composition mode
+macros, respectively.
+Remember to use a backslash or other literal-next character to prevent
+the expansion of line mode macros when using these commands, especially
+.BR unmap .
+.SH "MAIL ADDRESSES"
+Whenever a command that requires a user address or set of addresses
+is specified
+.RB ( mail ,
+.BR reply ,
+.BR alias ,
+.BR etc )
+the addresses given must be separated by commas.
+Most casual users specify addresses that contain no comments or whitespace.
+The simplest addresses are just the login names of the users you wish to send
+your message to:
+.sp
+.ti +2
+\fBmail\fR fred barney wilma betty
+.sp
+In these cases,
+.I Mush
+can figure out that they are separate addresses and
+insert commas between addresses automatically.
+.sp
+.ti +2
+To: fred, barney, wilma, betty
+.sp
+Addresses may also contain `!', `@' and `%' characters which are used
+to separate hostnames and the final user name from each other.
+This is primarily used to mail to users on other machines.
+UUCP addresses are specified as
+.sp
+.ti +2
+host1!host2!user
+.sp
+where there may be as many hosts as necessary to route the message
+to the recipient user.
+Here, the user's account is on \*Qhost2\*U
+and that machine is connected to \*Qhost1\*U.
+.I Domain
+addresses (also called Arpanet, Internet, RFC822, and \*Qfully qualified\*U
+addresses) are specified as
+.sp
+.ti +2
+user@host.domain
+.ti +2
+user%host2.domain@host1
+.sp
+where \*Qdomain\*U is a domain name such as \*Q.berkeley.edu\*U or \*Q.com\*U.
+As in the first example, the user is on \*Qhost2\*U, but that machine talks
+to \*Qhost1\*U.
+It is beyond the scope of this document to discuss in detail the ramifications
+of inter-network mailing.
+More information can be obtained through your system manager.
+.PP
+.I Mush
+understands addresses containing a comment field.
+Comment fields do not affect the destination address of mail being sent.
+These fields are purely for
+human legibility and may be specified according to the following constraints: 
+.sp
+Anything within angle brackets is an address; whatever is outside of the
+address is considered a comment:
+.sp
+.ti +2
+Dan Heller <zipcode!argv@cad.berkeley.edu>
+.ti +2
+Dan Heller <argv@zipcode.com>
+.sp
+Anything that has parentheses is a comment; whatever is outside of the
+parentheses is considered the address:
+.sp
+.ti +2
+zipcode!argv (Dan Heller)
+.ti +2
+argv@zipcode.com (Dan Heller)
+.sp
+Double quotes (") are treated just like parentheses:
+.sp
+.ti +2
+"Dan Heller" zipcode!argv
+.ti +2
+"Dan Heller" argv@zipcode.com
+.sp
+If the comment is to contain a comma, the first case above may not be used;
+you must use either the parenthesis or double-quote cases.
+.sp
+.ti +2
+fred@flintstone.bed.rock (Fred Flintstone, Cave Man)
+.sp
+If the comment contains unbalanced quotes, unpredictable results may occur
+.RI ( Mush
+won't deliver the mail).
+.sp
+Since the angle brackets have the highest precedence, quotes or parentheses
+may be used in conjunction with one another.
+.sp
+.ti +2
+Yabba Dabba Doo (Fred Flintstone) <fred>
+.ti +2
+Scoobie "Doobie" Doo <scooby@shaggys.mystery.machine>
+.PP
+Multiple addresses may appear on a line:
+.sp
+.in +2
+argv@zipcode.com argv@garp.mit.edu dheller
+.in -2
+.sp
+Because there is no indication of comments (parenthesis, angle bracket,
+or quotes), it is assumed that these are separate addresses and
+.I Mush
+inserts commas between these addresses accordingly.
+It is for this reason that the user is encouraged to explicitly insert
+commas between all mail addresses and not depend on the automation of comma
+insertion to correctly separate addresses from one another.
+.PP
+Mail aliases may contain addresses of the form described above.
+.sp
+.nf
+.in +2
+.ta 1.5i
+alias george	George Jetson <george@spacely.space.sprockets>
+alias jane	Jane Jetson <jane@sky-high.appts>
+alias group	george, jane
+.in -2
+.fi
+.sp
+You can mail using the alias as an address and it is expanded
+accordingly.
+You cannot, however, reference an alias and specify a
+comment or another address at the same time.
+.sp
+.ti +2
+To: The Jetsons <group>
+.sp
+The comment \*QThe Jetsons\*U is not retained when the alias \*Qgroup\*U
+is expanded, because the entire address and comment are replaced by the
+expansion.
+.SH FILES
+.nf
+.ta 2.0i
+/usr/spool/mail/*	Directory for incoming mail
+~/Mail	Default \fBfolder\fR directory
+~/mbox	File where old mail is saved
+~/.mushrc	File giving initial \fIMush\fR commands
+~/.mailrc	Alternate initialization file
+~/.edXXXXXXX	Temporary for file for outgoing messages
+~/.mushXXXXXX	Temporary mail file (copy of current folder)
+.fi
+.PP
+Temporary files that are created by the program, and folders written with
+.B save
+and related commands, are always
+created with read/write access to the owner only; group and other
+permissions are never set.
+This is also true for the /usr/spool/mail/* files.
+All other files created by the user via commands internal or external
+to the program have permissions set by the user's default umask.
+If the umask is reset within the program, the mask remains
+intact even after exiting.
+Remember to set the variable
+.B unix
+before attempting to set the umask value.
+.PP
+If your system is using Sun Microsystem's NFS, take special note to
+read the manual page for mount(1).
+Filesystems mounted for read/write
+access should be mounted as \*Qhard\*U NFS mounts or you may lose
+mailboxes during a timeout during a write or update.
+.PP
+Filesystems that use RFS still have bugs to be ironed out in the way
+of owners and permissions concerning utime(2).
+.SH "SEE ALSO"
+.IR Mail (1),
+.IR binmail (1),
+.IR csh (1),
+.IR aliases (5),
+.IR mount (1),
+.IR mailaddr (7),
+.IR sendmail (8),
+.IR printf (3),
+.IR execl (3),
+.IR umask (1),
+.IR utime (2).
+.SH AUTHOR
+The original
+.I Mush
+was written entirely by Dan Heller.
+Code to support macros, line wrapping, and a whole lot of other miscellaneous
+details, was written by Bart Schaefer, who gets his name in print
+because he updated and proofread this manual.
+Numerous others have supplied valuable suggestions
+and assorted bits and pieces.
+.PP
+argv@sun.com       zipcode!argv
+.SH DISCLAIMERS
+.I Mush
+contains no
+.IR UNIX (TM)
+sources and never has.
+It is also not a modified version of any other mail user agent.
+Similarities
+with any other mailer may have been designed for compatibility reasons.
+.PP
+.I UNIX
+is a trademark of AT&T.
+.PP
+The Flintstones and The Jetsons are trademarks of Hannah-Barbara Inc.
+.SH BUGS
+The curses interface uses the curses library.
+The routines from the library that are used are the most basic and simple
+so as to avoid possible bugginess that
+different versions of UNIX might have.
+However, one unavoidable problem is the reverse video mode.
+Depending on your terminal,
+the termcap entry for it, and the version of curses you are running,
+the reverse video may make things worse than desired.
+In such situations, the user should set the variable
+.B no_reverse
+to not get reverse video.
+\&`^R' may still be entered at runtime in the curses
+interface to toggle reverse video.
+.PP
+Toggling from the curses mode to the line mode to get the full
+functionality of the shell/line mode is unfortunately necessary
+in order to maintain the display in a sensible manner and to keep the
+keystroke-command interface simple and \*Quser friendly\*U.
+Mostly, such escapes are only necessary
+for piping of commands and using the pick command.
+Macros are a big help with this.
+.PP
+If the program is already running and the system [later] has to swap
+and there is no swap space left, there may be problems.
+One such problem is sending mail.
+If this happens, then sending mail
+fails and a segmentation fault from the spawned/forked child may occur
+(unless the -v flag was given to mail).
+The unsent letter is not removed from the editing file ($home/.edXXXXXX)
+and may be recovered.
+.PP
+Many functions available to the line oriented mode (shell mode)
+are not available to the tool mode.
+For example,
+.B pick
+may not be directly accessed although experienced users may find that
+typing pick commands within single backquotes in the \*QRange:\*U panel item
+above the header window and then selecting a command that uses the range
+does indeed pick messages.
+This is mostly for selecting the \*Qdelete range\*U item
+or the middle mouse button icon in the header panel.
+.PP
+Version 6.5.6 was the last version designed to run under SunWindows, and is
+therefore the most recent version that functioned under SunOS 2.x.
+Starting with versions 7.x, the interface used is SunView, and may have
+a completely new set of problems in addition to those described below.
+Also, some of those described below may have been eliminated, and remain
+in this discussion only for completeness.
+.PP
+Shell escapes (of any kind) may be called only from the \*Qpipe\*U command
+in the tool mode, should not be interactive, and should produce
+output only to a file.
+The reason for this is that there is no tty
+.I window
+in which to do input/output.
+Since the interactive function-key binding interface has gone away, it is
+unfortunately only possible to execute commands that have been pre-defined
+in the initialization file.
+Future revisions may correct these deficiencies.
+.PP
+The function keys and their ability to
+.I work
+has been variable depending on the version of SunWindows/SunView
+your Sun Workstation has.  From time to time, it works, but when it
+doesn't, it seems to be related to other user or system definable
+dot-files or whatever.
+.PP
+Changing the value of the
+.BR screen_win ,
+.BR crt_win ,
+or
+.B msg_win
+variables after the tool is running simply has no effect.
+.PP
+When using
+.B vi
+in the tool mode, the window is periodically one or more
+lines \*Qshort.\*U
+That is, scrolling is off by one line and you have to redraw the
+window (using \*Qz.\*U in vi) to get it in sync again.  The problem
+is caused by the window having less than 24 lines in the window.
+Having the tty subwindow be
+.I exactly
+24 lines usually eliminates the problem.  This is a bug with SunView
+and will not be fixed since Sun no longer supports it.
+.PP
+When running on full filesystems,
+.I Mush
+may complain or not even run since it needs temporary space with which
+to work.
+Instead of finding new filesystems on its own,
+.I Mush
+leaves this task up to the user.
+The workaround is to set the variable
+.B tmpdir
+in the initialization file to be a writable place in a filesystem that
+has enough disk space.
+Note: some systems' setcwd() system call writes temporary information in
+/tmp and this cannot be overridden.  You may get error messages such as
+"file system full" even if your
+.B tmpdir
+variable is set to a directory in a partition other than that of /tmp.
+There is nothing to be concerned about; chance are that you changed
+directories and the setcwd() system call can't write to its temp file.
+.PP
+Repeated sequences of creating and destroying compose frames
+uses up file descriptors in Sun OS 3.5, due to a bug where a destroyed
+ttysw does not free up its fd's.
+.PP
+Most of the other known and documented bugs
+are in the supplied README files accompanying the source.
+The source is also an excellent place to look as many known bugs are
+documented in comments.
+A good way to track suspicious bugs is to use the
+.B debug
+command, but note that
+this command is very difficult to use in curses mode.

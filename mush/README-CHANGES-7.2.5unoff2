@@ -1,0 +1,24 @@
+This version of mush has been patched to:
+
+  - correctly compile on Linux (found on sunsite.unc.edu, modified
+    by Yves Arrouye <arrouye@debian.org>);
+
+(the following changes are all made by Yves Arrouye <arrouye@debian.org>)
+
+  - support eight bits characters and locales (independently);
+  - correctly handle the C-c signal;
+  - correct .lock locking system;
+  - correct locking of mailboxes to be done for any system spool file,
+    not just the user's one;
+  - correct a security problem letting a setgid mush access any
+    mailbox on the system :-(;
+  - correct some memory handling problems causing segmentation faults;
+  - change of POP3 support (new variables and commands, -p and -P flags);
+  - not remove system mailboxes regardless of who owns them;
+  - add new commands;
+  - fix for dates handling;
+  - derive infos in cmd_help, Mushrc and mush.1 from config.h;
+  - add cosmetic changes.
+
+This is not an official release at the time of this writing.
+

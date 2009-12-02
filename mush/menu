@@ -1,0 +1,2 @@
+?package(mush):needs=text section=Apps/Net\
+  title="Mail User's Shell" command="/usr/bin/mush"

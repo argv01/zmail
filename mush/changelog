@@ -1,0 +1,212 @@
+mush (7.2.5unoff2-25) unstable; urgency=low
+
+  * Updated debconf dependency to include debconf-2.0 alternative
+    (closes: #332041)
+  * Added swedish translation of debconf templates from Daniel Nylander
+    <yeager@lidkoping.net> (closes: #330434)
+  * Updated russian translation of debconf templates from Yuri Kozlov
+    <kozlov.y@gmail.com> (closes: #350304)
+
+ -- Pawel Wiecek <coven@debian.org>  Sun,  2 Apr 2006 19:54:10 +0200
+
+mush (7.2.5unoff2-24) unstable; urgency=low
+
+  * Updated german translation of debconf templates from Daniel Knabl
+    <daniel@tirolinux.net> (closes: #326146)
+  * Updated standards-version (no changes necessary)
+  * Updated japanese translation of debconf templates from Hideki Yamane
+    <henrich@samba.gr.jp> (closes: #311285)
+  * Added czech translation of debconf templates from Katarina Machalkova
+    <K.Machalkova@pod.cvut.cz> (closes: #319852)
+
+ -- Pawel Wiecek <coven@debian.org>  Thu, 22 Sep 2005 21:53:38 +0200
+
+mush (7.2.5unoff2-23) unstable; urgency=low
+
+  * Applied patch from Andreas Jochens <aj@andaco.de> to fix building problems
+    on amd64 (closes: #294318)
+  * Updated french translation of debconf templates (closes: #302175)
+
+ -- Pawel Wiecek <coven@debian.org>  Tue, 17 May 2005 21:42:10 +0200
+
+mush (7.2.5unoff2-22) unstable; urgency=low
+
+  * Changed dependency from exim to exim4 (closes: #255354)
+  * Added japanese translation of debconf templates by Hideki Yamane
+    <henrich@samba.gr.jp> (closes: #288027)
+  * Changed build-dependency from libreadline4-dev to libreadline5-dev
+  * Converted to source-only package due to licencing problems, which for some
+    mysterious reason weren't spotted before (closes: #242281)
+
+ -- Pawel Wiecek <coven@debian.org>  Mon, 17 Jan 2005 21:26:36 +0100
+
+mush (7.2.5unoff2-21) unstable; urgency=low
+
+  * Added danish translation of debconf templates by Morten Brix Pedersen
+    <morten@wtf.dk> (closes: #240814)
+
+ -- Pawel Wiecek <coven@debian.org>  Tue, 30 Mar 2004 01:26:32 +0200
+
+mush (7.2.5unoff2-20) unstable; urgency=low
+
+  * Added french translations of debconf templates by Olivier Gauwin
+    <olivier.gauwin@laposte.net> (closes: #238475)
+
+ -- Pawel Wiecek <coven@debian.org>  Wed, 24 Mar 2004 21:01:10 +0100
+
+mush (7.2.5unoff2-19) unstable; urgency=low
+
+  * Converted to gettext-based debconf templates translations
+    (closes: #236861)
+  * Fixed some typos in polish translations as well
+
+ -- Pawel Wiecek <coven@debian.org>  Mon,  8 Mar 2004 23:38:24 +0100
+
+mush (7.2.5unoff2-18) unstable; urgency=low
+
+  * Converted from varargs to stdargs, thanks to Steven Barker
+    <steve@blckknght.org> (closes: #235796)
+  * Updated standards version (no changes required)
+  * Fixed some lintian warnings
+
+ -- Pawel Wiecek <coven@debian.org>  Thu,  4 Mar 2004 21:49:20 +0100
+
+mush (7.2.5unoff2-17) unstable; urgency=low
+
+  * Fixed misspelling (Debian Linux vs. Debian or Debian GNU/Linux) in long
+    description (closes: #150889)
+  * While at that -- fixed some typos in the long description as well
+
+ -- Pawel Wiecek <coven@debian.org>  Wed, 30 Oct 2002 13:32:26 +0100
+
+mush (7.2.5unoff2-16) unstable; urgency=low
+
+  * Added russian translations of debconf templates (closes: #136930)
+
+ -- Pawel Wiecek <coven@debian.org>  Tue,  5 Mar 2002 14:21:01 +0100
+
+mush (7.2.5unoff2-15) unstable; urgency=low
+
+  * Fixed debconf templates (closes: #106343)
+
+ -- Pawel Wiecek <coven@debian.org>  Tue, 24 Jul 2001 10:28:37 +0200
+
+mush (7.2.5unoff2-14) unstable; urgency=low
+
+  * Changed default In-Reply-To format (closes: #99730)
+  * While fixing /etc/mush.rc, changed quoted text marks to something more
+    common
+  * Bumped up standards version
+
+ -- Pawel Wiecek <coven@debian.org>  Fri,  8 Jun 2001 13:07:21 +0200
+
+mush (7.2.5unoff2-13) unstable; urgency=low
+
+  * added german translations of debconf templates (closes: #99189)
+
+ -- Pawel Wiecek <coven@debian.org>  Wed, 30 May 2001 13:16:58 +0200
+
+mush (7.2.5unoff2-12) unstable; urgency=low
+
+  * maillock.1 manpage was missing (I should make packages at more appropriate
+    hours)
+  * fixed a bit of a mess I had with prerm scripts (the result of not using
+    advanced packaging helper packages like debhelper in previous releases
+    ;^))
+  * added polish translations of debconf templates
+
+ -- Pawel Wiecek <coven@debian.org>  Wed, 23 May 2001 14:55:58 +0200
+
+mush (7.2.5unoff2-11) unstable; urgency=low
+
+  * Massive cleanup (backported from newer stuff I'm working on): debhelper,
+    current Standards-Version, debconf
+  * Fixed a security hole caused by use of mktemp()
+  * Fixed a bug with boken -m option, thanks to Robert Brown (closes: #97726)
+
+ -- Pawel Wiecek <coven@debian.org>  Tue, 22 May 2001 16:14:17 +0200
+
+mush (7.2.5unoff2-10) unstable; urgency=medium
+
+  * Incremented debian release number to 10 because of erroneously uploaded
+    NMU with debian release number -9 (ick)
+  * Y2K patch is finally in maintainer upload (closes: #53935, #67373, #67374)
+  * Fixed behaviour when Qmail is used as MTA
+
+ -- Pawel Wiecek <coven@debian.org>  Wed, 21 Feb 2001 10:50:23 +0100
+
+mush (7.2.5unoff2-8.1.1) unstable; urgency=low
+
+  * Non-maintainer upload
+  * Numerous patches to get it to compile on alpha. This code is seriously
+    out of date.
+
+ -- Paul Slootman <paul@debian.org>  Wed,  7 Feb 2001 16:04:30 +0100
+
+mush (7.2.5unoff2-8.1) frozen unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Applied patch from J.P.M. van der Jagt <jeanpaul@pinewood.nl> to fix a
+    Y2K bug (fixes: #53935).
+  * debian/control: changed section to non-free/mail.
+
+ -- Jordi Mallach <jordi@debian.org>  Thu, 20 Jul 2000 02:27:42 +0200
+
+mush (7.2.5unoff2-8) unstable frozen; urgency=low
+
+  * Rebuilt against glibc 2.1
+  * Updated file locations as per standards version 3.0.1
+
+ -- Pawel Wiecek <coven@debian.org>  Tue, 26 Oct 1999 19:02:55 +0200
+
+mush (7.2.5unoff2-7) unstable frozen; urgency=low
+
+  * Applied patch from Nick Holloway to fix libc6 compilation problems (fixes
+    bugs #20545, #25596
+  * Updated Standards-Version
+
+ -- Pawel Wiecek <coven@debian.org>  Tue, 26 Oct 1999 19:02:42 +0200
+
+mush (7.2.5unoff2-6) unstable frozen; urgency=LOW
+
+  * Changed manpage link for maillock back to undocumented.7.gz (fixes bug
+    #19371)
+  * Added dependency on c-shell (fixes bug #19371)
+  * Still linked against libc5 due to compilation problems (so I'm opening a
+    bug in my own package)
+
+ -- Pawel Wiecek <coven@pwr.wroc.pl>  Sun, 29 Mar 1998 20:39:43 +0200
+
+mush (7.2.5unoff2-5) unstable; urgency=LOW
+
+  * Corrected manpage link for maillock so now it really works
+
+ -- Pawel Wiecek <coven@pwr.wroc.pl>  Tue, 5 Aug 1997 23:39:26 +0200
+
+mush (7.2.5unoff2-4) unstable; urgency=LOW
+
+  * New maintainer
+  * Added manpage for /usr/bin/maillock as a link to undocumented.7.gz
+    (this closes bug #6263)
+  * Finally gzipped README (also suggested in bug #6263)
+  * Corrected ugly bug which caused serious troubles when sending mail with
+    complex MIME types (my own code BTW)
+
+ -- Pawel Wiecek <coven@pwr.wroc.pl>  Sun, 13 Jul 1997 21:07:42 +0200
+
+mush (7.2.5unoff2-3) unstable; urgency=LOW
+
+  * Added MIME patch (C) 1996 by Pawel Wiecek <coven@pwr.wroc.pl>
+
+ -- Yves Arrouye <Yves.Arrouye@marin.fdn.fr>  Fri, 27 Sep 1996 08:44:54 +0200
+
+mush (7.2.5unoff2-2) unstable; urgency=LOW
+
+  * Switched to new source format.
+
+ -- Yves Arrouye <arrouye@marin.sevy.fr>  Mon, 9 Sep 1996 08:57:53 +0200
+
+Local Variables:
+mode: dpkg-changelog
+End:
+

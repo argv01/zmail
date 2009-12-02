@@ -1,0 +1,70 @@
+# .mushrc to cause Mush to emulate UCB Mail
+# -- Bart Schaefer (schaefer@cse.ogi.edu)
+#
+# This file can be used as either the DEFAULT_RC or the ALT_DEF_RC (see
+#  config.h) but such use is NOT recommended.  Instead, you should modify
+#  one of those files to "source" this file.
+#
+#----------------------------------------------------------------------------
+# Shortcomings:
+#  Mush does not support the "noisy phone line" flags of Mail
+#   (-i command line option or "set ignore" to ignore RUBOUT characters)
+#  Mush will never remove a system mailbox (no "unset keep" equivalent)
+#  See comments below on (lack of) command prefix recognition
+#----------------------------------------------------------------------------
+#
+# Set up prompting, headers
+#
+set prompt='& '
+set mil_time date_received
+set hdr_format='%8.80a %D %M %-2N %5T  %l/%c "%.29s"'
+#
+# Set up mailing/replying miscellaneous
+#
+set indent_str = "	"
+set reply_to_hdr auto_route
+#
+# Set up command interface
+#  Note that a full emulation is difficult, because Mush does not support
+#  command prefix recognition (e.g., Mail interprets "Rep" as "Reply").
+#
+# Don't barf if history doesn't work, but still do cmd expansion
+#
+set nonobang
+#
+# This stuff is fine, but really needs prefix recognition.
+#
+cmd Reply replysender
+cmd R replysender
+cmd alt alternates
+cmd chdir cd
+cmd chd cd
+cmd + next
+cmd ch cd
+cmd c copy
+cmd file folder
+cmd fi folder
+cmd hold preserve
+cmd ho hold
+cmd reply replyall
+cmd r replyall
+cmd retain "set show_hdrs='\!*'"	# Not quite right, but ...
+cmd se set
+cmd shell sh
+cmd so source
+cmd u 'u \!* | pick -1 | from -' # "u" changes current message in Mail
+cmd un u
+cmd undelete u
+cmd unread 'flags \!* +U'	# "unread" is undocumented in Mail
+cmd uns unset
+cmd vi v
+cmd z 'z \!* + | from -'	# "z" changes current message in Mail
+cmd z+ z
+cmd z- 'z \!* -'
+#
+# You may want this file sourced, especially if you are not using the
+#  supplied Mushrc file as your DEFAULT_RC.
+#
+# set ALT_DEF_RC = "/usr/lib/Mail.rc"
+# source $ALT_DEF_RC
+# unset ALT_DEF_RC

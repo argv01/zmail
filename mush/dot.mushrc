@@ -1,0 +1,21 @@
+
+# A sample .mushrc for POP mail and other things. (YA.)
+
+# We want POP mail by default, so we set the popmail variable here.
+set popmail
+
+# We want to set the information about the POP service, except for the
+# mailbox to use which will be our system mailbox or whatever the POPBOX
+# environment variable gives.
+#   Note that we first test for the setting of popmail because the first
+# set may have been ignored if mush was called with -P.
+#   Also note that setting the password is really *not* a good idea, so
+# this is not done here... (It may be, using the mailpass variable.)
+if $?popmail
+    setenv MAILHOST 'myserver'
+    setenv MAILUSER 'username'
+endif
+
+# Keep mail in our system mailbox.
+set hold
+

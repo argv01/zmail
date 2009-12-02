@@ -1,0 +1,99 @@
+# .mushrc to simulate Gnu emacs (NOT Rmail!) for curses mode
+# -- Bart Schaefer (schaefer@cse.ogc.edu)
+#---------------------------------------------------------------------------
+# Shortcomings:
+#  In compose mode, can't use C-h, C-r, C-w, DEL, etc.
+#  Ought to delete most of the default bindings.  If you want remove the
+#   default bindings, you can:
+#	Run "mush -noinit" and do a "saveopts";
+#	Edit the saved file and change every "bind" to an "unbind";
+#	Remove all other extranous commands;
+#	Include the resulting list at the TOP of this file.
+#---------------------------------------------------------------------------
+#
+set no_reverse
+#
+# TTY setup -- you may want to customize this, because the old interrupt
+#  character and so on might not be reset correctly when mush exits.
+#
+cmd ntty 'stty intr ^G dsusp undef stop undef start undef lnext undef'
+cmd rtty 'stty intr ^C dsusp ^Y stop ^S start ^Q lnext ^V'
+cmd exit 'rtty; \exit'
+cmd xit exit
+cmd x exit
+cmd quit 'update; exit'
+cmd q quit
+cmd curses 'ntty; \curses; rtty'
+#
+# Curses mode bindings
+#
+# Exiting -- try to make sure tty gets reset
+bind-macro '\CX\CC' '[line-mode]exit\n'
+bind-macro x [no-op]
+bind-macro X [no-op]
+bind-macro q [no-op]
+bind-macro Q [no-op]
+# Files (folders)
+bind '\CX\CF' folder
+bind '\CX\CS' update
+bind-macro '\CXi' '[line-mode]merge '
+bind '\CX\CV' folder
+bind-macro '\CX\CW' '[save-list]*\n'
+# Help
+bind '\CX\CH' help	# Can't use just C-h, it's a prefix of the others
+bind-macro '\CHa' '[bind]_\n\n\CH'	# List all curses commands
+bind-macro '\CHc' '[line-mode]bind '	# Show one binding
+bind-macro '\CHf' '[line-mode]? '	# Explain line-mode function
+# Error Recovery -- very primitive, sorry
+bind '\CXu' undelete-list
+bind '\C_' undelete-list
+# Searching -- sorry, can't be incremental
+#  also can't repeat with same key
+bind '\CS' search-next
+bind '\CR' search-back
+# Motion (the important part)
+bind '\CB' back-msg
+bind '\Eb' back-msg
+bind '\CP' back-msg
+bind '\CF' next-msg
+bind '\Ef' next-msg
+bind '\CN' next-msg
+bind '\Ea' back-msg
+bind '\Ee' next-msg
+bind '\E[' top-page
+bind '\E]' bottom-page
+bind '\CX[' screen-back
+bind '\CX]' screen-next
+bind '\E<' first-msg
+bind '\E>' last-msg
+bind '\CV' screen-next
+bind '\Ev' screen-back
+# Killing/deleting ("forward", i.e. at cursor, only)
+bind '\CD' delete
+bind '\Ed' delete
+bind '\CK' delete
+bind '\Ek' delete
+bind-macro '\CW' '[line-mode]delete [getstr] | set kill\n[no-op]'
+bind-macro '\CY' '[undelete-list]$kill\n'
+# Marking -- somewhat limited because can't use C-SPC (C-@)
+bind-macro '\CX\CX' '[line-mode].|set mark\n[no-op]'
+bind-macro '\Eh' '[line-mode]h|set mark\n[no-op]'
+bind-macro '\CXCP' '[line-mode]h|set mark\n[no-op]'
+bind-macro '\CXh' '[line-mode]*|set mark\n[no-op]'
+# Buffers -- treated same as folders
+bind '\CXb' folder
+bind-macro '\CX\CB' '[folder]?\n\CH'	# List folders and back out
+bind-macro '\CXk' '[delete-list]*\n'
+# Shells
+bind-macro '\E!'\
+	'[line-mode]rtty\n[shell-escape][getline][line-mode]ntty\n'
+bind-macro '\Ex!' '[line-mode]rtty;sh\n[line-mode]ntty\n'
+# Macros
+#  Sorry, no appending to macros, and end with <RETURN> not `C-x )'
+bind '\CX(' bind-macro
+#
+# Lastly, actually reset the tty
+#
+if iscurses
+    ntty
+endif

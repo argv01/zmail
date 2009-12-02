@@ -1,0 +1,74 @@
+
+This is release 7.2.5 of the Mail User's Shell (mush).
+
+Mush was last posted as a complete package at release 7.2.2.  Before that,
+the last complete posting was 7.1.1.  If your version of mush is older
+than 7.2.2, refer to README-7.0 and README-7.1 for lists of other changes.
+See README-7.2.0 for changes from 7.1.1 to 7.2.  Patch 3 was bugfixes only;
+there was no README-7.2.3.  See README-7.2.4 for a list of changes in both
+patch 3 and patch 4.
+
+Changes in compilation:
+
+    POP3_SUPPORT
+	Enable POP client mode by compiling with this defined.  See README.
+
+    New files to support POP and DOT_LOCK have been added to the makefiles.
+
+New/changed commands:
+
+    See the $metamail variable for changes in print/type/etc.
+
+New/changed variables:
+
+    metamail
+	If $metamail is set to the pathname (and arguments) of a MIME
+	decoder (such as the "metamail" program), Mush will recognize
+	MIME messages and "page" them through that decoder instead of
+	through the regular $pager.
+
+Tool mode changes:
+
+    Bug fixes only, see below.
+
+Bugs fixed in Patch #5:
+
+  * Better parsing of double-quoted tokens in addresses
+
+  * Unsetenv allocates a new copy of the environment on first call
+
+  * Doesn't attempt to init tty if there isn't one
+
+  * #define CURSES in config.h (as opposed to in CFLAGS) should work
+
+  * On AIX, curses mode won't dump core
+
+  * Recognize more date formats, and store dates to resolution in seconds
+    for more accurate date sorting
+
+  * Tool mode "sort" menu "by value of sort variable" works now
+
+  * Better handling of X.400 addresses (heuristic for distinguishing them
+    from file names has been improved)
+
+  * Tool mode "save" pullright directory-walking menus work in all contexts
+    (I hope)
+
+  * Moved that silly piece of code that was setting $realname to the
+    spool folder path
+
+  * Code to init all hostname aliases for $hostname finally works right in
+    all cases
+
+  * Many improvements to DOT_LOCK; NFS "secure" lockfile creation
+
+  * ~user/$variable parses correctly and expands $variable
+
+  * Some compilation fixes for SGI IRIX
+
+  * Child-process management for pager process improved
+
+  * Support for POSIX_UTIME fixed
+
+  * "saveopts" of variables, aliases, etc. with embedded quotes of mixed
+    types does appropriate quoting of its output

@@ -1,0 +1,88 @@
+# makefile.sun	(c) copyright 1986	(Dan Heller)
+#
+# Note that the default SunOS version for mush is 4.1.  If you have an
+# older version of SunOS, you must explicitly define SUN_3_5 or SUN_4_0.
+#
+HDRS= mush.h config.h-dist strings.h bindings.h options.h version.h glob.h pop.h
+
+SRCS= addrs.c bind.c commands.c curs_io.c curses.c dates.c doproc.c \
+      execute.c expr.c file.c fkeys.c folders.c glob.c hdrs.c init.c lock.c \
+      loop.c macros.c mail.c main.c malloc.c misc.c misc_frame.c msgs.c \
+      options.c panels.c pick.c print.c hdr_sw.c setopts.c signals.c sort.c \
+      strings.c tool.c tooledit.c viewopts.c command2.c pop.c pmush.c \
+      xcreat.c hostname.c string.c util.c sendmime.c
+
+OBJS= addrs.o bind.o commands.o curs_io.o curses.o dates.o doproc.o \
+      execute.o expr.o file.o fkeys.o folders.o glob.o hdrs.o init.o lock.o \
+      loop.o macros.o mail.o main.o malloc.o misc.o misc_frame.o msgs.o \
+      options.o panels.o pick.o print.o hdr_sw.o setopts.o signals.o sort.o \
+      strings.o tool.o tooledit.o viewopts.o command2.o pop.o pmush.o \
+      xcreat.o hostname.o string.o util.o sendmime.o
+
+IMAGES= mail.icon.1 mail.icon.2
+
+HELP_FILES= README README-7.0 README-7.1 README-7.2.0 README-7.2.2 \
+            README-7.2.4 mush.1 cmd_help tool_help Mushrc Mailrc Gnurc \
+	    advanced.mushrc sample.mushrc digestify
+
+MAKES= makefile.sun makefile.bsd makefile.sys.v makefile.xenix makefile.hpux
+
+# If your SunOS version is 3.5, add -DSUN_3_5 to CFLAGS.
+# If your SunOS version is 4.0, add -DSUN_4_0 to CFLAGS.
+# If you are not using SUNTOOL, use makefile.bsd and add one of
+#	-DSUN_3_5, -DSUN_4_0, or -DSUN_4_1 to CFLAGS there.
+SYS_CFLAGS= -DBSD
+CFLAGS= -O -DSUNTOOL -DCURSES $(SYS_CFLAGS) $(OTHER_CFLAGS)
+LDFLAGS=
+LIBS= -lcurses -ltermlib -lsuntool -lsunwindow -lpixrect
+OTHERLIBS=
+# Use some variant of this one if you #define MMDF in config.h
+#OTHERLIBS=/usr/src/mmdf/lib/libmmdf.a
+LINTFLAGS= -bxah -Dlint
+
+mush: $(OBJS)
+	@echo loading...
+	@cc $(LDFLAGS) $(OBJS) $(LIBS) $(OTHERLIBS) -o mush
+
+$(OBJS): config.h mush.h
+loop.o: version.h
+
+lint:
+	lint $(LINTFLAGS) $(SRCS) -DSUNTOOL -DCURSES -DBSD
+
+BINDIR= /usr/local/bin
+LIBDIR= /usr/local/lib
+MRCDIR= /usr/lib
+MANDIR= /usr/local/man/man1
+MANEXT= 1
+
+OUTFILES = sedscript Mushrc mush.1 cmd_help
+
+Mushrc: Mushrc.in sedscript
+	sed -f sedscript Mushrc.in >$@
+mush.1: mush.1.in sedscript
+	sed -f sedscript mush.1.in >$@
+cmd_help: cmd_help.in sedscript
+	sed -f sedscript cmd_help.in >$@
+
+sedscript: sedscript.in config.h
+	 /lib/cpp -DBINDIR="$(BINDIR)" $(SYS_CFLAGS) $(OTHER_CFLAGS) sedscript.in | sed -e '/^#/d' -e '/^[ ]*$$/d' -e 's/ ,g/,g/' -e 's/,"\(.*\)"/,\1/' >$@
+
+install: $(OUTFILES) mush
+	mv mush $(BINDIR)
+	strip $(BINDIR)/mush
+	chmod 0755 $(BINDIR)/mush
+	rm -f $(BINDIR)/mushtool
+	ln -s $(BINDIR)/mush $(BINDIR)/mushtool
+	cp mush.1 $(MANDIR)/mush.$(MANEXT)
+	chmod 0644 $(MANDIR)/mush.$(MANEXT)
+	cp tool_help $(LIBDIR)
+	chmod 0644 $(LIBDIR)/tool_help
+	cp cmd_help $(LIBDIR)
+	chmod 0644 $(LIBDIR)/cmd_help
+	cp Mushrc $(MRCDIR)/Mushrc
+	chmod 0644 $(MRCDIR)/Mushrc
+
+clean:
+	rm -f *.o core mush $(OUTFILES)
+

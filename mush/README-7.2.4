@@ -1,0 +1,133 @@
+
+This is release 7.2.4 of the Mail User's Shell (mush).
+
+Mush was last posted as a complete package at release 7.2.2.  Before that,
+the last complete posting was 7.1.1.  If your version of mush is older
+than 7.2.2, refer to README-7.0 and README-7.1 for lists of other changes.
+See README-7.2.0 for changes from 7.1.1 to 7.2.  Patch 3 was bugfixes only;
+there was no README-7.2.3, so the list of bugfixes in that patch has been
+appended.
+
+Changes in compilation:
+
+    Be sure to check out the README file for complete details of new info
+    on compilation for SysVr2, SysVr4, Ultrix, Domain/OS, IRIX, and MIPS.
+    There are new preprocessor definitions for SVR2, SVR4, and IRIX4, plus
+    a set of patches and auxiliary files for Apollo.  There are also new
+    instructions for compiling mush to read MMDF-style spool files while
+    still using sendmail as the MTA (some "native" MH sites need this).
+
+    If you have a csh with filec set and typing ahead at an exiting mush
+    seems to send end-of-file to your shell, define CSH_FILEC_FIX.  It's
+    completely ridiculous that mush has to deal with this so I refuse to
+    mention it in README with the mush-configuration defines.
+
+New/changed commands:
+
+    There aren't any.
+
+New/changed variables:
+
+    pager
+	If $pager has the value "NONE", mush will not run an external
+	pager and will not pause for input at the end of each screenful
+	of output.
+
+Tool mode changes:
+
+    None of these, either.
+
+Miscellaneous:
+
+    The config.h file has been reorganized a bit more.
+
+    The "digestify" script has a clever perl-style startup conditional
+    so you can #! it as a csh script if your path to mush is too long.
+
+    The environment variable MAIL is now recognized at startup time to
+    specify the location of the spool folder.
+
+    When SVR2 and DOT_LOCK are defined at compile time, mush assumes that
+    saved-set-group-id is not available.  The file lock.c can be compiled
+    into a separate locking program to handle the setgid requirements.
+    See extensive comments at the top of lock.c.
+
+Bugs fixed in Patch #4:
+
+  * A couple of long-standing array overflow and "underflow" bugs found
+    and squished.
+
+  * Interrupting the "bind" curses-mode command now works more like the
+    other interruptible commands.
+
+  * The "stty" command behaves itself.
+
+  * Non-SYSV systems using DOT_LOCK won't get strange reports from the
+    "save" command about messages saved to the lock file.  (That wasn't
+    happening but the output was confusing.)
+
+  * Using the "folder" curses-mode command will now remove empty folder
+    files if the line-mode "folder" would do so.
+
+  * SYSV systems should have no more complaints about EWOULDBLOCK not
+    being defined in file.c.
+
+  * The "folder" command won't print the folder status line if piping
+    or otherwise told to shut up (e.g. "mush -N").
+
+  * Attempting to reference a $[%x] header-formatted variable during
+    initialization no longer causes a core dump.  You still can't do
+    it, but at least mush refuses politely.
+
+  * The "reply" family of commands do a better job with addresses whose
+    real name or comment fields that contain double-quote characters.
+    Specifically, they put such names in ( ) instead of in " ".
+
+  * Over-long lines in init files and "source" files now generate an
+    error message instead of truncating silently.
+
+  * Systems using DOT_LOCK should no longer find dead lock files lying
+    about.  The whole DOT_LOCK procedure has been made more robust so
+    it can be used as a failsafe on systems with NFS-mounted spools.
+
+  * Tty twiddling is no longer done in headers-only mode ("mush -H").
+
+  * The little-used feature of referencing another variable from within
+    the autosign and autosign2 variables actually works now.  I probably
+    should just have removed it altogether.
+
+  * Compiling with SUNTOOL defined no longer breaks the lock-failed case
+    in folder updating for line mode.
+
+  * The descriptive output from "pick" is now correct when using -x with
+    a date search.
+
+Bugs fixed in Patch #3:
+
+  * The user's real name ($realname) is no longer left empty.
+
+  * REGCMP users (mostly SysV) no longer get core dumps when using pick.
+
+  * Attempts to send mail (e.g. via Fcc: headers) to the same file or
+    folder more than once *silently* sends only one copy to the file.
+    (Before, it complained about not being able to write to the file
+    for the second and later attempts.)
+
+  * SCO UNIX 3.2 users who are having problems with "submit" can now
+    define M_EXECMAIL to use execmail as their interface to MMDF.  This
+    has the pleasant side-effect of making the MTA invocation compatible
+    with sendmail, so resetting the variable "sendmail" works cleanly.
+
+  * Problems with file locking and lock.c typos for SCO UNIX have been
+    corrected (we hope).
+
+  * SCO UNIX correctly includes <sys/select.h> (we hope).
+
+  * Attempts to load folders containing more than the defined maximum
+    number of messages work a bit better.  You still can't load all the
+    messages, but the results are less strange.
+
+  * Some <curses.h> macro name clashes for unusual UNIXen have been
+    forcibly suppressed.
+
+  * An amazingly old string overflow bug in toolmode has been fixed.
