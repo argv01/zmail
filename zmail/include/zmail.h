@@ -226,9 +226,9 @@ extern int
 #endif /* !MAC_OS */
     gui_task_meter P((int, char **)),
     insert_pos P((GuiItem)),
-#ifdef _XLIB_H_
+#if defined(MOTIF) || defined(OLIT)
     xsync P((int, char **, struct mgroup *)),
-#endif /* _XLIB_H_ */
+#endif /* _MOTIF || OLIT_ */
 #ifdef RECORD_ACTIONS
     gui_record_actions P((int, char **, struct mgroup *)),
     gui_play_action P((int, char *[], struct mgroup *)),
